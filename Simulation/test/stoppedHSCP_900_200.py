@@ -1,7 +1,7 @@
 
-from JBrooke.StoppedHSCPSim.StoppedHSCPSimJob import *
+from StoppedHSCP.Simulation.StoppedHSCPSimJob import *
 
 process.maxEvents.input = 10000
-process.source.PythiaParameters.SLHAParameters = cms.vstring("SLHAFILE = \'JBrooke/StoppedHSCPSim/data/Rhadron_1jet_900_200.dat\'")
-process.VtxSmeared.stoppedData = cms.FileInPath('JBrooke/StoppedHSCPSim/data/stopped_rhadrons_gluino900.txt')
+process.source.PythiaParameters.SLHAParameters = cms.vstring("SLHAFILE = \'StoppedHSCP/Simulation/data/Rhadron_1jet_900_200.dat\'")
+process.VtxSmeared.stoppedData = cms.FileInPath('StoppedHSCP/Simulation/data/stopped_rhadrons_gluino900.txt')
 
