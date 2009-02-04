@@ -36,7 +36,7 @@ process.options = cms.untracked.PSet(
 )
 
 # Custom event source & simulation
-process.load('JBrooke/StoppedHSCPSim/StoppedHSCPSim_cff')
+process.load('StoppedHSCP/Simulation/StoppedHSCPSim_cff')
 
 process.TFileService = cms.Service("TFileService",
     fileName = cms.string('stoppedHSCP_histos.root')

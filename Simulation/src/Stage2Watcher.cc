@@ -1,4 +1,4 @@
-#include "Validation/Stage2Watcher/interface/Stage2Watcher.h"
+#include "StoppedHSCP/Simulation/src/Stage2Watcher.h"
 
 #include "SimG4Core/Notification/interface/BeginOfJob.h"
 #include "SimG4Core/Notification/interface/BeginOfRun.h"
@@ -107,7 +107,6 @@ void Stage2Watcher::update(const BeginOfEvent * beginofevent) {
 }
 
 
-#include "Validation/Stage2Watcher/interface/Stage2Watcher.h"
 #include "SimG4Core/Watcher/interface/SimWatcherFactory.h"
 #include "FWCore/PluginManager/interface/ModuleDef.h"
    
