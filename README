@@ -1,9 +1,9 @@
 
 Stopped HSCP code repository
 
-Simulation
-Analysis
-
+How to check out the packages :
+cvs co -d StoppedHSCP/Simulation  UserCode/StoppedHSCP/Simulation
+cvs co -d StoppedHSCP/Analysis  UserCode/StoppedHSCP/Analysis
 
 
 Jim, 4 Feb 2009
