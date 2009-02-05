@@ -78,14 +78,18 @@ hltHpdFilter = cms.EDFilter("HLTHPDFilter",
 )
 
 # calo towers without ECAL
-from EventFilter.HcalRawToDigi.HcalRawToDigi_cfi import *
-from RecoLocalCalo.HcalRecProducers.HcalSimpleReconstructor_hbhe_cfi import *
-from RecoJets.JetProducers.CaloTowerSchemeB_cfi import *
-towerMaker.AllowMissingInputs = cms.untracked.bool(True)
-towerMaker.EBWeight = cms.double(0.0)  # ???
-towerMaker.EEWeight = cms.double(0.0)  # ???
+from EventFilter.HcalRawToDigi.HcalRawToDigi_cfi import hcalDigis
+hltHcalDigis = hcalDigis.clone()
+from RecoLocalCalo.HcalRecProducers.HcalSimpleReconstructor_hbhe_cfi import hbhereco
+hltHbHeReco - hbhereco.clone()
+from RecoJets.JetProducers.CaloTowerSchemeB_cfi import towerMaker
+hltTowerMake = towerMaker.clone()
+hltTowerMaker.AllowMissingInputs = cms.untracked.bool(True)
+hltTowerMaker.EBWeight = cms.double(0.0)  # ???
+hltTowerMaker.EEWeight = cms.double(0.0)  # ???
 
-from RecoJets.JetProducers.iterativeCone5CaloJets_cff import *
+from RecoJets.JetProducers.iterativeCone5CaloJets_cff import iterativeCone5CaloJets
+hltIterativeCone5CaloJets = iterativeCone5CaloJets.clone()
 
 # jet filter
 hltHscpJet20 = cms.EDFilter( "HLTCaloJetEnergyFilter",
@@ -100,10 +104,10 @@ hltHscpJet20 = cms.EDFilter( "HLTCaloJetEnergyFilter",
 hscpPath = cms.Path(
     HLTBeginSequence*
     hltL1SeedHscp*
-    hcalDigis*
-    hbhereco*
+    hltHcalDigis*
+    hltHbHeReco*
     hltHpdFilter*
-    towerMaker*
-    iterativeCone5CaloJets*
+    hltTowerMaker*
+    hltIterativeCone5CaloJets*
     hltHscpJet20
 )
