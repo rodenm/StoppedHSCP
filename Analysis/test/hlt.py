@@ -19,7 +19,7 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 process.load('Configuration/EventContent/EventContent_cff')
 
 process.configurationMetadata = cms.untracked.PSet(
-    version = cms.untracked.string('$Revision: 1.99.2.3 $'),
+    version = cms.untracked.string('$Revision: 1.1 $'),
     annotation = cms.untracked.string('myreco nevts:1'),
     name = cms.untracked.string('PyReleaseValidation')
 )
@@ -53,7 +53,7 @@ process.load("L1TriggerConfig.L1GtConfigProducers.L1GtConfig_cff")
 process.load("L1TriggerConfig.L1GtConfigProducers.Luminosity.startup.L1Menu_startup2_v2_Unprescaled_cff")
 
 # Stopped HSCP HLT
-process.load('JBrooke/StoppedHSCPAnalysis/HLTStoppedHSCP_cff')
+process.load('StoppedHSCP/Analysis/StoppedHSCP_HLT_cff')
 process.hcalDigis.InputLabel = 'source'
 
 # timing modules

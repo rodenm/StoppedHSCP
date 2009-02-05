@@ -67,9 +67,18 @@ hltL1SeedHscp = cms.EDFilter( "HLTLevel1GTSeed",
     L1MuonCollectionTag = cms.InputTag( "hltL1extraParticles" )
 )
 
+# HCAL unpacker
+from EventFilter.HcalRawToDigi.HcalRawToDigi_cfi import hcalDigis
+hltHcalDigis = hcalDigis.clone()
+
+# HCAL local reco
+from RecoLocalCalo.HcalRecProducers.HcalSimpleReconstructor_hbhe_cfi import hbhereco
+hltHbHeReco = hbhereco.clone()
+hltHbHeReco.digiLabel = cms.InputTag("hltHcalDigis")
+
 # HPD noise filter
 hltHpdFilter = cms.EDFilter("HLTHPDFilter",
-   inputTag = cms.InputTag("hbhereco"),
+   inputTag = cms.InputTag("hltHbHeReco"),
    energy = cms.double(-99.0),
    hpdSpikeEnergy = cms.double(10.0),
    hpdSpikeIsolationEnergy = cms.double(1.0),
@@ -77,14 +86,7 @@ hltHpdFilter = cms.EDFilter("HLTHPDFilter",
    rbxSpikeUnbalance = cms.double(0.2)
 )
 
-# calo towers without ECAL
-from EventFilter.HcalRawToDigi.HcalRawToDigi_cfi import hcalDigis
-hltHcalDigis = hcalDigis.clone()
-
-from RecoLocalCalo.HcalRecProducers.HcalSimpleReconstructor_hbhe_cfi import hbhereco
-hltHbHeReco - hbhereco.clone()
-hltHbHeReco.digiLabel = cms.InputTag("hltHcalDigis")
-
+# calo towers
 from RecoJets.JetProducers.CaloTowerSchemeB_cfi import towerMaker
 hltTowerMaker = towerMaker.clone()
 hltTowerMaker.hbheInput = cms.InputTag("hltHbHeReco")
@@ -92,13 +94,14 @@ hltTowerMaker.AllowMissingInputs = cms.untracked.bool(True)
 hltTowerMaker.EBWeight = cms.double(0.0)  # ???
 hltTowerMaker.EEWeight = cms.double(0.0)  # ???
 
+# jet reco
 from RecoJets.JetProducers.iterativeCone5CaloJets_cff import iterativeCone5CaloJets
 hltIterativeCone5CaloJets = iterativeCone5CaloJets.clone()
 hltIterativeCone5CaloJets.src = cms.InputTag("hltTowerMaker")
 
 # jet filter
 hltHscpJet20 = cms.EDFilter( "HLTCaloJetEnergyFilter",
-    inputTag = cms.InputTag( "iterativeCone5CaloJets" ),
+    inputTag = cms.InputTag( "hltIterativeCone5CaloJets" ),
 #    saveTag = cms.untracked.bool( True ),
     MinEnergy = cms.double( 20.0 ),
     MaxEta = cms.double( 3.0 )
