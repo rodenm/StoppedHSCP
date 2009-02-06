@@ -50,12 +50,12 @@ source = cms.Source("PythiaSource",
            'IMSS(21) = 33',
            'IMSS(22) = 33'),        
        parameterSets=cms.vstring('pythiaUESettings','processParameters','SLHAParameters'),
-       SLHAParameters = cms.vstring("SLHAFILE = \'JBrooke/StoppedHSCPSim/data/Rhadron_1jet_300_50.dat\'"),
+       SLHAParameters = cms.vstring("SLHAFILE = \'StoppedHSCP/Simulation/data/Rhadron_1jet_300_50.dat\'"),
     )
 )
 
 VtxSmeared = cms.EDFilter("RHDecay",
-    stoppedData = cms.FileInPath('JBrooke/StoppedHSCPSim/data/stopped_rhadrons_gluino300_10TeV.txt'),
+    stoppedData = cms.FileInPath('StoppedHSCP/Simulation/data/stopped_rhadrons_gluino300.txt'),
     src = cms.InputTag("source"),
     timeOffsetMin = cms.double(-12.5),
     timeOffsetMax = cms.double(12.5),
