@@ -22,7 +22,7 @@ source StoppedHSCP/Simulation/patch.sh
 scramv1 b
 
 # run job
-cmsRun StoppedHSCP/Simulation/test/$job >& $job.log &
+cmsRun StoppedHSCP/Simulation/test/$job.py >& $job.log &
 
 # make output dir
 rfmkdir /castor/cern.ch/user/j/jbrooke/hscp/sim/$job
