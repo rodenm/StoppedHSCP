@@ -25,12 +25,12 @@ scramv1 b
 cmsRun StoppedHSCP/Simulation/test/$job.py >& $job.log
 
 # make output dir
-rfmkdir /castor/cern.ch/user/j/jbrooke/hscp/sim/$job
+rfmkdir /castor/cern.ch/user/j/jbrooke/hscp/sim_$ver
 
 # copy output to castor
-rfcp $job.log /castor/cern.ch/user/j/jbrooke/hscp/sim/$job/$job.log
-rfcp stoppedHSCP.root /castor/cern.ch/user/j/jbrooke/hscp/sim/$job/$job\_$ver.root
-rfcp stoppedHSCP_histos.root /castor/cern.ch/user/j/jbrooke/hscp/sim/$job/$job\_histos\_$ver.root
+rfcp $job.log /castor/cern.ch/user/j/jbrooke/hscp/sim_$ver/$job.log
+rfcp stoppedHSCP.root /castor/cern.ch/user/j/jbrooke/hscp/sim_$ver/$job.root
+rfcp stoppedHSCP_histos.root /castor/cern.ch/user/j/jbrooke/hscp/sim_$ver/$job\_histos.root
 
 
 
