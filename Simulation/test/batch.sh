@@ -6,10 +6,10 @@ hscp_tag="HEAD"
 job=$1
 
 echo "Stopped HSCP sim"
-echo "Job              : $job"
 echo "Submission       : $ver"
 echo "CMSSW version    : $cmssw_ver"
 echo "Stopped HSCP tag : $hscp_tag"
+echo "Job              : $job.py"
 
 # setup scram area
 scramv1 p CMSSW $cmssw_ver
@@ -22,6 +22,7 @@ source StoppedHSCP/Simulation/patch.sh
 scramv1 b
 
 # run job
+cat StoppedHSCP/Simulation/test/$job.py > $job.log
 cmsRun StoppedHSCP/Simulation/test/$job.py >& $job.log
 
 # make output dir
