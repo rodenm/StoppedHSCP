@@ -23,10 +23,9 @@ source StoppedHSCP/Simulation/patch.sh
 scramv1 b
 
 # copy job to STDOUT
-cat StoppedHSCP/Simulation/test/$job.py > $job.log
+cat StoppedHSCP/Simulation/test/$job.py
 
 # run job
-cat StoppedHSCP/Simulation/test/$job.py > $job.log
 cmsRun StoppedHSCP/Simulation/test/$job.py >& $job.log
 
 # make output dir
