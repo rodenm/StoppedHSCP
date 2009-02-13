@@ -10,6 +10,7 @@ echo "Submission       : $ver"
 echo "CMSSW version    : $cmssw_ver"
 echo "Stopped HSCP tag : $hscp_tag"
 echo "Job              : $job.py"
+echo
 
 # setup scram area
 scramv1 p CMSSW $cmssw_ver
@@ -20,6 +21,9 @@ eval `scramv1 ru -sh`
 cvs co -d StoppedHSCP/Simulation -r $hscp_tag UserCode/StoppedHSCP/Simulation
 source StoppedHSCP/Simulation/patch.sh
 scramv1 b
+
+# copy job to STDOUT
+cat StoppedHSCP/Simulation/test/$job.py > $job.log
 
 # run job
 cat StoppedHSCP/Simulation/test/$job.py > $job.log
