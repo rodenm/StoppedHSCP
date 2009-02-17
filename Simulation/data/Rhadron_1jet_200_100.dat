@@ -5,7 +5,7 @@ DECAY     1000022     0.00000000E+00   # no comment
 DECAY     1000021     1.00000000E-12   # no comment
      1.00000000E+00    2     1000022       21 
 
-BLOCK QNUMBERS 1092224 # Rhad
+BLOCK QNUMBERS 1009213 # Rhad
          1 0  #
          2 0  #
          3 1  #
