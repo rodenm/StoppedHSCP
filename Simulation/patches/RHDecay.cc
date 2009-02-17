@@ -4,12 +4,14 @@
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <ios>
 
 #include "TMath.h"
 
 #include "HepMC/SimpleVector.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Units/SystemOfUnits.h"
@@ -73,7 +75,7 @@ RHDecay::RHDecay(const edm::ParameterSet & p)
   if((OperationMode==0)||(OperationMode==1))
     ReadFromFile=true;
   
-
+  std::ostringstream o;
 
   if(ReadFromFile)
     {
@@ -88,7 +90,7 @@ RHDecay::RHDecay(const edm::ParameterSet & p)
 	  if (!mFile->good() || buf[0]=='\n')
 	    {     
 	      TotalNumber=i-1;
-	      std::cout <<"RHDecay EOF at "<<TotalNumber<<" of lines"<<std::endl;
+	      edm::LogInfo("RHDecay") <<"RHDecay EOF at "<< TotalNumber<<" of lines"<<std::endl;
 	      stoprun=true;
 	    }
 	  else
@@ -107,7 +109,7 @@ RHDecay::RHDecay(const edm::ParameterSet & p)
 		      InTree->Fill();
 		      RDist->Fill(rIn);
 		      ZDist->Fill(zIn);
-		      std::cout << "RHDecay Got decay point:" << xvi << "   " << yvi << "   "  << zvi << " cm " << "  r = " << rIn << std::endl; 
+		      o << "RHDecay Got decay point:" << xvi << "   " << yvi << "   "  << zvi << " cm " << "  r = " << rIn << std::endl; 
 		    }
 		  else
 		    {
@@ -117,11 +119,14 @@ RHDecay::RHDecay(const edm::ParameterSet & p)
 	      else 
 		{
 		  InTree->Fill();
-		  std::cout << "RHDecay Got decay point:" << xvi << "   " << yvi << "   "  << zvi << " cm " << std::endl; 
+		  o << "RHDecay Got decay point:" << xvi << "   " << yvi << "   "  << zvi << " cm " << std::endl; 
 		}
 	    }
 	} 
     }
+  
+  edm::LogVerbatim("RHDecay") << o.str();
+  o.clear();
 
 
 
@@ -209,7 +214,7 @@ HepMC::FourVector* RHDecay::newVertex() {
 
 	  
 
-  if(!Silent) std::cout << "RHDecay Placing particle at decay point:" << x << "   " << y << "   "  << z << " cm,    " << t<<" ns"<<std::endl; 
+  if(!Silent) edm::LogInfo("RHDecay") << "RHDecay Placing particle at decay point:" << x << "   " << y << "   "  << z << " cm,    " << t<<" ns"<<std::endl; 
 
   if (!fVertex) fVertex = new HepMC::FourVector(x, y, z, t);
   else fVertex->set (x, y, z, t);
