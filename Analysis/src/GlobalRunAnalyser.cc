@@ -180,6 +180,8 @@ class GlobalRunAnalyser : public edm::EDAnalyzer {
   Float_t TimingBX7_;
   Float_t TimingBX8_;
   Float_t TimingBX9_;
+  Float_t TimingTotal_;
+  Float_t TimingFracInCentralFour_;
   
   Float_t VtxX_;
   Float_t VtxY_;
@@ -201,6 +203,9 @@ class GlobalRunAnalyser : public edm::EDAnalyzer {
   bool IncludeDigis_;
   bool IncludeMC_;
   bool IncludeMuons_;
+  bool IncludeDigisOld_;
+  bool WriteHistos_;
+  bool IncludeHPDVeto_;
 
   edm::InputTag DigisTag_;
   edm::InputTag RecHitTag_;
@@ -213,7 +218,14 @@ class GlobalRunAnalyser : public edm::EDAnalyzer {
   int DigiCount_;
   
 
+  Int_t PeakPosition_;
+  Float_t TotalOverTime_;
+  Float_t TimingRightNextNextRight_;
+  Float_t TimingPeakNextNextRight_;
+  Float_t TimingRightNextRight_;
+  Float_t TimingPeakNextRight_;
 
+  edm::Service<TFileService> fs;
 
 
 
@@ -240,22 +252,24 @@ GlobalRunAnalyser::GlobalRunAnalyser(const edm::ParameterSet& iConfig):
   IncludeMC_(iConfig.getUntrackedParameter("IncludeMC",false)),
   IncludeDigis_(iConfig.getUntrackedParameter("IncludeDigis",false)),
   IncludeMuons_(iConfig.getUntrackedParameter("IncludeMuons",false)),
-
+  
 
   DigisTag_(iConfig.getUntrackedParameter("DigisTag",edm::InputTag("hcalDigis"))),
   JetTag_(iConfig.getUntrackedParameter("JetTag",edm::InputTag("iterativeCone5CaloJets"))),
   CaloTowerTag_(iConfig.getUntrackedParameter("CaloToweTag",edm::InputTag("towerMaker"))),
   MCTag_(iConfig.getUntrackedParameter("MCTag",edm::InputTag("source"))),
   MuonTag_(iConfig.getUntrackedParameter("MuonsTag",edm::InputTag("muons"))),
-
+  
+  
   DigiCount_(iConfig.getUntrackedParameter("DigiCount",5)),
-  CenJetEta_(iConfig.getUntrackedParameter("CenJetEta",1.3))
-
+  CenJetEta_(iConfig.getUntrackedParameter("CenJetEta",1.3)),
+  WriteHistos_(iConfig.getUntrackedParameter("WriteHistos",true))
+  
 {
    //now do what ever initialization is needed
 
 
-  edm::Service<TFileService> fs;
+
   
   
 
@@ -340,7 +354,7 @@ GlobalRunAnalyser::GlobalRunAnalyser(const edm::ParameterSet& iConfig):
       EventTree->Branch("SusyPDG",&SusyPDG_,"SusyPDG/I");
     }
 
-  if(IncludeDigis_)
+  if(IncludeDigisOld_)
     {
       EventTree->Branch("TimingFirstBin",&TimingFirstBin_,"TimingFirstBin/F");
       EventTree->Branch("TimingFirst2Bins",&TimingFirst2Bins_,"TimingFirst2Bins/F");
@@ -365,7 +379,54 @@ GlobalRunAnalyser::GlobalRunAnalyser(const edm::ParameterSet& iConfig):
       EventTree->Branch("TimingBX9",&TimingBX9_,"TimingBX9/F");
       EventTree->Branch("TimingFracRightNextRight",&TimingFracRightNextRight_,"TimingFracRightNextRight/F");
       EventTree->Branch("TimingFracPeakNextRight",&TimingFracPeakNextRight_,"TimingFracPeakNextRight/F");
+      EventTree->Branch("TimingFracInCentralFour",&TimingFracInCentralFour_,"TimingFracInCentralFour/F");
+      EventTree->Branch("TimingTotal",&TimingTotal_,"TimingTotal/F");
     }
+
+  if(IncludeDigis_)
+    {
+      EventTree->Branch("TimingFirstBin",&TimingFirstBin_,"TimingFirstBin/F");
+      EventTree->Branch("TimingFirst2Bins",&TimingFirst2Bins_,"TimingFirst2Bins/F");
+      EventTree->Branch("TimingLastBin",&TimingLastBin_,"TimingLastBin/F");
+      EventTree->Branch("TimingLast2Bins",&TimingLast2Bins_,"TimingLast2Bins/F");
+      EventTree->Branch("TimingLeftPeak",&TimingLeftPeak_,"TimingFracLeft/F");
+      EventTree->Branch("TimingRightPeak",&TimingRightPeak_,"TimingRightPeak/F");
+      EventTree->Branch("TimingFracInLeader",&TimingFracInLeader_,"TimingFracInLeader/F");
+      EventTree->Branch("Timingn60",&Timingn60_,"Timingn60/I");
+      EventTree->Branch("Timingn70",&Timingn70_,"Timingn70/I");
+      EventTree->Branch("Timingn80",&Timingn80_,"Timingn80/I");
+      EventTree->Branch("Timingn90",&Timingn90_,"Timingn90/I"); 
+      EventTree->Branch("TimingBX0",&TimingBX0_,"TimingBX0/F");
+      EventTree->Branch("TimingBX1",&TimingBX1_,"TimingBX1/F");
+      EventTree->Branch("TimingBX2",&TimingBX2_,"TimingBX2/F");
+      EventTree->Branch("TimingBX3",&TimingBX3_,"TimingBX3/F");
+      EventTree->Branch("TimingBX4",&TimingBX4_,"TimingBX4/F");
+      EventTree->Branch("TimingBX5",&TimingBX5_,"TimingBX5/F");
+      EventTree->Branch("TimingBX6",&TimingBX6_,"TimingBX6/F");
+      EventTree->Branch("TimingBX7",&TimingBX7_,"TimingBX7/F");
+      EventTree->Branch("TimingBX8",&TimingBX8_,"TimingBX8/F");
+      EventTree->Branch("TimingBX9",&TimingBX9_,"TimingBX9/F");
+      EventTree->Branch("TimingRightNextRight",&TimingRightNextRight_,"TimingRightNextRight/F");
+      EventTree->Branch("TimingPeakNextRight",&TimingPeakNextRight_,"TimingPeakNextRight/F");
+      EventTree->Branch("TimingFracInCentralFour",&TimingFracInCentralFour_,"TimingFracInCentralFour/F");
+      EventTree->Branch("TimingTotal",&TotalOverTime_,"TimingTotal/F");
+
+      EventTree->Branch("TimingPeakPosition", &PeakPosition_,"TimingPeakPosition/I");
+      
+      EventTree->Branch("TimingTotalOverTime",&TotalOverTime_,"TimingTotalOverTime/F");
+      EventTree->Branch("TimingRightNextNextRight",&TimingRightNextNextRight_,"TimingRightNextNextRight/F");
+      EventTree->Branch("TimingPeakNextNextRight",&TimingPeakNextNextRight_,"TimingPeakNextNextRight/F");
+
+
+
+
+
+
+    }
+  
+  
+
+  
 
   if(IncludeMuons_)
     {
@@ -636,8 +697,205 @@ GlobalRunAnalyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    //
    //
 
-       
+
    if(IncludeDigis_)
+     {
+       
+       using namespace reco;
+       
+       
+       float ThisSpectrum[10];
+   
+
+       std::vector<HcalDetId> HBDigisInLeadingCenJet;
+
+       edm::Handle<CaloJetCollection> pCalo;
+       iEvent.getByLabel(JetTag_,pCalo);
+
+
+       for(reco::CaloJetCollection::const_iterator itJet = pCalo->begin(); itJet!=pCalo->end(); itJet++)
+	 {
+	   //  std::cout<<"Considering jet with eta "<<itJet->eta()<<std::endl;
+	   //	   if(fabs(itJet->eta())<1.3)
+	     {
+	       //  std::cout<<"Including jet with E = " << itJet->energy() << std::endl;
+	       std::vector<CaloTowerPtr> CaloTowers = itJet->getCaloConstituents();
+	       for(std::vector<CaloTowerPtr>::const_iterator itCalo = CaloTowers.begin(); itCalo!=CaloTowers.end(); itCalo++)
+		 {
+		   // std::cout<<"Calo tower had energy " << (*itCalo)->hadEnergy()<<std::endl;
+		   const std::vector<DetId>& CaloConst = (*itCalo)->constituents();
+		   for(std::vector<DetId>::const_iterator itConst = CaloConst.begin(); itConst!=CaloConst.end(); itConst++)
+		     {
+		       if(itConst->det()==4)
+			 {
+			   HcalDetId HBId = HcalDetId(*itConst);
+			   HBDigisInLeadingCenJet.push_back(HBId);
+			   //	   std::cout<< "Storing : " << HBId.ieta() << "  " << HBId.iphi() << "  " <<HBId.depth()<<std::endl;
+			 }
+		     }
+		 }
+	     }
+	   
+	 }
+
+
+       for(int k=0; k<10; k++)
+	 {
+	   ThisSpectrum[k]=0;
+	 }
+       
+       double ThisEnergy=0;
+       int JetDigiCount=0;
+
+       Handle<HBHEDigiCollection > pDigi;
+       iEvent.getByLabel(DigisTag_,pDigi);
+
+       std::cout<<"No of digis with energy : " << HBDigisInLeadingCenJet.size()<<std::endl;
+       for(HBHEDigiCollection::const_iterator itDigi=pDigi->begin();itDigi!=pDigi->end(); itDigi++)
+	 {
+	   
+	   for(int i=0; i!=HBDigisInLeadingCenJet.size(); i++)
+	     {
+	       if(itDigi->id()==HBDigisInLeadingCenJet.at(i))
+		 {
+		   std::cout<<"Found HCal Digi : "<<itDigi->id().ieta() << " " <<itDigi->id().iphi()<<std::endl;
+		   for(int j=0; j<10; j++)
+		     {
+		       ThisEnergy+=itDigi->sample(j).nominal_fC();
+		     }
+		   //  if(ThisEnergy>10)
+		     {
+		       for(int j=0; j<10; j++)
+			 {
+		       	  
+			   ThisSpectrum[j]+=itDigi->sample(j).nominal_fC();
+			  
+		     
+			 }
+		     }
+		   JetDigiCount++;
+		 }
+	     }
+
+
+	 }
+
+       std::cout<<"DEBUG Made it here -1"<<std::endl;
+ 
+
+       TotalOverTime_=ThisEnergy;
+       PeakPosition_=0;
+       for(int i=0; i<10; i++)
+	 {
+	   if(ThisSpectrum[i]>ThisSpectrum[PeakPosition_])
+	     PeakPosition_=i;
+	       
+	 }
+   
+
+
+       //Fraction left and right of peak
+       
+       TimingFracInLeader_=ThisSpectrum[PeakPosition_]/TotalOverTime_;
+       
+       TimingLeftPeak_=TimingRightPeak_=0;
+       TimingRightNextRight_= TimingPeakNextRight_=0;
+       TimingRightNextNextRight_=TimingPeakNextNextRight_=0;
+
+       if(ThisSpectrum[PeakPosition_]!=0)
+	 {
+	   if(PeakPosition_!=0)
+	     TimingLeftPeak_=ThisSpectrum[PeakPosition_-1]/ThisSpectrum[PeakPosition_];
+	   
+	   if(PeakPosition_!=9)
+	     TimingRightPeak_=ThisSpectrum[PeakPosition_+1]/ThisSpectrum[PeakPosition_];
+
+	   if((PeakPosition_!=9) && (PeakPosition_!=8) && (PeakPosition_!=7) && (PeakPosition_!=1))
+	     TimingFracInCentralFour_=(ThisSpectrum[PeakPosition_]+ThisSpectrum[PeakPosition_-1]+ThisSpectrum[PeakPosition_+1]+ThisSpectrum[PeakPosition_+2])/TotalOverTime_;
+
+	   if((PeakPosition_!=8) && (PeakPosition_!=9))
+	     {
+	       TimingRightNextRight_=ThisSpectrum[PeakPosition_+2]/ThisSpectrum[PeakPosition_+1];
+	       TimingPeakNextRight_=ThisSpectrum[PeakPosition_+2]/ThisSpectrum[PeakPosition_];
+	     }
+	   
+	   if((PeakPosition_!=7)&&(PeakPosition_!=8)&&(PeakPosition_!=9))
+	     {
+	       TimingRightNextNextRight_=ThisSpectrum[PeakPosition_+3]/ThisSpectrum[PeakPosition_+2];
+	       TimingPeakNextNextRight_=ThisSpectrum[PeakPosition_+3]/ThisSpectrum[PeakPosition_];
+
+
+	     }
+
+	 }
+       
+       
+       //n60, n70, n80, n90
+       
+       Timingn60_ = Timingn70_ = Timingn80_ = Timingn90_ = 0;
+       
+       std::vector<double> SortableSpec;
+       SortableSpec.resize(10);
+       for(int i=0; i<10; i++)
+	 {
+	   SortableSpec[i]=ThisSpectrum[i];
+	 }
+       
+       std::sort(SortableSpec.begin(), SortableSpec.end());
+       
+       double TotalSoFar=0;
+       int counter=0;
+       
+       for(int i=9; i>=0; i--)
+	 {
+	   counter++;
+	   
+	   TotalSoFar+=SortableSpec[i];
+	   if(((TotalSoFar/TotalOverTime_) >= 0.6) && Timingn60_==0) Timingn60_ = counter;
+	   if(((TotalSoFar/TotalOverTime_) >= 0.7) && Timingn70_==0) Timingn70_ = counter;
+	   if(((TotalSoFar/TotalOverTime_) >= 0.8) && Timingn80_==0) Timingn80_ = counter;
+	   if(((TotalSoFar/TotalOverTime_) >= 0.9) && Timingn90_==0) Timingn90_ = counter;
+	 }		
+       
+       TimingBX0_=ThisSpectrum[0];
+       TimingBX1_=ThisSpectrum[1];
+       TimingBX2_=ThisSpectrum[2];
+       TimingBX3_=ThisSpectrum[3];
+       TimingBX4_=ThisSpectrum[4];
+       TimingBX5_=ThisSpectrum[5];
+       TimingBX6_=ThisSpectrum[6];
+       TimingBX7_=ThisSpectrum[7];
+       TimingBX8_=ThisSpectrum[8];	
+       TimingBX9_=ThisSpectrum[9]; 
+  
+       std::cout<<"DEBUG: Made it here"<<std::endl;
+       if(WriteHistos_)
+	 {
+	   std::stringstream HistName;
+	   HistName.str("");
+	   HistName<< "TimingPlotAll"<<iEvent.id().event();
+	   TH1D* TheHist= fs->make<TH1D>(HistName.str().c_str(),HistName.str().c_str(),10,0,10);
+	   for(int j=0; j!=10; j++)
+	     {
+	       TheHist->Fill(j,ThisSpectrum[j]);
+	     }
+	 }
+
+
+
+
+
+
+     }
+
+
+
+
+
+
+
+       
+   if(IncludeDigisOld_)
      {
  
        Handle<HBHEDigiCollection > pIn;
@@ -719,6 +977,9 @@ GlobalRunAnalyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	   if(TopPosition!=9)
 	     TimingRightPeak_=ThisSpectrum[TopPosition+1]/ThisSpectrum[TopPosition];
 
+	   if((TopPosition!=9) && (TopPosition!=8) && (TopPosition!=7) && (TopPosition!=1))
+	     TimingFracInCentralFour_=(ThisSpectrum[TopPosition]+ThisSpectrum[TopPosition-1]+ThisSpectrum[TopPosition+1]+ThisSpectrum[TopPosition+2])/TotalOverTime;
+
 	   if(TopPosition!=8)
 	     {
 	       TimingFracRightNextRight_=ThisSpectrum[TopPosition+2]/ThisSpectrum[TopPosition+1];
@@ -764,10 +1025,18 @@ GlobalRunAnalyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
        TimingBX7_=ThisSpectrum[7];
        TimingBX8_=ThisSpectrum[8];	
        TimingBX9_=ThisSpectrum[9]; 
+       TimingTotal_=TotalOverTime;
+       
      }
 
    
+   if(IncludeHPDVeto_)
+     {
 
+
+
+
+     }
 
 
 
