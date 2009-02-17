@@ -1,0 +1,10 @@
+# Use the RHadronFilter code
+
+module rHadronFilter = RHadronFilter {
+#  InputTag TriggerResultsTag = TriggerResults::HLT
+#  string HLTPath = "HLTStoppedHSCPPath"
+   untracked double JetThreshold = 20.
+   untracked InputTag CentralJets = hltL1extraParticles:Central
+   untracked InputTag TauJets = hltL1extraParticles:Tau
+}
+

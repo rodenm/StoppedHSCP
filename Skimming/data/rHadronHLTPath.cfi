@@ -1,0 +1,10 @@
+# Use the simple HLT filter
+
+module rHadronHLTPath = hltHighLevel  from "HLTrigger/HLTfilters/data/hltHighLevel.cfi"
+
+#replace rHadronHLTPath.TriggerResultsTag = TriggerResults::HLT
+#replace rHadronHLTPath.TriggerResultsTag = TriggerResults::FU
+
+#replace rHadronHLTPath.HLTPaths = { "HLTSingleJetNoBeam" }
+#replace rHadronHLTPath.HLTPaths = { "HLT_L1Jet15" }
+replace rHadronHLTPath.HLTPaths = { "HLTStoppedHSCPPath" }
