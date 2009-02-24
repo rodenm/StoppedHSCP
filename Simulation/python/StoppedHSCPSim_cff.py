@@ -67,7 +67,7 @@ VtxSmeared = cms.EDFilter("RHDecay",
     MaxZ = cms.untracked.double(10000),
     MinPhi = cms.untracked.double(0),
     MaxPhi = cms.untracked.double(6.28),
-    OperationMode = cms.untracked.int32(0),
+    OperationMode = cms.untracked.int32(1),
     RDivs=cms.untracked.int32(200),
     ZDivs=cms.untracked.int32(200)
 )

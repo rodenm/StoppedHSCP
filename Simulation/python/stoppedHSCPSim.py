@@ -24,7 +24,7 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 process.load('Configuration/EventContent/EventContent_cff')
 
 process.configurationMetadata = cms.untracked.PSet(
-    version = cms.untracked.string('$Revision: 1.2 $'),
+    version = cms.untracked.string('$Revision: 1.3 $'),
     annotation = cms.untracked.string('TTbar.cfi nevts:1'),
     name = cms.untracked.string('PyReleaseValidation')
 )
@@ -59,7 +59,7 @@ process.output = cms.OutputModule("PoolOutputModule",
 # Additional output definition
 
 # Other statements
-process.GlobalTag.globaltag = 'IDEAL_V9::All'
+process.GlobalTag.globaltag = 'STARTUP_V8::All'
 
 process.load('L1Trigger/Configuration/L1StartupConfig_cff')
 process.load("L1TriggerConfig.L1GtConfigProducers.L1GtConfig_cff")
