@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ver="v2"
+ver="v3"
 cmssw_ver="CMSSW_2_2_3"
 hscp_tag="HEAD"
 job=$1
