@@ -5,14 +5,14 @@ import FWCore.ParameterSet.Config as cms
 # this version has no filters for optimisation purposes etc
 
 # begin sequence
-hltGetRaw = cms.EDAnalyzer( "HLTGetRaw",
-    RawDataCollection = cms.InputTag( "source" )
-)
-hltTriggerType = cms.EDFilter( "TriggerTypeFilter",
-    InputLabel = cms.string( "source" ),
-    TriggerFedId = cms.int32( 812 ),
-    SelectedTriggerType = cms.int32( 1 )
-)
+#hltGetRaw = cms.EDAnalyzer( "HLTGetRaw",
+#    RawDataCollection = cms.InputTag( "source" )
+#)
+#hltTriggerType = cms.EDFilter( "TriggerTypeFilter",
+#    InputLabel = cms.string( "source" ),
+#    TriggerFedId = cms.int32( 812 ),
+#    SelectedTriggerType = cms.int32( 1 )
+#)
 hltGtDigis = cms.EDProducer( "L1GlobalTriggerRawToDigi",
     DaqGtInputTag = cms.InputTag( "source" ),
     DaqGtFedId = cms.untracked.int32( 813 ),
@@ -53,11 +53,11 @@ hltL1extraParticles = cms.EDProducer( "L1ExtraParticlesProd",
     centralBxOnly = cms.bool( True )
 )
 hltOfflineBeamSpot = cms.EDProducer( "BeamSpotProducer" )
-hltGetRaw = cms.EDAnalyzer( "HLTGetRaw",
-    RawDataCollection = cms.InputTag( "source" )
-)
+#hltGetRaw = cms.EDAnalyzer( "HLTGetRaw",
+#    RawDataCollection = cms.InputTag( "source" )
+#)
 
-HLTBeginSequence = cms.Sequence( hltGetRaw + hltTriggerType + hltGtDigis + hltGctDigis + hltL1GtObjectMap + hltL1extraParticles + hltOfflineBeamSpot )
+HLTBeginSequence = cms.Sequence( hltGtDigis + hltGctDigis + hltL1GtObjectMap + hltL1extraParticles + hltOfflineBeamSpot )
 
 hltL1SeedHscp = cms.EDFilter( "HLTLevel1GTSeed",
     L1TechTriggerSeeding = cms.bool( False ),
