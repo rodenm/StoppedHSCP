@@ -5,99 +5,153 @@
 //
 //------------------------------------------------
 
-
+#include <cmath>
 #include <iostream>
+#include <vector>
 
+#include "TObject.h"
+#include "TFile.h"
+#include "TTree.h"
 #include "TH1D.h"
+#include "TH2D.h"
 #include "TRandom.h"
 #include "TGraph.h"
 #include "TCanvas.h"
 
+class Experiment { //: public TObject {
+public:
+  Experiment();
+  ~Experiment();
+  // particle parameters
+  double mass;
+  double crossSection;
+  double lifetime;
+  // experiment parameters
+  double lumi;
+  double bxStruct;
+  double runningTime;
+  double bgRate;
+  double signalEff;
+  // experiment outcomes
+  double interfillSig;
+  double beamgapSig;
+  double combinedSig;
+};
+
+Experiment::Experiment() :
+  mass(0.),
+  crossSection(0.),
+  lifetime(0.),
+  lumi(0.),
+  bxStruct(0.),
+  runningTime(0.),
+  bgRate(0.),
+  signalEff(0.),
+  interfillSig(0.),
+  beamgapSig(0.),
+  combinedSig(0.)
+  { }
+
+Experiment::~Experiment() { }
+
+
 class ToyStoppedHSCP {
 public:
 
-  ToyStoppedHSCP();
+  ToyStoppedHSCP(char * fname);
   ~ToyStoppedHSCP();
 
   // setup bunch structure
-  void setupBunches(int bx_struct);  // use 2808 for now
+  void setupBunchStructure(int bx_struct);  // use 2808 for now
 
-  // one experiment
-  void setLumi(double l) { lumi = l; }
-  void setCrossSection(double xs) { xsection = xs; }
-  void setLifetime(double l) { lifetime = l; }
-  void setRunningTime(int nd) { days = nd; }
-  void runOnce();
+  // one experiment and add to vector
+  void run(Experiment exp);
 
-  // multiple experiments
-  void readParams();
+  // number of experiments
+  unsigned nExperiments() { return experiments_.size(); }
 
-  void makeSigGraphs(int nlifetimes, int npoints);
+  // get vector of experiments
+  std::vector<Experiment> getExperiments() { return experiments_; }
 
+  // get experiment
+  Experiment getExperiment(unsigned i) { 
+    if (i<experiments_.size()) return experiments_.at(i);
+    else return Experiment();
+  }
 
-  // plot stuff
-  void plotSig();
+  // get plot of significance as fn of running time for given mass/lifetime
+  // expt : 0 = combined, 1 = beam gap, 2 = interfill
+  TGraph * getLifetimeCurve(double mass, double lifetime, unsigned expt);
 
+  // get plot of significance as fn of mass for a given lifetime/running time
+  // expt : 0 = combined, 1 = beam gap, 2 = interfill
+  TGraph * getMassCurve(double runtime, double lifetime, unsigned expt);
+
+  // get 2D plot of significance as fn of mass/lifetime for a given running time
+  // expt : 0 = combined, 1 = beam gap, 2 = interfill
+  void get2DMassLifetimePlot(double runtime, unsigned expt, TH2D *);
 
 private:
 
   // bunch structure
   static const unsigned bxs = 3564; //  = 3564;
-  int bx_struct;    // LHC filling pattern 
+  int bunchStruct;    // LHC filling pattern 
   double bctime;    //  = 25e-9 bunch crossing time
   unsigned bxs_on;
   unsigned bxs_off;
   unsigned char beam[3564];
 
-  // Single experiment parameters
-  double lumi;
-  double xsection;
-  // m~g 200 GeV, 1e-32
-  // m~g 300 GeV, 1e-33
-  // m~g 500 GeV, 1e-34
-  // m~g 900 GeV, 0.5e-36
-  // m~g 1200 GeV, 1e-36 
-  double lifetime;
-  int days;
+//   TH1D* hdecays;
+//   TH1D* hdecaysReg;
+//   TH1D* hperday;
+//   TH1D* hinday;
 
-  // Single experiment results
-  double interFillSignificance;
-  double bunchGapSignificance;
-  double combinedSignificance;
-
-  TH1D* hdecays;
-  TH1D* hdecaysReg;
-  TH1D* hperday;
-  TH1D* hinday;
+  // output file
+  TFile* tfile_;
   
-  // Multiple experiment parameters
-  double lifetimes[10];
-  double ndays[10];
+  // TTree
+  TTree* ttree_;
 
-  // graphs
-  TGraph* cosmicSigGraph[10];
-  TGraph* beamSigGraph[10];
+  // single experiment result
+  //  Experiment expt_;
+
+  // Multiple experiment parameters
+  std::vector<Experiment> experiments_;
 
 };
 
 
-ToyStoppedHSCP::ToyStoppedHSCP() :
+ToyStoppedHSCP::ToyStoppedHSCP(char * fname) :
   bxs_on(0),
   bxs_off(0),
-  bx_struct(2808),
+  bunchStruct(2808),
   bctime(25e-9)
 {
+
+  // open output file
+  tfile_ = new TFile(fname,"RECREATE");
+
+  // create a TTree
+  ttree_ = new TTree("T","experiment results");
+
+  // create one branch with all information from the stucture
+  //  tree->Branch("expts",&expt_,
+
+
+  setupBunchStructure(2808);
 
   // setup BX structure histograms - TODO
 
   // setup single exp histograms
-  TH1D::SetDefaultSumw2 (true);
-  hdecays = new TH1D("hdecays","Number of Reconstructable Stopped Gluinos", bxs, 0, bxs);//days*24,0,days);
+//     hdecays = new TH1D("hdecays","Number of Reconstructable Stopped Gluinos", bxs, 0, bxs);//days*24,0,days);
   
-  hdecaysReg = new TH1D("hdecaysReg","Number of Reconstructable Stopped Gluinos", bxs, 0, bxs);//cycle);//days*24,0,days);
-  hperday = new TH1D("hperday","Number of Reconstructed Stopped Gluinos", days,0,days);
-  hinday = new TH1D("hinday", "Number of Reconstructed Stopped Gluinos", 100, 0, 24*3600);
+//   hdecaysReg = new TH1D("hdecaysReg","Number of Reconstructable Stopped Gluinos", bxs, 0, bxs);//cycle);//days*24,0,days);
+//   hperday = new TH1D("hperday","Number of Reconstructed Stopped Gluinos", days,0,days);
+//   hinday = new TH1D("hinday", "Number of Reconstructed Stopped Gluinos", 100, 0, 24*3600);
   // hperday->SetMinimum(0);
+
+  //  TH1D::SetDefaultSumw2 (true);
+
 
 }
 
@@ -106,12 +160,14 @@ ToyStoppedHSCP::~ToyStoppedHSCP() {
 }
 
 
-void ToyStoppedHSCP::setupBunches(int bx_struct) {
+void ToyStoppedHSCP::setupBunchStructure(int bx_struct) {
 
   // set up bunch structure
   int i, j, k, l, m, counter = 0;
 
-  if (bx_struct == 156) {
+  bunchStruct = bx_struct;
+
+  if (bunchStruct == 156) {
     
     for (i=0; i<4; i++) {
       for (j=0; j<3; j++) {
@@ -139,7 +195,7 @@ void ToyStoppedHSCP::setupBunches(int bx_struct) {
     }
     
   }
-  else if (bx_struct == 2808) {
+  else if (bunchStruct == 2808) {
     for (i = 1; i <= 4; i++) {
       
       for (j = 1; j <= 3; j++) {
@@ -171,8 +227,8 @@ void ToyStoppedHSCP::setupBunches(int bx_struct) {
       bxs_off++;
     }
   }
-  
-  cout << "LHC bunch scenario : " << bx_struct << "x" << bx_struct << endl;
+
+  cout << "LHC bunch scenario : " << bunchStruct << "x" << bunchStruct << endl;
   cout << "  Bunches on  : " << bxs_on << endl;
   cout << "  Bunches off : " << bxs_off << endl;
   cout << "  Total       : " << counter << endl;
@@ -181,11 +237,16 @@ void ToyStoppedHSCP::setupBunches(int bx_struct) {
   
 }
 
-void ToyStoppedHSCP::runOnce() {
+void ToyStoppedHSCP::run(Experiment exp) {
 
-  double bg_per_day = 43.2;    // background rate per day
-  double efficiency = 0.16    // stopping efficiency from Fedor???
-                    * 0.08;  // online+offline eff (wrt all stopped particles)
+  if (exp.bxStruct != bunchStruct) setupBunchStructure(exp.bxStruct);
+
+  double lumi = exp.lumi;
+  double xsection = exp.crossSection;
+  double lifetime = exp.lifetime;
+  double days = exp.runningTime;
+  double bg_per_day = exp.bgRate * 60 * 60 * 24;
+  double efficiency = exp.signalEff;
 
   cout << " Stopped HSCP Toy Experiment" << endl;
   cout << "  Lumi            = " << lumi << endl;
@@ -213,10 +274,10 @@ void ToyStoppedHSCP::runOnce() {
   double tstep = bctime; //0.1 / (lumi * xsection * efficiency);
   double nDecays = lumi * tstep * xsection * efficiency;
   
-  hdecays->Reset();
-  hdecaysReg->Reset();
-  hperday->Reset();
-  hinday->Reset();
+//   hdecays->Reset();
+//   hdecaysReg->Reset();
+//   hperday->Reset();
+//   hinday->Reset();
 
   TRandom rndm;
   
@@ -242,7 +303,7 @@ void ToyStoppedHSCP::runOnce() {
 	  unsigned long orbit = rndm.Integer(nOrbits);
 	  int day = rndm.Integer(days);
 	  
-	  hdecays->Fill (cycletime*bxs, 1./scale);
+// 	  hdecays->Fill (cycletime*bxs, 1./scale);
 	  
 	  //      if (cycletime > dutycycle) {
 	  // at t==0, counter == 0, so rounding is correct:
@@ -256,15 +317,15 @@ void ToyStoppedHSCP::runOnce() {
 	  if (remainder < nOrbits && !beam[ int(cycletime * bxs) ]) {
 	    s_beam_counts+= 1/scale;
 	    
-	    hdecaysReg->Fill (cycletime*bxs, 1./scale);
-	    hperday->Fill (quotient+day, 1./scale); 
-	    hinday->Fill(remainder*bxs*bctime, 1./scale);
+// 	    hdecaysReg->Fill (cycletime*bxs, 1./scale);
+// 	    hperday->Fill (quotient+day, 1./scale); 
+// 	    hinday->Fill(remainder*bxs*bctime, 1./scale);
 	  }
 	  else if (remainder > nOrbits ) {
 	    s_cosmic_counts+= 1/scale;
 	    
-	    hperday->Fill (quotient+day, 1./scale);
-	    hinday->Fill(remainder*bxs*bctime, 1./scale);
+// 	    hperday->Fill (quotient+day, 1./scale);
+// 	    hinday->Fill(remainder*bxs*bctime, 1./scale);
 	  }
 	}
       }
@@ -288,19 +349,19 @@ void ToyStoppedHSCP::runOnce() {
 	
 	// fill
 	
-	hdecays->Fill(bunch, 1./bgscale);
+// 	hdecays->Fill(bunch, 1./bgscale);
 	if (orbit <= nOrbits && !beam[ bunch ]) {
 	  b_beam_counts+=1./bgscale;
 	  
-	  hdecaysReg->Fill (bunch, 1./bgscale);
-	  hperday->Fill (i, 1./bgscale); 
-	  hinday->Fill((bunch+((double)orbit)*bxs)*bctime, 1./bgscale);
+// 	  hdecaysReg->Fill (bunch, 1./bgscale);
+// 	  hperday->Fill (i, 1./bgscale); 
+// 	  hinday->Fill((bunch+((double)orbit)*bxs)*bctime, 1./bgscale);
 	}
 	else if (orbit > nOrbits ) {
 	  b_cosmic_counts+=1./bgscale;
 	  
-	  hperday->Fill (i, 1./bgscale);
-	  hinday->Fill((bunch+((double)orbit)*bxs)*bctime, 1./bgscale);
+// 	  hperday->Fill (i, 1./bgscale);
+// 	  hinday->Fill((bunch+((double)orbit)*bxs)*bctime, 1./bgscale);
 	}
       }
     }
@@ -314,130 +375,105 @@ void ToyStoppedHSCP::runOnce() {
   double expected_cosmic = bg_per_day * (nOrbitsOff)/(nOrbits+nOrbitsOff)*days;
   double expected_total = bg_per_day * (nOrbits*bxs_off/bxs + nOrbitsOff)/(nOrbits+nOrbitsOff)*days;
   double expected_beam = bg_per_day * (nOrbits*bxs_off/bxs)/(nOrbits+nOrbitsOff)*days;
+
+  exp.combinedSig = (s_total_counts)/sqrt(expected_total);
+  exp.beamgapSig = (s_beam_counts)/sqrt(expected_beam);
+  exp.interfillSig = (s_cosmic_counts)/sqrt(expected_cosmic);
+
+  experiments_.push_back(exp);
+
   
-  cout << "Combined experiment" << endl;
-  //  cout << "  Total counts: " << total_counts << endl;
-  //  cout << "  Expected N bg = " << expected_total << endl;
-  //  cout << "  sigma:   " << sqrt(expected_total) << endl;
-  cout << "  Experiment sig : " << (total_counts - expected_total)/sqrt(expected_total) << endl;
-  cout << "  Expected sig   : " << (s_total_counts)/sqrt(expected_total) << endl << endl;
-  combinedSignificance = (s_total_counts)/sqrt(expected_total);
+//   cout << "Combined experiment" << endl;
+//   //  cout << "  Total counts: " << total_counts << endl;
+//   //  cout << "  Expected N bg = " << expected_total << endl;
+//   //  cout << "  sigma:   " << sqrt(expected_total) << endl;
+//   cout << "  Experiment sig  : " << (total_counts - expected_total)/sqrt(expected_total) << endl;
+//   cout << "  Expected sig    : " << (s_total_counts)/sqrt(expected_total) << endl << endl;
 
-  cout << "Beam experiment" << endl;
-  cout << "  N signal      = " << s_beam_counts << endl;
-  cout << "  N bg          = " << b_beam_counts << endl;
-  //  cout << "  Expected N bg = " << expected_beam << endl;
-  //  cout << "  sigma:   " << sqrt(expected_beam) << endl;
-  cout << "  Experiment sig : " << (beam_counts - expected_beam)/sqrt(expected_beam) << endl;
-  cout << "  Expected sig   : " << (s_beam_counts)/sqrt(expected_beam) << endl << endl;
-  bunchGapSignificance = (s_beam_counts)/sqrt(expected_beam);
+//   cout << "Beam experiment" << endl;
+//   cout << "  N signal       : " << s_beam_counts << endl;
+//   cout << "  N bg           : " << b_beam_counts << endl;
+//   cout << "  Expected N bg  : " << expected_beam << endl;
+//   cout << "  Experiment sig : " << (beam_counts - expected_beam)/sqrt(expected_beam) << endl;
+//   cout << "  Expected sig   : " << (s_beam_counts)/sqrt(expected_beam) << endl << endl;
   
-  cout << "Cosmic experiment" << endl;
-  cout << "  N signal      = " << s_cosmic_counts << endl;
-  cout << "  N bg          = " << b_cosmic_counts << endl;
-  //  cout << "  Expected N bg = " << expected_cosmic << endl;
-  //  cout << "  sigma:   " << sqrt(expected_cosmic) << endl;
-  cout << "  Experiment sig : " << (cosmic_counts - expected_cosmic)/sqrt(expected_cosmic) << endl;
-  cout << "  Expected sig   : " << (s_cosmic_counts)/sqrt(expected_cosmic) << endl << endl;
-  interFillSignificance = (s_cosmic_counts)/sqrt(expected_cosmic);
+//   cout << "Cosmic experiment" << endl;
+//   cout << "  N signal       : " << s_cosmic_counts << endl;
+//   cout << "  N bg           : " << b_cosmic_counts << endl;
+//   cout << "  Expected N bg  : " << expected_cosmic << endl;
+//   cout << "  Experiment sig : " << (cosmic_counts - expected_cosmic)/sqrt(expected_cosmic) << endl;
+//   cout << "  Expected sig   : " << (s_cosmic_counts)/sqrt(expected_cosmic) << endl << endl;
  
-  cout << endl << endl;
+//   cout << endl << endl;
  
 }
 
 
-// method to setup for multiple experiments
-void ToyStoppedHSCP::readParams() {
+// find all experiments matching mass and lifetime
+// and plot significance as a fn of running time
+// expt 0 = combined, 1 = beamgap, 2 = interfill
+TGraph * ToyStoppedHSCP::getLifetimeCurve(double mass, double lifetime, unsigned expt) {
 
-  // TODO - read all this from file
+  double xpoints[100];
+  double ypoints[100];
+  unsigned point=0;
 
-  setupBunches(2808);
-  setCrossSection(0.5e-33);
-
-  setLumi(1e32);
-
-  lifetimes[0] = 1.E-6;
-  lifetimes[1] = 1.E-3;
-  lifetimes[2] = 3600.;
-  lifetimes[3] = 43200.;
-  lifetimes[4] = 86400.;
-  lifetimes[5] = 604800.;
-
-  ndays[0] = 3;
-  ndays[1] = 7;
-  ndays[2] = 14;
-  ndays[3] = 30;
-  ndays[4] = 90;
-  ndays[5] = 360;
-
-}
-
-void ToyStoppedHSCP::makeSigGraphs(int nlifetimes, int npoints) {
-
-  int nc = nlifetimes;
-  if (nc > 10) nc = 10;
-  int np = npoints;
-  if (np > 10) np = 10;
-
-  // generic params
-  readParams();
-
-  for (int i=0; i<nc; ++i) {
-
-    double cSigs[10];
-    double cosmicSigs[10];
-    double beamSigs[10];
-
-    for (int j=0; j<np; ++j) {
-
-      setLifetime(lifetimes[i]);
-      setRunningTime(ndays[j]);
-      runOnce();
-      
-      cSigs[j] = combinedSignificance;
-      cosmicSigs[j] = interFillSignificance;
-      beamSigs[j] = bunchGapSignificance;
-      
-    }
-
-    cosmicSigGraph[i] = new TGraph(npoints, ndays, cosmicSigs);
-    beamSigGraph[i] = new TGraph(npoints, ndays, beamSigs);
-
-  }  
-
-}
-
-
-void ToyStoppedHSCP::plotSig() {
-
-  TCanvas* c = new TCanvas("canvas");
-
-
-  // beam plots
-
-  for (int i=0; i<10; ++i) {   
-    if (beamSigGraph[i] != 0) {
-      beamSigGraph[i]->SetLineColor(i);
-      if (i==0) beamSigGraph[i]->Draw("AC");
-      else beamSigGraph[i]->Draw("C");
+  for (unsigned i=0; i<getExperiments().size(); ++i) {
+    if (getExperiment(i).mass == mass && 
+	getExperiment(i).lifetime == lifetime) {
+      xpoints[point] = getExperiment(i).runningTime;
+      if (expt == 0) ypoints[point]  = getExperiment(i).combinedSig;
+      else if (expt == 1) ypoints[point]  = getExperiment(i).beamgapSig;
+      else if (expt == 2) ypoints[point]  = getExperiment(i).interfillSig;
+      else ypoints[point] = 0.;
+      ++point;
     }
   }
 
-  c->Update();
-  c->Print("beamSignificance.png");
+  return new TGraph(point, xpoints, ypoints);
 
+}
+// find all experiments matching mass and lifetime
+// and plot significance as a fn of running time
+// expt 0 = combined, 1 = beamgap, 2 = interfill
+TGraph * ToyStoppedHSCP::getMassCurve(double runtime, double lifetime, unsigned expt) {
 
-  // cosmic plots
+  double xpoints[100];
+  double ypoints[100];
+  unsigned point=0;
 
-  for (int i=0; i<10; ++i) {
-    if (cosmicSigGraph[i] != 0) {
-      cosmicSigGraph[i]->SetLineColor(i);
-      if (i==0) cosmicSigGraph[i]->Draw("AC");
-      else cosmicSigGraph[i]->Draw("C");
+  for (unsigned i=0; i<getExperiments().size(); ++i) {
+    if (getExperiment(i).runningTime == runtime && 
+	getExperiment(i).lifetime == lifetime) {
+      xpoints[point] = getExperiment(i).mass;
+      if (expt == 0) ypoints[point]  = getExperiment(i).combinedSig;
+      else if (expt == 1) ypoints[point]  = getExperiment(i).beamgapSig;
+      else if (expt == 2) ypoints[point]  = getExperiment(i).interfillSig;
+      else ypoints[point] = 0.;
+      ++point;
     }
   }
 
-  c->Update();
-  c->Print("cosmicSignificance.png");
+  return new TGraph(point, xpoints, ypoints);
+
+}
+
+
+
+// get a histogram showing significance as fun of mass/lifetime
+// after a given running time
+void ToyStoppedHSCP::get2DMassLifetimePlot(double runtime, unsigned expt, TH2D * hist) {
+
+  for (unsigned i=0; i<getExperiments().size(); ++i) {
+    if (getExperiment(i).runningTime == runtime) {
+      double x = getExperiment(i).mass;
+      double y = getExperiment(i).lifetime;
+      double sig = getExperiment(i).beamgapSig;
+//       if (expt == 0) sig = getExperiment(i).combinedSig;
+//       else if (expt == 1) sig = getExperiment(i).beamgapSig;
+//       else if (expt == 2) sig = getExperiment(i).interfillSig;
+      hist->Fill(x, y, sig);
+    }
+  }
 
 }
