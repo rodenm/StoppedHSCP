@@ -5,7 +5,7 @@
   ToyStoppedHSCP* toy = new ToyStoppedHSCP("Results.root");
   
   // stable parameters
-  double bxstruct = 2808;
+  double bxstruct = 156;
   double lumi = 1e32;
   double bgrate = 0.00039;
   
@@ -52,7 +52,7 @@
   }  
   
   // loop over running time
-  for (unsigned nd=0; nd<7; ++nd) {
+  for (unsigned nd=0; nd<5; ++nd) {
     
     // loop over liftime
     for (unsigned l=0; l<7; ++l) {

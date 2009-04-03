@@ -102,12 +102,14 @@ public:
 private:
 
   // bunch structure
-  static const unsigned bxs = 3564; //  = 3564;
+  static const unsigned nBuckets_ = 3564; //  = 3564;
   int bunchStruct;    // LHC filling pattern 
   double bctime;    //  = 25e-9 bunch crossing time
   unsigned bxs_on;
   unsigned bxs_off;
   unsigned char beam[3564];
+
+  TH1D* hBxStruct_;
 
 //   TH1D* hdecays;
 //   TH1D* hdecaysReg;
@@ -132,43 +134,49 @@ private:
 ToyStoppedHSCP::ToyStoppedHSCP(char * fname) :
   bxs_on(0),
   bxs_off(0),
-  bunchStruct(2808),
+  bunchStruct(156),
   bctime(25e-9)
 {
 
   // open output file
   tfile_ = new TFile(fname,"RECREATE");
 
-  // create a TTree
+  // seutp TTree
   ttree_ = new TTree("T","experiment results");
-
+  
   // create one branch with all information from the stucture
   //  tree->Branch("expts",&expt_,
 
 
-  setupBunchStructure(2808);
 
-  // setup BX structure histograms - TODO
+  // setup histograms
+  hBxStruct_ = new TH1D("bxStruct", "Filled BX", nBuckets_, 0., (double)nBuckets_);
 
   // setup single exp histograms
-//     hdecays = new TH1D("hdecays","Number of Reconstructable Stopped Gluinos", bxs, 0, bxs);//days*24,0,days);
+//     hdecays = new TH1D("hdecays","Number of Reconstructable Stopped Gluinos", nBuckets_, 0, nBuckets_);//days*24,0,days);
   
-//   hdecaysReg = new TH1D("hdecaysReg","Number of Reconstructable Stopped Gluinos", bxs, 0, bxs);//cycle);//days*24,0,days);
+//   hdecaysReg = new TH1D("hdecaysReg","Number of Reconstructable Stopped Gluinos", nBuckets_, 0, nBuckets_);//cycle);//days*24,0,days);
 //   hperday = new TH1D("hperday","Number of Reconstructed Stopped Gluinos", days,0,days);
 //   hinday = new TH1D("hinday", "Number of Reconstructed Stopped Gluinos", 100, 0, 24*3600);
   // hperday->SetMinimum(0);
 
-  //  TH1D::SetDefaultSumw2 (true);
+  TH1D::SetDefaultSumw2 (true);
 
+
+  setupBunchStructure(bunchStruct);
 
 }
 
 ToyStoppedHSCP::~ToyStoppedHSCP() {
 
+  tfile_->Close();
+
 }
 
 
 void ToyStoppedHSCP::setupBunchStructure(int bx_struct) {
+
+  hBxStruct_->Reset();
 
   // set up bunch structure
   int i, j, k, l, m, counter = 0;
@@ -181,7 +189,7 @@ void ToyStoppedHSCP::setupBunchStructure(int bx_struct) {
       for (j=0; j<3; j++) {
 	int n=12;
 	if (i==0 && j==0) n=8;
-	if (i!=0 && j==2) n=16;
+	if (j==2) n=16;
 	for (k=0; k<n; k++) {
 	  beam[counter++]=1;
 	  bxs_on++;
@@ -241,8 +249,11 @@ void ToyStoppedHSCP::setupBunchStructure(int bx_struct) {
   cout << "  Bunches off : " << bxs_off << endl;
   cout << "  Total       : " << counter << endl;
 
-  // fill BX structure histogram - TODO
-  
+  // fill BX struct histogram
+  for (unsigned a=0; a<nBuckets_; ++a) {
+    if (beam[a] == 1) hBxStruct_->Fill(a);
+  }
+
 }
 
 void ToyStoppedHSCP::run(Experiment exp) {
@@ -279,7 +290,7 @@ void ToyStoppedHSCP::run(Experiment exp) {
   double scale = 1000;   // increase these parameters to increase precision
   double bgscale = 100;  // at the cost of running time.  100 or 1000 are good numbers to try
 
-  double cycle = bctime*bxs;  // orbit length
+  double cycle = bctime*nBuckets_;  // orbit length
 
   double tstep = bctime; //0.1 / (lumi * xsection * efficiency);
   double nDecays = lumi * tstep * xsection * efficiency;
@@ -300,7 +311,7 @@ void ToyStoppedHSCP::run(Experiment exp) {
   double b_total_counts = 0, b_beam_counts = 0, b_cosmic_counts = 0;
   
   if (signal_on)
-    for (t = 0, n = 0; n < bxs && signal_on; t += tstep, n++) {
+    for (t = 0, n = 0; n < nBuckets_ && signal_on; t += tstep, n++) {
       if (beam[n]) {
 	int nRandomDecays = scale*nDecays*nOrbits*days; //rndm.Poisson;
 	for (int ig = 0; ig < nRandomDecays ; ig++) {
@@ -313,7 +324,7 @@ void ToyStoppedHSCP::run(Experiment exp) {
 	  unsigned long orbit = rndm.Integer(nOrbits);
 	  int day = rndm.Integer(days);
 	  
-// 	  hdecays->Fill (cycletime*bxs, 1./scale);
+// 	  hdecays->Fill (cycletime*nBuckets_, 1./scale);
 	  
 	  //      if (cycletime > dutycycle) {
 	  // at t==0, counter == 0, so rounding is correct:
@@ -324,12 +335,12 @@ void ToyStoppedHSCP::run(Experiment exp) {
 	  double quotient = (cycles + orbit)/(nOrbits+nOrbitsOff);
 	  double remainder = (cycles + orbit) - floor(quotient)*(nOrbits+nOrbitsOff);
 	  if (quotient+day >= days) continue;
-	  if (remainder < nOrbits && !beam[ int(cycletime * bxs) ]) {
+	  if (remainder < nOrbits && !beam[ int(cycletime * nBuckets_) ]) {
 	    s_beam_counts+= 1/scale;
 	    
-// 	    hdecaysReg->Fill (cycletime*bxs, 1./scale);
+// 	    hdecaysReg->Fill (cycletime*nBuckets_, 1./scale);
 // 	    hperday->Fill (quotient+day, 1./scale); 
-// 	    hinday->Fill(remainder*bxs*bctime, 1./scale);
+// 	    hinday->Fill(remainder*nBuckets_*bctime, 1./scale);
 	  }
 	  else if (remainder > nOrbits ) {
 	    if (window < 0 || (remainder - nOrbits)*cycle < window) {
@@ -337,7 +348,7 @@ void ToyStoppedHSCP::run(Experiment exp) {
 	    }
 	    
 // 	    hperday->Fill (quotient+day, 1./scale);
-// 	    hinday->Fill(remainder*bxs*bctime, 1./scale);
+// 	    hinday->Fill(remainder*nBuckets_*bctime, 1./scale);
 	  }
 	}
       }
@@ -357,7 +368,7 @@ void ToyStoppedHSCP::run(Experiment exp) {
 	
 	// pick a bin
 	
-	unsigned int bunch = rndm.Integer(bxs);
+	unsigned int bunch = rndm.Integer(nBuckets_);
 	
 	// fill
 	
@@ -367,7 +378,7 @@ void ToyStoppedHSCP::run(Experiment exp) {
 	  
 // 	  hdecaysReg->Fill (bunch, 1./bgscale);
 // 	  hperday->Fill (i, 1./bgscale); 
-// 	  hinday->Fill((bunch+((double)orbit)*bxs)*bctime, 1./bgscale);
+// 	  hinday->Fill((bunch+((double)orbit)*nBuckets_)*bctime, 1./bgscale);
 	}
 	else if (orbit > nOrbits ) {
 	  if (window < 0 || (orbit - nOrbits)*cycle < window) {
@@ -375,7 +386,7 @@ void ToyStoppedHSCP::run(Experiment exp) {
 	  }
 	  
 // 	  hperday->Fill (i, 1./bgscale);
-// 	  hinday->Fill((bunch+((double)orbit)*bxs)*bctime, 1./bgscale);
+// 	  hinday->Fill((bunch+((double)orbit)*nBuckets_)*bctime, 1./bgscale);
 	}
       }
     }
@@ -391,9 +402,9 @@ void ToyStoppedHSCP::run(Experiment exp) {
   
   //  double expected_cosmic = bg_per_day * (nOrbitsOff)/(nOrbits+nOrbitsOff)*days;
   double expected_cosmic = bg_per_day * (nOrbitsOff)*frac_of_cosmics/(nOrbits+nOrbitsOff)*days;
-  //  double expected_total = bg_per_day * (nOrbits*bxs_off/bxs + nOrbitsOff)/(nOrbits+nOrbitsOff)*days;
-  double expected_total = bg_per_day * (nOrbits*bxs_off/bxs + nOrbitsOff*frac_of_cosmics)/(nOrbits+nOrbitsOff)*days;
-  double expected_beam = bg_per_day * (nOrbits*bxs_off/bxs)/(nOrbits+nOrbitsOff)*days;
+  //  double expected_total = bg_per_day * (nOrbits*bxs_off/nBuckets_ + nOrbitsOff)/(nOrbits+nOrbitsOff)*days;
+  double expected_total = bg_per_day * (nOrbits*bxs_off/nBuckets_ + nOrbitsOff*frac_of_cosmics)/(nOrbits+nOrbitsOff)*days;
+  double expected_beam = bg_per_day * (nOrbits*bxs_off/nBuckets_)/(nOrbits+nOrbitsOff)*days;
 
   exp.combinedSig = (s_total_counts)/sqrt(expected_total);
   exp.beamgapSig = (s_beam_counts)/sqrt(expected_beam);

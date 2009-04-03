@@ -5,7 +5,7 @@
   ToyStoppedHSCP* toy = new ToyStoppedHSCP("Results.root");
   
   // stable parameters
-  double bxstruct = 2808;
+  double bxstruct = 156;
   double lumi = 1e32;
   double bgrate = 0.00039;
   

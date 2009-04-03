@@ -17,8 +17,9 @@
   TPaveText blurb(565., 9., 680., 10.8);
   TText* l2=blurb.AddText("#sqrt{s} = 10 TeV");
   TText* l3=blurb.AddText("L_{inst} = 10^{32}cm^{-2}s^{-1}");
-  TText* l4=blurb.AddText("m_{#tilde{#chi}}=100 GeV");
+  TText* l3a=blurb.AddText("N_{BX} = 156");
   TText* l5=blurb.AddText("30 days");
+  TText* l4=blurb.AddText("m_{#tilde{#chi}}=100 GeV");
   //TText* l6=blurb.AddText("60 pb^{-1}");
   blurb.SetFillColor(0);
   blurb.SetShadowColor(0);
