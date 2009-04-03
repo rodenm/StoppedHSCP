@@ -1,6 +1,7 @@
 //------------------------------------------------
 //
 //  Toy Stopped HSCP experiment
+//  Run repeated
 //
 //------------------------------------------------
 
@@ -15,11 +16,7 @@
 #include "TH2D.h"
 #include "TRandom.h"
 #include "TGraph.h"
-#include "TMultiGraph.h"
-#include "TGraphAsymmErrors.h"
 #include "TCanvas.h"
-
-using namespace std;
 
 class Experiment { //: public TObject {
 public:
@@ -85,11 +82,6 @@ public:
   // get plot of significance as fn of running time for given mass/lifetime
   // expt : 0 = combined, 1 = beam gap, 2 = interfill
   TGraph * getLifetimeCurve(double mass, double lifetime, unsigned expt);
-
-  // get multi-graph of nominal value + upper/lower bounds
-  TGraphAsymmErrors getTimeCurveWithUncertainty(double mass, double lifetime, unsigned expt);
-
-  TMultiGraph* getTimeCurveBand(double mass, double lifetime, unsigned expt);
 
   // get plot of significance as fn of mass for a given lifetime/running time
   // expt : 0 = combined, 1 = beam gap, 2 = interfill
@@ -256,8 +248,6 @@ void ToyStoppedHSCP::run(Experiment exp) {
   double bg_per_day = exp.bgRate * 60 * 60 * 24;
   double efficiency = exp.signalEff;
 
-  double window = lifetime * 1.256;
-
   cout << " Stopped HSCP Toy Experiment" << endl;
   cout << "  Lumi            = " << lumi << endl;
   cout << "  X-section       = " << xsection << endl;
@@ -332,9 +322,7 @@ void ToyStoppedHSCP::run(Experiment exp) {
 // 	    hinday->Fill(remainder*bxs*bctime, 1./scale);
 	  }
 	  else if (remainder > nOrbits ) {
-	    if (window < 0 || (remainder - nOrbits)*cycle < window) {
-	      s_cosmic_counts+= 1/scale;
-	    }
+	    s_cosmic_counts+= 1/scale;
 	    
 // 	    hperday->Fill (quotient+day, 1./scale);
 // 	    hinday->Fill(remainder*bxs*bctime, 1./scale);
@@ -370,9 +358,7 @@ void ToyStoppedHSCP::run(Experiment exp) {
 // 	  hinday->Fill((bunch+((double)orbit)*bxs)*bctime, 1./bgscale);
 	}
 	else if (orbit > nOrbits ) {
-	  if (window < 0 || (orbit - nOrbits)*cycle < window) {
-	    b_cosmic_counts+=1./bgscale;
-	  }
+	  b_cosmic_counts+=1./bgscale;
 	  
 // 	  hperday->Fill (i, 1./bgscale);
 // 	  hinday->Fill((bunch+((double)orbit)*bxs)*bctime, 1./bgscale);
@@ -385,14 +371,9 @@ void ToyStoppedHSCP::run(Experiment exp) {
   s_total_counts = s_beam_counts + s_cosmic_counts;
   b_total_counts = b_beam_counts + b_cosmic_counts;
   total_counts = beam_counts + cosmic_counts;
-  double frac_of_cosmics = window / cycle / nOrbitsOff;
-  if (frac_of_cosmics > 1) frac_of_cosmics = 1;
-  if (frac_of_cosmics < 1) frac_of_cosmics = 1;
   
-  //  double expected_cosmic = bg_per_day * (nOrbitsOff)/(nOrbits+nOrbitsOff)*days;
-  double expected_cosmic = bg_per_day * (nOrbitsOff)*frac_of_cosmics/(nOrbits+nOrbitsOff)*days;
-  //  double expected_total = bg_per_day * (nOrbits*bxs_off/bxs + nOrbitsOff)/(nOrbits+nOrbitsOff)*days;
-  double expected_total = bg_per_day * (nOrbits*bxs_off/bxs + nOrbitsOff*frac_of_cosmics)/(nOrbits+nOrbitsOff)*days;
+  double expected_cosmic = bg_per_day * (nOrbitsOff)/(nOrbits+nOrbitsOff)*days;
+  double expected_total = bg_per_day * (nOrbits*bxs_off/bxs + nOrbitsOff)/(nOrbits+nOrbitsOff)*days;
   double expected_beam = bg_per_day * (nOrbits*bxs_off/bxs)/(nOrbits+nOrbitsOff)*days;
 
   exp.combinedSig = (s_total_counts)/sqrt(expected_total);
@@ -452,98 +433,6 @@ TGraph * ToyStoppedHSCP::getLifetimeCurve(double mass, double lifetime, unsigned
   return new TGraph(point, xpoints, ypoints);
 
 }
-
-
-TGraphAsymmErrors ToyStoppedHSCP::getTimeCurveWithUncertainty(double mass, double lifetime, unsigned expt) {
-
-  double xpoints[100];
-  double ypoints[100];
-  unsigned point=0;
-
-  for (unsigned i=0; i<getExperiments().size(); ++i) {
-    if (getExperiment(i).mass == mass && 
-	getExperiment(i).lifetime == lifetime) {
-      xpoints[point] = getExperiment(i).runningTime;
-      if (expt == 0) ypoints[point]  = getExperiment(i).combinedSig;
-      else if (expt == 1) ypoints[point]  = getExperiment(i).beamgapSig;
-      else if (expt == 2) ypoints[point]  = getExperiment(i).interfillSig;
-      else ypoints[point] = 0.;
-      ++point;
-    }
-  }
-
-  double x[100];
-  double exLo[100];
-  double exHi[100];
-  double y[100];
-  double eyLo[100];
-  double eyHi[100];
-  unsigned npoints=floor(point/3);
-
-  // this code assumes for now that points arrive in order
-  // lower, centre, upper
-  for (unsigned i=0; i<npoints; ++i) {
-    x[i] = xpoints[i*3];
-    exLo[i] = 0.;
-    exHi[i] = 0.;
-    y[i] = ypoints[(i*3)+1];
-    eyLo[i] = y[i] - ypoints[i*3];
-    eyHi[i] = ypoints[(i*3)+2]- y[i];
-  }
-
-  return TGraphAsymmErrors(npoints, x, y, exLo, exHi, eyLo, eyHi);
-
-}
-
-
-TMultiGraph * ToyStoppedHSCP::getTimeCurveBand(double mass, double lifetime, unsigned expt) {
-
-  double xpoints[100];
-  double ypoints[100];
-  unsigned point=0;
-
-  for (unsigned i=0; i<getExperiments().size(); ++i) {
-    if (getExperiment(i).mass == mass && 
-	getExperiment(i).lifetime == lifetime) {
-      xpoints[point] = getExperiment(i).runningTime;
-      if (expt == 0) ypoints[point]  = getExperiment(i).combinedSig;
-      else if (expt == 1) ypoints[point]  = getExperiment(i).beamgapSig;
-      else if (expt == 2) ypoints[point]  = getExperiment(i).interfillSig;
-      else ypoints[point] = 0.;
-      ++point;
-    }
-  }
-
-  double x[100];
-  double xLo[100];
-  double xHi[100];
-  double y[100];
-  double yLo[100];
-  double yHi[100];
-  unsigned npoints=floor(point/3);
-
-  // this code assumes for now that points arrive in order
-  // lower, centre, upper
-  for (unsigned i=0; i<npoints; ++i) {
-    x[i] = xpoints[i*3];
-    xLo[i] = 0.;
-    xHi[i] = 0.;
-    y[i] = ypoints[(i*3)+1];
-    yLo[i] = ypoints[i*3];
-    yHi[i] = ypoints[(i*3)+2];
-  }
-
-  TMultiGraph * output = new TMultiGraph;
-  output->Add(new TGraph(npoints, x, yLo));
-  output->Add(new TGraph(npoints, x, y));
-  output->Add(new TGraph(npoints, x, yHi));
-						     
-  return output;
-
-}
-
-
-
 // find all experiments matching mass and lifetime
 // and plot significance as a fn of running time
 // expt 0 = combined, 1 = beamgap, 2 = interfill

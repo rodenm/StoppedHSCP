@@ -18,33 +18,25 @@
 			 86400., 
 			 604800. };
 
-  double ndays[8] = { 1., 3., 7., 30., 90., 360., 1080. };
+  double ndays[6] = { 1., 3., 7., 30., 90., 360. };
   
   // mass points
-  double mass[7] = { 300.,
-		     400.,
-		     500.,
-		     600.,
-		     700.,
-		     800.,
-		     900. };
-  
-  double efficiency[7]   = {  0.158 * 0.162,  //selection eff * stopping eff
-			      0.171 * 0.160,
-			      0.184 * 0.158,
-			      0.186 * 0.164,
-			      0.188 * 0.171,
-			      0.190 * 0.171,
-			      0.192 * 0.171 
+  // mass here is neutralino mass, not gluino!
+  double mass[3] = { 50.,
+		     100.,
+		     200.
   };
   
-  double xsection[7] = { 5.e-34,
-			 1.5e-34,
-			 5.e-35,
-			 1.5e-35,
-			 5.e-36,
-			 2.5e-36,
-			 1.e-36 };
+  double efficiency[3]   = {  0.164 * 0.162,  //selection eff * stopping eff
+			      0.158 * 0.162,
+			      0.104 * 0.162
+  };
+  
+  double xsection[3] = { 5.e-34,
+			 5.e-34,
+			 5.e-34
+  };
+
   
 
   for (unsigned l=0; l<7; ++l) {  
@@ -52,13 +44,13 @@
   }  
   
   // loop over running time
-  for (unsigned nd=0; nd<7; ++nd) {
+  for (unsigned nd=0; nd<6; ++nd) {
     
     // loop over liftime
     for (unsigned l=0; l<7; ++l) {
 
       // loop over masses
-      for (unsigned m=0; m<7; ++m) {
+      for (unsigned m=0; m<3; ++m) {
 	//      unsigned m=0;
 
 	Experiment e;

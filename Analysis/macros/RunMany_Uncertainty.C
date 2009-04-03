@@ -22,29 +22,37 @@
   
   // mass points
   double mass[7] = { 300.,
-		     400.,
-		     500.,
-		     600.,
-		     700.,
-		     800.,
-		     900. };
+		     300.,
+		     300.
+		     #400.,
+		     #500.,
+		     #600.,
+		     #700.,
+		     #800.,
+		     #900. 
+  };
   
-  double efficiency[7]   = {  0.158 * 0.162,  //selection eff * stopping eff
-			      0.171 * 0.160,
-			      0.184 * 0.158,
-			      0.186 * 0.164,
-			      0.188 * 0.171,
-			      0.190 * 0.171,
-			      0.192 * 0.171 
+  double efficiency[7]   = {  0.158 * 0.081,  //selection eff * stopping eff
+			      0.158 * 0.162,
+			      0.158 * 0.324
+			      #0.171 * 0.160,
+			      #0.184 * 0.158,
+			      #0.186 * 0.164,
+			      #0.188 * 0.171,
+			      #0.190 * 0.171,
+			      #0.192 * 0.171 
   };
   
   double xsection[7] = { 5.e-34,
-			 1.5e-34,
-			 5.e-35,
-			 1.5e-35,
-			 5.e-36,
-			 2.5e-36,
-			 1.e-36 };
+			 5.e-34,
+			 5.e-34
+			 #1.5e-34,
+			 #5.e-35,
+			 #1.5e-35,
+			 #5.e-36,
+			 #2.5e-36,
+			 #1.e-36 
+  };
   
 
   for (unsigned l=0; l<7; ++l) {  
@@ -52,13 +60,13 @@
   }  
   
   // loop over running time
-  for (unsigned nd=0; nd<7; ++nd) {
+  for (unsigned nd=0; nd<4; ++nd) {
     
     // loop over liftime
     for (unsigned l=0; l<7; ++l) {
 
       // loop over masses
-      for (unsigned m=0; m<7; ++m) {
+      for (unsigned m=0; m<3; ++m) {
 	//      unsigned m=0;
 
 	Experiment e;
