@@ -6,6 +6,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <fstream>
 #include <vector>
 
 #include "TObject.h"
@@ -21,6 +22,7 @@
 
 using namespace std;
 
+
 class Experiment { //: public TObject {
 public:
   Experiment();
@@ -35,11 +37,21 @@ public:
   double runningTime;
   double bgRate;
   double signalEff;
+  // event counts
+  unsigned nSigBeamgap;
+  unsigned nBgBeamgap;
+  unsigned nSigInterfill;
+  unsigned nBgInterfill;
+  // expected background
+  double nExpectedBeamgap;
+  double nExpectedInterfill;
   // experiment outcomes
   double interfillSig;
   double beamgapSig;
   double combinedSig;
 };
+
+std::ostream& operator<<(std::ostream& s, const Experiment& e);
 
 Experiment::Experiment() :
   mass(0.),
@@ -57,11 +69,36 @@ Experiment::Experiment() :
 
 Experiment::~Experiment() { }
 
+std::ostream& operator<<(std::ostream& s, const Experiment& e) {
+  s << "Stopped HSCP experiment" << endl;
+  s << " Physics" << endl;
+  s << "  Gluino mass      : " << e.mass << endl;
+  s << "  Cross-section    : " << e.crossSection << endl;
+  s << "  Lifetime         : " << e.lifetime << endl;
+  s << " Expt parameters " << endl;
+  s << "  Lumi             : " << e.lumi << endl;
+  s << "  BX structure     : " << e.bxStruct << endl;
+  s << "  BG rate          : " << e.bgRate << endl;
+  s << "  Sig eff          : " << e.signalEff << endl;
+  s << "  Running time     : " << e.runningTime << endl;
+  s << " Results" << endl;
+  s << "  Ns beamgap       : " << e.nSigBeamgap << endl;
+  s << "  Nb beamgap       : " << e.nBgBeamgap << endl;
+  s << "  Ns interfill     : " << e.nSigInterfill << endl;
+  s << "  Nb interfill     : " << e.nBgInterfill << endl;
+  s << "  Expctd beamgap   : " << e.nExpectedBeamgap << endl;
+  s << "  Expctd interfill : " << e.nExpectedInterfill << endl;
+  s << "  Sig beamgap      : " << e.beamgapSig << endl;
+  s << "  Sig interfill    : " << e.interfillSig << endl;
+  s << "  Sig combined     : " << e.combinedSig << endl;
+  s << endl;
+}
+
 
 class ToyStoppedHSCP {
 public:
 
-  ToyStoppedHSCP(char * fname);
+  ToyStoppedHSCP(char * rootfile, char * logfile);
   ~ToyStoppedHSCP();
 
   // setup bunch structure
@@ -82,6 +119,11 @@ public:
     else return Experiment();
   }
 
+
+  // files
+  void save();
+
+
   // get plot of significance as fn of running time for given mass/lifetime
   // expt : 0 = combined, 1 = beam gap, 2 = interfill
   TGraph * getLifetimeCurve(double mass, double lifetime, unsigned expt);
@@ -101,22 +143,28 @@ public:
 
 private:
 
-  // bunch structure
-  static const unsigned nBuckets_ = 3564; //  = 3564;
+  // some constants
+  static const unsigned nBucketsPerOrbit_;
+  static const double   bunchCrossingTime_;
+  static const unsigned nOrbitsPerDay_;
+
+
   int bunchStruct;    // LHC filling pattern 
-  double bctime;    //  = 25e-9 bunch crossing time
   unsigned bxs_on;
   unsigned bxs_off;
   unsigned char beam[3564];
 
   TH1D* hBxStruct_;
 
-//   TH1D* hdecays;
-//   TH1D* hdecaysReg;
-//   TH1D* hperday;
-//   TH1D* hinday;
+  TH1D* hdecays;
+  TH1D* hdecaysReg;
+  TH1D* hperday;
+  TH1D* hinday;
 
-  // output file
+  // log file
+  ofstream lfile_;
+
+  // root file
   TFile* tfile_;
   
   // TTree
@@ -130,35 +178,43 @@ private:
 
 };
 
+const unsigned ToyStoppedHSCP::nBucketsPerOrbit_ = 3564;
+const double   ToyStoppedHSCP::bunchCrossingTime_ = 25.e-9;
+const unsigned ToyStoppedHSCP::nOrbitsPerDay_    = 9.46e8;
 
-ToyStoppedHSCP::ToyStoppedHSCP(char * fname) :
+
+ToyStoppedHSCP::ToyStoppedHSCP(char * rootfile, char * logfile) :
   bxs_on(0),
   bxs_off(0),
-  bunchStruct(156),
-  bctime(25e-9)
+  bunchStruct(156)
 {
 
-  // open output file
-  tfile_ = new TFile(fname,"RECREATE");
+  cout << "StoppedHSCP Toy MY" << endl;
+
+  // open log file
+  lfile_.open(logfile);
+
+  // open root file
+  tfile_ = new TFile(rootfile,"RECREATE");
 
   // seutp TTree
   ttree_ = new TTree("T","experiment results");
   
-  // create one branch with all information from the stucture
+  // create one branch with all information from the struct
   //  tree->Branch("expts",&expt_,
 
 
 
   // setup histograms
-  hBxStruct_ = new TH1D("bxStruct", "Filled BX", nBuckets_, 0., (double)nBuckets_);
+  hBxStruct_ = new TH1D("bxStruct", "Filled BX", nBucketsPerOrbit_, 0., (double)nBucketsPerOrbit_);
 
   // setup single exp histograms
-//     hdecays = new TH1D("hdecays","Number of Reconstructable Stopped Gluinos", nBuckets_, 0, nBuckets_);//days*24,0,days);
+    hdecays = new TH1D("hdecays","Number of Reconstructable Stopped Gluinos", nBucketsPerOrbit_, 0, nBucketsPerOrbit_);//days*24,0,days);
   
-//   hdecaysReg = new TH1D("hdecaysReg","Number of Reconstructable Stopped Gluinos", nBuckets_, 0, nBuckets_);//cycle);//days*24,0,days);
-//   hperday = new TH1D("hperday","Number of Reconstructed Stopped Gluinos", days,0,days);
-//   hinday = new TH1D("hinday", "Number of Reconstructed Stopped Gluinos", 100, 0, 24*3600);
-  // hperday->SetMinimum(0);
+  hdecaysReg = new TH1D("hdecaysReg","Number of Reconstructable Stopped Gluinos", nBucketsPerOrbit_, 0, nBucketsPerOrbit_);//cycle);//days*24,0,days);
+  hperday = new TH1D("hperday","Number of Reconstructed Stopped Gluinos", 30,0,30);
+  hinday = new TH1D("hinday", "Number of Reconstructed Stopped Gluinos", 100, 0, 24*3600);
+  hperday->SetMinimum(0);
 
   TH1D::SetDefaultSumw2 (true);
 
@@ -169,7 +225,9 @@ ToyStoppedHSCP::ToyStoppedHSCP(char * fname) :
 
 ToyStoppedHSCP::~ToyStoppedHSCP() {
 
+  save();
   tfile_->Close();
+  lfile_.close();
 
 }
 
@@ -182,6 +240,8 @@ void ToyStoppedHSCP::setupBunchStructure(int bx_struct) {
   int i, j, k, l, m, counter = 0;
 
   bunchStruct = bx_struct;
+  bxs_on =0;
+  bxs_off =0;
 
   if (bunchStruct == 156) {
     
@@ -244,13 +304,13 @@ void ToyStoppedHSCP::setupBunchStructure(int bx_struct) {
     }
   }
 
-  cout << "LHC bunch scenario : " << bunchStruct << "x" << bunchStruct << endl;
-  cout << "  Bunches on  : " << bxs_on << endl;
-  cout << "  Bunches off : " << bxs_off << endl;
-  cout << "  Total       : " << counter << endl;
+  lfile_ << "LHC bunch scenario : " << bunchStruct << "x" << bunchStruct << endl;
+  lfile_ << "  Bunches on  : " << bxs_on << endl;
+  lfile_ << "  Bunches off : " << bxs_off << endl;
+  lfile_ << "  Total       : " << counter << endl;
 
   // fill BX struct histogram
-  for (unsigned a=0; a<nBuckets_; ++a) {
+  for (unsigned a=0; a<nBucketsPerOrbit_; ++a) {
     if (beam[a] == 1) hBxStruct_->Fill(a);
   }
 
@@ -258,8 +318,16 @@ void ToyStoppedHSCP::setupBunchStructure(int bx_struct) {
 
 void ToyStoppedHSCP::run(Experiment exp) {
 
+  // reset stuff
+  hdecays->Reset();
+  hdecaysReg->Reset();
+  hperday->Reset();
+  hinday->Reset();
+
+  // setup BX if not already set
   if (exp.bxStruct != bunchStruct) setupBunchStructure(exp.bxStruct);
 
+  // experiment parameters
   double lumi = exp.lumi;
   double xsection = exp.crossSection;
   double lifetime = exp.lifetime;
@@ -267,21 +335,11 @@ void ToyStoppedHSCP::run(Experiment exp) {
   double bg_per_day = exp.bgRate * 60 * 60 * 24;
   double efficiency = exp.signalEff;
 
-  double window = lifetime * 1.256;
+  // optimised time cut
+  double timeCut = lifetime * 1.256;
 
-  cout << " Stopped HSCP Toy Experiment" << endl;
-  cout << "  Lumi            = " << lumi << endl;
-  cout << "  X-section       = " << xsection << endl;
-  cout << "  Lifetime        = " << lifetime << endl;
-  cout << "  Running time    = " << days << endl;
-  cout << "  Sel eff         = " << efficiency << endl;
-  cout << "  BG per day      = " << bg_per_day << endl;
-
-
-  // experiment parameters
-  
-  double nOrbits    = 473000000; // number of orbits beam on???
-  double nOrbitsOff = 473000000; // number of orbits beam off???
+  double nOrbitsOn  = nOrbitsPerDay_/2;
+  double nOrbitsOff = nOrbitsPerDay_/2;
 
   //  program control
   bool signal_on = true;
@@ -290,15 +348,14 @@ void ToyStoppedHSCP::run(Experiment exp) {
   double scale = 1000;   // increase these parameters to increase precision
   double bgscale = 100;  // at the cost of running time.  100 or 1000 are good numbers to try
 
-  double cycle = bctime*nBuckets_;  // orbit length
 
-  double tstep = bctime; //0.1 / (lumi * xsection * efficiency);
+  double tOrbit = bunchCrossingTime_*nBucketsPerOrbit_;  // orbit length
+
+  double tstep = bunchCrossingTime_; //0.1 / (lumi * xsection * efficiency);
+
+  // numfer of decays per BX ????
   double nDecays = lumi * tstep * xsection * efficiency;
   
-//   hdecays->Reset();
-//   hdecaysReg->Reset();
-//   hperday->Reset();
-//   hinday->Reset();
 
   TRandom rndm;
   
@@ -310,101 +367,111 @@ void ToyStoppedHSCP::run(Experiment exp) {
   double s_total_counts = 0, s_beam_counts = 0, s_cosmic_counts = 0;
   double b_total_counts = 0, b_beam_counts = 0, b_cosmic_counts = 0;
   
-  if (signal_on)
-    for (t = 0, n = 0; n < nBuckets_ && signal_on; t += tstep, n++) {
-      if (beam[n]) {
-	int nRandomDecays = scale*nDecays*nOrbits*days; //rndm.Poisson;
-	for (int ig = 0; ig < nRandomDecays ; ig++) {
+
+  // do signal
+  for (t = 0, n = 0; n < nBucketsPerOrbit_; t += tstep, n++) {
+    if (beam[n]) {
+      int nRandomDecays = scale*nDecays*nOrbitsOn*days; //rndm.Poisson;
+      for (int ig = 0; ig < nRandomDecays ; ig++) {
+	
+	double tau = rndm.Exp (lifetime);
+	double tdecay = t + tau;
+	double cycletime = tdecay/tOrbit - floor (tdecay/tOrbit);
+	double cycles = tdecay/tOrbit;
+	
+	unsigned long orbit = rndm.Integer(nOrbitsOn);
+	int day = rndm.Integer(days);
+	
+	hdecays->Fill (cycletime*nBucketsPerOrbit_, 1./scale);
+	
+	//      if (cycletime > dutycycle) {
+	// at t==0, counter == 0, so rounding is correct:
+	
+	//      cout << "cycles " << cycles << endl;
+	
+	// Hope this is precise enough...
+	double quotient = (cycles + orbit)/(nOrbitsOn+nOrbitsOff);
+	double remainder = (cycles + orbit) - floor(quotient)*(nOrbitsOn+nOrbitsOff);
+	if (quotient+day >= days) continue;
+	if (remainder < nOrbitsOn && !beam[ int(cycletime * nBucketsPerOrbit_) ]) {
+	  s_beam_counts+= 1/scale;
 	  
-	  double tau = rndm.Exp (lifetime);
-	  double tdecay = t + tau;
-	  double cycletime = tdecay/cycle - floor (tdecay/cycle);
-	  double cycles = tdecay/cycle;
-	  
-	  unsigned long orbit = rndm.Integer(nOrbits);
-	  int day = rndm.Integer(days);
-	  
-// 	  hdecays->Fill (cycletime*nBuckets_, 1./scale);
-	  
-	  //      if (cycletime > dutycycle) {
-	  // at t==0, counter == 0, so rounding is correct:
-	  
-	  //      cout << "cycles " << cycles << endl;
-	  
-	  // Hope this is precise enough...
-	  double quotient = (cycles + orbit)/(nOrbits+nOrbitsOff);
-	  double remainder = (cycles + orbit) - floor(quotient)*(nOrbits+nOrbitsOff);
-	  if (quotient+day >= days) continue;
-	  if (remainder < nOrbits && !beam[ int(cycletime * nBuckets_) ]) {
-	    s_beam_counts+= 1/scale;
-	    
-// 	    hdecaysReg->Fill (cycletime*nBuckets_, 1./scale);
-// 	    hperday->Fill (quotient+day, 1./scale); 
-// 	    hinday->Fill(remainder*nBuckets_*bctime, 1./scale);
+	  hdecaysReg->Fill (cycletime*nBucketsPerOrbit_, 1./scale);
+	  hperday->Fill (quotient+day, 1./scale); 
+	  hinday->Fill(remainder*nBucketsPerOrbit_*bunchCrossingTime_, 1./scale);
+	}
+	else if (remainder > nOrbitsOn ) {
+	  if (timeCut < 0 || (remainder - nOrbitsOn)*tOrbit < timeCut) {
+	    s_cosmic_counts+= 1/scale;
 	  }
-	  else if (remainder > nOrbits ) {
-	    if (window < 0 || (remainder - nOrbits)*cycle < window) {
-	      s_cosmic_counts+= 1/scale;
-	    }
-	    
-// 	    hperday->Fill (quotient+day, 1./scale);
-// 	    hinday->Fill(remainder*nBuckets_*bctime, 1./scale);
-	  }
+	  
+	  hperday->Fill (quotient+day, 1./scale);
+	  hinday->Fill(remainder*nBucketsPerOrbit_*bunchCrossingTime_, 1./scale);
 	}
       }
     }
+  }
   
-  // BACKGROUND
-  if (background_on)
-    for (int i = 0; i < days; i++) {
+  // do background
+  for (int i = 0; i < days; i++) {
+    
+    int todays_rate = bg_per_day*bgscale;//rndm.Poisson(bg_per_day);
+    
+    for (int j = 0; j < todays_rate; j++) {
       
-      int todays_rate = bg_per_day*bgscale;//rndm.Poisson(bg_per_day);
+      // pick an orbit
+      unsigned long orbit = rndm.Integer(nOrbitsOn+nOrbitsOff);
       
-      for (int j = 0; j < todays_rate; j++) {
+      // pick a bin
+      unsigned int bunch = rndm.Integer(nBucketsPerOrbit_);
+      
+      // fill
+      hdecays->Fill(bunch, 1./bgscale);
+      
+      if (orbit <= nOrbitsOn && !beam[ bunch ]) {
+	b_beam_counts+=1./bgscale;
 	
-	// pick an orbit
-	
-	unsigned long orbit = rndm.Integer(nOrbits+nOrbitsOff);
-	
-	// pick a bin
-	
-	unsigned int bunch = rndm.Integer(nBuckets_);
-	
-	// fill
-	
-// 	hdecays->Fill(bunch, 1./bgscale);
-	if (orbit <= nOrbits && !beam[ bunch ]) {
-	  b_beam_counts+=1./bgscale;
-	  
-// 	  hdecaysReg->Fill (bunch, 1./bgscale);
-// 	  hperday->Fill (i, 1./bgscale); 
-// 	  hinday->Fill((bunch+((double)orbit)*nBuckets_)*bctime, 1./bgscale);
+	hdecaysReg->Fill (bunch, 1./bgscale);
+	hperday->Fill (i, 1./bgscale); 
+	hinday->Fill((bunch+((double)orbit)*nBucketsPerOrbit_)*bunchCrossingTime_, 1./bgscale);
+      }
+      else if (orbit > nOrbitsOn ) {
+	if (timeCut < 0 || (orbit - nOrbitsOn)*tOrbit < timeCut) {
+	  b_cosmic_counts+=1./bgscale;
 	}
-	else if (orbit > nOrbits ) {
-	  if (window < 0 || (orbit - nOrbits)*cycle < window) {
-	    b_cosmic_counts+=1./bgscale;
-	  }
-	  
-// 	  hperday->Fill (i, 1./bgscale);
-// 	  hinday->Fill((bunch+((double)orbit)*nBuckets_)*bctime, 1./bgscale);
-	}
+	
+	hperday->Fill (i, 1./bgscale);
+	hinday->Fill((bunch+((double)orbit)*nBucketsPerOrbit_)*bunchCrossingTime_, 1./bgscale);
       }
     }
+  }
   
   beam_counts = s_beam_counts + b_beam_counts;
   cosmic_counts = s_cosmic_counts + b_cosmic_counts;
   s_total_counts = s_beam_counts + s_cosmic_counts;
   b_total_counts = b_beam_counts + b_cosmic_counts;
   total_counts = beam_counts + cosmic_counts;
-  double frac_of_cosmics = window / cycle / nOrbitsOff;
+  double frac_of_cosmics = timeCut / (tOrbit * nOrbitsOff);
+
   if (frac_of_cosmics > 1) frac_of_cosmics = 1;
-  if (frac_of_cosmics < 1) frac_of_cosmics = 1;
   
-  //  double expected_cosmic = bg_per_day * (nOrbitsOff)/(nOrbits+nOrbitsOff)*days;
-  double expected_cosmic = bg_per_day * (nOrbitsOff)*frac_of_cosmics/(nOrbits+nOrbitsOff)*days;
-  //  double expected_total = bg_per_day * (nOrbits*bxs_off/nBuckets_ + nOrbitsOff)/(nOrbits+nOrbitsOff)*days;
-  double expected_total = bg_per_day * (nOrbits*bxs_off/nBuckets_ + nOrbitsOff*frac_of_cosmics)/(nOrbits+nOrbitsOff)*days;
-  double expected_beam = bg_per_day * (nOrbits*bxs_off/nBuckets_)/(nOrbits+nOrbitsOff)*days;
+  // expected backgrounds
+
+  double expected_cosmic = bg_per_day * nOrbitsOff*frac_of_cosmics/nOrbitsPerDay_*days;
+  double expected_beam = bg_per_day * (nOrbitsOn*bxs_off/nBucketsPerOrbit_)/nOrbitsPerDay_*days;
+  double expected_total = expected_cosmic + expected_beam;
+
+
+  lfile_ << expected_beam << endl;
+  lfile_ << expected_cosmic << endl;
+  lfile_ << expected_total << endl;
+
+  exp.nSigBeamgap = s_beam_counts;
+  exp.nBgBeamgap = b_beam_counts;
+  exp.nSigInterfill = s_cosmic_counts;
+  exp.nBgInterfill = b_cosmic_counts;
+  exp.nExpectedBeamgap = expected_beam;
+  exp.nExpectedInterfill = expected_cosmic;
 
   exp.combinedSig = (s_total_counts)/sqrt(expected_total);
   exp.beamgapSig = (s_beam_counts)/sqrt(expected_beam);
@@ -412,30 +479,15 @@ void ToyStoppedHSCP::run(Experiment exp) {
 
   experiments_.push_back(exp);
 
-  
-//   cout << "Combined experiment" << endl;
-//   //  cout << "  Total counts: " << total_counts << endl;
-//   //  cout << "  Expected N bg = " << expected_total << endl;
-//   //  cout << "  sigma:   " << sqrt(expected_total) << endl;
-//   cout << "  Experiment sig  : " << (total_counts - expected_total)/sqrt(expected_total) << endl;
-//   cout << "  Expected sig    : " << (s_total_counts)/sqrt(expected_total) << endl << endl;
+  // log experiment
+  lfile_ << exp;
 
-//   cout << "Beam experiment" << endl;
-//   cout << "  N signal       : " << s_beam_counts << endl;
-//   cout << "  N bg           : " << b_beam_counts << endl;
-//   cout << "  Expected N bg  : " << expected_beam << endl;
-//   cout << "  Experiment sig : " << (beam_counts - expected_beam)/sqrt(expected_beam) << endl;
-//   cout << "  Expected sig   : " << (s_beam_counts)/sqrt(expected_beam) << endl << endl;
-  
-//   cout << "Cosmic experiment" << endl;
-//   cout << "  N signal       : " << s_cosmic_counts << endl;
-//   cout << "  N bg           : " << b_cosmic_counts << endl;
-//   cout << "  Expected N bg  : " << expected_cosmic << endl;
-//   cout << "  Experiment sig : " << (cosmic_counts - expected_cosmic)/sqrt(expected_cosmic) << endl;
-//   cout << "  Expected sig   : " << (s_cosmic_counts)/sqrt(expected_cosmic) << endl << endl;
- 
-//   cout << endl << endl;
- 
+}
+
+
+// save histos, tree etc
+void ToyStoppedHSCP::save() {
+  //  tfile_->Write();
 }
 
 

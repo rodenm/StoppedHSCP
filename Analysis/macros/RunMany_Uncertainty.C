@@ -2,7 +2,7 @@
 // run Toy MC for a bunch of different scenarios
 {
 
-  ToyStoppedHSCP* toy = new ToyStoppedHSCP("Results.root");
+  ToyStoppedHSCP* toy = new ToyStoppedHSCP("Results.root", "UncertaintyScan.log");
   
   // stable parameters
   double bxstruct = 2808;
@@ -18,7 +18,14 @@
 			 86400., 
 			 604800. };
 
-  double ndays[8] = { 1., 3., 7., 30., 90., 360., 1080. };
+  double ndays[8] = { 1., 
+		      3., 
+		      7., 
+		      30.,
+		      90.,
+		      360.,
+		      1080.
+  };
   
   // mass points
   double mass[7] = { 300.,
@@ -55,7 +62,7 @@
   };
   
 
-  for (unsigned l=0; l<7; ++l) {  
+  for (unsigned l=0; l<6; ++l) {  
     std::cout << "Lifetime " << l << " " << lifetime[l] << std::endl;
   }  
   
@@ -63,7 +70,7 @@
   for (unsigned nd=0; nd<4; ++nd) {
     
     // loop over liftime
-    for (unsigned l=0; l<7; ++l) {
+    for (unsigned l=0; l<6; ++l) {
 
       // loop over masses
       for (unsigned m=0; m<3; ++m) {

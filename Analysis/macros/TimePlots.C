@@ -15,12 +15,19 @@
   TLatex fs(23., 5.05, "5#sigma discovery");
   fs.SetTextSize(0.03);
 
+  TLine * l2  = new TLine(0., 1.96, 30., 1.96);
+  l2->SetLineColor(2);
+  l2->SetLineWidth(2);
+
+  TLatex fs2(23., 2.01, "95% C.L.");
+  fs2.SetTextSize(0.03);
+
   TPaveText blurb(22., 9., 29., 10.8);
-  TText* l2=blurb.AddText("#sqrt{s} = 10 TeV");
-  TText* l3=blurb.AddText("L_{inst} = 10^{32}cm^{-2}s^{-1}");
-  TText* l3a=blurb.AddText("N_{BX} = 156");
+  TText* t2=blurb.AddText("#sqrt{s} = 10 TeV");
+  TText* t3=blurb.AddText("L_{inst} = 10^{32}cm^{-2}s^{-1}");
+  TText* t3a=blurb.AddText("N_{BX} = 156");
   //  TText* l5=blurb.AddText("30 days");
-  TText* l4=blurb.AddText("m_{#tilde{g}}=300 GeV");
+  TText* t4=blurb.AddText("m_{#tilde{g}}=300 GeV");
   //TText* l6=blurb.AddText("60 pb^{-1}");
   blurb.SetFillColor(0);
   blurb.SetShadowColor(0);
@@ -105,6 +112,8 @@
   p.Draw();
   l1->Draw();
   fs.Draw();
+  l2->Draw();
+  fs2.Draw();
   blurb.Draw();
   leg.Draw();
 
@@ -177,6 +186,8 @@
 
   leg.Draw();
   l1->Draw();
+  l2->Draw();
+  fs2.Draw();
   blurb->Draw();
   fs->Draw();
   p.Draw();
@@ -253,6 +264,8 @@
 
   leg.Draw();
   l1->Draw();
+  l2->Draw();
+  fs2.Draw();
   blurb->Draw();
   fs->Draw();
   p.Draw();
