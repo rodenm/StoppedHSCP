@@ -13,7 +13,7 @@
 //
 // Original Author:  Benjamin JONES
 //         Created:  Thu Dec  4 11:44:26 CET 2008
-// $Id$
+// $Id: GlobalRunAnalyser.cc,v 1.2 2009/02/17 10:53:48 bjones Exp $
 //
 //
 
@@ -49,7 +49,7 @@
 #include "PhysicsTools/UtilAlgos/interface/TFileService.h"
 #include "TH1.h"
 #include "TTree.h"
-
+#include "TF1.h"
 
 
 
@@ -224,6 +224,13 @@ class GlobalRunAnalyser : public edm::EDAnalyzer {
   Float_t TimingPeakNextNextRight_;
   Float_t TimingRightNextRight_;
   Float_t TimingPeakNextRight_;
+  Float_t TimingNoOfChannels_;
+
+  Float_t TimingExpSlope_;
+  Float_t TimingExpConst_;
+  Float_t TimingExpChiSq_;
+  Float_t TimingEnergyBeforePorch_;
+  Float_t TimingEnergyBeforePeak_;
 
   edm::Service<TFileService> fs;
 
@@ -252,6 +259,7 @@ GlobalRunAnalyser::GlobalRunAnalyser(const edm::ParameterSet& iConfig):
   IncludeMC_(iConfig.getUntrackedParameter("IncludeMC",false)),
   IncludeDigis_(iConfig.getUntrackedParameter("IncludeDigis",false)),
   IncludeMuons_(iConfig.getUntrackedParameter("IncludeMuons",false)),
+  IncludeDigisOld_(iConfig.getUntrackedParameter("IncludeDigisOld",false)),
   
 
   DigisTag_(iConfig.getUntrackedParameter("DigisTag",edm::InputTag("hcalDigis"))),
@@ -263,7 +271,7 @@ GlobalRunAnalyser::GlobalRunAnalyser(const edm::ParameterSet& iConfig):
   
   DigiCount_(iConfig.getUntrackedParameter("DigiCount",5)),
   CenJetEta_(iConfig.getUntrackedParameter("CenJetEta",1.3)),
-  WriteHistos_(iConfig.getUntrackedParameter("WriteHistos",true))
+  WriteHistos_(iConfig.getUntrackedParameter("WriteHistos",false))
   
 {
    //now do what ever initialization is needed
@@ -334,6 +342,9 @@ GlobalRunAnalyser::GlobalRunAnalyser(const edm::ParameterSet& iConfig):
       EventTree->Branch("LeadingCenJetn60",&LeadingCenJetn60_,"LeadingCenJetn60/I");
       EventTree->Branch("LeadingCenJetn90",&LeadingCenJetn90_,"LeadingCenJetn90/I");
 
+      EventTree->Branch("TimingExpConst",&TimingExpConst_,"TimingExpConst/F");
+      EventTree->Branch("TimingExpSlope",&TimingExpSlope_,"TimingExpSlope/F");
+      EventTree->Branch("TimingExpChiSq",&TimingExpChiSq_,"TimingExpChiSq/F");
     }
 
   if(IncludeMC_)
@@ -381,6 +392,9 @@ GlobalRunAnalyser::GlobalRunAnalyser(const edm::ParameterSet& iConfig):
       EventTree->Branch("TimingFracPeakNextRight",&TimingFracPeakNextRight_,"TimingFracPeakNextRight/F");
       EventTree->Branch("TimingFracInCentralFour",&TimingFracInCentralFour_,"TimingFracInCentralFour/F");
       EventTree->Branch("TimingTotal",&TimingTotal_,"TimingTotal/F");
+      EventTree->Branch("TimingNoOfChannels",&TimingNoOfChannels_,"TimingNoOfChannels/F");
+      EventTree->Branch("TimingEnergyBeforePorch",&TimingEnergyBeforePorch_,"TimingEnergyBeforePorch/F");
+      EventTree->Branch("TimingEnergyBeforePeak",&TimingEnergyBeforePeak_,"TimingEnergyBeforePeak/F");
     }
 
   if(IncludeDigis_)
@@ -697,6 +711,184 @@ GlobalRunAnalyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    //
    //
 
+   /*
+   if(IncludeDigisJet_)
+     {
+       
+       using namespace reco;
+       
+       
+       float ThisSpectrum[10];
+   
+
+       std::vector<HcalDetId> HBDigisInLeadingCenJet;
+
+       edm::Handle<CaloJetCollection> pCalo;
+       iEvent.getByLabel(JetTag_,pCalo);
+       
+       double LeadingJetEnergy=0;
+       double LeadingJetEta=0;
+       double LeadingJetPhi=0;
+
+       for(reco::CaloJetCollection::const_iterator itJet = pCalo->begin(); itJet!=pCalo->end(); itJet++)
+	 {
+	   if(LeadingJetEnergy<itJet->energy())
+	     {
+	       LeadingJetEnergy=it->energy();
+	       LeadingJetEta=it->eta();
+	       LeadingJetPhi=it->phi();
+	     }
+	 }
+       
+
+       
+       for(int k=0; k<10; k++)
+	 {
+	   ThisSpectrum[k]=0;
+	 }
+       
+       double ThisEnergy=0;
+       int JetDigiCount=0;
+
+       Handle<HBHEDigiCollection > pDigi;
+       iEvent.getByLabel(DigisTag_,pDigi);
+
+       std::cout<<"No of digis with energy : " << HBDigisInLeadingCenJet.size()<<std::endl;
+       for(HBHEDigiCollection::const_iterator itDigi=pDigi->begin();itDigi!=pDigi->end(); itDigi++)
+	 {
+	   
+	   for(int i=0; i!=HBDigisInLeadingCenJet.size(); i++)
+	     {
+	       if(itDigi->id()==HBDigisInLeadingCenJet.at(i))
+		 {
+		   std::cout<<"Found HCal Digi : "<<itDigi->id().ieta() << " " <<itDigi->id().iphi()<<std::endl;
+		   for(int j=0; j<10; j++)
+		     {
+		       ThisEnergy+=itDigi->sample(j).nominal_fC();
+		     }
+		   //  if(ThisEnergy>10)
+		     {
+		       for(int j=0; j<10; j++)
+			 {
+		       	  
+			   ThisSpectrum[j]+=itDigi->sample(j).nominal_fC();
+			  
+		     
+			 }
+		     }
+		   JetDigiCount++;
+		 }
+	     }
+
+
+	 }
+
+       std::cout<<"DEBUG Made it here -1"<<std::endl;
+ 
+
+       TotalOverTime_=ThisEnergy;
+       PeakPosition_=0;
+       for(int i=0; i<10; i++)
+	 {
+	   if(ThisSpectrum[i]>ThisSpectrum[PeakPosition_])
+	     PeakPosition_=i;
+	       
+	 }
+   
+
+
+       //Fraction left and right of peak
+       
+       TimingFracInLeader_=ThisSpectrum[PeakPosition_]/TotalOverTime_;
+       
+       TimingLeftPeak_=TimingRightPeak_=0;
+       TimingRightNextRight_= TimingPeakNextRight_=0;
+       TimingRightNextNextRight_=TimingPeakNextNextRight_=0;
+
+       if(ThisSpectrum[PeakPosition_]!=0)
+	 {
+	   if(PeakPosition_!=0)
+	     TimingLeftPeak_=ThisSpectrum[PeakPosition_-1]/ThisSpectrum[PeakPosition_];
+	   
+	   if(PeakPosition_!=9)
+	     TimingRightPeak_=ThisSpectrum[PeakPosition_+1]/ThisSpectrum[PeakPosition_];
+
+	   if((PeakPosition_!=9) && (PeakPosition_!=8) && (PeakPosition_!=7) && (PeakPosition_!=1))
+	     TimingFracInCentralFour_=(ThisSpectrum[PeakPosition_]+ThisSpectrum[PeakPosition_-1]+ThisSpectrum[PeakPosition_+1]+ThisSpectrum[PeakPosition_+2])/TotalOverTime_;
+
+	   if((PeakPosition_!=8) && (PeakPosition_!=9))
+	     {
+	       TimingRightNextRight_=ThisSpectrum[PeakPosition_+2]/ThisSpectrum[PeakPosition_+1];
+	       TimingPeakNextRight_=ThisSpectrum[PeakPosition_+2]/ThisSpectrum[PeakPosition_];
+	     }
+	   
+	   if((PeakPosition_!=7)&&(PeakPosition_!=8)&&(PeakPosition_!=9))
+	     {
+	       TimingRightNextNextRight_=ThisSpectrum[PeakPosition_+3]/ThisSpectrum[PeakPosition_+2];
+	       TimingPeakNextNextRight_=ThisSpectrum[PeakPosition_+3]/ThisSpectrum[PeakPosition_];
+
+
+	     }
+
+	 }
+       
+       
+       //n60, n70, n80, n90
+       
+       Timingn60_ = Timingn70_ = Timingn80_ = Timingn90_ = 0;
+       
+       std::vector<double> SortableSpec;
+       SortableSpec.resize(10);
+       for(int i=0; i<10; i++)
+	 {
+	   SortableSpec[i]=ThisSpectrum[i];
+	 }
+       
+       std::sort(SortableSpec.begin(), SortableSpec.end());
+       
+       double TotalSoFar=0;
+       int counter=0;
+       
+       for(int i=9; i>=0; i--)
+	 {
+	   counter++;
+	   
+	   TotalSoFar+=SortableSpec[i];
+	   if(((TotalSoFar/TotalOverTime_) >= 0.6) && Timingn60_==0) Timingn60_ = counter;
+	   if(((TotalSoFar/TotalOverTime_) >= 0.7) && Timingn70_==0) Timingn70_ = counter;
+	   if(((TotalSoFar/TotalOverTime_) >= 0.8) && Timingn80_==0) Timingn80_ = counter;
+	   if(((TotalSoFar/TotalOverTime_) >= 0.9) && Timingn90_==0) Timingn90_ = counter;
+	 }		
+       
+       TimingBX0_=ThisSpectrum[0];
+       TimingBX1_=ThisSpectrum[1];
+       TimingBX2_=ThisSpectrum[2];
+       TimingBX3_=ThisSpectrum[3];
+       TimingBX4_=ThisSpectrum[4];
+       TimingBX5_=ThisSpectrum[5];
+       TimingBX6_=ThisSpectrum[6];
+       TimingBX7_=ThisSpectrum[7];
+       TimingBX8_=ThisSpectrum[8];	
+       TimingBX9_=ThisSpectrum[9]; 
+  
+       std::cout<<"DEBUG: Made it here"<<std::endl;
+       if(WriteHistos_)
+	 {
+	   std::stringstream HistName;
+	   HistName.str("");
+	   HistName<< "TimingPlotAll"<<iEvent.id().event();
+	   TH1D* TheHist= fs->make<TH1D>(HistName.str().c_str(),HistName.str().c_str(),10,0,10);
+	   for(int j=0; j!=10; j++)
+	     {
+	       TheHist->Fill(j,ThisSpectrum[j]);
+	     }
+	 }
+
+     }
+
+
+
+   */
 
    if(IncludeDigis_)
      {
@@ -881,11 +1073,6 @@ GlobalRunAnalyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	     }
 	 }
 
-
-
-
-
-
      }
 
 
@@ -907,7 +1094,7 @@ GlobalRunAnalyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
        
        std::vector<HBHEDataFrame> MyDataFrameVector;
-      
+       
        MyDataFrameVector.insert(MyDataFrameVector.end(),pIn->begin(),pIn->end());
        sort(MyDataFrameVector.begin(),MyDataFrameVector.end(),compare_df());
 
@@ -924,8 +1111,9 @@ GlobalRunAnalyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
        int FirstiEta, FirstiPhi;
        bool FirstTower=true;
 
-       for(HBHEDigiCollection::const_iterator it = MyDataFrameVector.begin(); (count!=topcount)&&(it!=MyDataFrameVector.end()); it++)
+       for(HBHEDigiCollection::const_iterator it = MyDataFrameVector.begin(); (it!=MyDataFrameVector.end())&&(count!=1); it++)
 	 {
+	   double FrameEnergy=0;
 	   if(FirstTower)
 	     {	   
 	       FirstiEta=it->id().ieta();
@@ -933,35 +1121,82 @@ GlobalRunAnalyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	       FirstTower=false;
 	     }
 
-	   if((abs(it->id().ieta()-FirstiEta)<2)&&(abs(it->id().iphi()-FirstiPhi)<18))
+	   if((abs(it->id().iphi()-FirstiPhi)<2)&&(abs(it->id().ieta())<16))
 	     {
-	       count++;
 	       for(int j=0; j<10; j++)
+		 FrameEnergy+=it->sample(j).nominal_fC();
+	  
+	       if(FrameEnergy>30)
 		 {
-		   if(it->sample(j).nominal_fC()>=5.){
-		     ThisSpectrum[j]+=it->sample(j).nominal_fC();
-		     ThisEnergy+=it->sample(j).nominal_fC();
-		   }
+		   /*
+		   if(WriteHistos_)
+		     {
+		       std::stringstream HistName;
+		       HistName.str("");
+		       HistName<< "TimingPlotAll"<<iEvent.id().event()<<"_"<<count;
+		       TH1D* TheHist= fs->make<TH1D>(HistName.str().c_str(),HistName.str().c_str(),10,0,10);
+		       for(int j=0; j!=10; j++)
+			 {
+			   TheHist->Fill(j,it->sample(j).nominal_fC());
+			 }
+		     }
+		   */
+		   count++;
+		   ThisEnergy+=FrameEnergy;
+		   for(int j=0; j<10; j++)
+		     if(it->sample(j).nominal_fC()>5) ThisSpectrum[j]+=(it->sample(j).nominal_fC());
+
+
+		   
+	     
 		 }
 	     }
 	 }
+	      
+       TimingNoOfChannels_=count;
        TimingFirstBin_=ThisSpectrum[0];
        TimingFirst2Bins_=ThisSpectrum[0]+ThisSpectrum[1];
        TimingLastBin_=ThisSpectrum[9];
        TimingLast2Bins_=ThisSpectrum[8]+ThisSpectrum[9];
        
-       int TopPosition=0;
+       int TopPosition=9;
        double TotalOverTime=0;
+
        
-       for(int i=0; i<10; i++)
+       std::stringstream HistName;
+       HistName.str("");
+       HistName<< "TimingPlotAll"<<iEvent.id().event();
+       TH1D * hist1 = new TH1D(HistName.str().c_str(),HistName.str().c_str(),10,0,10);
+       for(int i=9; i>=0; i--)
 	 {
+	   hist1->Fill(i,ThisSpectrum[i]);
 	   TotalOverTime+=ThisSpectrum[i];
 	   if(ThisSpectrum[i]>ThisSpectrum[TopPosition])
 	     TopPosition=i;
 	       
 	 }
    
+       hist1->Fit("expo","WWQ","",TopPosition,10);
+       TF1 * Fit = hist1->GetFunction("expo");
+       TimingExpSlope_=Fit->GetParameter("Slope");
+       TimingExpConst_=Fit->GetParameter("Constant");
+       TimingExpChiSq_=Fit->GetChisquare();
+       
 
+       if(WriteHistos_)
+	 {
+	   TH1D* FileHist= fs->make<TH1D>(*hist1);
+	 }
+
+       delete hist1;
+       
+
+       TimingEnergyBeforePorch_=0;
+       for (int j=0; j!=std::max(TopPosition-1,0); j++)
+	 {
+	   TimingEnergyBeforePorch_+=ThisSpectrum[j];
+	 }
+       TimingEnergyBeforePeak_=TimingEnergyBeforePorch_+ThisSpectrum[TopPosition-1];
 
        //Fraction left and right of peak
        
@@ -1026,6 +1261,10 @@ GlobalRunAnalyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
        TimingBX8_=ThisSpectrum[8];	
        TimingBX9_=ThisSpectrum[9]; 
        TimingTotal_=TotalOverTime;
+
+  
+ 
+
        
      }
 
