@@ -1,7 +1,7 @@
 #!/bin/bash
 
-ver="v4"
-cmssw_ver="CMSSW_2_2_3"
+ver="v5"
+cmssw_ver="CMSSW_2_2_7"
 hscp_tag="HEAD"
 job=$1
 
