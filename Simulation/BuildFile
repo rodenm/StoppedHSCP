@@ -1,13 +1,22 @@
+
 <Flags EDM_PLUGIN=1>
 <use name=SimG4Core/Notification>
 <use name=SimG4Core/Watcher>
 <use name=Geometry/Records>
 <use name=FWCore/ParameterSet>
-<use name=SimG4Core/Notification>
 <use name=PhysicsTools/UtilAlgos>
 <use name=FWCore/ServiceRegistry>
 <use name=geant4>
 <use name=boost>
 
-<library name=StoppedHSCPSimulation file=Stage2Watcher.cc>
-</library>
+<export>
+	<lib name=StoppedHSCPSimulation>
+	<use name=SimG4Core/Notification>
+	<use name=SimG4Core/Watcher>
+	<use name=Geometry/Records>
+	<use name=FWCore/ParameterSet>
+	<use name=PhysicsTools/UtilAlgos>
+	<use name=FWCore/ServiceRegistry>
+	<use name=geant4>
+	<use name=boost>
+</export>
