@@ -1,9 +1,8 @@
 DECAY     1092224     1.00000000E-12   # no comment
-     0.20000000E+00    3     2203    1000021       3   # no comment
-     0.80000000E+00    3     2203    1000021       1   # no comment
+     1.00000000E+00   3     2203    1000021       2   # no comment
 DECAY     1000022     0.00000000E+00   # no comment
 DECAY     1000021     1.00000000E-12   # no comment
-     1.00000000E+00    2     1000022       21 
+     1.00000000E+00   2     1000022       21 
 
 BLOCK QNUMBERS 1092224 # Rhad
          1 0  #
