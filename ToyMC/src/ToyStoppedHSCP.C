@@ -4,6 +4,8 @@
 //
 //------------------------------------------------
 
+#include "interface/ToyStoppedHSCP.h"
+
 #include <cmath>
 #include <iostream>
 #include <fstream>
@@ -22,165 +24,9 @@
 
 using namespace std;
 
-
-class Experiment { //: public TObject {
-public:
-  Experiment();
-  ~Experiment();
-  // particle parameters
-  double mass;
-  double crossSection;
-  double lifetime;
-  // experiment parameters
-  double lumi;
-  double bxStruct;
-  double runningTime;
-  double bgRate;
-  double signalEff;
-  // event counts
-  unsigned nSigBeamgap;
-  unsigned nBgBeamgap;
-  unsigned nSigInterfill;
-  unsigned nBgInterfill;
-  // expected background
-  double nExpectedBeamgap;
-  double nExpectedInterfill;
-  // experiment outcomes
-  double interfillSig;
-  double beamgapSig;
-  double combinedSig;
-};
-
-std::ostream& operator<<(std::ostream& s, const Experiment& e);
-
-Experiment::Experiment() :
-  mass(0.),
-  crossSection(0.),
-  lifetime(0.),
-  lumi(0.),
-  bxStruct(0.),
-  runningTime(0.),
-  bgRate(0.),
-  signalEff(0.),
-  interfillSig(0.),
-  beamgapSig(0.),
-  combinedSig(0.)
-  { }
-
-Experiment::~Experiment() { }
-
-std::ostream& operator<<(std::ostream& s, const Experiment& e) {
-  s << "Stopped HSCP experiment" << endl;
-  s << " Physics" << endl;
-  s << "  Gluino mass      : " << e.mass << endl;
-  s << "  Cross-section    : " << e.crossSection << endl;
-  s << "  Lifetime         : " << e.lifetime << endl;
-  s << " Expt parameters " << endl;
-  s << "  Lumi             : " << e.lumi << endl;
-  s << "  BX structure     : " << e.bxStruct << endl;
-  s << "  BG rate          : " << e.bgRate << endl;
-  s << "  Sig eff          : " << e.signalEff << endl;
-  s << "  Running time     : " << e.runningTime << endl;
-  s << " Results" << endl;
-  s << "  Ns beamgap       : " << e.nSigBeamgap << endl;
-  s << "  Nb beamgap       : " << e.nBgBeamgap << endl;
-  s << "  Ns interfill     : " << e.nSigInterfill << endl;
-  s << "  Nb interfill     : " << e.nBgInterfill << endl;
-  s << "  Expctd beamgap   : " << e.nExpectedBeamgap << endl;
-  s << "  Expctd interfill : " << e.nExpectedInterfill << endl;
-  s << "  Sig beamgap      : " << e.beamgapSig << endl;
-  s << "  Sig interfill    : " << e.interfillSig << endl;
-  s << "  Sig combined     : " << e.combinedSig << endl;
-  s << endl;
-}
-
-
-class ToyStoppedHSCP {
-public:
-
-  ToyStoppedHSCP(char * rootfile, char * logfile);
-  ~ToyStoppedHSCP();
-
-  // setup bunch structure
-  void setupBunchStructure(int bx_struct);  // use 2808 for now
-
-  // one experiment and add to vector
-  void run(Experiment exp);
-
-  // number of experiments
-  unsigned nExperiments() { return experiments_.size(); }
-
-  // get vector of experiments
-  std::vector<Experiment> getExperiments() { return experiments_; }
-
-  // get experiment
-  Experiment getExperiment(unsigned i) { 
-    if (i<experiments_.size()) return experiments_.at(i);
-    else return Experiment();
-  }
-
-
-  // files
-  void save();
-
-
-  // get plot of significance as fn of running time for given mass/lifetime
-  // expt : 0 = combined, 1 = beam gap, 2 = interfill
-  TGraph * getLifetimeCurve(double mass, double lifetime, unsigned expt);
-
-  // get multi-graph of nominal value + upper/lower bounds
-  TGraphAsymmErrors getTimeCurveWithUncertainty(double mass, double lifetime, unsigned expt);
-
-  TMultiGraph* getTimeCurveBand(double mass, double lifetime, unsigned expt);
-
-  // get plot of significance as fn of mass for a given lifetime/running time
-  // expt : 0 = combined, 1 = beam gap, 2 = interfill
-  TGraph * getMassCurve(double runtime, double lifetime, unsigned expt);
-
-  // get 2D plot of significance as fn of mass/lifetime for a given running time
-  // expt : 0 = combined, 1 = beam gap, 2 = interfill
-  void get2DMassLifetimePlot(double runtime, unsigned expt, TH2D *);
-
-private:
-
-  // some constants
-  static const unsigned nBucketsPerOrbit_;
-  static const double   bunchCrossingTime_;
-  static const unsigned nOrbitsPerDay_;
-
-
-  int bunchStruct;    // LHC filling pattern 
-  unsigned bxs_on;
-  unsigned bxs_off;
-  unsigned char beam[3564];
-
-  TH1D* hBxStruct_;
-
-  TH1D* hdecays;
-  TH1D* hdecaysReg;
-  TH1D* hperday;
-  TH1D* hinday;
-
-  // log file
-  ofstream lfile_;
-
-  // root file
-  TFile* tfile_;
-  
-  // TTree
-  TTree* ttree_;
-
-  // single experiment result
-  //  Experiment expt_;
-
-  // Multiple experiment parameters
-  std::vector<Experiment> experiments_;
-
-};
-
-const unsigned ToyStoppedHSCP::nBucketsPerOrbit_ = 3564;
+const unsigned ToyStoppedHSCP::nBucketsPerOrbit_  = 3564;
 const double   ToyStoppedHSCP::bunchCrossingTime_ = 25.e-9;
-const unsigned ToyStoppedHSCP::nOrbitsPerDay_    = 9.46e8;
+const unsigned ToyStoppedHSCP::nOrbitsPerDay_     = 9.46e8;
 
 
 ToyStoppedHSCP::ToyStoppedHSCP(char * rootfile, char * logfile) :
