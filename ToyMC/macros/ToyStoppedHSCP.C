@@ -11,6 +11,7 @@
 #include <fstream>
 #include <vector>
 
+#include "TSystem.h"
 #include "TObject.h"
 #include "TFile.h"
 #include "TTree.h"
@@ -21,6 +22,14 @@
 #include "TMultiGraph.h"
 #include "TGraphAsymmErrors.h"
 #include "TCanvas.h"
+#include "TLimit.h"
+#include "TLimitDataSource.h"
+#include "TConfidenceLevel.h"
+
+#include "Math/Math.h"
+#include "Math/ProbFuncMathCore.h"
+#include "Math/SpecFuncMathCore.h"
+
 
 class Experiment { //: public TObject {
 public:
@@ -45,6 +54,9 @@ public:
   double nExpectedBeamgap;
   double nExpectedInterfill;
   // experiment outcomes
+  double interfillPVal;
+  double beamgapPVal;
+  double combinedPVal;
   double interfillSig;
   double beamgapSig;
   double combinedSig;
@@ -475,9 +487,44 @@ void ToyStoppedHSCP::run(Experiment exp) {
   exp.nExpectedBeamgap = expected_beam;
   exp.nExpectedInterfill = expected_cosmic;
 
-  exp.combinedSig = (s_total_counts)/sqrt(expected_total + s_total_counts);
+  //double pval_poiss = ROOT::Math::poisson_cdf_c(s_total_counts+expected_total,expected_total)	
+  //double pval_gauss = ROOT::Math::(double x, double sigma=1, double x0=0)
+
+  // Create some 1-bin histograms
+  TH1D* background = new TH1D("background","The expected background",1,0,1);
+  TH1D* signal     = new TH1D("signal","the expected signal",1,0,1);
+  TH1D* data       = new TH1D("data","some fake data points",1,0,1);
+
+  //Fill with exp signal & bkg
+  for (int i=0; i < s_total_counts; i++) {
+    signal->Fill(0.99);
+  }
+  for (int i=0; i < expected_total; i++) {
+    bacxkground->Fill(0.99);
+  }
+  for (int i=0; i < (s_total_counts+expected_total); i++) {
+    data->Fill(0.99);
+  }
+  
+  TLimitDataSource* mydatasource = new TLimitDataSource(signal,background,data);
+  TConfidenceLevel *myconfidence = TLimit::ComputeLimit(mydatasource,1000);
+  //cout << "CLs    : "   << myconfidence->CLs()  << endl;
+  //cout << "CLsb   : "   << myconfidence->CLsb() << endl;
+  //cout << "CLb    : "   << myconfidence->CLb()  << endl;
+  //cout << "< CLs >  : " << myconfidence->GetExpectedCLs_b()  << endl;
+  cout << "< CLsb > : " << myconfidence->GetExpectedCLsb_b() << endl;
+  cout << "< CLb >  : " << myconfidence->GetExpectedCLb_b()  << endl;  
+
+  exp.combinedSig = myconfidence->GetExpectedCLb_b();
+
+  //  exp.combinedSig = (s_total_counts)/sqrt(expected_total + s_total_counts);
   exp.beamgapSig = (s_beam_counts)/sqrt(expected_beam + s_beam_counts);
   exp.interfillSig = (s_cosmic_counts)/sqrt(expected_cosmic + s_cosmic_counts);
+
+  //  exp.beamgapPVal = ROOT::Math::poisson_cdf_c(expected_beam + s_beam_counts, expected_beam);
+  //  exp.interfillPVal = ROOT::Math::poisson_cdf_c(expected_cosmic + s_cosmic_counts, expected_cosmic);
+  //  exp.beamgapPVal = ROOT::Math::gaussian_cdf_c(nb+ns, sqrt(nb), nb)
+
 
   experiments_.push_back(exp);
 
@@ -485,6 +532,16 @@ void ToyStoppedHSCP::run(Experiment exp) {
   lfile_ << exp;
 
 }
+
+
+
+
+
+
+
+
+
+
 
 
 // save histos, tree etc

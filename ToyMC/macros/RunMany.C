@@ -6,7 +6,7 @@
   
   // stable parameters
   double bxstruct = 2808;
-  double lumi = 1e31;
+  double lumi = 1e32;
   double bgrate = 0.00039;
   
   // changing params

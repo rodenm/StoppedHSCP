@@ -1,0 +1,36 @@
+Contents :
+
+/macros
+ToyStoppedHSCP.C
+Contains all the code to setup and run the toy MC.
+
+RunMany*.C
+Macros containing experiment parameters
+
+*Plots.C
+Macros that just make the plots (having run appropriate RunMany*.C)
+
+Style.C
+Plot style macro
+
+
+Instructions :
+
+cvs co -d StoppedHSCP/ToyMC UserCode/StoppedHSCP/ToyMC
+cd StoppedHSCP/ToyMC
+eval `scramv1 ru -sh` (if you're on lxplus)
+root
+
+
+To make all the plots from ROOT prompt :
+
+.L macros/ToyStoppedHSCP.C
+.X macros/Style.C
+.X macros/RunMany.C
+.X macros/TimePlots.C
+.X macros/MassPlots.C
+.X macros/RunMany_NeutralinoScan.C
+.X macros/NeutralinoPlots.C
+.X macros/RunMany_Uncertainty.C
+.X macros/TimePlots_Uncertainty.C
+

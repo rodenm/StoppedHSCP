@@ -199,7 +199,7 @@
 
   // Combined expt 30 days
   c->Clear();  
-  TH1F * h = c->DrawFrame(0., 0., 30., 11.);
+  TH1F * h = c->DrawFrame(0., 0., 30., 1.);
   h->SetTitle("Interfill Expt");
   h->SetYTitle("Significance");
   h->SetXTitle("Days");
