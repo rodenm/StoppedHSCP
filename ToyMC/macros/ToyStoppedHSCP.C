@@ -30,6 +30,7 @@
 #include "Math/Math.h"
 #include "Math/ProbFuncMathCore.h"
 #include "Math/SpecFuncMathCore.h"
+#include "Math/QuantFuncMathCore.h"
 
 
 class Experiment { //: public TObject {
@@ -55,12 +56,12 @@ public:
   double nExpectedBeamgap;
   double nExpectedInterfill;
   // experiment outcomes
-  double interfillPVal;
-  double beamgapPVal;
-  double combinedPVal;
-  double interfillSig;
-  double beamgapSig;
-  double combinedSig;
+  double interfillCLb;
+  double beamgapCLb;
+  double combinedCLb;
+  double interfillCLsb;
+  double beamgapCLsb;
+  double combinedCLsb;
 };
 
 std::ostream& operator<<(std::ostream& s, const Experiment& e);
@@ -74,9 +75,12 @@ Experiment::Experiment() :
   runningTime(0.),
   bgRate(0.),
   signalEff(0.),
-  interfillSig(0.),
-  beamgapSig(0.),
-  combinedSig(0.)
+  interfillCLb(0.),
+  beamgapCLb(0.),
+  combinedCLb(0.),
+  interfillCLsb(0.),
+  beamgapCLsb(0.),
+  combinedCLsb(0.)
   { }
 
 Experiment::~Experiment() { }
@@ -100,12 +104,12 @@ std::ostream& operator<<(std::ostream& s, const Experiment& e) {
   s << "  Nb interfill     : " << e.nBgInterfill << endl;
   s << "  Expctd beamgap   : " << e.nExpectedBeamgap << endl;
   s << "  Expctd interfill : " << e.nExpectedInterfill << endl;
-  s << "  Sig beamgap      : " << e.beamgapSig << endl;
-  s << "  Sig interfill    : " << e.interfillSig << endl;
-  s << "  Sig combined     : " << e.combinedSig << endl;
-  s << "  PVal beamgap      : " << e.beamgapPVal << endl;
-  s << "  PVal interfill    : " << e.interfillPVal << endl;
-  s << "  PVal combined     : " << e.combinedPVal << endl;
+  s << "  CLb beamgap      : " << e.beamgapCLb << endl;
+  s << "  CLb interfill    : " << e.interfillCLb << endl;
+  s << "  CLb combined     : " << e.combinedCLb << endl;
+  s << "  CLsb beamgap     : " << e.beamgapCLsb << endl;
+  s << "  CLsb interfill   : " << e.interfillCLsb << endl;
+  s << "  CLsb combined    : " << e.combinedCLsb << endl;
   s << endl;
 }
 
@@ -142,7 +146,9 @@ public:
 
   // get plot of significance as fn of running time for given mass/lifetime
   // expt : 0 = combined, 1 = beam gap, 2 = interfill
-  TGraph * getLifetimeCurve(double mass, double lifetime, unsigned expt);
+  TGraph * getCLbCurve(double mass, double lifetime, unsigned expt);
+
+  TGraph * getCLsbCurve(double mass, double lifetime, unsigned expt);
 
   // get multi-graph of nominal value + upper/lower bounds
   TGraphAsymmErrors getTimeCurveWithUncertainty(double mass, double lifetime, unsigned expt);
@@ -495,9 +501,9 @@ void ToyStoppedHSCP::run(Experiment exp) {
   //double pval_gauss = ROOT::Math::(double x, double sigma=1, double x0=0)
 
   // Create some 1-bin histograms
-  TH1D* background = new TH1D("background","The expected background",1,0,1);
-  TH1D* signal     = new TH1D("signal","the expected signal",1,0,1);
-  TH1D* data       = new TH1D("data","some fake data points",1,0,1);
+//   TH1D* background = new TH1D("background","The expected background",1,0,1);
+//   TH1D* signal     = new TH1D("signal","the expected signal",1,0,1);
+//   TH1D* data       = new TH1D("data","some fake data points",1,0,1);
 
   //Fill with exp signal & bkg
 //   for (int i=0; i < s_total_counts; i++) {
@@ -510,8 +516,8 @@ void ToyStoppedHSCP::run(Experiment exp) {
 //     data->Fill(0.99);
 //   }
   
-  TLimitDataSource* mydatasource = new TLimitDataSource(signal,background,data);
-  TConfidenceLevel *myconfidence = TLimit::ComputeLimit(mydatasource,1000);
+//   TLimitDataSource* mydatasource = new TLimitDataSource(signal,background,data);
+//   TConfidenceLevel *myconfidence = TLimit::ComputeLimit(mydatasource,1000);
   //cout << "CLs    : "   << myconfidence->CLs()  << endl;
   //cout << "CLsb   : "   << myconfidence->CLsb() << endl;
   //cout << "CLb    : "   << myconfidence->CLb()  << endl;
@@ -521,14 +527,21 @@ void ToyStoppedHSCP::run(Experiment exp) {
 
   //  exp.combinedSig = myconfidence->GetExpectedCLb_b();
 
-  exp.combinedSig = (s_total_counts)/sqrt(expected_total + s_total_counts);
-  exp.beamgapSig = (s_beam_counts)/sqrt(expected_beam + s_beam_counts);
-  exp.interfillSig = (s_cosmic_counts)/sqrt(expected_cosmic + s_cosmic_counts);
+  long double c_pCLb = ROOT::Math::poisson_cdf_c(expected_total + s_total_counts, expected_total);
+  long double b_pCLb = ROOT::Math::poisson_cdf_c(expected_beam + s_beam_counts, expected_beam);
+  long double i_pCLb = ROOT::Math::poisson_cdf_c(expected_cosmic + s_cosmic_counts, expected_cosmic);
 
-  exp.combinedPVal = ROOT::Math::poisson_cdf_c(expected_total + s_total_counts, expected_total);
-  exp.beamgapPVal = ROOT::Math::poisson_cdf_c(expected_beam + s_beam_counts, expected_beam);
-  exp.interfillPVal = ROOT::Math::poisson_cdf_c(expected_cosmic + s_cosmic_counts, expected_cosmic);
-  //  exp.beamgapPVal = ROOT::Math::gaussian_cdf_c(nb+ns, sqrt(nb), nb)
+  long double c_pCLsb = ROOT::Math::poisson_cdf_c(expected_total + s_total_counts, expected_total + s_total_counts);
+  long double b_pCLsb = ROOT::Math::poisson_cdf_c(expected_beam + s_beam_counts, expected_beam+ s_beam_counts);
+  long double i_pCLsb = ROOT::Math::poisson_cdf_c(expected_cosmic + s_cosmic_counts, expected_cosmic + s_cosmic_counts);
+
+  exp.combinedCLb = ROOT::Math::normal_quantile_c(c_pCLb/2,1.0);
+  exp.beamgapCLb = ROOT::Math::normal_quantile_c(b_pCLb/2,1.0);
+  exp.interfillCLb = ROOT::Math::normal_quantile_c(i_pCLb/2,1.0);
+
+  exp.combinedCLsb = ROOT::Math::normal_quantile_c(c_pCLb/2,1.0);
+  exp.beamgapCLsb = ROOT::Math::normal_quantile_c(b_pCLsb/2,1.0);
+  exp.interfillCLsb = ROOT::Math::normal_quantile_c(i_pCLsb/2,1.0);
 
 
   experiments_.push_back(exp);
@@ -558,7 +571,7 @@ void ToyStoppedHSCP::save() {
 // find all experiments matching mass and lifetime
 // and plot significance as a fn of running time
 // expt 0 = combined, 1 = beamgap, 2 = interfill
-TGraph * ToyStoppedHSCP::getLifetimeCurve(double mass, double lifetime, unsigned expt) {
+TGraph * ToyStoppedHSCP::getCLbCurve(double mass, double lifetime, unsigned expt) {
 
   double xpoints[100];
   double ypoints[100];
@@ -568,9 +581,31 @@ TGraph * ToyStoppedHSCP::getLifetimeCurve(double mass, double lifetime, unsigned
     if (getExperiment(i).mass == mass && 
 	getExperiment(i).lifetime == lifetime) {
       xpoints[point] = getExperiment(i).runningTime;
-      if (expt == 0) ypoints[point]  = getExperiment(i).combinedPVal;
-      else if (expt == 1) ypoints[point]  = getExperiment(i).beamgapPVal;
-      else if (expt == 2) ypoints[point]  = getExperiment(i).interfillPVal;
+      if (expt == 0) ypoints[point]  = getExperiment(i).combinedCLb;
+      else if (expt == 1) ypoints[point]  = getExperiment(i).beamgapCLb;
+      else if (expt == 2) ypoints[point]  = getExperiment(i).interfillCLb;
+      else ypoints[point] = 0.;
+      ++point;
+    }
+  }
+
+  return new TGraph(point, xpoints, ypoints);
+
+}
+
+TGraph * ToyStoppedHSCP::getCLsbCurve(double mass, double lifetime, unsigned expt) {
+
+  double xpoints[100];
+  double ypoints[100];
+  unsigned point=0;
+
+  for (unsigned i=0; i<getExperiments().size(); ++i) {
+    if (getExperiment(i).mass == mass && 
+	getExperiment(i).lifetime == lifetime) {
+      xpoints[point] = getExperiment(i).runningTime;
+      if (expt == 0) ypoints[point]  = getExperiment(i).combinedCLsb;
+      else if (expt == 1) ypoints[point]  = getExperiment(i).beamgapCLsb;
+      else if (expt == 2) ypoints[point]  = getExperiment(i).interfillCLsb;
       else ypoints[point] = 0.;
       ++point;
     }
@@ -591,9 +626,9 @@ TGraphAsymmErrors ToyStoppedHSCP::getTimeCurveWithUncertainty(double mass, doubl
     if (getExperiment(i).mass == mass && 
 	getExperiment(i).lifetime == lifetime) {
       xpoints[point] = getExperiment(i).runningTime;
-      if (expt == 0) ypoints[point]  = getExperiment(i).combinedSig;
-      else if (expt == 1) ypoints[point]  = getExperiment(i).beamgapSig;
-      else if (expt == 2) ypoints[point]  = getExperiment(i).interfillSig;
+      if (expt == 0) ypoints[point]  = getExperiment(i).combinedCLb;
+      else if (expt == 1) ypoints[point]  = getExperiment(i).beamgapCLb;
+      else if (expt == 2) ypoints[point]  = getExperiment(i).interfillCLb;
       else ypoints[point] = 0.;
       ++point;
     }
@@ -633,9 +668,9 @@ TMultiGraph * ToyStoppedHSCP::getTimeCurveBand(double mass, double lifetime, uns
     if (getExperiment(i).mass == mass && 
 	getExperiment(i).lifetime == lifetime) {
       xpoints[point] = getExperiment(i).runningTime;
-      if (expt == 0) ypoints[point]  = getExperiment(i).combinedSig;
-      else if (expt == 1) ypoints[point]  = getExperiment(i).beamgapSig;
-      else if (expt == 2) ypoints[point]  = getExperiment(i).interfillSig;
+      if (expt == 0) ypoints[point]  = getExperiment(i).combinedCLb;
+      else if (expt == 1) ypoints[point]  = getExperiment(i).beamgapCLb;
+      else if (expt == 2) ypoints[point]  = getExperiment(i).interfillCLb;
       else ypoints[point] = 0.;
       ++point;
     }
@@ -684,9 +719,9 @@ TGraph * ToyStoppedHSCP::getMassCurve(double runtime, double lifetime, unsigned 
     if (getExperiment(i).runningTime == runtime && 
 	getExperiment(i).lifetime == lifetime) {
       xpoints[point] = getExperiment(i).mass;
-      if (expt == 0) ypoints[point]  = getExperiment(i).combinedSig;
-      else if (expt == 1) ypoints[point]  = getExperiment(i).beamgapSig;
-      else if (expt == 2) ypoints[point]  = getExperiment(i).interfillSig;
+      if (expt == 0) ypoints[point]  = getExperiment(i).combinedCLb;
+      else if (expt == 1) ypoints[point]  = getExperiment(i).beamgapCLb;
+      else if (expt == 2) ypoints[point]  = getExperiment(i).interfillCLb;
       else ypoints[point] = 0.;
       ++point;
     }
@@ -706,10 +741,10 @@ void ToyStoppedHSCP::get2DMassLifetimePlot(double runtime, unsigned expt, TH2D *
     if (getExperiment(i).runningTime == runtime) {
       double x = getExperiment(i).mass;
       double y = getExperiment(i).lifetime;
-      double sig = getExperiment(i).beamgapSig;
-//       if (expt == 0) sig = getExperiment(i).combinedSig;
-//       else if (expt == 1) sig = getExperiment(i).beamgapSig;
-//       else if (expt == 2) sig = getExperiment(i).interfillSig;
+      double sig = getExperiment(i).beamgapCLb;
+//       if (expt == 0) sig = getExperiment(i).combinedCLb;
+//       else if (expt == 1) sig = getExperiment(i).beamgapCLb;
+//       else if (expt == 2) sig = getExperiment(i).interfillCLb;
       hist->Fill(x, y, sig);
     }
   }
