@@ -500,7 +500,7 @@ void ToyStoppedHSCP::run(Experiment exp) {
     signal->Fill(0.99);
   }
   for (int i=0; i < expected_total; i++) {
-    bacxkground->Fill(0.99);
+    background->Fill(0.99);
   }
   for (int i=0; i < (s_total_counts+expected_total); i++) {
     data->Fill(0.99);
@@ -521,7 +521,7 @@ void ToyStoppedHSCP::run(Experiment exp) {
   exp.beamgapSig = (s_beam_counts)/sqrt(expected_beam + s_beam_counts);
   exp.interfillSig = (s_cosmic_counts)/sqrt(expected_cosmic + s_cosmic_counts);
 
-  //  exp.beamgapPVal = ROOT::Math::poisson_cdf_c(expected_beam + s_beam_counts, expected_beam);
+  exp.beamgapPVal = ROOT::Math::poisson_cdf_c(expected_beam + s_beam_counts, expected_beam);
   //  exp.interfillPVal = ROOT::Math::poisson_cdf_c(expected_cosmic + s_cosmic_counts, expected_cosmic);
   //  exp.beamgapPVal = ROOT::Math::gaussian_cdf_c(nb+ns, sqrt(nb), nb)
 
