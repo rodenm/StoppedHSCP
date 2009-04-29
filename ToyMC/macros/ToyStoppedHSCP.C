@@ -1,3 +1,4 @@
+
 //------------------------------------------------
 //
 //  Toy Stopped HSCP experiment
@@ -102,6 +103,9 @@ std::ostream& operator<<(std::ostream& s, const Experiment& e) {
   s << "  Sig beamgap      : " << e.beamgapSig << endl;
   s << "  Sig interfill    : " << e.interfillSig << endl;
   s << "  Sig combined     : " << e.combinedSig << endl;
+  s << "  PVal beamgap      : " << e.beamgapPVal << endl;
+  s << "  PVal interfill    : " << e.interfillPVal << endl;
+  s << "  PVal combined     : " << e.combinedPVal << endl;
   s << endl;
 }
 
@@ -496,15 +500,15 @@ void ToyStoppedHSCP::run(Experiment exp) {
   TH1D* data       = new TH1D("data","some fake data points",1,0,1);
 
   //Fill with exp signal & bkg
-  for (int i=0; i < s_total_counts; i++) {
-    signal->Fill(0.99);
-  }
-  for (int i=0; i < expected_total; i++) {
-    background->Fill(0.99);
-  }
-  for (int i=0; i < (s_total_counts+expected_total); i++) {
-    data->Fill(0.99);
-  }
+//   for (int i=0; i < s_total_counts; i++) {
+//     signal->Fill(0.99);
+//   }
+//   for (int i=0; i < expected_total; i++) {
+//     background->Fill(0.99);
+//   }
+//   for (int i=0; i < (s_total_counts+expected_total); i++) {
+//     data->Fill(0.99);
+//   }
   
   TLimitDataSource* mydatasource = new TLimitDataSource(signal,background,data);
   TConfidenceLevel *myconfidence = TLimit::ComputeLimit(mydatasource,1000);
@@ -512,17 +516,18 @@ void ToyStoppedHSCP::run(Experiment exp) {
   //cout << "CLsb   : "   << myconfidence->CLsb() << endl;
   //cout << "CLb    : "   << myconfidence->CLb()  << endl;
   //cout << "< CLs >  : " << myconfidence->GetExpectedCLs_b()  << endl;
-  cout << "< CLsb > : " << myconfidence->GetExpectedCLsb_b() << endl;
-  cout << "< CLb >  : " << myconfidence->GetExpectedCLb_b()  << endl;  
+  //cout << "< CLsb > : " << myconfidence->GetExpectedCLsb_b() << endl;
+  //cout << "< CLb >  : " << myconfidence->GetExpectedCLb_b()  << endl;  
 
-  exp.combinedSig = myconfidence->GetExpectedCLb_b();
+  //  exp.combinedSig = myconfidence->GetExpectedCLb_b();
 
-  //  exp.combinedSig = (s_total_counts)/sqrt(expected_total + s_total_counts);
+  exp.combinedSig = (s_total_counts)/sqrt(expected_total + s_total_counts);
   exp.beamgapSig = (s_beam_counts)/sqrt(expected_beam + s_beam_counts);
   exp.interfillSig = (s_cosmic_counts)/sqrt(expected_cosmic + s_cosmic_counts);
 
+  exp.combinedPVal = ROOT::Math::poisson_cdf_c(expected_total + s_total_counts, expected_total);
   exp.beamgapPVal = ROOT::Math::poisson_cdf_c(expected_beam + s_beam_counts, expected_beam);
-  //  exp.interfillPVal = ROOT::Math::poisson_cdf_c(expected_cosmic + s_cosmic_counts, expected_cosmic);
+  exp.interfillPVal = ROOT::Math::poisson_cdf_c(expected_cosmic + s_cosmic_counts, expected_cosmic);
   //  exp.beamgapPVal = ROOT::Math::gaussian_cdf_c(nb+ns, sqrt(nb), nb)
 
 
@@ -563,9 +568,9 @@ TGraph * ToyStoppedHSCP::getLifetimeCurve(double mass, double lifetime, unsigned
     if (getExperiment(i).mass == mass && 
 	getExperiment(i).lifetime == lifetime) {
       xpoints[point] = getExperiment(i).runningTime;
-      if (expt == 0) ypoints[point]  = getExperiment(i).combinedSig;
-      else if (expt == 1) ypoints[point]  = getExperiment(i).beamgapSig;
-      else if (expt == 2) ypoints[point]  = getExperiment(i).interfillSig;
+      if (expt == 0) ypoints[point]  = getExperiment(i).combinedPVal;
+      else if (expt == 1) ypoints[point]  = getExperiment(i).beamgapPVal;
+      else if (expt == 2) ypoints[point]  = getExperiment(i).interfillPVal;
       else ypoints[point] = 0.;
       ++point;
     }
