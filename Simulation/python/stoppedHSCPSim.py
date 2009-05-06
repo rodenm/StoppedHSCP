@@ -24,7 +24,7 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 process.load('Configuration/EventContent/EventContent_cff')
 
 process.configurationMetadata = cms.untracked.PSet(
-    version = cms.untracked.string('$Revision: 1.4 $'),
+    version = cms.untracked.string('$Revision: 1.5 $'),
     annotation = cms.untracked.string('TTbar.cfi nevts:1'),
     name = cms.untracked.string('PyReleaseValidation')
 )
@@ -67,7 +67,7 @@ process.load("L1TriggerConfig.L1GtConfigProducers.Luminosity.startup.L1Menu_star
 
 # run L1 calo for 3 BX
 process.simRctDigis.postSamples = cms.uint32(1)
-process.simRctDigis.preSamples = cms.uint32(1),
+process.simRctDigis.preSamples = cms.uint32(1)
 process.simGctDigis.preSamples = cms.uint32(1)
 process.simGctDigis.postSamples = cms.uint32(1)
 
