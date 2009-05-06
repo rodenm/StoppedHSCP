@@ -24,7 +24,7 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 process.load('Configuration/EventContent/EventContent_cff')
 
 process.configurationMetadata = cms.untracked.PSet(
-    version = cms.untracked.string('$Revision: 1.3 $'),
+    version = cms.untracked.string('$Revision: 1.4 $'),
     annotation = cms.untracked.string('TTbar.cfi nevts:1'),
     name = cms.untracked.string('PyReleaseValidation')
 )
@@ -64,6 +64,12 @@ process.GlobalTag.globaltag = 'STARTUP_V8::All'
 process.load('L1Trigger/Configuration/L1StartupConfig_cff')
 process.load("L1TriggerConfig.L1GtConfigProducers.L1GtConfig_cff")
 process.load("L1TriggerConfig.L1GtConfigProducers.Luminosity.startup.L1Menu_startup2_v2_Unprescaled_cff")
+
+# run L1 calo for 3 BX
+process.simRctDigis.postSamples = cms.uint32(1)
+process.simRctDigis.preSamples = cms.uint32(1),
+process.simGctDigis.preSamples = cms.uint32(1)
+process.simGctDigis.postSamples = cms.uint32(1)
 
 
 # Path and EndPath definitions
