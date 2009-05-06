@@ -26,7 +26,8 @@
   TText* t2=blurb.AddText("#sqrt{s} = 10 TeV");
   TText* t3=blurb.AddText("L_{inst} = 10^{32}cm^{-2}s^{-1}");
   TText* t4=blurb.AddText("m_{#tilde{g}}=300 GeV");
-  TText* t5=blurb.AddText("#tau_{#tilde{g}}=1day");
+  TText* t5=blurb.AddText("m_{#tilde{#chi}}=100 GeV");
+  TText* t5a=blurb.AddText("#tau_{#tilde{g}}=1day");
   TText* t6=blurb.AddText("30 days");
   //TText* l6=blurb.AddText("60 pb^{-1}");
   blurb.SetFillColor(0);
@@ -43,7 +44,7 @@
   // beamgap expt 30 days
   TH1F * h = c->DrawFrame(0., 0., 30., 11.);
   h->SetTitle("Beamgap Expt");
-  h->SetYTitle("Significance");
+  h->SetYTitle("z-value");
   h->SetXTitle("Days");
 
 //   TGraphAsymmErrors graph1 = toy->getTimeCurveWithUncertainty(300., 86400., 1);
@@ -89,8 +90,8 @@
 
   l1->Draw();
   fs.Draw();
-  l2->Draw();
-  fs2.Draw();
+//   l2->Draw();
+//   fs2.Draw();
   blurb.SetShadowColor(4);
   blurb.Draw();
   p.Draw();
@@ -104,7 +105,7 @@
   // interfill expt 30 days
   TH1F * h = c->DrawFrame(0., 0., 30., 11.);
   h->SetTitle("Beamgap Expt");
-  h->SetYTitle("Significance");
+  h->SetYTitle("z-value");
   h->SetXTitle("Days");
 
 //   TGraphAsymmErrors graph1 = toy->getTimeCurveWithUncertainty(300., 86400., 1);
@@ -150,8 +151,8 @@
 
   l1->Draw();
   fs.Draw();
-  l2->Draw();
-  fs2.Draw();
+//   l2->Draw();
+//   fs2.Draw();
   blurb.Draw();
   blurb.SetShadowColor(0);
   p.Draw();
@@ -165,7 +166,7 @@
   // combined expt 30 days
   TH1F * h = c->DrawFrame(0., 0., 30., 11.);
   h->SetTitle("Beamgap Expt");
-  h->SetYTitle("Significance");
+  h->SetYTitle("z-value");
   h->SetXTitle("Days");
 
 //   TGraphAsymmErrors graph1 = toy->getTimeCurveWithUncertainty(300., 86400., 1);
@@ -185,7 +186,7 @@
   upper->SetLineColor(4);
   upper->Draw("L");
 
-  TBox box7(1., 0., 7., 6.5);
+  TBox box7(1., 0., 7., 5.6);
   box7.SetFillColor(4);
   box7.SetLineColor(4);
   box7.Draw();
@@ -200,7 +201,7 @@
   lower->SetLineColor(0);
   lower->Draw("C");
 
-  TBox box9(1., 0., 7., 1.5);
+  TBox box9(1., 0., 7., 1.95);
   box9.SetFillColor(0);
   box9.SetLineColor(0);
   box9.Draw();
@@ -211,8 +212,8 @@
 
   l1->Draw();
   fs.Draw();
-  l2->Draw();
-  fs2.Draw();
+//   l2->Draw();
+//   fs2.Draw();
   blurb.Draw();
   p.Draw();
   h.GetXaxis().Draw();

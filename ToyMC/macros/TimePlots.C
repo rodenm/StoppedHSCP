@@ -12,7 +12,7 @@
   l1->SetLineColor(2);
   l1->SetLineWidth(2);
 
-  TLatex fs(4., 5.05, "5#sigma discovery");
+  TLatex fs(21., 5.05, "5#sigma discovery");
   fs.SetTextSize(0.03);
 
   TLine * l2  = new TLine(0., 1.96, 30., 1.96);
@@ -28,23 +28,24 @@
   //TText* t3a=blurb.AddText("N_{BX} = 2808");
   //  TText* l5=blurb.AddText("30 days");
   TText* t4=blurb.AddText("m_{#tilde{g}}=300 GeV");
+  TText* t5=blurb.AddText("m_{#tilde{#chi}}=100 GeV");
   //TText* l6=blurb.AddText("60 pb^{-1}");
   blurb.SetFillColor(0);
   blurb.SetShadowColor(0);
   blurb.SetTextAlign(12);
   //  blurb.SetMargin(0.1);
 
-  TLatex p(3., 8.5, "CMS Preliminary");
+  TLatex p(12., 1., "CMS Preliminary");
   p.SetTextSize(0.06);
   p.SetTextColor(9);
 
   // beamgap expt 30 days
   TH1F * h = c->DrawFrame(0., 0., 30., 11.);
   h->SetTitle("Beamgap Expt");
-  h->SetYTitle("Significance");
+  h->SetYTitle("z-value");
   h->SetXTitle("Days");
 
-  TGraph * graph1 = toy->getCLbCurve(300., 1.e-6, 1);
+  TGraph * graph1 = toy->getZbCurve(300., 1.e-6, 1);
   graph1->SetLineColor(1);
   graph1->SetLineStyle(1);
   graph1->SetLineWidth(2);
@@ -53,7 +54,7 @@
 //   t1.SetTextSize(0.03);
 //   t1.Draw();
 
-  TGraph * graph2 = toy->getCLbCurve(300., 1.e-3, 1);
+  TGraph * graph2 = toy->getZbCurve(300., 1.e-3, 1);
   graph2->SetLineColor(2);
   graph2->SetLineStyle(1);
   graph2->SetLineWidth(2);
@@ -62,7 +63,7 @@
 //   t2.SetTextSize(0.03);
 //   t2.Draw();
 
-  TGraph * graph3 = toy->getCLbCurve(300., 3600., 1);
+  TGraph * graph3 = toy->getZbCurve(300., 3600., 1);
   graph3->SetLineColor(4);
   graph3->SetLineStyle(1);
   graph3->SetLineWidth(2);
@@ -71,7 +72,7 @@
 //   t3.SetTextSize(0.03);
 //   t3.Draw();
 
-  TGraph * graph4 = toy->getCLbCurve(300., 43200., 1);
+  TGraph * graph4 = toy->getZbCurve(300., 43200., 1);
   graph4->SetLineColor(1);
   graph4->SetLineStyle(2);
   graph4->SetLineWidth(2);
@@ -80,7 +81,7 @@
 //   t4.SetTextSize(0.03);
 //   t4.Draw();
 
-  TGraph * graph5 = toy->getCLbCurve(300., 86400, 1);
+  TGraph * graph5 = toy->getZbCurve(300., 86400, 1);
   graph5->SetLineColor(2);
   graph5->SetLineStyle(2);
   graph5->SetLineWidth(2);
@@ -89,7 +90,7 @@
 //   t5.SetTextSize(0.03);
 //   t5.Draw();
 
-  TGraph * graph6 = toy->getCLbCurve(300., 604800, 1);
+  TGraph * graph6 = toy->getZbCurve(300., 604800, 1);
   graph6->SetLineColor(4);
   graph6->SetLineStyle(2);
   graph6->SetLineWidth(2);
@@ -127,10 +128,10 @@
   c->Clear();  
   TH1F * h = c->DrawFrame(0., 0., 30., 11.);
   h->SetTitle("Interfill Expt");
-  h->SetYTitle("Significance");
+  h->SetYTitle("z-value");
   h->SetXTitle("Days");
 
-  TGraph * graph1 = toy->getCLbCurve(300., 1.e-6, 2);
+  TGraph * graph1 = toy->getZbCurve(300., 1.e-6, 2);
   graph1->SetLineColor(1);
   graph1->SetLineStyle(1);
   graph1->SetLineWidth(2);
@@ -139,7 +140,7 @@
 //   t1.SetTextSize(0.03);
 //   t1.Draw();
 
-  TGraph * graph2 = toy->getCLbCurve(300., 1.e-3, 2);
+  TGraph * graph2 = toy->getZbCurve(300., 1.e-3, 2);
   graph2->SetLineColor(2);
   graph2->SetLineStyle(1);
   graph2->SetLineWidth(2);
@@ -148,7 +149,7 @@
 //   t2.SetTextSize(0.03);
 //   t2.Draw();
 
-  TGraph * graph3 = toy->getCLbCurve(300., 3600., 2);
+  TGraph * graph3 = toy->getZbCurve(300., 3600., 2);
   graph3->SetLineColor(4);
   graph3->SetLineStyle(1);
   graph3->SetLineWidth(2);
@@ -157,7 +158,7 @@
 //   t3.SetTextSize(0.03);
 //   t3.Draw();
 
-  TGraph * graph4 = toy->getCLbCurve(300., 43200., 2);
+  TGraph * graph4 = toy->getZbCurve(300., 43200., 2);
   graph4->SetLineColor(1);
   graph4->SetLineStyle(2);
   graph4->SetLineWidth(2);
@@ -166,7 +167,7 @@
 //   t4.SetTextSize(0.03);
 //   t4.Draw();
 
-  TGraph * graph5 = toy->getCLbCurve(300., 86400, 2);
+  TGraph * graph5 = toy->getZbCurve(300., 86400, 2);
   graph5->SetLineColor(2);
   graph5->SetLineStyle(2);
   graph5->SetLineWidth(2);
@@ -175,7 +176,7 @@
 //   t5.SetTextSize(0.03);
 //   t5.Draw();
 
-  TGraph * graph6 = toy->getCLbCurve(300., 604800, 2);
+  TGraph * graph6 = toy->getZbCurve(300., 604800, 2);
   graph6->SetLineColor(4);
   graph6->SetLineStyle(2);
   graph6->SetLineWidth(2);
@@ -201,10 +202,10 @@
   c->Clear();  
   TH1F * h = c->DrawFrame(0., 0., 30., 11.);
   h->SetTitle("Interfill Expt");
-  h->SetYTitle("Significance");
+  h->SetYTitle("z-value");
   h->SetXTitle("Days");
 
-  TGraph * graph1 = toy->getCLbCurve(300., 1.e-6, 0);
+  TGraph * graph1 = toy->getZbCurve(300., 1.e-6, 0);
   graph1->SetLineColor(1);
   graph1->SetLineStyle(1);
   graph1->SetLineWidth(2);
@@ -213,7 +214,7 @@
 //   t1.SetTextSize(0.03);
 //   t1.Draw();
 
-  TGraph * graph2 = toy->getCLbCurve(300., 1.e-3, 0);
+  TGraph * graph2 = toy->getZbCurve(300., 1.e-3, 0);
   graph2->SetLineColor(2);
   graph2->SetLineStyle(1);
   graph2->SetLineWidth(2);
@@ -222,7 +223,7 @@
 //   t2.SetTextSize(0.03);
 //   t2.Draw();
 
-  TGraph * graph3 = toy->getCLbCurve(300., 3600., 0);
+  TGraph * graph3 = toy->getZbCurve(300., 3600., 0);
   graph3->SetLineColor(4);
   graph3->SetLineStyle(1);
   graph3->SetLineWidth(2);
@@ -231,7 +232,7 @@
 //   t3.SetTextSize(0.03);
 //   t3.Draw();
 
-  TGraph * graph4 = toy->getCLbCurve(300., 43200., 0);
+  TGraph * graph4 = toy->getZbCurve(300., 43200., 0);
   graph4->SetLineColor(1);
   graph4->SetLineStyle(2);
   graph4->SetLineWidth(2);
@@ -240,7 +241,7 @@
 //   t4.SetTextSize(0.03);
 //   t4.Draw();
 
-  TGraph * graph5 = toy->getCLbCurve(300., 86400, 0);
+  TGraph * graph5 = toy->getZbCurve(300., 86400, 0);
   graph5->SetLineColor(2);
   graph5->SetLineStyle(2);
   graph5->SetLineWidth(2);
@@ -249,7 +250,7 @@
 //   t5.SetTextSize(0.03);
 //   t5.Draw();
 
-  TGraph * graph6 = toy->getCLbCurve(300., 604800, 0);
+  TGraph * graph6 = toy->getZbCurve(300., 604800, 0);
   graph6->SetLineColor(4);
   graph6->SetLineStyle(2);
   graph6->SetLineWidth(2);

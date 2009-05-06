@@ -40,7 +40,7 @@
   // beamgap expt 30 days
   TH1F * h = c->DrawFrame(0., 0., 300., 11.);
   h->SetTitle("Beamgap Expt");
-  h->SetYTitle("Significance");
+  h->SetYTitle("z-value");
   h->SetXTitle("m_{#chi} (GeV)");
 
   TGraph * graph1 = toy->getMassCurve(7., 1.e-6, 1);
@@ -111,8 +111,8 @@
   leg.Draw();
   l1->Draw();
   fs.Draw();
-  l2->Draw();
-  fs2.Draw();
+//   l2->Draw();
+//   fs2.Draw();
   blurb.Draw();
   p.Draw();
 
@@ -126,7 +126,7 @@
 
   TH1F * h = c->DrawFrame(0., 0., 300., 11.);
   h->SetTitle("Interfill Expt");
-  h->SetYTitle("Significance");
+  h->SetYTitle("z-value");
   h->SetXTitle("m_{#chi} (GeV)");
 
   TGraph * graph1 = toy->getMassCurve(7., 1.e-6, 2);
@@ -186,8 +186,8 @@
   leg.Draw();
   l1->Draw();
   fs.Draw();
-  l2->Draw();
-  fs2.Draw();
+//   l2->Draw();
+//   fs2.Draw();
   blurb.Draw();
   p.Draw();
 
@@ -201,7 +201,7 @@
 
   TH1F * h = c->DrawFrame(0., 0., 300., 11.);
   h->SetTitle("Interfill Expt");
-  h->SetYTitle("Significance");
+  h->SetYTitle("z-value");
   h->SetXTitle("m_{#chi} (GeV)");
 
   TGraph * graph1 = toy->getMassCurve(7., 1.e-6, 0);
@@ -261,8 +261,8 @@
   leg.Draw();
   l1->Draw();
   fs.Draw();
-  l2->Draw();
-  fs2.Draw();
+//   l2->Draw();
+//   fs2.Draw();
   blurb.Draw();
   p.Draw();
 
@@ -274,7 +274,7 @@
 //   // beamgap expt 7 days
 //   TH1F * h = c->DrawFrame(0., 0., 300., 11.);
 //   h->SetTitle("Beamgap Expt");
-//   h->SetYTitle("Significance");
+//   h->SetYTitle("z-value");
 //   h->SetXTitle("Gluino mass/GeV");
 
 //   TGraph * graph1 = toy->getMassCurve(7., 1.e-6, 1);
@@ -328,7 +328,7 @@
 //   // interfill expt 7 days
 //   TH1F * h = c->DrawFrame(0., 0., 300., 11.);
 //   h->SetTitle("Interfill Expt");
-//   h->SetYTitle("Significance");
+//   h->SetYTitle("z-value");
 //   h->SetXTitle("Gluino mass/GeV");
 
 // //   TGraph * graph1 = toy->getMassCurve(7., 1.e-6, 2);
