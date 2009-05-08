@@ -112,6 +112,8 @@ std::ostream& operator<<(std::ostream& s, const Experiment& e) {
   s << "  Psb interfill   : " << e.interfillPsb << endl;
   s << "  Psb combined    : " << e.combinedPsb << endl;
   s << endl;
+
+  return s;
 }
 
 
@@ -152,6 +154,8 @@ public:
 
   TGraph * getZbCurve(double mass, double lifetime, unsigned expt);
   TGraph * getZsbCurve(double mass, double lifetime, unsigned expt);
+
+  TGraph * getExclusionCurve(double mass, double lifetime, unsigned expt);
 
   // get multi-graph of nominal value + upper/lower bounds
   TGraphAsymmErrors getTimeCurveWithUncertainty(double mass, double lifetime, unsigned expt);
@@ -693,6 +697,83 @@ TGraph * ToyStoppedHSCP::getZsbCurve(double mass, double lifetime, unsigned expt
 
 }
 
+// plot 95% excluded xsection as a fn of running time
+TGraph * ToyStoppedHSCP::getExclusionCurve(double mass, double lifetime, unsigned expt) {
+
+  double xpoints[100];
+  double ypoints[100];
+  unsigned point=0;
+
+  for (unsigned i=0; i<getExperiments().size(); ++i) {
+    if (getExperiment(i).mass == mass && 
+	getExperiment(i).lifetime == lifetime) {
+      xpoints[point] = getExperiment(i).runningTime;
+
+      // step one:
+      //   -find s counts
+      //   -find b counts
+      //   -find scaling factor times both that yields .95
+      //      - in floor_s, floor_b store 0
+      //      - in ceil_s, ceil_b store 1e9
+      //      -Iterate:
+      //         - Iterated many times yet? Report the best guess
+      //         - Is poisson_cdf(b, s+b) == 0.05?
+      //         - No, more. Run for longer
+      //           - floor_s=s, floor_b=b
+      //           - s = 2*s, b = 2*b or (s+ceil_s)/2, (b+ceil_b)/2, whichever lower
+      //           - Reiterate
+      //         - No, less. Run for shorter
+      //           - ceil_s=s, ceil_b=b
+      //           - s=(s+floor_s)/2, b=(b+floor_b)/2
+      //           - Reiterate
+      //   -Scale the xsection by the ratio, that's the excluded xsection.
+
+      double o_s, o_b, s, b, a_s, a_b, b_s, b_b;
+      a_s = a_b = 1000000000;
+      b_s = b_b = 0;
+      unsigned int iterations = 0;
+      double ratio = 0;
+
+      if (expt == 0) {
+	o_s = s = getExperiment(i).nSigBeamgap + getExperiment(i).nSigInterfill;
+	o_b = b = getExperiment(i).nExpectedBeamgap + getExperiment(i).nExpectedInterfill;
+      }
+      else if (expt == 1) {
+	o_s = s = getExperiment(i).nSigBeamgap;
+	o_b = b = getExperiment(i).nExpectedBeamgap;
+      }
+      else if (expt == 2) {
+	o_s = s = getExperiment(i).nSigInterfill;
+	o_b = b = getExperiment(i).nExpectedInterfill;
+      }
+      else { ypoints[point] = 0.; continue;}
+
+      while (1) {
+	if (++iterations > 1000) {ratio = s/o_s; break;}
+	double p = ROOT::Math::poisson_cdf(b, s+b);
+	if (p > 0.05) {
+	  b_s = s; b_b = b;
+	  s = (s+a_s)/2; b = (b+a_b)/2;
+	  if (s > (b_s != 0 ? b_s*2 : 1)) {
+	    s = (b_s != 0 ? b_s*2 : 1);
+	    b = (b_b != 0 ? b_b*2 : 1);
+	  }
+	}
+	else if (p < 0.05) {
+	  a_s = s; a_b = b;
+	  s = (s+b_s)/2; b = (b+b_b)/2;
+	}
+      }
+
+      ypoints[point] = ratio*getExperiment(i).crossSection;
+
+      ++point;
+    }
+  }
+
+  return new TGraph(point, xpoints, ypoints);
+
+}
 
 TGraphAsymmErrors ToyStoppedHSCP::getTimeCurveWithUncertainty(double mass, double lifetime, unsigned expt) {
 
