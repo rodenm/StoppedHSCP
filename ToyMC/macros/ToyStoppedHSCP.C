@@ -298,6 +298,47 @@ void ToyStoppedHSCP::setupBunchStructure(int bx_struct) {
     }
     
   }
+
+  // 75ns spacing
+  else if (bunchStruct == 936) {
+    for (i = 1; i <= 4; i++) {
+      
+      for (j = 1; j <= 3; j++) {
+	
+	for (k = 1; k <= (j == 3 && i < 4 ? 4 : 3); k++) {
+	  for (l = 1; l <= 72; l++) {
+	    if (l % 3 == 1) {
+	      beam[counter++] = 1;
+	      bxs_on++;
+	    }
+	    else {
+	      beam[counter++] = 0;
+	      bxs_off++;
+	    }
+	  }
+	  for (l = 1; l <= 8; l++) {
+	    beam[counter++] = 0;
+	    bxs_off++;
+	  }
+	}
+	
+	for (k = 1; k <= 30; k++) {
+	  beam[counter++] = 0;
+	  bxs_off++;
+	}
+	
+      }
+      
+      beam[counter++] = 0;
+      bxs_off++;
+    }
+    
+    for (i = 1; i <= 8 + 72; i++) {
+      beam[counter++] = 0;
+      bxs_off++;
+    }
+  }
+
   else if (bunchStruct == 2808) {
     for (i = 1; i <= 4; i++) {
       
