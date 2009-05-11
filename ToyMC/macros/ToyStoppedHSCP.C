@@ -752,16 +752,15 @@ TGraph * ToyStoppedHSCP::getExclusionCurve(double mass, double lifetime, unsigne
 	if (++iterations > 1000) {ratio = s/o_s; break;}
 	double p = ROOT::Math::poisson_cdf(b, s+b);
 	if (p > 0.05) {
-	  b_s = s; b_b = b;
-	  s = (s+a_s)/2; b = (b+a_b)/2;
+	  b_s = s;
+	  s = (s+a_s)/2;
 	  if (s > (b_s != 0 ? b_s*2 : 1)) {
 	    s = (b_s != 0 ? b_s*2 : 1);
-	    b = (b_b != 0 ? b_b*2 : 1);
 	  }
 	}
 	else if (p < 0.05) {
-	  a_s = s; a_b = b;
-	  s = (s+b_s)/2; b = (b+b_b)/2;
+	  a_s = s;
+	  s = (s+b_s)/2;
 	}
       }
 
