@@ -49,6 +49,7 @@ public:
   double bgRate;
   double signalEff;
   // event counts
+  unsigned nGeneratedDecays;
   unsigned nSigBeamgap;
   unsigned nBgBeamgap;
   unsigned nSigInterfill;
@@ -63,6 +64,11 @@ public:
   long double interfillPsb;
   long double beamgapPsb;
   long double combinedPsb;
+
+  /*
+  bool keepEvents;
+  TTree *events;
+  */
 };
 
 std::ostream& operator<<(std::ostream& s, const Experiment& e);
@@ -82,6 +88,10 @@ Experiment::Experiment() :
   interfillPsb(0.),
   beamgapPsb(0.),
   combinedPsb(0.)
+  /*
+  keepEvents(false),
+  events(0)
+  */
   { }
 
 Experiment::~Experiment() { }
@@ -99,6 +109,7 @@ std::ostream& operator<<(std::ostream& s, const Experiment& e) {
   s << "  Sig eff          : " << e.signalEff << endl;
   s << "  Running time     : " << e.runningTime << endl;
   s << " Results" << endl;
+  s << "  N generated decays " << e.nGeneratedDecays << endl;
   s << "  Ns beamgap       : " << e.nSigBeamgap << endl;
   s << "  Nb beamgap       : " << e.nBgBeamgap << endl;
   s << "  Ns interfill     : " << e.nSigInterfill << endl;
@@ -156,6 +167,7 @@ public:
   TGraph * getZsbCurve(double mass, double lifetime, unsigned expt);
 
   TGraph * getExclusionCurve(double mass, double lifetime, unsigned expt);
+  TGraph * getEfficiencyCurve(double mass, double runningTime, unsigned expt);
 
   // get multi-graph of nominal value + upper/lower bounds
   TGraphAsymmErrors getTimeCurveWithUncertainty(double mass, double lifetime, unsigned expt);
@@ -170,6 +182,13 @@ public:
   // expt : 0 = combined, 1 = beam gap, 2 = interfill
   void get2DMassLifetimePlot(double runtime, unsigned expt, TH2D *);
 
+  TH1D* hBxStruct_;
+
+  TH1D* hdecays;
+  TH1D* hdecaysReg;
+  TH1D* hperday;
+  TH1D* hinday;
+
 private:
 
   // some constants
@@ -182,13 +201,6 @@ private:
   unsigned bxs_on;
   unsigned bxs_off;
   unsigned char beam[3564];
-
-  TH1D* hBxStruct_;
-
-  TH1D* hdecays;
-  TH1D* hdecaysReg;
-  TH1D* hperday;
-  TH1D* hinday;
 
   // log file
   ofstream lfile_;
@@ -408,7 +420,7 @@ void ToyStoppedHSCP::run(Experiment exp) {
   double efficiency = exp.signalEff;
 
   // optimised time cut
-  double timeCut = lifetime * 1.256;
+  double timeCut = -1;//lifetime * 1.256;
 
   double nOrbitsOn  = nOrbitsPerDay_/2;
   double nOrbitsOff = nOrbitsPerDay_/2;
@@ -438,12 +450,22 @@ void ToyStoppedHSCP::run(Experiment exp) {
   double total_counts = 0, beam_counts = 0, cosmic_counts = 0;
   double s_total_counts = 0, s_beam_counts = 0, s_cosmic_counts = 0;
   double b_total_counts = 0, b_beam_counts = 0, b_cosmic_counts = 0;
-  
 
+  /*
+  double time;
+  unsigned int prescale_counter = 0;
+  if (exp.keepEvents) {
+    exp.events = new TTree("events", "Signal and Background events");
+    exp.events->Branch("t", &time, "t/D");
+  }
+  */
+
+  exp.nGeneratedDecays = 0;
   // do signal
   for (t = 0, n = 0; n < nBucketsPerOrbit_; t += tstep, n++) {
     if (beam[n]) {
       int nRandomDecays = scale*nDecays*nOrbitsOn*days; //rndm.Poisson;
+      exp.nGeneratedDecays += nRandomDecays;
       for (int ig = 0; ig < nRandomDecays ; ig++) {
 	
 	double tau = rndm.Exp (lifetime);
@@ -477,14 +499,24 @@ void ToyStoppedHSCP::run(Experiment exp) {
 	    s_cosmic_counts+= 1/scale;
 	  }
 	  
+	  /*
+	  if (exp.keepEvents && ++prescale_counter > scale) {
+	    prescale_counter = 0;
+	    time = (remainder-nOrbitsOn)*tOrbit;
+	    exp.events->Fill();
+	  }
+	  */
+
 	  hperday->Fill (quotient+day, 1./scale);
 	  hinday->Fill(remainder*nBucketsPerOrbit_*bunchCrossingTime_, 1./scale);
 	}
       }
     }
   }
+  exp.nGeneratedDecays /= scale;
   
   // do background
+  //prescale_counter = 0;
   for (int i = 0; i < days; i++) {
     
     int todays_rate = bg_per_day*bgscale;//rndm.Poisson(bg_per_day);
@@ -512,6 +544,13 @@ void ToyStoppedHSCP::run(Experiment exp) {
 	  b_cosmic_counts+=1./bgscale;
 	}
 	
+	/*
+	if (exp.keepEvents && ++prescale_counter > bgscale) {
+	  prescale_counter = 0;
+	  time = (orbit - nOrbitsOn)*tOrbit;
+	  exp.events->Fill();
+	}
+	*/
 	hperday->Fill (i, 1./bgscale);
 	hinday->Fill((bunch+((double)orbit)*nBucketsPerOrbit_)*bunchCrossingTime_, 1./bgscale);
       }
@@ -772,6 +811,43 @@ TGraph * ToyStoppedHSCP::getExclusionCurve(double mass, double lifetime, unsigne
 
   return new TGraph(point, xpoints, ypoints);
 
+}
+
+TGraph *ToyStoppedHSCP::getEfficiencyCurve(double mass, double runningTime, unsigned expt) {
+  double xpoints[100];
+  double ypoints[100];
+  unsigned point=0;
+
+  for (unsigned i=0; i<getExperiments().size(); ++i) {
+    if (getExperiment(i).mass == mass && 
+	getExperiment(i).runningTime == runningTime) {
+      xpoints[point] = getExperiment(i).lifetime;
+      switch (expt) {
+      case 0:
+	ypoints[point] = 
+	  (
+	   getExperiment(i).nSigInterfill +
+	   getExperiment(i).nSigBeamgap
+	   )
+	  / ((double)getExperiment(i).nGeneratedDecays);
+	break;
+      case 1:
+	ypoints[point] = 
+	  getExperiment(i).nSigBeamgap
+	  / ((double)getExperiment(i).nGeneratedDecays);
+	break;
+      case 2:
+	ypoints[point] = 
+	  getExperiment(i).nSigInterfill
+	  / ((double)getExperiment(i).nGeneratedDecays);
+	break;
+      default: ypoints[point] = 0;
+      }
+      point++;
+    }
+  }      
+
+  return new TGraph(point, xpoints, ypoints);
 }
 
 TGraphAsymmErrors ToyStoppedHSCP::getTimeCurveWithUncertainty(double mass, double lifetime, unsigned expt) {
