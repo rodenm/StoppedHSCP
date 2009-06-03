@@ -23,8 +23,8 @@ cvs co -d StoppedHSCP/Analysis -r $hscp_tag UserCode/StoppedHSCP/Analysis
 scramv1 b
 
 # make job config
-rm FilterMC$MassPoint.py -f
-sed "s/MASSPOINT/$MassPoint/g" StoppedHSCP/Analysis/test/MCSignal/FilterTemplate.py > FilterMC$job.py
+rm FilterMC$job.py -f
+sed "s/MASSPOINT/$job/g" StoppedHSCP/Analysis/test/MCSignal/FilterTemplate.py > FilterMC$job.py
 
 # run job
 cmsRun FilterMC$job.py
