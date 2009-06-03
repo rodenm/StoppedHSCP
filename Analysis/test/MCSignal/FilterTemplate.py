@@ -29,7 +29,7 @@ process.load('Configuration/StandardSequences/L1Extra_cff')
 process.load('Configuration/EventContent/EventContent_cff')
 
 process.configurationMetadata = cms.untracked.PSet(
-    version = cms.untracked.string('$Revision: 1.71 $'),
+    version = cms.untracked.string('$Revision: 1.1 $'),
     annotation = cms.untracked.string('TTbar.cfi nevts:1'),
     name = cms.untracked.string('PyReleaseValidation')
 )
@@ -45,7 +45,7 @@ process.maxEvents = cms.untracked.PSet(
 
 process.source = cms.Source("PoolSource",
     fileNames=cms.untracked.vstring(
-    'rfio:/castor/cern.ch/user/j/jbrooke/hscp/sim_v2/stoppedHSCP_MASSPOINT.root'))
+    'rfio:/castor/cern.ch/user/j/jbrooke/hscp/sim_v5/stoppedHSCP_MASSPOINT.root'))
     
 
 
@@ -131,7 +131,7 @@ process.hltL1extraParticles = cms.EDProducer( "L1ExtraParticlesProd",
 
 
 process.TFileService = cms.Service("TFileService",
-    fileName = cms.string('/tmp/bjones/GenSimReco_MASSPOINT.root')
+    fileName = cms.string('GenSimReco_MASSPOINT.root')
 )
 
 
