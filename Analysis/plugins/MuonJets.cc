@@ -13,7 +13,7 @@
 //
 // Original Author:  Benjamin Jones
 //         Created:  Fri Dec 12 12:07:32 CET 2008
-// $Id$
+// $Id: MuonJets.cc,v 1.1 2009/02/17 10:54:50 bjones Exp $
 //
 //
 

@@ -13,7 +13,7 @@
 //
 // Original Author:  Benjamin Jones
 //         Created:  Fri Sep 12 15:55:18 CEST 2008
-// $Id$
+// $Id: CaloFilter.cc,v 1.1 2009/02/17 11:10:06 bjones Exp $
 //
 //
 

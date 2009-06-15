@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  Mon Jan 26 15:41:31 CET 2009
-// $Id$
+// $Id: HLTCaloJetEnergyFilter.cc,v 1.1 2009/02/04 21:18:41 jbrooke Exp $
 //
 //
 

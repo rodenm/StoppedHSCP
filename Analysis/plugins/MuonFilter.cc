@@ -13,7 +13,7 @@
 //
 // Original Author:  Benjamin Jones
 //         Created:  Thu Sep 18 17:50:32 CEST 2008
-// $Id$
+// $Id: MuonFilter.cc,v 1.1 2009/04/17 14:30:53 bjones Exp $
 //
 //
 

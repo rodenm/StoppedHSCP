@@ -13,7 +13,7 @@
 //
 // Original Author:  Benjamin Jones
 //         Created:  Fri Dec 12 10:15:22 CET 2008
-// $Id$
+// $Id: BitFilter.cc,v 1.1 2009/04/17 14:32:38 bjones Exp $
 //
 //
 

@@ -13,7 +13,7 @@
 //
 // Original Author:  Benjamin Jones
 //         Created:  Wed Jan 28 17:01:48 CET 2009
-// $Id$
+// $Id: TimingExtract.cc,v 1.1 2009/04/17 14:30:53 bjones Exp $
 //
 //
 
