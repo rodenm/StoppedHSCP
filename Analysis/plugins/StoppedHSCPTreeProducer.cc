@@ -13,7 +13,7 @@
 //
 // Original Author:  Benjamin JONES
 //         Created:  Thu Dec  4 11:44:26 CET 2008
-// $Id: StoppedHSCPTreeProducer.cc,v 1.1 2009/06/15 23:02:32 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.2 2009/06/16 13:40:45 jbrooke Exp $
 //
 //
 
@@ -54,7 +54,7 @@
 
 
 #include "StoppedHSCP/Analysis/interface/StoppedHSCPEvent.h"
-#include "StoppedHSCP/Analysis/interface/StoppedHSCPJet.h"
+//#include "StoppedHSCP/Analysis/interface/StoppedHSCPJet.h"
 
 //
 // class decleration
