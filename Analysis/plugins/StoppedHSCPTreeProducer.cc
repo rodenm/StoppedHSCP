@@ -13,7 +13,7 @@
 //
 // Original Author:  Benjamin JONES
 //         Created:  Thu Dec  4 11:44:26 CET 2008
-// $Id: GlobalRunAnalyser.cc,v 1.3 2009/04/15 11:53:43 bjones Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.1 2009/06/15 23:02:32 jbrooke Exp $
 //
 //
 
@@ -178,13 +178,13 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
    Handle<CaloJetCollection> caloJets;
    iEvent.getByLabel(jetTag_, caloJets);
        
-   for(CaloJetCollection::const_iterator it=caloJets->begin(); it!=caloJets->end(); ++it) {
-     StoppedHSCPEvent::StoppedHSCPJet jet;
-     jet.et = it->et();
-     jet.eta = it->eta();
-     jet.phi = it->phi();
-     event_->addJet(jet);
-   }
+//    for(CaloJetCollection::const_iterator it=caloJets->begin(); it!=caloJets->end(); ++it) {
+//      StoppedHSCPEvent::StoppedHSCPJet jet;
+//      jet.et = it->et();
+//      jet.eta = it->eta();
+//      jet.phi = it->phi();
+//      event_->addJet(jet);
+//    }
 
 
 	       
