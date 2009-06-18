@@ -51,7 +51,7 @@
   }  
   
   // loop over running time
-  for (unsigned nd=0; nd<5; ++nd) {
+  for (unsigned nd=0; nd<4; ++nd) {
     
     // loop over liftime
     for (unsigned l=0; l<6; ++l) {

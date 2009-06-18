@@ -40,7 +40,7 @@
   // beamgap expt 30 days
   TH1F * h = c->DrawFrame(0., 0., 300., 11.);
   h->SetTitle("Beamgap Expt");
-  h->SetYTitle("z-value");
+  h->SetYTitle("Significance");
   h->SetXTitle("m_{#chi} (GeV)");
 
   TGraph * graph1 = toy->getMassCurve(7., 1.e-6, 1);
@@ -126,7 +126,7 @@
 
   TH1F * h = c->DrawFrame(0., 0., 300., 11.);
   h->SetTitle("Interfill Expt");
-  h->SetYTitle("z-value");
+  h->SetYTitle("Significance");
   h->SetXTitle("m_{#chi} (GeV)");
 
   TGraph * graph1 = toy->getMassCurve(7., 1.e-6, 2);
@@ -201,7 +201,7 @@
 
   TH1F * h = c->DrawFrame(0., 0., 300., 11.);
   h->SetTitle("Interfill Expt");
-  h->SetYTitle("z-value");
+  h->SetYTitle("Significance");
   h->SetXTitle("m_{#chi} (GeV)");
 
   TGraph * graph1 = toy->getMassCurve(7., 1.e-6, 0);

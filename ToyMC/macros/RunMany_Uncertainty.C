@@ -39,9 +39,9 @@
 		     #900. 
   };
   
-  double efficiency[7]   = {  0.158 * 0.081,  //selection eff * stopping eff
+  double efficiency[7]   = {  0.158 * 0.062,  //selection eff * stopping eff
 			      0.158 * 0.162,
-			      0.158 * 0.324
+			      0.158 * 0.194,
 			      #0.171 * 0.160,
 			      #0.184 * 0.158,
 			      #0.186 * 0.164,

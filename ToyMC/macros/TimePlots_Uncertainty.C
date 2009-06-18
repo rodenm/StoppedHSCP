@@ -44,7 +44,7 @@
   // beamgap expt 30 days
   TH1F * h = c->DrawFrame(0., 0., 30., 11.);
   h->SetTitle("Beamgap Expt");
-  h->SetYTitle("z-value");
+  h->SetYTitle("Significance");
   h->SetXTitle("Days");
 
 //   TGraphAsymmErrors graph1 = toy->getTimeCurveWithUncertainty(300., 86400., 1);
@@ -105,7 +105,7 @@
   // interfill expt 30 days
   TH1F * h = c->DrawFrame(0., 0., 30., 11.);
   h->SetTitle("Beamgap Expt");
-  h->SetYTitle("z-value");
+  h->SetYTitle("Significance");
   h->SetXTitle("Days");
 
 //   TGraphAsymmErrors graph1 = toy->getTimeCurveWithUncertainty(300., 86400., 1);
@@ -166,7 +166,7 @@
   // combined expt 30 days
   TH1F * h = c->DrawFrame(0., 0., 30., 11.);
   h->SetTitle("Beamgap Expt");
-  h->SetYTitle("z-value");
+  h->SetYTitle("Significance");
   h->SetXTitle("Days");
 
 //   TGraphAsymmErrors graph1 = toy->getTimeCurveWithUncertainty(300., 86400., 1);
@@ -186,7 +186,7 @@
   upper->SetLineColor(4);
   upper->Draw("L");
 
-  TBox box7(1., 0., 7., 5.6);
+  TBox box7(1., 0., 5., 3.8);
   box7.SetFillColor(4);
   box7.SetLineColor(4);
   box7.Draw();
@@ -201,7 +201,7 @@
   lower->SetLineColor(0);
   lower->Draw("C");
 
-  TBox box9(1., 0., 7., 1.95);
+  TBox box9(1., 0., 7., 1.5);
   box9.SetFillColor(0);
   box9.SetLineColor(0);
   box9.Draw();

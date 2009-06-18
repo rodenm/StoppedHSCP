@@ -42,7 +42,7 @@
   // beamgap expt 30 days
   TH1F * h = c->DrawFrame(0., 0., 30., 11.);
   h->SetTitle("Beamgap Expt");
-  h->SetYTitle("z-value");
+  h->SetYTitle("Significance");
   h->SetXTitle("Days");
 
   TGraph * graph1 = toy->getZbCurve(300., 1.e-6, 1);
@@ -128,7 +128,7 @@
   c->Clear();  
   TH1F * h = c->DrawFrame(0., 0., 30., 11.);
   h->SetTitle("Interfill Expt");
-  h->SetYTitle("z-value");
+  h->SetYTitle("Significance");
   h->SetXTitle("Days");
 
   TGraph * graph1 = toy->getZbCurve(300., 1.e-6, 2);
@@ -202,7 +202,7 @@
   c->Clear();  
   TH1F * h = c->DrawFrame(0., 0., 30., 11.);
   h->SetTitle("Interfill Expt");
-  h->SetYTitle("z-value");
+  h->SetYTitle("Significance");
   h->SetXTitle("Days");
 
   TGraph * graph1 = toy->getZbCurve(300., 1.e-6, 0);
