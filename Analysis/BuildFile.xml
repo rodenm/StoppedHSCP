@@ -3,4 +3,5 @@
 
 <export>
   <use name="root"/>
+  <lib name="StoppedHSCPAnalysis"/>
 </export>

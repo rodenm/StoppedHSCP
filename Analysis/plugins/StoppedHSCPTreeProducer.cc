@@ -13,7 +13,7 @@
 //
 // Original Author:  Benjamin JONES
 //         Created:  Thu Dec  4 11:44:26 CET 2008
-// $Id: StoppedHSCPTreeProducer.cc,v 1.2 2009/06/16 13:40:45 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.3 2009/06/16 14:17:28 jbrooke Exp $
 //
 //
 
@@ -110,6 +110,12 @@ class StoppedHSCPTreeProducer : public edm::EDAnalyzer {
   edm::InputTag mcTag_;
   edm::InputTag muonTag_;
 
+  // cuts
+  double  towerMinEnergy_;
+  double  towerMaxEta_;
+  double  jetMinEnergy_;
+  double  jetMaxEta_;
+
   // output control
   bool writeHistos_;
 
@@ -132,13 +138,17 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   caloTowerTag_(iConfig.getUntrackedParameter("caloTowerTag",edm::InputTag("towerMaker"))),
   mcTag_(iConfig.getUntrackedParameter("mcTag",edm::InputTag("source"))),
   muonTag_(iConfig.getUntrackedParameter("muonTag",edm::InputTag("muons"))),
+  towerMinEnergy_(iConfig.getUntrackedParameter("towerMinEnergy", 1.)),
+  towerMaxEta_(iConfig.getUntrackedParameter("towerMaxEta", 3.)),
+  jetMinEnergy_(iConfig.getUntrackedParameter("jetMinEnergy", 1.)),
+  jetMaxEta_(iConfig.getUntrackedParameter("jetMaxEta", 3.)),
   writeHistos_(iConfig.getUntrackedParameter("writeHistos",false)),
   event_(0)
 {
 
   // set up output
   tree=fs->make<TTree>("StoppedHSCPTree", "");
-  tree->Branch("event", "StoppedHSCPEvent", &event_, 64000, 1);
+  tree->Branch("events", "StoppedHSCPEvent", &event_, 64000, 1);
   
 }
 
@@ -173,146 +183,8 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
 			0,
 			iEvent.time().value());
 
-   // jets
+   // MC
 
-   Handle<CaloJetCollection> caloJets;
-   iEvent.getByLabel(jetTag_, caloJets);
-       
-//    for(CaloJetCollection::const_iterator it=caloJets->begin(); it!=caloJets->end(); ++it) {
-//      StoppedHSCPEvent::StoppedHSCPJet jet;
-//      jet.et = it->et();
-//      jet.eta = it->eta();
-//      jet.phi = it->phi();
-//      event_->addJet(jet);
-//    }
-
-
-	       
-// 		       LeadingCenJetEt_=it->et();
-// 		       LeadingCenJetEta_=it->eta();
-// 		       LeadingCenJetPhi_=it->phi();
-// 		       LeadingCenJetEnergy_=it->energy();
-// 		       LeadingCenJetEmInEB_=it->emEnergyInEB();
-// 		       LeadingCenJetHadInHB_=it->hadEnergyInHB();
-// 		       LeadingCenJetMaxEInEmTowers_=it->maxEInEmTowers();
-// 		       LeadingCenJetMaxEInHadTowers_=it->maxEInHadTowers();
-// 		       LeadingCenJetTowerArea_=it->towersArea();
-// 		       //	   std::cout<< "n60, n90"<<std::endl<<it->n60()<<", "<<it->n90()<<std::endl;
-// 		       LeadingCenJetn60_=it->n60();
-// 		       LeadingCenJetn90_=it->n90();
-// 		     }
-// 		   LeadingJetEt_=it->et();
-// 		   LeadingJetEta_=it->eta();
-// 		   LeadingJetPhi_=it->phi();
-// 		   LeadingJetEnergy_=it->energy();
-// 		   LeadingJetEmInEB_=it->emEnergyInEB();
-// 		   LeadingJetHadInHB_=it->hadEnergyInHB();
-// 		   LeadingJetMaxEInEmTowers_=it->maxEInEmTowers();
-// 		   LeadingJetMaxEInHadTowers_=it->maxEInHadTowers();
-// 		   LeadingJetTowerArea_=it->towersArea();
-// 		   //	   std::cout<< "n60, n90"<<std::endl<<it->n60()<<", "<<it->n90()<<std::endl;
-// 		   LeadingJetn60_=it->n60();
-// 		   LeadingJetn90_=it->n90();
-		   
-// 		 }
-// 	       else
-// 		 {
-// 		   if(LeadingJetEnergy_ < it->energy())
-// 		     {
-		      
-// 		       LeadingJetEt_=it->et();
-// 		       LeadingJetEta_=it->eta();
-// 		       LeadingJetPhi_=it->phi();
-// 		       LeadingJetEnergy_=it->energy();
-// 		       LeadingJetEmInEB_=it->emEnergyInEB();
-// 		       LeadingJetHadInHB_=it->hadEnergyInHB();
-// 		       LeadingJetMaxEInEmTowers_=it->maxEInEmTowers();
-// 		       LeadingJetMaxEInHadTowers_=it->maxEInHadTowers();
-// 		       LeadingJetTowerArea_=it->towersArea();
-// 		       //   std::cout<< "n60, n90"<<std::endl<<it->n60()<<", "<<it->n90()<<std::endl;
-// 		       LeadingJetn60_=it->n60();
-// 		       LeadingJetn90_=it->n90();
-// 		     }
-
-// 		   if((it->eta()>(0-CenJetEta_))&&(it->eta()<CenJetEta_)&&(it->energy()>LeadingCenJetEnergy_))
-// 		     {
-		       
-// 		       LeadingCenJetEt_=it->et();
-// 		       LeadingCenJetEta_=it->eta();
-// 		       LeadingCenJetPhi_=it->phi();
-// 		       LeadingCenJetEnergy_=it->energy();
-// 		       LeadingCenJetEmInEB_=it->emEnergyInEB();
-// 		       LeadingCenJetHadInHB_=it->hadEnergyInHB();
-// 		       LeadingCenJetMaxEInEmTowers_=it->maxEInEmTowers();
-// 		       LeadingCenJetMaxEInHadTowers_=it->maxEInHadTowers();
-// 		       LeadingCenJetTowerArea_=it->towersArea();
-// 		       //	   std::cout<< "n60, n90"<<std::endl<<it->n60()<<", "<<it->n90()<<std::endl;
-// 		       LeadingCenJetn60_=it->n60();
-// 		       LeadingCenJetn90_=it->n90();
-// 		     }
-		   
-// 		 }
-	       
-// 	     }
-// 	 }
-
-//        Handle<CaloTowerCollection> MyCaloTowers;
-//        iEvent.getByLabel(CaloTowerTag_,MyCaloTowers);
-
-//        std::vector<CaloTower> MyCaloVector;
-       
-//        MyCaloVector.insert(MyCaloVector.end(),MyCaloTowers->begin(),MyCaloTowers->end());
-       
-//        sort(MyCaloVector.begin(),MyCaloVector.end(),compare_ct());
-
-//        int FirstEta=200;
-//        int FirstPhi=200;
-//        bool KeepChecking=true;
-
-//        NCaloTowersInTopHPD_=0;
-         
-//        for(std::vector<CaloTower>::const_iterator it = MyCaloVector.begin(); (it!=MyCaloVector.end())&&(KeepChecking);it++)
-// 	 {
-// 	   if((it->eta()<1.3)&&(it->eta()>-1.3))
-// 	     {
-// 	       if((FirstEta==200)&&(FirstPhi==200))
-// 		 {
-// 		   FirstEta=it->ieta();
-// 		   FirstPhi=it->iphi();
-// 		 }
-// 	       else
-// 		 {
-// 		   if(it->iphi()==FirstPhi)
-// 		     NCaloTowersInTopHPD_++;
-// 		   else
-// 		     KeepChecking=false;
-// 		 }
-		      
-// 	     }
-	       
-// 	 }
-
-
-
-
-//      }
-
-
-
-
-
-
-
-//    //
-//    //
-//    // Monte Carlo Analysis
-//    //
-//    //
-
-
-//    if(IncludeMC_)
-//      {
-       
 //        Handle<edm::HepMCProduct> mcHandle;
 //        iEvent.getByLabel(MCTag_,mcHandle);
        
@@ -348,6 +220,80 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
 // 	     }
 // 	 }
 //      }
+   
+   // towers
+   Handle<CaloTowerCollection> caloTowers;
+   iEvent.getByLabel(caloTowerTag_,caloTowers);
+   std::vector<CaloTower> caloTowVec;
+      
+   sort(caloTowVec.begin(), caloTowVec.end(), compare_ct());
+   
+   for(std::vector<CaloTower>::const_iterator it = caloTowVec.begin(); 
+       it!=caloTowVec.end() && event_->nTow() < StoppedHSCPEvent::MAX_N_TOWERS;
+       ++it) {
+     if (it->energy() > towerMinEnergy_ &&
+	 fabs(it->eta()) < towerMaxEta_) {
+       shscp::Tower tow;
+       tow.e = it->energy();
+       tow.et = it->et();
+       tow.eta = it->eta();
+       tow.phi = it->phi();
+       tow.ieta = it->ieta();
+       tow.iphi = it->iphi();
+       tow.eHad = it->hadEnergy();
+       tow.etHad = it->hadEt();
+       tow.eEm = it->emEnergy();
+       tow.etEm = it->emEt();
+       event_->addTower(tow);
+     }
+   }
+
+   // HPDs
+
+
+   // RBXs
+
+
+   // Jets
+   Handle<CaloJetCollection> caloJets;
+   iEvent.getByLabel(jetTag_, caloJets);
+       
+   for(CaloJetCollection::const_iterator it=caloJets->begin(); 
+       it!=caloJets->end() && event_->nJet() < StoppedHSCPEvent::MAX_N_JETS;
+       ++it) {
+     if (it->energy() > jetMinEnergy_ &&
+	 fabs(it->eta()) < jetMaxEta_) {
+       shscp::Jet jet;
+       jet.et = it->et();
+       jet.eta = it->eta();
+       jet.phi = it->phi();
+       jet.e = it->energy();
+       jet.eEm = it->emEnergyInEB();
+       jet.eHad = it->hadEnergyInHB();
+       jet.eMaxEcalTow = it->maxEInEmTowers();
+       jet.eMaxHcalTow = it->maxEInHadTowers();
+       jet.n60 = it->n60();
+       jet.n90 = it->n90();
+       event_->addJet(jet);
+     }
+   }
+
+   // Muons
+       Handle<reco::MuonCollection> pMuon;
+       iEvent.getByLabel(muonTag_,pMuon);
+       for(reco::MuonCollection::const_iterator it =pMuon->begin();
+	   it!=pMuon->end() && event_->nMuon() < StoppedHSCPEvent::MAX_N_MUONS;
+	   it++) {
+	 shscp::Muon mu;
+	 mu.pt = it->pt();
+	 mu.eta = it->eta();
+	 mu.phi = it->phi();
+	 mu.hcalEta = 0.;  // TODO extrapolate GlobalMuon track to HCAL surface and store position!
+	 mu.hcalPhi = 0.;
+	 event_->addMuon(mu);
+       }
+       
+      
    
 
 
@@ -550,201 +496,6 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
 
 
        
-//    if(IncludeDigisOld_)
-//      {
- 
-//        Handle<HBHEDigiCollection > pIn;
-//        iEvent.getByLabel(DigisTag_,pIn);
-
-
-//        float ThisSpectrum[10];
-   
-
-       
-//        std::vector<HBHEDataFrame> MyDataFrameVector;
-       
-//        MyDataFrameVector.insert(MyDataFrameVector.end(),pIn->begin(),pIn->end());
-//        sort(MyDataFrameVector.begin(),MyDataFrameVector.end(),compare_df());
-
-//        double ThisEnergy=0;
-//        int topcount=std::max(DigiCount_,(int)MyDataFrameVector.size());
-//        int count=0;
-
-//        for(int k=0; k<10; k++)
-// 	 {
-// 	   ThisSpectrum[k]=0;
-// 	 }
-       
-       
-//        int FirstiEta, FirstiPhi;
-//        bool FirstTower=true;
-
-//        for(HBHEDigiCollection::const_iterator it = MyDataFrameVector.begin(); (it!=MyDataFrameVector.end())&&(count!=1); it++)
-// 	 {
-// 	   double FrameEnergy=0;
-// 	   if(FirstTower)
-// 	     {	   
-// 	       FirstiEta=it->id().ieta();
-// 	       FirstiPhi=it->id().iphi();
-// 	       FirstTower=false;
-// 	     }
-
-// 	   if((abs(it->id().iphi()-FirstiPhi)<2)&&(abs(it->id().ieta())<16))
-// 	     {
-// 	       for(int j=0; j<10; j++)
-// 		 FrameEnergy+=it->sample(j).nominal_fC();
-	  
-// 	       if(FrameEnergy>30)
-// 		 {
-// 		   /*
-// 		   if(WriteHistos_)
-// 		     {
-// 		       std::stringstream HistName;
-// 		       HistName.str("");
-// 		       HistName<< "TimingPlotAll"<<iEvent.id().event()<<"_"<<count;
-// 		       TH1D* TheHist= fs->make<TH1D>(HistName.str().c_str(),HistName.str().c_str(),10,0,10);
-// 		       for(int j=0; j!=10; j++)
-// 			 {
-// 			   TheHist->Fill(j,it->sample(j).nominal_fC());
-// 			 }
-// 		     }
-// 		   */
-// 		   count++;
-// 		   ThisEnergy+=FrameEnergy;
-// 		   for(int j=0; j<10; j++)
-// 		     if(it->sample(j).nominal_fC()>5) ThisSpectrum[j]+=(it->sample(j).nominal_fC());
-
-
-		   
-	     
-// 		 }
-// 	     }
-// 	 }
-	      
-//        TimingNoOfChannels_=count;
-//        TimingFirstBin_=ThisSpectrum[0];
-//        TimingFirst2Bins_=ThisSpectrum[0]+ThisSpectrum[1];
-//        TimingLastBin_=ThisSpectrum[9];
-//        TimingLast2Bins_=ThisSpectrum[8]+ThisSpectrum[9];
-       
-//        int TopPosition=9;
-//        double TotalOverTime=0;
-
-       
-//        std::stringstream HistName;
-//        HistName.str("");
-//        HistName<< "TimingPlotAll"<<iEvent.id().event();
-//        TH1D * hist1 = new TH1D(HistName.str().c_str(),HistName.str().c_str(),10,0,10);
-//        for(int i=9; i>=0; i--)
-// 	 {
-// 	   hist1->Fill(i,ThisSpectrum[i]);
-// 	   TotalOverTime+=ThisSpectrum[i];
-// 	   if(ThisSpectrum[i]>ThisSpectrum[TopPosition])
-// 	     TopPosition=i;
-	       
-// 	 }
-   
-//        hist1->Fit("expo","WWQ","",TopPosition,10);
-//        TF1 * Fit = hist1->GetFunction("expo");
-//        TimingExpSlope_=Fit->GetParameter("Slope");
-//        TimingExpConst_=Fit->GetParameter("Constant");
-//        TimingExpChiSq_=Fit->GetChisquare();
-       
-
-//        if(WriteHistos_)
-// 	 {
-// 	   TH1D* FileHist= fs->make<TH1D>(*hist1);
-// 	 }
-
-//        delete hist1;
-       
-
-//        TimingEnergyBeforePorch_=0;
-//        for (int j=0; j!=std::max(TopPosition-1,0); j++)
-// 	 {
-// 	   TimingEnergyBeforePorch_+=ThisSpectrum[j];
-// 	 }
-//        TimingEnergyBeforePeak_=TimingEnergyBeforePorch_+ThisSpectrum[TopPosition-1];
-
-//        //Fraction left and right of peak
-       
-//        TimingFracInLeader_=ThisSpectrum[TopPosition]/TotalOverTime;
-       
-//        TimingLeftPeak_=TimingRightPeak_=0;
-       
-//        if(ThisSpectrum[TopPosition]!=0)
-// 	 {
-// 	   if(TopPosition!=0)
-// 	     TimingLeftPeak_=ThisSpectrum[TopPosition-1]/ThisSpectrum[TopPosition];
-	   
-// 	   if(TopPosition!=9)
-// 	     TimingRightPeak_=ThisSpectrum[TopPosition+1]/ThisSpectrum[TopPosition];
-
-// 	   if((TopPosition!=9) && (TopPosition!=8) && (TopPosition!=7) && (TopPosition!=1))
-// 	     TimingFracInCentralFour_=(ThisSpectrum[TopPosition]+ThisSpectrum[TopPosition-1]+ThisSpectrum[TopPosition+1]+ThisSpectrum[TopPosition+2])/TotalOverTime;
-
-// 	   if(TopPosition!=8)
-// 	     {
-// 	       TimingFracRightNextRight_=ThisSpectrum[TopPosition+2]/ThisSpectrum[TopPosition+1];
-// 	       TimingFracPeakNextRight_=ThisSpectrum[TopPosition+2]/ThisSpectrum[TopPosition];
-// 	     }
-// 	 }
-       
-       
-//        //n60, n70, n80, n90
-       
-//        Timingn60_ = Timingn70_ = Timingn80_ = Timingn90_ = 0;
-       
-//        std::vector<double> SortableSpec;
-//        SortableSpec.resize(10);
-//        for(int i=0; i<10; i++)
-// 	 {
-// 	   SortableSpec[i]=ThisSpectrum[i];
-// 	 }
-       
-//        std::sort(SortableSpec.begin(), SortableSpec.end());
-       
-//        double TotalSoFar=0;
-//        int counter=0;
-       
-//        for(int i=9; i>=0; i--)
-// 	 {
-// 	   counter++;
-	   
-// 	   TotalSoFar+=SortableSpec[i];
-// 	   if(((TotalSoFar/TotalOverTime) >= 0.6) && Timingn60_==0) Timingn60_ = counter;
-// 	   if(((TotalSoFar/TotalOverTime) >= 0.7) && Timingn70_==0) Timingn70_ = counter;
-// 	   if(((TotalSoFar/TotalOverTime) >= 0.8) && Timingn80_==0) Timingn80_ = counter;
-// 	   if(((TotalSoFar/TotalOverTime) >= 0.9) && Timingn90_==0) Timingn90_ = counter;
-// 	 }		
-       
-//        TimingBX0_=ThisSpectrum[0];
-//        TimingBX1_=ThisSpectrum[1];
-//        TimingBX2_=ThisSpectrum[2];
-//        TimingBX3_=ThisSpectrum[3];
-//        TimingBX4_=ThisSpectrum[4];
-//        TimingBX5_=ThisSpectrum[5];
-//        TimingBX6_=ThisSpectrum[6];
-//        TimingBX7_=ThisSpectrum[7];
-//        TimingBX8_=ThisSpectrum[8];	
-//        TimingBX9_=ThisSpectrum[9]; 
-//        TimingTotal_=TotalOverTime;
-
-  
- 
-
-       
-//      }
-
-   
-//    if(IncludeHPDVeto_)
-//      {
-
-
-
-
-//      }
-
 
 
 //    //
@@ -908,16 +659,6 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
        
        
 
-//      }
-
-
-//    if(IncludeMuons_)
-//      {
-//        NoOfMuons_=0;
-//        Handle<reco::MuonCollection> pMuon;
-//        iEvent.getByLabel(MuonTag_,pMuon);
-//        for(reco::MuonCollection::const_iterator it =pMuon->begin(); it!=pMuon->end(); it++)
-// 	 NoOfMuons_++;
 //      }
 
    tree->Fill();

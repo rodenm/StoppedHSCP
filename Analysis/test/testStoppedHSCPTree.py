@@ -27,6 +27,13 @@ process.TFileService = cms.Service("TFileService",
     fileName = cms.string('stoppedHSCPTree.root')
 )
 
+process.output = cms.OutputModule("PoolOutputModule",
+    fileName = cms.untracked.string('testStoppedHSCPTree.root')
+)
+process.endpath = cms.EndPath(
+    process.output
+)
+
 process.source = cms.Source("PoolSource",
     fileNames=cms.untracked.vstring(
         '/store/relval/CMSSW_3_1_0_pre9/RelValQCD_Pt_80_120/GEN-SIM-RECO/STARTUP_31X_v1/0007/F6DE1DAA-ED4E-DE11-8A9B-001D09F25325.root',
