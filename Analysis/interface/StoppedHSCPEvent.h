@@ -19,20 +19,48 @@ namespace shscp {
     ClassDef(Event,1);
   };
   
+  struct Trigger {
+    double l1JetEt;
+    double l1JetEta;
+    double l1JetPhi;
+    double l1BptxPlus;
+    double l1BptxMinus;
+    double hltJetEt;
+    double hltJetEta;
+    double hltJetPhi;
+    ClassDef(Trigger,1);
+  };
+
   struct MC {
-  MC() : vtxX(0.),vtxY(0.),vtxZ(0.),vtxR(0.),vtxT(0.),rHadPDG(0),eJet(0.),ptJetX(0.),ptJetY(0.),ptJetZ(0.),ptJetR(0.) { } 
+  MC() : vtxX(0.),vtxY(0.),vtxZ(0.),vtxR(0.),vtxT(0.),rHadPdgId(0),rHadE(0.),rHadPx(0.),rHadPy(0.),rHadPz(0.),rHadPt(0.) { } 
     double vtxX;
     double vtxY;
     double vtxZ;
     double vtxR;
     double vtxT;
-    unsigned rHadPDG;
-    double eJet;
-    double ptJetX;
-    double ptJetY;
-    double ptJetZ;
-    double ptJetR;
+    unsigned rHadPdgId;
+    double rHadE;
+    double rHadPx;
+    double rHadPy;
+    double rHadPz;
+    double rHadPt;
     ClassDef(MC,1);
+  };
+
+  struct MCDecay {
+  MCDecay() : pdgId(0),vtxX(0.),vtxY(0.),vtxZ(0.),vtxT(0.),e(0.),px(0.),py(0.),pz(0.),pt(0.) { }
+    unsigned pdgId;
+    double vtxX;
+    double vtxY;
+    double vtxZ;
+    double vtxR;
+    double vtxT;
+    double e;
+    double px;
+    double py;
+    double pz;
+    double pt;
+    ClassDef(MCDecay,1);
   };
   
   struct Tower {
@@ -130,9 +158,10 @@ namespace shscp {
 class StoppedHSCPEvent : public TObject {
  public:
   
-  enum { MAX_N_TOWERS=50 };
+  enum { MAX_N_MCDECAYS=10 };
+  enum { MAX_N_TOWERS=100 };
   enum { MAX_N_HPDS=10 };
-  enum { MAX_N_RBXS=10 };
+  enum { MAX_N_RBXS=5 };
   enum { MAX_N_JETS=10 };
   enum { MAX_N_MUONS=4 };
 
@@ -148,6 +177,15 @@ class StoppedHSCPEvent : public TObject {
 		    unsigned f,
 		    unsigned ts);
 
+  void setTriggerInfo(double l1JetEt,
+		      double l1JetEta,
+		      double l1JetPhi,
+		      double l1BptxPlus,
+		      double l1BptxMinus,
+		      double hltJetE,
+		      double hltJetEta,
+		      double hltJetPhi);
+
   void addTower(shscp::Tower t);
   void addHPD(shscp::HPD h);
   void addRBX(shscp::RBX r);
@@ -155,6 +193,7 @@ class StoppedHSCPEvent : public TObject {
   void addMuon(shscp::Muon m);
 
   void setMC(shscp::MC mcEvt);
+  void addMCDecay(shscp::MCDecay d);
 
   // getters
   unsigned nTow() { return nTowers; }
@@ -167,7 +206,12 @@ class StoppedHSCPEvent : public TObject {
 
   shscp::Event event;
 
+  shscp::Trigger trigger;
+
   shscp::MC mc;
+
+  unsigned nMCDecays;
+  shscp::MCDecay mcDecays[MAX_N_MCDECAYS];
 
   unsigned nTowers;
   shscp::Tower towers[MAX_N_TOWERS];

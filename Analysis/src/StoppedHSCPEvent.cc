@@ -31,6 +31,25 @@ void StoppedHSCPEvent::setEventInfo(unsigned e,
   event.timestamp = ts;
 }
 
+void StoppedHSCPEvent::setTriggerInfo(double l1JetEt,
+				      double l1JetEta,
+				      double l1JetPhi,
+				      double l1BptxPlus,
+				      double l1BptxMinus,
+				      double hltJetE,
+				      double hltJetEta,
+				      double hltJetPhi) {
+  trigger.l1JetEt = l1JetEt;
+  trigger.l1JetEta = l1JetEta;
+  trigger.l1JetPhi = l1JetPhi;
+  trigger.l1BptxPlus = l1BptxPlus;
+  trigger.l1BptxMinus = l1BptxMinus;
+  trigger.hltJetEt = l1BptxMinus;
+  trigger.hltJetEta = hltJetEta;
+  trigger.hltJetPhi = hltJetPhi;
+}
+
+
 void StoppedHSCPEvent::addTower(Tower t) {
   if (nTowers < MAX_N_TOWERS) {
     towers[nTowers] = t;
@@ -69,6 +88,13 @@ void StoppedHSCPEvent::addMuon(Muon m) {
 
 void StoppedHSCPEvent::setMC(MC mcEvt) {
   mc = mcEvt;
+}
+
+void StoppedHSCPEvent::addMCDecay(MCDecay d) { 
+  if (nMCDecays < MAX_N_MCDECAYS) {
+    mcDecays[nMCDecays] = d;
+    ++nMCDecays;
+  }
 }
 
 #if !defined(__CINT__)

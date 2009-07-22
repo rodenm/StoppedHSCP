@@ -13,7 +13,7 @@
 //
 // Original Author:  Benjamin JONES
 //         Created:  Thu Dec  4 11:44:26 CET 2008
-// $Id: StoppedHSCPTreeProducer.cc,v 1.3 2009/06/16 14:17:28 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.4 2009/07/08 10:09:48 jbrooke Exp $
 //
 //
 
@@ -21,7 +21,7 @@
 // system include files
 #include <memory>
 
-// user include files
+// framework
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 
@@ -30,31 +30,41 @@
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
-#include "DataFormats/HcalRecHit/interface/HcalRecHitCollections.h"
-#include "DataFormats/HcalDetId/interface/HcalDetId.h"
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
 
-#include "DataFormats/CaloTowers/interface/CaloTowerCollection.h"
+// data formats
+#include "DataFormats/L1Trigger/interface/L1JetParticleFwd.h"
+#include "DataFormats/L1Trigger/interface/L1JetParticle.h"
+
+#include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
 
 #include "DataFormats/JetReco/interface/CaloJetCollection.h"
-
-//#include "SimDataFormats/HepMCProduct/interface/HepMCProduct.h"
-
-#include "DataFormats/HcalDigi/interface/HBHEDataFrame.h"
-#include "DataFormats/HcalDigi/interface/HcalDigiCollections.h"
 
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 
+#include "DataFormats/CaloTowers/interface/CaloTowerCollection.h"
+
+#include "DataFormats/METReco/interface/HcalNoiseHPD.h"
+#include "DataFormats/METReco/interface/HcalNoiseRBX.h"
+#include "DataFormats/METReco/interface/HcalNoiseSummary.h"
+
+//#include "DataFormats/HcalRecHit/interface/HcalRecHitCollections.h"
+//#include "DataFormats/HcalDetId/interface/HcalDetId.h"
+
+#include "DataFormats/HcalDigi/interface/HBHEDataFrame.h"
+#include "DataFormats/HcalDigi/interface/HcalDigiCollections.h"
+
+// ROOT output stuff
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "PhysicsTools/UtilAlgos/interface/TFileService.h"
 #include "TH1.h"
 #include "TTree.h"
 #include "TF1.h"
 
-
-
+// TTree definition
 #include "StoppedHSCP/Analysis/interface/StoppedHSCPEvent.h"
-//#include "StoppedHSCP/Analysis/interface/StoppedHSCPJet.h"
+
 
 //
 // class decleration
@@ -104,11 +114,16 @@ class StoppedHSCPTreeProducer : public edm::EDAnalyzer {
   TTree * tree;
  
   // EDM input tags
-  edm::InputTag hcalDigiTag_;
-  edm::InputTag jetTag_;
-  edm::InputTag caloTowerTag_;
+  std::string l1JetsTag_;
+  edm::InputTag hltTag_;
   edm::InputTag mcTag_;
+  edm::InputTag jetTag_;
   edm::InputTag muonTag_;
+  edm::InputTag caloTowerTag_;
+  edm::InputTag hcalNoiseTag_;
+  edm::InputTag rbxTag_;
+  edm::InputTag hpdTag_;
+  edm::InputTag hcalDigiTag_;
 
   // cuts
   double  towerMinEnergy_;
@@ -118,6 +133,18 @@ class StoppedHSCPTreeProducer : public edm::EDAnalyzer {
 
   // output control
   bool writeHistos_;
+
+  // debug stuff
+  bool l1JetsMissing_;
+  bool hltMissing_;
+  bool mcMissing_;
+  bool jetsMissing_;
+  bool muonsMissing_;
+  bool towersMissing_;
+  bool noiseSumMissing_;
+  bool rbxsMissing_;
+  bool hpdsMissing_;
+  bool digisMissing_;
 
   // the current event
   StoppedHSCPEvent* event_;
@@ -134,15 +161,30 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
 //   IncludeDigis_(iConfig.getUntrackedParameter("IncludeDigis",false)),
 //   IncludeMuons_(iConfig.getUntrackedParameter("IncludeMuons",false)),
 //   IncludeDigisOld_(iConfig.getUntrackedParameter("IncludeDigisOld",false)),
-  jetTag_(iConfig.getUntrackedParameter("jetTag",edm::InputTag("iterativeCone5CaloJets"))),
-  caloTowerTag_(iConfig.getUntrackedParameter("caloTowerTag",edm::InputTag("towerMaker"))),
-  mcTag_(iConfig.getUntrackedParameter("mcTag",edm::InputTag("source"))),
+  l1JetsTag_(iConfig.getUntrackedParameter("l1JetsTag",std::string("l1extra"))),
+  hltTag_(iConfig.getUntrackedParameter("hltTag",edm::InputTag("HLT"))),
+  mcTag_(iConfig.getUntrackedParameter("mcTag",edm::InputTag("generator"))),
+  jetTag_(iConfig.getUntrackedParameter("jetTag",edm::InputTag("sisCone5CaloJets"))),
   muonTag_(iConfig.getUntrackedParameter("muonTag",edm::InputTag("muons"))),
+  caloTowerTag_(iConfig.getUntrackedParameter("caloTowerTag",edm::InputTag("towerMaker"))),
+  hcalNoiseTag_(iConfig.getUntrackedParameter("rbxTag",edm::InputTag("hcalnoise"))),
+  rbxTag_(iConfig.getUntrackedParameter("rbxTag",edm::InputTag("hcalnoise"))),
+  hpdTag_(iConfig.getUntrackedParameter("hpdTag",edm::InputTag("hcalnoise"))),
+  hcalDigiTag_(iConfig.getUntrackedParameter("hcalDigiTag",edm::InputTag(""))),
   towerMinEnergy_(iConfig.getUntrackedParameter("towerMinEnergy", 1.)),
   towerMaxEta_(iConfig.getUntrackedParameter("towerMaxEta", 3.)),
   jetMinEnergy_(iConfig.getUntrackedParameter("jetMinEnergy", 1.)),
   jetMaxEta_(iConfig.getUntrackedParameter("jetMaxEta", 3.)),
   writeHistos_(iConfig.getUntrackedParameter("writeHistos",false)),
+  l1JetsMissing_(false),
+  hltMissing_(false),
+  mcMissing_(false),
+  jetsMissing_(false),
+  muonsMissing_(false),
+  towersMissing_(false),
+  noiseSumMissing_(false),
+  rbxsMissing_(false),
+  hpdsMissing_(false),
   event_(0)
 {
 
@@ -170,7 +212,6 @@ StoppedHSCPTreeProducer::~StoppedHSCPTreeProducer()
 void
 StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-   using namespace edm;
    using namespace reco;
 
    // event headers
@@ -183,178 +224,242 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
 			0,
 			iEvent.time().value());
 
-   // MC
 
-//        Handle<edm::HepMCProduct> mcHandle;
-//        iEvent.getByLabel(MCTag_,mcHandle);
-       
-//        const edm::HepMCProduct *mcProd = mcHandle.product();
-//        const HepMC::GenEvent *evt = mcProd->GetEvent();
-       
-//        for(HepMC::GenEvent::vertex_const_iterator pitr = evt->vertices_begin(); pitr!= evt->vertices_end(); ++pitr)
-// 	 {
-	   
-// 	   if((*pitr)->barcode()==-1)
-// 	     {
-	       
-// 	       VtxR_ = (*pitr)->point3d().perp();
-// 	       VtxX_ = (*pitr)->point3d().x();
-// 	       VtxY_ = (*pitr)->point3d().y();
-// 	       VtxZ_ = (*pitr)->point3d().z();
-	       
-// 	       VtxT_ = (*pitr)->position().t();
+   // trigger info
+   edm::Handle<l1extra::L1JetParticleCollection> l1Jets;
+   iEvent.getByLabel(l1JetsTag_,l1Jets);
 
-// 	       for(HepMC::GenVertex::particles_out_const_iterator part = (*pitr)->particles_out_const_begin(); part!=(*pitr)->particles_out_const_end(); ++part)
-// 		 {
-// 		   //	std::cout << (*part)->pdg_id()<<std::endl;
-// 		   if((*part)->pdg_id()>=1000000)
-// 		     {
-// 		       SusyMomX_=(*part)->momentum().x();
-// 		       SusyMomY_=(*part)->momentum().y();
-// 		       SusyMomZ_=(*part)->momentum().z();
-// 		       SusyMomR_=(*part)->momentum().perp();
-// 		       SusyEnergy_=(*part)->momentum().e();
-// 		       SusyPDG_=(*part)->pdg_id()-1000000;
-// 		     }
-// 		 }
-// 	     }
-// 	 }
-//      }
-   
-   // towers
-   Handle<CaloTowerCollection> caloTowers;
-   iEvent.getByLabel(caloTowerTag_,caloTowers);
-   std::vector<CaloTower> caloTowVec;
-      
-   sort(caloTowVec.begin(), caloTowVec.end(), compare_ct());
-   
-   for(std::vector<CaloTower>::const_iterator it = caloTowVec.begin(); 
-       it!=caloTowVec.end() && event_->nTow() < StoppedHSCPEvent::MAX_N_TOWERS;
-       ++it) {
-     if (it->energy() > towerMinEnergy_ &&
-	 fabs(it->eta()) < towerMaxEta_) {
-       shscp::Tower tow;
-       tow.e = it->energy();
-       tow.et = it->et();
-       tow.eta = it->eta();
-       tow.phi = it->phi();
-       tow.ieta = it->ieta();
-       tow.iphi = it->iphi();
-       tow.eHad = it->hadEnergy();
-       tow.etHad = it->hadEt();
-       tow.eEm = it->emEnergy();
-       tow.etEm = it->emEt();
-       event_->addTower(tow);
-     }
+   if (l1Jets.isValid()) {
+ 
+   }
+   else {
    }
 
-   // HPDs
+   // MC
+   edm::Handle<edm::HepMCProduct> mcHandle;
+   iEvent.getByLabel(mcTag_,mcHandle);
 
-
-   // RBXs
-
+   if (mcHandle.isValid()) {
+     
+     const edm::HepMCProduct *mcProd = mcHandle.product();
+     const HepMC::GenEvent *evt = mcProd->GetEvent();
+     
+     shscp::MC mcEvt;
+     
+     for(HepMC::GenEvent::vertex_const_iterator pitr = evt->vertices_begin(); pitr!= evt->vertices_end(); ++pitr) {
+       
+       if((*pitr)->barcode()==-1)  {
+	 
+	 mcEvt.vtxX = (*pitr)->point3d().x();
+	 mcEvt.vtxY = (*pitr)->point3d().y();
+	 mcEvt.vtxZ = (*pitr)->point3d().z();
+	 mcEvt.vtxT = (*pitr)->position().t();
+	 
+	 for(HepMC::GenVertex::particles_out_const_iterator part = (*pitr)->particles_out_const_begin(); part!=(*pitr)->particles_out_const_end(); ++part) {
+	   //	std::cout << (*part)->pdg_id()<<std::endl;
+	   if((*part)->pdg_id()>=1000000)
+	     {
+	       mcEvt.rHadPdgId = (*part)->pdg_id();
+	       mcEvt.rHadPx  = (*part)->momentum().x();
+	       mcEvt.rHadPy  = (*part)->momentum().y();
+	       mcEvt.rHadPz  = (*part)->momentum().z();
+	       mcEvt.rHadPt  = (*part)->momentum().perp();
+	       mcEvt.rHadE   = (*part)->momentum().e();
+	     }
+	 }
+       }
+     }
+     
+     event_->setMC(mcEvt);
+     
+   }
+   else {
+     if (!mcMissing_) edm::LogWarning("MissingProduct") << "MC information not found.  Branch will not be filled" << std::endl;
+     mcMissing_ = true;
+   }
 
    // Jets
-   Handle<CaloJetCollection> caloJets;
+   edm::Handle<CaloJetCollection> caloJets;
    iEvent.getByLabel(jetTag_, caloJets);
+
+   std::vector<std::vector<HcalDetId> > hcalDetIdsInJets;
        
-   for(CaloJetCollection::const_iterator it=caloJets->begin(); 
-       it!=caloJets->end() && event_->nJet() < StoppedHSCPEvent::MAX_N_JETS;
-       ++it) {
-     if (it->energy() > jetMinEnergy_ &&
-	 fabs(it->eta()) < jetMaxEta_) {
-       shscp::Jet jet;
-       jet.et = it->et();
-       jet.eta = it->eta();
-       jet.phi = it->phi();
-       jet.e = it->energy();
-       jet.eEm = it->emEnergyInEB();
-       jet.eHad = it->hadEnergyInHB();
-       jet.eMaxEcalTow = it->maxEInEmTowers();
-       jet.eMaxHcalTow = it->maxEInHadTowers();
-       jet.n60 = it->n60();
-       jet.n90 = it->n90();
-       event_->addJet(jet);
-     }
+   if (caloJets.isValid()) {
+     for(CaloJetCollection::const_iterator it=caloJets->begin(); 
+	 it!=caloJets->end() && event_->nJet() < StoppedHSCPEvent::MAX_N_JETS;
+	 ++it) {
+       if (it->energy() > jetMinEnergy_ &&
+	   fabs(it->eta()) < jetMaxEta_) {
+
+	 // store jet in TTree
+	 shscp::Jet jet;
+	 jet.et = it->et();
+	 jet.eta = it->eta();
+	 jet.phi = it->phi();
+	 jet.e = it->energy();
+	 jet.eEm = it->emEnergyInEB();
+	 jet.eHad = it->hadEnergyInHB();
+	 jet.eMaxEcalTow = it->maxEInEmTowers();
+	 jet.eMaxHcalTow = it->maxEInHadTowers();
+	 jet.n60 = it->n60();
+	 jet.n90 = it->n90();
+	 event_->addJet(jet);
+
+	 hcalDetIdsInJets.push_back(std::vector<HcalDetId>(0));
+
+	 // get constituents for later use
+	 std::vector<CaloTowerPtr> CaloTowers = it->getCaloConstituents();
+	 for(std::vector<CaloTowerPtr>::const_iterator itCalo = CaloTowers.begin(); itCalo!=CaloTowers.end(); itCalo++) {
+	   const std::vector<DetId>& CaloConst = (*itCalo)->constituents();
+	   for(std::vector<DetId>::const_iterator itConst = CaloConst.begin(); itConst!=CaloConst.end(); itConst++) {
+	     if(itConst->det()==4) {
+	       HcalDetId id = HcalDetId(*itConst);
+	       (hcalDetIdsInJets.end()--)->push_back(id);
+	     }
+	   }
+	 }
+       }       
+     }  
+   }
+   else {
+     if (!jetsMissing_) edm::LogWarning("MissingProduct") << "CaloJets not found.  Branch will not be filled" << std::endl;
+     jetsMissing_ = true;
    }
 
    // Muons
-       Handle<reco::MuonCollection> pMuon;
-       iEvent.getByLabel(muonTag_,pMuon);
-       for(reco::MuonCollection::const_iterator it =pMuon->begin();
-	   it!=pMuon->end() && event_->nMuon() < StoppedHSCPEvent::MAX_N_MUONS;
-	   it++) {
-	 shscp::Muon mu;
-	 mu.pt = it->pt();
-	 mu.eta = it->eta();
-	 mu.phi = it->phi();
-	 mu.hcalEta = 0.;  // TODO extrapolate GlobalMuon track to HCAL surface and store position!
-	 mu.hcalPhi = 0.;
-	 event_->addMuon(mu);
-       }
-       
+   edm::Handle<reco::MuonCollection> muons;
+   iEvent.getByLabel(muonTag_,muons);
+
+   if (muons.isValid()) {
+     for(reco::MuonCollection::const_iterator it =muons->begin();
+	 it!=muons->end() && event_->nMuon() < StoppedHSCPEvent::MAX_N_MUONS;
+	 it++) {
+       shscp::Muon mu;
+       mu.pt = it->pt();
+       mu.eta = it->eta();
+       mu.phi = it->phi();
+       mu.hcalEta = 0.;  // TODO extrapolate GlobalMuon track to HCAL surface and store position!
+       mu.hcalPhi = 0.;
+       event_->addMuon(mu);
+     }
+   }
+   else {
+     if (!muonsMissing_) edm::LogWarning("MissingProduct") << "Muons not found.  Branch will not be filled" << std::endl;
+     muonsMissing_ = true;
+   }
+
+   // towers
+   edm::Handle<CaloTowerCollection> caloTowers;
+   iEvent.getByLabel(caloTowerTag_,caloTowers);
+   std::vector<CaloTower> caloTowVec;
       
-   
+   if (caloTowers.isValid()) {
+
+     sort(caloTowVec.begin(), caloTowVec.end(), compare_ct());
+     
+     for(std::vector<CaloTower>::const_iterator it = caloTowVec.begin(); 
+	 it!=caloTowVec.end() && event_->nTow() < StoppedHSCPEvent::MAX_N_TOWERS;
+	 ++it) {
+       if (it->energy() > towerMinEnergy_ &&
+	   fabs(it->eta()) < towerMaxEta_) {
+	 shscp::Tower tow;
+	 tow.e = it->energy();
+	 tow.et = it->et();
+	 tow.eta = it->eta();
+	 tow.phi = it->phi();
+	 tow.ieta = it->ieta();
+	 tow.iphi = it->iphi();
+	 tow.eHad = it->hadEnergy();
+	 tow.etHad = it->hadEt();
+	 tow.eEm = it->emEnergy();
+	 tow.etEm = it->emEt();
+	 event_->addTower(tow);
+       }
+     }
+   }
+   else {
+     if (!towersMissing_) edm::LogWarning("MissingProduct") << "CaloTowers not found.  Branch will not be filled" << std::endl;
+     towersMissing_ = true;
+   }
+
+   // RBXs
+   edm::Handle<HcalNoiseRBXCollection> rbxs;
+   iEvent.getByLabel(rbxTag_,rbxs);
+
+   if (rbxs.isValid()) {
+     for(HcalNoiseRBXCollection::const_iterator it = rbxs->begin(); 
+	 it!=rbxs->end() && event_->nRbx() < StoppedHSCPEvent::MAX_N_RBXS;
+	 ++it) {
+       shscp::RBX rbx;
+       rbx.id = it->idnumber();
+       rbx.totalZeros = it->totalZeros();
+       rbx.maxZeros = it->maxZeros();
+       event_->addRBX(rbx);
+     }
+   }
+   else {
+     if (!rbxsMissing_) edm::LogWarning("MissingProduct") << "RBXs not found.  Branch will not be filled" << std::endl;
+     rbxsMissing_ = true;
+   }
+
+   // HPDs
+   edm::Handle<HcalNoiseHPDCollection> hpds;
+   iEvent.getByLabel(hpdTag_,hpds);
+   if (hpds.isValid()) {
+     
+   }
+   else {
+     if (!hpdsMissing_) edm::LogWarning("MissingProduct") << "HPDs not found.  Branch will not be filled" << std::endl;
+     hpdsMissing_ = true;
+   }
 
 
+   // digis
+   if (""!=hcalDigiTag_.label()) {
 
-//    //
-//    //
-//    //   Timing Information
-//    //
-//    //
+     edm::Handle<HBHEDigiCollection > digis;
+     iEvent.getByLabel(hcalDigiTag_,digis);
 
-//    if(IncludeDigis_)
-//      {
-       
-//        using namespace reco;
-       
-       
-//        float ThisSpectrum[10];
-   
+     std::vector<std::vector<HcalDetId> >::const_iterator j;
+     std::vector<HcalDetId>::const_iterator det;
 
-//        std::vector<HcalDetId> HBDigisInLeadingCenJet;
+     for (j=hcalDetIdsInJets.begin(); j!=hcalDetIdsInJets.end(); ++j) {
+       for (det=j->begin(); det!=j->end(); ++det) {
 
-//        edm::Handle<CaloJetCollection> pCalo;
-//        iEvent.getByLabel(JetTag_,pCalo);
-
-
-//        for(reco::CaloJetCollection::const_iterator itJet = pCalo->begin(); itJet!=pCalo->end(); itJet++)
-// 	 {
-// 	   //  std::cout<<"Considering jet with eta "<<itJet->eta()<<std::endl;
-// 	   //	   if(fabs(itJet->eta())<1.3)
+	 for(HBHEDigiCollection::const_iterator it=digis->begin();it!=digis->end(); it++) {
+	   
+// 	   for(int i=0; i!=HBDigisInLeadingCenJet.size(); i++)
 // 	     {
-// 	       //  std::cout<<"Including jet with E = " << itJet->energy() << std::endl;
-// 	       std::vector<CaloTowerPtr> CaloTowers = itJet->getCaloConstituents();
-// 	       for(std::vector<CaloTowerPtr>::const_iterator itCalo = CaloTowers.begin(); itCalo!=CaloTowers.end(); itCalo++)
+// 	       if(itDigi->id()==HBDigisInLeadingCenJet.at(i))
 // 		 {
-// 		   // std::cout<<"Calo tower had energy " << (*itCalo)->hadEnergy()<<std::endl;
-// 		   const std::vector<DetId>& CaloConst = (*itCalo)->constituents();
-// 		   for(std::vector<DetId>::const_iterator itConst = CaloConst.begin(); itConst!=CaloConst.end(); itConst++)
+// 		   std::cout<<"Found HCal Digi : "<<itDigi->id().ieta() << " " <<itDigi->id().iphi()<<std::endl;
+// 		   for(int j=0; j<10; j++)
 // 		     {
-// 		       if(itConst->det()==4)
+// 		       ThisEnergy+=itDigi->sample(j).nominal_fC();
+// 		     }
+// 		   //  if(ThisEnergy>10)
+// 		     {
+// 		       for(int j=0; j<10; j++)
 // 			 {
-// 			   HcalDetId HBId = HcalDetId(*itConst);
-// 			   HBDigisInLeadingCenJet.push_back(HBId);
-// 			   //	   std::cout<< "Storing : " << HBId.ieta() << "  " << HBId.iphi() << "  " <<HBId.depth()<<std::endl;
+		       	  
+// 			   ThisSpectrum[j]+=itDigi->sample(j).nominal_fC();
+			  
+		     
 // 			 }
 // 		     }
+// 		   JetDigiCount++;
 // 		 }
 // 	     }
-	   
-// 	 }
 
 
-//        for(int k=0; k<10; k++)
-// 	 {
-// 	   ThisSpectrum[k]=0;
-// 	 }
-       
-//        double ThisEnergy=0;
-//        int JetDigiCount=0;
+ 	 }
 
-//        Handle<HBHEDigiCollection > pDigi;
-//        iEvent.getByLabel(DigisTag_,pDigi);
+       }
+     }
+
+   }
+
+
 
 //        std::cout<<"No of digis with energy : " << HBDigisInLeadingCenJet.size()<<std::endl;
 //        for(HBHEDigiCollection::const_iterator itDigi=pDigi->begin();itDigi!=pDigi->end(); itDigi++)
