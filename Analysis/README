@@ -1,0 +1,60 @@
+
+*** Basic documentation of Stopped HSCP Analysis code ***
+
+1. C++ code
+StoppedHSCPEvent class
+	interface/StoppedHSCPEvent.h
+	src/StoppedHSCPEvent.cc
+	src/LinkDef.h
+	Defines the TTree and provides helper methods to fill it. TTree can be read in bare ROOT with no additional code required.
+
+StoppedHSCPTreeProducer class
+	plugins/StoppedHSCPTreeProducer.cc
+	python/stoppedHSCPTree_cfi.py
+	An ESAnalyzer that writes TTrees using TFileService. Config file includes switches to turn on/off MC, Reco and digi level information
+
+[Code below is all old modules of Ben's that may be useful]
+BitFilter
+	plugins/BitFilter.cc
+	Select events based on L1 bits.  Used by some jobs, but will be replaced with official L1Skimmer asap
+
+CaloFilter
+	plugins/CaloFilter.cc
+	Select events based on caloJet and caloTower cuts.  To be incorporated in post-ntuple analysis asap.
+
+MuonFilter
+	plugins/MuonFilter.cc
+	Select events based on muon 4-vector.  Redundant with official selectors.  To be removed.
+
+MuonJets
+	plugins/MuonJets.cc
+	Extraplotes muons to HCAL and make histograms.
+
+TimingExtract
+	plugins/TimingExtract.cc
+	Print run and event number to file.
+
+TimingExtractFltr
+	plugins/TimingExtractFltr.cc
+	Filter events based on file written by TimingExtract.
+	
+
+2. CMSSW jobs
+test/testStoppedHSCPTree.py
+	Test job for producing TTrees.
+
+
+3.  ROOT macros
+macros - all plot making macros
+rootutils - generic macros of Ben's used by plot making macros
+
+
+Instructions
+
+1.  Making ntuples
+cmsRun test/testStoppedHSCPTree.py
+
+2. Making plots from ntuples
+
+TODO
+
