@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPTreeProducer.cc,v 1.5 2009/07/22 09:45:01 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.4 2009/07/23 10:48:19 jbrooke Exp $
 //
 //
 
@@ -99,11 +99,13 @@ namespace shscp {
   };
   
   struct HPD {
-    HPD() : id(0),totalZeros(0),maxZeros(0),nJet(0) { 
-      fc[0]=0.; fc[1]=0.; fc[2]=0.; fc[3]=0.; fc[4]=0.; fc[5]=0.; fc[6]=0.; fc[7]=0.; fc[8]=0.; fc[9]=0.; 
-      fc5[0]=0.; fc5[1]=0.; fc5[2]=0.; fc5[3]=0.; fc5[4]=0.; fc5[5]=0.; fc5[6]=0.; fc5[7]=0.; fc5[8]=0.; fc5[9]=0.; 
-    }
+  HPD() : id(0),eta(0),phi(0),totalZeros(0),maxZeros(0),nJet(0) { 
+    fc[0]=0.; fc[1]=0.; fc[2]=0.; fc[3]=0.; fc[4]=0.; fc[5]=0.; fc[6]=0.; fc[7]=0.; fc[8]=0.; fc[9]=0.; 
+    fc5[0]=0.; fc5[1]=0.; fc5[2]=0.; fc5[3]=0.; fc5[4]=0.; fc5[5]=0.; fc5[6]=0.; fc5[7]=0.; fc5[8]=0.; fc5[9]=0.; 
+  }
     unsigned id;
+    double eta;
+    double phi;
     unsigned totalZeros;
     unsigned maxZeros;
     unsigned nJet;
@@ -113,10 +115,12 @@ namespace shscp {
   };
   
   struct HcalDigi {
-    HcalDigi() : id(0),nJet(0) {
+  HcalDigi() : id(0),eta(0),phi(0),nJet(0) {
       fc[0]=0.; fc[1]=0.; fc[2]=0.; fc[3]=0.; fc[4]=0.; fc[5]=0.; fc[6]=0.; fc[7]=0.; fc[8]=0.; fc[9]=0.;       
     }
     unsigned id;
+    double eta;
+    double phi;
     unsigned nJet;
     double fc[10];
     ClassDef(HcalDigi,1);
@@ -153,10 +157,11 @@ class StoppedHSCPEvent : public TObject {
  public:
   
   enum { MAX_N_MCDECAYS=10 };
-  enum { MAX_N_TOWERS=100 };
-  enum { MAX_N_HPDS=10 };
   enum { MAX_N_JETS=10 };
   enum { MAX_N_MUONS=4 };
+  enum { MAX_N_TOWERS=100 };
+  enum { MAX_N_HPDS=10 };
+  enum { MAX_N_DIGIS=100 };
 
  public:
   StoppedHSCPEvent();
@@ -179,19 +184,21 @@ class StoppedHSCPEvent : public TObject {
 		      double hltJetEta,
 		      double hltJetPhi);
 
-  void addTower(shscp::Tower t);
-  void addHPD(shscp::HPD h);
   void addJet(shscp::Jet j);
   void addMuon(shscp::Muon m);
+  void addTower(shscp::Tower t);
+  void addHPD(shscp::HPD h);
+  void addDigi(shscp::HcalDigi d);
 
   void setMC(shscp::MC mcEvt);
   void addMCDecay(shscp::MCDecay d);
 
   // getters
-  unsigned nTow() { return nTowers; }
-  unsigned nHpd() { return nHpds; }
   unsigned nJet() { return nJets; }
   unsigned nMuon() { return nMuons; }
+  unsigned nTow() { return nTowers; }
+  unsigned nHpd() { return nHpds; }
+  unsigned nDigi() { return nDigis; }
 
  private:
 
@@ -204,17 +211,20 @@ class StoppedHSCPEvent : public TObject {
   unsigned nMCDecays;
   shscp::MCDecay mcDecays[MAX_N_MCDECAYS];
 
+  unsigned nJets;
+  shscp::Jet jets[MAX_N_JETS];
+
+  unsigned nMuons;
+  shscp::Muon muons[MAX_N_MUONS];
+
   unsigned nTowers;
   shscp::Tower towers[MAX_N_TOWERS];
 
   unsigned nHpds;
   shscp::HPD hpds[MAX_N_HPDS];
 
-  unsigned nJets;
-  shscp::Jet jets[MAX_N_JETS];
-
-  unsigned nMuons;
-  shscp::Muon muons[MAX_N_MUONS];
+  unsigned nDigis;
+  shscp::HcalDigi digis[MAX_N_DIGIS];
 
   ClassDef(StoppedHSCPEvent,1);
 

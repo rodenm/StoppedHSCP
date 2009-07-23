@@ -1,9 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
 stoppedHSCPTree = cms.EDAnalyzer("StoppedHSCPTreeProducer",
-  doMC = cms.untracked.bool(False),
-  doReco = cms.untracked.bool(True),
-  doDigis = cms.untracked.bool(False),
   l1JetTag = cms.untracked.InputTag("l1extra::central"),
   hltTag = cms.untracked.InputTag("HLT"),
   mcTag = cms.untracked.InputTag("generator"),
@@ -15,5 +12,8 @@ stoppedHSCPTree = cms.EDAnalyzer("StoppedHSCPTreeProducer",
   hpdTag = cms.untracked.InputTag("hcalnoise"),
 #  hcalDigiTag = cms.untracked.InputTag("hcalDigis"),
   hcalDigiTag = cms.untracked.InputTag(""),
+  doMC = cms.untracked.bool(False),
+  doReco = cms.untracked.bool(True),
+  doDigis = cms.untracked.bool(False),
   writeHistos = cms.untracked.bool(False)
 )

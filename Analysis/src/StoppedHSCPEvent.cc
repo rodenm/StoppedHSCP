@@ -5,10 +5,12 @@
 using namespace shscp;
 
 StoppedHSCPEvent::StoppedHSCPEvent() :
+  nMCDecays(0),
+  nJets(0),
+  nMuons(0),
   nTowers(0),
   nHpds(0),
-  nJets(0),
-  nMuons(0)
+  nDigis(0)
 { 
 }
 
@@ -49,19 +51,18 @@ void StoppedHSCPEvent::setTriggerInfo(double l1JetEt,
 }
 
 
-void StoppedHSCPEvent::addTower(Tower t) {
-  if (nTowers < MAX_N_TOWERS) {
-    towers[nTowers] = t;
-    ++nTowers;
+void StoppedHSCPEvent::setMC(MC mcEvt) {
+  mc = mcEvt;
+}
+
+
+void StoppedHSCPEvent::addMCDecay(MCDecay d) { 
+  if (nMCDecays < MAX_N_MCDECAYS) {
+    mcDecays[nMCDecays] = d;
+    ++nMCDecays;
   }
 }
 
-void StoppedHSCPEvent::addHPD(HPD h) {
-  if (nHpds < MAX_N_HPDS) {
-    hpds[nHpds] = h;
-    ++nHpds;
-  } 
-}
 
 void StoppedHSCPEvent::addJet(Jet j) {
   if (nJets < MAX_N_JETS) {
@@ -78,15 +79,28 @@ void StoppedHSCPEvent::addMuon(Muon m) {
   }
 }
 
-void StoppedHSCPEvent::setMC(MC mcEvt) {
-  mc = mcEvt;
+
+void StoppedHSCPEvent::addTower(Tower t) {
+  if (nTowers < MAX_N_TOWERS) {
+    towers[nTowers] = t;
+    ++nTowers;
+  }
 }
 
-void StoppedHSCPEvent::addMCDecay(MCDecay d) { 
-  if (nMCDecays < MAX_N_MCDECAYS) {
-    mcDecays[nMCDecays] = d;
-    ++nMCDecays;
-  }
+
+void StoppedHSCPEvent::addHPD(HPD h) {
+  if (nHpds < MAX_N_HPDS) {
+    hpds[nHpds] = h;
+    ++nHpds;
+  } 
+}
+
+
+void StoppedHSCPEvent::addDigi(HcalDigi d) {
+  if (nDigis < MAX_N_DIGIS) {
+    digis[nDigis] = d;
+    ++nDigis;
+  } 
 }
 
 #if !defined(__CINT__)
