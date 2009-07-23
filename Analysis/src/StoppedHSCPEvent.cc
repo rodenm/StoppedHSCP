@@ -7,7 +7,6 @@ using namespace shscp;
 StoppedHSCPEvent::StoppedHSCPEvent() :
   nTowers(0),
   nHpds(0),
-  nRbxs(0),
   nJets(0),
   nMuons(0)
 { 
@@ -62,13 +61,6 @@ void StoppedHSCPEvent::addHPD(HPD h) {
     hpds[nHpds] = h;
     ++nHpds;
   } 
-}
-
-void StoppedHSCPEvent::addRBX(RBX r) {
-  if (nRbxs < MAX_N_RBXS) {
-    rbxs[nRbxs] = r;
-    ++nRbxs;
-  }
 }
 
 void StoppedHSCPEvent::addJet(Jet j) {

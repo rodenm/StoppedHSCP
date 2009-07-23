@@ -9,7 +9,7 @@
 #pragma link C++ struct shscp::Tower;
 //#pragma link C++ class std::vector<Tower>+;
 #pragma link C++ struct shscp::HPD;
-#pragma link C++ struct shscp::RBX;
+//#pragma link C++ struct shscp::RBX;
 #pragma link C++ struct shscp::Jet;
 #pragma link C++ struct shscp::Muon;
 #pragma link C++ class StoppedHSCPEvent;
