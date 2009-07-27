@@ -1,0 +1,42 @@
+{
+std::vector<std::string> inFiles;
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090514_000096296_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090701_000101805_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090701_000101818_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090701_000101819_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090701_000101828_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090701_000101837_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090701_000101922_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090701_000101925_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090701_000101936_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090702_000101939_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090702_000101945_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090702_000101946_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090702_000101947_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090702_000101948_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090702_000101949_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090702_000101951_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090702_000101956_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090702_000101958_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090702_000101959_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090702_000101966_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090702_000102001_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090702_000102013_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090702_000102075_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090702_000102087_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090702_000102112_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090702_000102115_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090716_000105977_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090716_000105982_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090716_000105990_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090716_000105992_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090716_000106001_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090716_000106005_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090716_000106009_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090716_000106010_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090716_000106015_0001.root"));
+inFiles.push_back (std::string("rfio:/castor/cern.ch/cms/store/lumi/200907/CMS_LUMI_RAW_20090716_000106018_0001.root"));
+
+std::string outFile = "lumi200907.root";
+importLumi (inFiles, outFile, true);
+}
