@@ -1,0 +1,7 @@
+<use name="root"/>
+<use name="rootrflx"/>
+
+<export>
+  <use name="root"/>
+  <lib name="StoppedHSCPLumi"/>
+</export>

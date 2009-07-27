@@ -1,0 +1,13 @@
+<lcgdict>
+<selection>
+  <class name="shscp::LumiSectionHeader"/>
+  <class name="shscp::LumiSummary"/>
+  <class name="shscp::LumiDetail"/>
+  <class name="HCAL_HLX::LUMI_SECTION_HEADER"/>
+  <class name="HCAL_HLX::LUMI_SUMMARY"/>
+  <class name="HCAL_HLX::LUMI_DETAIL"/>
+
+</selection>
+</lcgdict>
+
+

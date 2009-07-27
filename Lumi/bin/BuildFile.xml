@@ -1,0 +1,3 @@
+<use name="FWCore/FWLite">
+<use name="root">
+<bin file="importLumi.cc" name="importLumi"></bin>
