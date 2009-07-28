@@ -8,7 +8,7 @@ process.load('FWCore/MessageService/MessageLogger_cfi')
 process.MessageLogger.cerr.INFO.limit = cms.untracked.int32(10)
 
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
-process.GlobalTag.globaltag = "CRAFT0831X_V1::All"
+process.GlobalTag.globaltag = "GR09_31X_V4P::All"
 
 process.options = cms.untracked.PSet(
     Rethrow = cms.untracked.vstring('ProductNotFound')
@@ -28,15 +28,15 @@ process.TFileService = cms.Service("TFileService",
     fileName = cms.string('stoppedHSCPTree.root')
 )
 
-process.output = cms.OutputModule("PoolOutputModule",
-    fileName = cms.untracked.string('testStoppedHSCPTree.root'),
-    SelectEvents = cms.untracked.PSet(
-    SelectEvents = cms.vstring("myPath")
-    )
-)
-process.endpath = cms.EndPath(
-    process.output
-)
+#process.output = cms.OutputModule("PoolOutputModule",
+#    fileName = cms.untracked.string('testStoppedHSCPTree.root'),
+#    SelectEvents = cms.untracked.PSet(
+#    SelectEvents = cms.vstring("myPath")
+#    )
+#)
+#process.endpath = cms.EndPath(
+#    process.output
+#)
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100000) )
 readFiles = cms.untracked.vstring()
