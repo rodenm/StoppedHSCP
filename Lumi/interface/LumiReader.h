@@ -23,7 +23,7 @@ namespace shscp {
     uint64_t runsection () const {return mRunsection;}
   private:
     uint64_t mRunsection;
-    };
+  };
 
   class LumiReader {
   public:
@@ -34,7 +34,9 @@ namespace shscp {
     int64_t getIndex (const LumiRunSection& fRunSectionuin); 
     int64_t getIndex (uint32_t mTime);
 
+    // all available run/section    
     std::vector<LumiRunSection> getAllRunsections () const;
+    // all available timestamps aka start of run/section
     std::vector<uint32_t> getAllTimestamps () const;
 
     const LumiSectionHeader* getLumiHeaderByIndex (uint64_t fIndex);
@@ -50,9 +52,15 @@ namespace shscp {
     
     const LumiSummary* getLumiSummary (uint32_t fRun, uint32_t fSection);
 
+    // integrated LUMI for given run/section
+    double integratedLuminosity (uint32_t fRun, uint32_t fSection);
 
+    // start time of the run/section
+    double sectionStartTime (uint32_t fRun, uint32_t fSection);
 
-    static bool importLumiData (const std::string& fLumiGroupFileName = "", const std::string& fNewFileName);
+    // start time of the run/section
+    double sectionEndTime (uint32_t fRun, uint32_t fSection);
+    
 
   private:
     LumiSectionHeader* mHeader;

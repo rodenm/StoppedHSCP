@@ -1,3 +1,6 @@
 <use name="FWCore/FWLite">
+<use name="StoppedHSCP/Lumi">
 <use name="root">
 <bin file="importLumi.cc" name="importLumi"></bin>
+<bin file="simulateLumi.cc" name="simulateLumi"></bin>
+<bin file="dumpLumiFile.cc" name="dumpLumiFile"></bin>

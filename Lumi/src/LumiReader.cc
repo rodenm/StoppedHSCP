@@ -1,6 +1,8 @@
 // Accessor to LUMI information stored in one or many files
 // F.Ratnikov, Jul. 23, 2009
 
+#include <iostream>
+
 #include "TBranch.h"
 #include "TChain.h"
 
@@ -8,6 +10,7 @@
 
 namespace {
   const char* LUMI_TREE = "LumiTree";
+  const double BX_TIME = 24.95e-9; // 24.95 ns
 }
 
 namespace shscp {
@@ -18,6 +21,7 @@ namespace shscp {
     if (!mHeaderBranch) {
       mHeaderBranch = mChain->GetBranch ("Header");
       if (mHeaderBranch) mHeaderBranch->SetAddress (&mHeader);
+      else std::cout << "Can not initiate 'Header' branch" << std::endl;
     }
     return mHeaderBranch;
   }
@@ -26,6 +30,7 @@ namespace shscp {
     if (!mSummaryBranch) {
       mSummaryBranch = mChain->GetBranch ("Summary");
       if (mSummaryBranch) mSummaryBranch->SetAddress (&mSummary);
+      else std::cout << "Can not initiate 'Summary' branch" << std::endl;
     }
     return mSummaryBranch;
   }
@@ -34,6 +39,7 @@ namespace shscp {
     if (!mDetailBranch) {
       mDetailBranch = mChain->GetBranch ("Detail");
       if (mDetailBranch) mDetailBranch->SetAddress (&mDetail);
+      else std::cout << "Can not initiate 'Detail' branch" << std::endl;
     }
     return mDetailBranch;
   }
@@ -58,6 +64,7 @@ namespace shscp {
   {
     mChain = new TChain (LUMI_TREE);
     if (!fFileName.empty()) mChain->Add (fFileName.c_str());
+    initIndex ();
   }
 
   LumiReader::LumiReader (const std::vector <std::string>& fFileNames) 
@@ -163,11 +170,34 @@ namespace shscp {
     mDetailBranch->GetEntry (index);
     return mDetail;
   }
+
+  const LumiSummary* LumiReader::getLumiSummary (uint32_t fRun, uint32_t fSection) {
+    return getLumiSummary (LumiRunSection (fRun, fSection));
+  }
   
-//   bool  LumiReader::importLumiData (const std::string& fLumiGroupFileName, 
-// 				    const std::string& fNewFileName);
+  double LumiReader::integratedLuminosity (uint32_t fRun, uint32_t fSection) {
+      const LumiSectionHeader* header = getLumiHeader (LumiRunSection (fRun, fSection));
+      const LumiSummary* summary = getLumiSummary (LumiRunSection (fRun, fSection));
+      if (header && summary) {
+	return summary->InstantLumi * header->numOrbits * header->numBunches * BX_TIME;
+      } 
+      return 0; // no data
+  }
 
+  double LumiReader::sectionStartTime (uint32_t fRun, uint32_t fSection) {
+    const LumiSectionHeader* header = getLumiHeader (LumiRunSection (fRun, fSection));
+    if (header) {
+      return double (header->timestamp) + double (header->timestamp_micros) * 1e-6; 
+    }
+    return 0;
+  }
 
-
+  double LumiReader::sectionEndTime (uint32_t fRun, uint32_t fSection) {
+    const LumiSectionHeader* header = getLumiHeader (LumiRunSection (fRun, fSection));
+    if (header) {
+      return double (header->timestamp) + double (header->timestamp_micros) * 1e-6 + header->numOrbits * header->numBunches * BX_TIME; 
+    }
+    return 0;
+  }
 
 }
