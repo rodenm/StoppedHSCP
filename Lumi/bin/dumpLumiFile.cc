@@ -22,11 +22,13 @@ int main (int argc, char *argv[]) {
   for (size_t i = 0; i <  runsections.size(); ++i) {
     uint32_t run = runsections[i].run();
     uint32_t section = runsections[i].section();
-    std::cout << "run:" << run << " section:" << section 
+    std::cout << " run:" << run 
+	      << " section:" << section 
 	      << " begin:" << int (floor(lumiReader.sectionStartTime (run, section)))
 	      << " end:" << int (floor (lumiReader.sectionEndTime (run, section)))
-	      << " period:" << int (floor (lumiReader.sectionEndTime (run, section) - lumiReader.sectionStartTime (run, section)))
-	      << " integrated LUMI:" << lumiReader.integratedLuminosity (run, section)
+	      << " period:" << int (floor (lumiReader.sectionEndTime (run, section) - lumiReader.sectionStartTime (run, section))) << "s"
+	      << " instant LUMI:" << lumiReader.instantLuminosity (run, section) << " 1/cm^2/s"
+	      << " integrated LUMI:" << lumiReader.integratedLuminosity (run, section) * 1.e-33 << " 1/nb"
 	      << std::endl;
   }
   return 0;

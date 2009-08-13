@@ -38,8 +38,8 @@ namespace {
 
 int main (int argc, char *argv[]) {
   const unsigned BUNCHES_IN_ORBIT = 3564;
-  const unsigned ORBITS_IN_NIBBLE = 0x800;
-  const unsigned ORBITS_IN_LS = 0x80000;
+  const unsigned ORBITS_IN_NIBBLE = 0x1000;
+  const unsigned ORBITS_IN_LS = 0x100000;
   double BEAM_LIFETIME = 20. * 3600; // seconds
   double LUMI_START = 1.e32;
   double LUMI_ABORT = 5.e31;

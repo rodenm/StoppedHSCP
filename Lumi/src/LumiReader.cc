@@ -15,8 +15,6 @@ namespace {
 
 namespace shscp {
 
-  int64_t LumiReader::getGlobalIndex (int64_t fLocalIndex) {return mChain->LoadTree(fLocalIndex);}
-
   bool LumiReader::initHeader () {
     if (!mHeaderBranch) {
       mHeaderBranch = mChain->GetBranch ("Header");
@@ -51,7 +49,11 @@ namespace shscp {
     for (int64_t i = 0; i < totalEntries; ++i) {
       mHeaderBranch->GetEntry (i);
       mTimestampIndex [mHeader->timestamp] = i;
-      if (mHeader->bCMSLive) mRunsectionIndex [LumiRunSection(mHeader->runNumber, mHeader->sectionNumber).runsection()] = i;
+      mRunsectionIndex [LumiRunSection(mHeader->runNumber, mHeader->sectionNumber).runsection()] = i;
+//       std::cout << "LumiReader::initIndex-> " << i 
+// 		<< '/' << mHeader->timestamp << '/' << mHeader->runNumber << '/' << mHeader->sectionNumber 
+// 		<< '/' << std::hex << LumiRunSection(mHeader->runNumber, mHeader->sectionNumber).runsection() << std::dec
+// 		<< std::endl;
     }
     return !mTimestampIndex.empty();
   }
@@ -79,25 +81,22 @@ namespace shscp {
   }
   
   LumiReader::~LumiReader () {
-    delete mHeader;
-    delete mHeaderBranch;
-    delete mSummary;
-    delete mSummaryBranch;
-    delete mDetail;
-    delete mDetailBranch ;
     delete mChain;
+    delete mHeader;
+    delete mSummary;
+    delete mDetail;
   }
 
   int64_t LumiReader::getIndex (const LumiRunSection& fRunSectionuin) {
     if (!initIndex ()) return -1;
     if (mRunsectionIndex.find (fRunSectionuin.runsection()) == mRunsectionIndex.end()) return -1;
-    return (*(mRunsectionIndex.find (fRunSectionuin.runsection()))).second;
+    return (mRunsectionIndex.find (fRunSectionuin.runsection()))->second;
     
   } 
   int64_t LumiReader::getIndex (uint32_t fTime) {
     if (!initIndex ()) return -1;
     if (mTimestampIndex.find (fTime) == mTimestampIndex.end()) return -1;
-    return (*(mTimestampIndex.find (fTime))).second;
+    return (mTimestampIndex.find (fTime))->second;
   }
 
   std::vector<LumiRunSection> LumiReader::getAllRunsections () const {
@@ -105,7 +104,7 @@ namespace shscp {
     result.reserve (mRunsectionIndex.size());
     std::map <uint64_t, int64_t>::const_iterator i = mRunsectionIndex.begin ();
     for (; i != mRunsectionIndex.end (); ++i) {
-      result.push_back ((*i).second);
+      result.push_back (LumiRunSection (i->first));
     }
     return result;
   }
@@ -115,7 +114,7 @@ namespace shscp {
     result.reserve (mTimestampIndex.size());
     std::map <uint32_t, int64_t>::const_iterator i = mTimestampIndex.begin ();
     for (; i != mTimestampIndex.end (); ++i) {
-      result.push_back ((*i).second);
+      result.push_back (i->first);
     }
     return result;
   }
@@ -175,6 +174,11 @@ namespace shscp {
     return getLumiSummary (LumiRunSection (fRun, fSection));
   }
   
+  double LumiReader::instantLuminosity (uint32_t fRun, uint32_t fSection) {
+      const LumiSummary* summary = getLumiSummary (LumiRunSection (fRun, fSection));
+      return summary ? summary->InstantLumi : 0;
+  }
+
   double LumiReader::integratedLuminosity (uint32_t fRun, uint32_t fSection) {
       const LumiSectionHeader* header = getLumiHeader (LumiRunSection (fRun, fSection));
       const LumiSummary* summary = getLumiSummary (LumiRunSection (fRun, fSection));

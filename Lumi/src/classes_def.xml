@@ -6,7 +6,8 @@
   <class name="HCAL_HLX::LUMI_SECTION_HEADER"/>
   <class name="HCAL_HLX::LUMI_SUMMARY"/>
   <class name="HCAL_HLX::LUMI_DETAIL"/>
-
+  <class name="shscp::LumiRunSection"/>
+  <class name="shscp::LumiReader"/>
 </selection>
 </lcgdict>
 
