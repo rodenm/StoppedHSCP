@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.4 2009/07/23 10:48:19 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.5 2009/07/23 16:33:04 jbrooke Exp $
 //
 //
 
@@ -99,30 +99,28 @@ namespace shscp {
   };
   
   struct HPD {
-  HPD() : id(0),eta(0),phi(0),totalZeros(0),maxZeros(0),nJet(0) { 
-    fc[0]=0.; fc[1]=0.; fc[2]=0.; fc[3]=0.; fc[4]=0.; fc[5]=0.; fc[6]=0.; fc[7]=0.; fc[8]=0.; fc[9]=0.; 
-    fc5[0]=0.; fc5[1]=0.; fc5[2]=0.; fc5[3]=0.; fc5[4]=0.; fc5[5]=0.; fc5[6]=0.; fc5[7]=0.; fc5[8]=0.; fc5[9]=0.; 
-  }
+  HPD() : id(0),eta(0),phi(0),totalZeros(0),maxZeros(0),nJet(0),
+      fc0(0.), fc1(0.), fc2(0.), fc3(0.), fc4(0.), fc5(0.), fc6(0.), fc7(0.), fc8(0.), fc9(0.),
+      fc5_0(0.), fc5_1(0.), fc5_2(0.), fc5_3(0.), fc5_4(0.), fc5_5(0.), fc5_6(0.), fc5_7(0.), fc5_8(0.), fc5_9(0.) { }
     unsigned id;
     double eta;
     double phi;
     unsigned totalZeros;
     unsigned maxZeros;
     unsigned nJet;
-    double fc[10];
-    double fc5[10];
+    double fc0, fc1, fc2, fc3, fc4, fc5, fc6, fc7, fc8, fc9;  // ROOT screws up an array :-(
+    double fc5_0, fc5_1, fc5_2, fc5_3, fc5_4, fc5_5, fc5_6, fc5_7, fc5_8, fc5_9;
     ClassDef(HPD,1);
   };
   
   struct HcalDigi {
-  HcalDigi() : id(0),eta(0),phi(0),nJet(0) {
-      fc[0]=0.; fc[1]=0.; fc[2]=0.; fc[3]=0.; fc[4]=0.; fc[5]=0.; fc[6]=0.; fc[7]=0.; fc[8]=0.; fc[9]=0.;       
-    }
+  HcalDigi() : id(0),eta(0),phi(0),nJet(0),
+      fc0(0.), fc1(0.), fc2(0.), fc3(0.), fc4(0.), fc5(0.), fc6(0.), fc7(0.), fc8(0.), fc9(0.) { }
     unsigned id;
     double eta;
     double phi;
     unsigned nJet;
-    double fc[10];
+    double fc0, fc1, fc2, fc3, fc4, fc5, fc6, fc7, fc8, fc9;  // ROOT screws up an array :-(
     ClassDef(HcalDigi,1);
   };
 
@@ -157,7 +155,7 @@ class StoppedHSCPEvent : public TObject {
  public:
   
   enum { MAX_N_MCDECAYS=10 };
-  enum { MAX_N_JETS=10 };
+  enum { MAX_N_JETS=20 };
   enum { MAX_N_MUONS=4 };
   enum { MAX_N_TOWERS=100 };
   enum { MAX_N_HPDS=10 };

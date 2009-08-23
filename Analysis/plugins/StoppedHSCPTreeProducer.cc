@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.6 2009/07/23 10:48:19 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.7 2009/07/23 16:33:04 jbrooke Exp $
 //
 //
 
@@ -96,6 +96,12 @@ private:
 
 public:
   
+  struct compare_l1j : public std::binary_function<l1extra::L1JetParticle, l1extra::L1JetParticle, bool> {
+    bool operator()(const l1extra::L1JetParticle& x, const l1extra::L1JetParticle& y) {
+      return ( x.et() > y.et() ) ;
+    }
+  };
+
   struct compare_ct : public std::binary_function<CaloTower, CaloTower, bool> {
     bool operator()(const CaloTower& x, const CaloTower& y) {
       return ( x.energy() > y.energy() ) ;
@@ -137,10 +143,11 @@ private:
   edm::InputTag hcalDigiTag_;
 
   // cuts
-  double  towerMinEnergy_;
-  double  towerMaxEta_;
-  double  jetMinEnergy_;
-  double  jetMaxEta_;
+  double towerMinEnergy_;
+  double towerMaxEta_;
+  double jetMinEnergy_;
+  double jetMaxEta_;
+  double digiMinFc_;
 
   // output control
   bool doMC_;
@@ -173,24 +180,25 @@ private:
 
 
 StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfig):
-  l1JetsTag_(iConfig.getUntrackedParameter("l1JetsTag",std::string("l1extra"))),
-  hltTag_(iConfig.getUntrackedParameter("hltTag",edm::InputTag("HLT"))),
-  mcTag_(iConfig.getUntrackedParameter("mcTag",edm::InputTag("generator"))),
-  jetTag_(iConfig.getUntrackedParameter("jetTag",edm::InputTag("sisCone5CaloJets"))),
-  muonTag_(iConfig.getUntrackedParameter("muonTag",edm::InputTag("muons"))),
-  caloTowerTag_(iConfig.getUntrackedParameter("caloTowerTag",edm::InputTag("towerMaker"))),
-  hcalNoiseTag_(iConfig.getUntrackedParameter("rbxTag",edm::InputTag("hcalnoise"))),
-  rbxTag_(iConfig.getUntrackedParameter("rbxTag",edm::InputTag("hcalnoise"))),
-  hpdTag_(iConfig.getUntrackedParameter("hpdTag",edm::InputTag("hcalnoise"))),
-  hcalDigiTag_(iConfig.getUntrackedParameter("hcalDigiTag",edm::InputTag(""))),
-  towerMinEnergy_(iConfig.getUntrackedParameter("towerMinEnergy", 1.)),
-  towerMaxEta_(iConfig.getUntrackedParameter("towerMaxEta", 3.)),
-  jetMinEnergy_(iConfig.getUntrackedParameter("jetMinEnergy", 1.)),
-  jetMaxEta_(iConfig.getUntrackedParameter("jetMaxEta", 3.)),
-  doMC_(iConfig.getUntrackedParameter("doMC",true)),
-  doReco_(iConfig.getUntrackedParameter("doReco",true)),
-  doDigis_(iConfig.getUntrackedParameter("doDigis",false)),
-  writeHistos_(iConfig.getUntrackedParameter("writeHistos",false)),
+  l1JetsTag_(iConfig.getUntrackedParameter<std::string>("l1JetsTag",std::string("l1extraParticles"))),
+  hltTag_(iConfig.getUntrackedParameter<edm::InputTag>("hltTag",edm::InputTag("HLT"))),
+  mcTag_(iConfig.getUntrackedParameter<edm::InputTag>("mcTag",edm::InputTag("generator"))),
+  jetTag_(iConfig.getUntrackedParameter<edm::InputTag>("jetTag",edm::InputTag("sisCone5CaloJets"))),
+  muonTag_(iConfig.getUntrackedParameter<edm::InputTag>("muonTag",edm::InputTag("muons"))),
+  caloTowerTag_(iConfig.getUntrackedParameter<edm::InputTag>("caloTowerTag",edm::InputTag("towerMaker"))),
+  hcalNoiseTag_(iConfig.getUntrackedParameter<edm::InputTag>("rbxTag",edm::InputTag("hcalnoise"))),
+  rbxTag_(iConfig.getUntrackedParameter<edm::InputTag>("rbxTag",edm::InputTag("hcalnoise"))),
+  hpdTag_(iConfig.getUntrackedParameter<edm::InputTag>("hpdTag",edm::InputTag("hcalnoise"))),
+  hcalDigiTag_(iConfig.getUntrackedParameter<edm::InputTag>("hcalDigiTag",edm::InputTag(""))),
+  towerMinEnergy_(iConfig.getUntrackedParameter<double>("towerMinEnergy", 1.)),
+  towerMaxEta_(iConfig.getUntrackedParameter<double>("towerMaxEta", 3.)),
+  jetMinEnergy_(iConfig.getUntrackedParameter<double>("jetMinEnergy", 1.)),
+  jetMaxEta_(iConfig.getUntrackedParameter<double>("jetMaxEta", 3.)),
+  digiMinFc_(iConfig.getUntrackedParameter<double>("digiMinFc", 30)),
+  doMC_(iConfig.getUntrackedParameter<bool>("doMC",true)),
+  doReco_(iConfig.getUntrackedParameter<bool>("doReco",true)),
+  doDigis_(iConfig.getUntrackedParameter<bool>("doDigis",false)),
+  writeHistos_(iConfig.getUntrackedParameter<bool>("writeHistos",false)),
   l1JetsMissing_(false),
   hltMissing_(false),
   mcMissing_(false),
@@ -275,13 +283,48 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent){
 
 void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent) {
 
-   edm::Handle<l1extra::L1JetParticleCollection> l1Jets;
-   iEvent.getByLabel(l1JetsTag_,l1Jets);
+  double l1JetEt(0.), l1JetEta(0.), l1JetPhi(0.);
+  double hltJetE(0.), hltJetEta(0.), hltJetPhi(0.);
+  unsigned l1BptxPlus(0), l1BptxMinus(0);
 
-//    if (l1Jets.isValid()) {
-//    }
-//    else {
-//    }
+  // get L1 jet info
+  edm::Handle<l1extra::L1JetParticleCollection> l1CenJets;
+  iEvent.getByLabel(l1JetsTag_, "Central", l1CenJets);
+  
+  edm::Handle<l1extra::L1JetParticleCollection> l1TauJets;
+  iEvent.getByLabel(l1JetsTag_, "Tau", l1TauJets);
+  
+  std::vector<l1extra::L1JetParticle> l1jets;
+
+  if (l1CenJets.isValid() && l1TauJets.isValid()) { 
+
+    // merge & sort collections
+    l1jets.insert(l1jets.end(), l1CenJets->begin(), l1CenJets->end());
+    l1jets.insert(l1jets.end(), l1CenJets->begin(), l1CenJets->end());
+    std::sort(l1jets.begin(), l1jets.end(), StoppedHSCPTreeProducer::compare_l1j());
+
+    if (l1jets.size()!=0) {
+      l1JetEt=l1jets.at(0).et();
+      l1JetEta=l1jets.at(0).eta();
+      l1JetPhi=l1jets.at(0).phi();
+    }
+    
+  }
+  else {
+    if (!l1JetsMissing_) edm::LogWarning("MissingProduct") << "L1 information not found.  Branch will not be filled" << std::endl;
+    l1JetsMissing_ = true;
+  }
+
+  // To Do - fill BPTX & HLT info
+
+  event_->setTriggerInfo(l1JetEt,
+			 l1JetEta,
+			 l1JetPhi,
+			 l1BptxPlus,
+			 l1BptxMinus,
+			 hltJetE,
+			 hltJetEta,
+			 hltJetPhi);
 
 }
 
@@ -474,8 +517,26 @@ void StoppedHSCPTreeProducer::doHcalNoise(const edm::Event& iEvent) {
 	h.totalZeros = hpd->totalZeros();
 	h.maxZeros = hpd->maxZeros();
 	h.nJet = 999;  // TODO - fill nJet
-	for (unsigned i=0; i<10; ++i) { h.fc[i] = hpd->bigCharge().at(i); }
-	for (unsigned i=0; i<10; ++i) { h.fc5[i] = hpd->big5Charge().at(i); }
+	h.fc0 = hpd->bigCharge().at(0);
+	h.fc1 = hpd->bigCharge().at(1);
+	h.fc2 = hpd->bigCharge().at(2);
+	h.fc3 = hpd->bigCharge().at(3);
+	h.fc4 = hpd->bigCharge().at(4);
+	h.fc5 = hpd->bigCharge().at(5);
+	h.fc6 = hpd->bigCharge().at(6);
+	h.fc7 = hpd->bigCharge().at(7);
+	h.fc8 = hpd->bigCharge().at(8);
+	h.fc9 = hpd->bigCharge().at(9);
+	h.fc5_0 = hpd->big5Charge().at(0);
+	h.fc5_1 = hpd->big5Charge().at(1);
+	h.fc5_2 = hpd->big5Charge().at(2);
+	h.fc5_3 = hpd->big5Charge().at(3);
+	h.fc5_4 = hpd->big5Charge().at(4);
+	h.fc5_5 = hpd->big5Charge().at(5);
+	h.fc5_6 = hpd->big5Charge().at(6);
+	h.fc5_7 = hpd->big5Charge().at(7);
+	h.fc5_8 = hpd->big5Charge().at(8);
+	h.fc5_9 = hpd->big5Charge().at(9);
 	event_->addHPD(h);
 
       }
@@ -505,19 +566,28 @@ void StoppedHSCPTreeProducer::doDigisAboveThreshold(const edm::Event& iEvent) {
     for(HBHEDigiCollection::const_iterator it=digis.begin();
 	it!=digis.end() && event_->nDigi() < StoppedHSCPEvent::MAX_N_DIGIS;
 	it++) {
-    
-//      if (it->energy() > towerMinEnergy_ &&
-//	  fabs(it->eta()) < towerMaxEta_) {
 
-      shscp::HcalDigi d;
-      d.id = it->id();
-      d.nJet = 999;
-      for (unsigned i=0; i<10; ++i) {
-	d.fc[i] = it->sample(i).nominal_fC();
+      double totFc=0.;
+      for(int i=0; i<10; i++) totFc += it->sample(i).nominal_fC();
+
+      if (totFc > digiMinFc_) {
+
+	shscp::HcalDigi d;
+	d.id = it->id();
+	d.nJet = 999;
+	d.fc0 = it->sample(0).nominal_fC();
+	d.fc1 = it->sample(1).nominal_fC();
+	d.fc2 = it->sample(2).nominal_fC();
+	d.fc3 = it->sample(3).nominal_fC();
+	d.fc4 = it->sample(4).nominal_fC();
+	d.fc5 = it->sample(5).nominal_fC();
+	d.fc6 = it->sample(6).nominal_fC();
+	d.fc7 = it->sample(7).nominal_fC();
+	d.fc8 = it->sample(8).nominal_fC();
+	d.fc9 = it->sample(9).nominal_fC();
+	event_->addDigi(d);
+	
       }
-      event_->addDigi(d);
-
-//    }
       
     }
   }
