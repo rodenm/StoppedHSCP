@@ -45,16 +45,29 @@ test/testStoppedHSCPTree.py
 
 
 3.  ROOT macros
-macros - all plot making macros
-rootutils - generic macros of Ben's used by plot making macros
+macros/Chain.C	     	  store input files in one place
+macros/BasicPlots.C   	  plot all the basic distributions
+macros/Cuts.C		  offline selection methods
+macros/WriteSelection.C	  select events and write a new TTree
+
+4.  Utilities
+test/merge.py - merge ROOT files from CASTOR locations
 
 
-Instructions
+
+*** Basic instructions for doing Stopped HSCP Analysis ***
 
 1.  Making ntuples
 cmsRun test/testStoppedHSCPTree.py
 
-2. Making plots from ntuples
+2.  Making ntuples on the CAF
+crab -create -cfg test/crab_CAF.cfg
 
-TODO
+3. Merging ntuples
+python test/merge.py <castor path> <output file>
+       This will merge *all* files in <castor directory> and put them in <output file>.  You might
+need to copy and edit the hadd command if this produces an output file > 2 Gb.  (ie. this is work in progress!)
+
+4.  Making plots from ntuples
+root -q -b macros/DoAnalysis.C
 
