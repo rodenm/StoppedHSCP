@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.5 2009/07/23 16:33:04 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.6 2009/08/23 12:58:11 jbrooke Exp $
 //
 //
 
@@ -197,6 +197,13 @@ class StoppedHSCPEvent : public TObject {
   unsigned nTow() { return nTowers; }
   unsigned nHpd() { return nHpds; }
   unsigned nDigi() { return nDigis; }
+
+  shscp::MCDecay getMCDecay(unsigned i) { if (i < nMCDecays) return mcDecays[i]; }
+  shscp::Jet getJet(unsigned i) { if (i < nJets) return jets[i]; }
+  shscp::Muon getMuon(unsigned i) { if (i < nMuons) return muons[i]; }
+  shscp::Tower getTower(unsigned i) { if (i < nTowers) return towers[i]; }
+  shscp::HPD getHPD(unsigned i) { if (i < nHpds) return hpds[i]; }
+  shscp::HcalDigi getDigi(unsigned i) { if (i < nDigis) return digis[i]; }
 
  private:
 

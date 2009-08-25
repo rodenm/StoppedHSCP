@@ -4,7 +4,7 @@ import sys
 import subprocess
 
 dir=sys.argv[1]
-ofile=dir+"/"+sys.argv[2]
+ofile=sys.argv[2]
 
 print "Merging files from "+dir
 print "to "+ofile
@@ -19,13 +19,14 @@ rfdir=subprocess.Popen("rfdir "+dir,
 filelist=rfdir.communicate()[0]
 
 # remove lines and other garbage (why doesn't rfdir support this!)
+# and split into groups of N files
 files=" "
 for line in filelist.splitlines():
     fields = line.split()
-    files+=dir+"/"+fields[8]+' '
-        
+    files[i]+=dir+"/"+fields[8]+' '
+
 # call hadd
-print "hadd "+dir+ofile+files
+print "hadd "+ofile+files
 hadd=subprocess.Popen("hadd "+ofile+files,
                        shell=True,
                        )
