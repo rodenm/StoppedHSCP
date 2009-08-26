@@ -103,6 +103,38 @@ void StoppedHSCPEvent::addDigi(HcalDigi d) {
   } 
 }
 
+shscp::MCDecay StoppedHSCPEvent::getMCDecay(unsigned i) {
+ if (i < nMCDecays) return mcDecays[i]; 
+ else return shscp::MCDecay();
+}
+
+shscp::Jet StoppedHSCPEvent::getJet(unsigned i) { 
+  if (i < nJets) return jets[i];
+  else return shscp::Jet();
+}
+
+shscp::Muon StoppedHSCPEvent::getMuon(unsigned i) { 
+  if (i < nMuons) return muons[i]; 
+  else return shscp::Muon();
+}
+
+shscp::Tower StoppedHSCPEvent::getTower(unsigned i) {
+  if (i < nTowers) return towers[i]; 
+  else return shscp::Tower();
+}
+
+
+shscp::HPD StoppedHSCPEvent::getHPD(unsigned i) { 
+  if (i < nHpds) return hpds[i]; 
+  else return shscp::HPD();
+}
+
+shscp::HcalDigi StoppedHSCPEvent::getDigi(unsigned i) { 
+  if (i < nDigis) return digis[i]; 
+  else return shscp::HcalDigi();
+}
+
+
 #if !defined(__CINT__)
   ClassImp(StoppedHSCPEvent)
 #endif

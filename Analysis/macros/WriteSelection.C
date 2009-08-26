@@ -21,7 +21,7 @@ void WriteSelection(TChain* chain, const char* filename, Int_t nmax=10) {
   // create custom event object
   //  gSystem->Load("libStoppedHSCPAnalysis");
   StoppedHSCPEvent *event   = new StoppedHSCPEvent();
-  chain->SetBranchAddress("event",&event);
+  chain->SetBranchAddress("events",&event);
   
   //Create a new file + a clone of old tree in new file
   TFile *newfile = new TFile(filename,"recreate");
@@ -29,12 +29,12 @@ void WriteSelection(TChain* chain, const char* filename, Int_t nmax=10) {
 
   // loop over events
   Int_t nentries = (Int_t)chain->GetEntries();  
-  for (Int_t i=0;i<nentries || i<nmax; i++) {
+  for (Int_t i=0;i<nentries && i<nmax; i++) {
 
     chain->GetEntry(i);
     
     // fill new tree if current event passes cuts
-    if ( ApplyAllCuts(event) ) {
+    if ( AllCuts(event) ) {
       newtree->Fill();
       nSelected++;
     }

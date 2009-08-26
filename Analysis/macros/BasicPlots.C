@@ -10,7 +10,7 @@ void BasicPlots(TChain* chain) {
 
   TPDF* pdf = new TPDF("BasicPlots.pdf");
   TCanvas* canvas = new TCanvas("canvas");
-  canvas->Clear();
+  //  canvas->Clear();
 
   // setup for errors
   TH1::SetDefaultSumw2();
@@ -19,6 +19,8 @@ void BasicPlots(TChain* chain) {
   
   Int_t nEvents = (Int_t)chain->GetEntries();
   double rate = 3.5;
+
+  // 
 
   // plots
 
@@ -66,14 +68,14 @@ void BasicPlots(TChain* chain) {
   hjeteta->SetXTitle("#eta");
   hjeteta->Scale(rate/nEvents);
   hjeteta->SetYTitle("Hz / 0.1");
-  chain->Draw("jets.eta[0]", ")(jets.e[0])>20.)>>hjeteta");
+  chain->Draw("jets.eta[0]>>hjeteta", "(jets.e[0])>20.");
   canvas->Update();
 
   TH1D* hjetphi = new TH1D("hjetphi", "Leading jet #phi", 60, -3.4151, 3.4151);
   hjetphi->SetXTitle("#phi");
   hjetphi->Scale(rate/nEvents);
   hjetphi->SetYTitle("Hz");
-  chain->Draw("jets.phi[0]", ")(jets.e[0])>20.)>>hjetphi");
+  chain->Draw("jets.phi[0]>>hjetphi", "(jets.e[0])>20.");
   canvas->Update();
 
   TH1D* hjetem = new TH1D("hjetem", "Leading jet ECAL energy", 100, 0., 2000.);
@@ -135,7 +137,6 @@ void BasicPlots(TChain* chain) {
   htowhad->SetYTitle("Hz / 100 GeV");
   chain->Draw("towers.eHad[0]>>htowhad");
   canvas->Update();
-  
 
   pdf->Close();
   
