@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.9 2009/08/25 11:57:06 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.10 2009/08/26 12:55:53 jbrooke Exp $
 //
 //
 
@@ -44,13 +44,14 @@
 #include "DataFormats/MuonReco/interface/Muon.h"
 
 #include "DataFormats/CaloTowers/interface/CaloTowerCollection.h"
+#include "DataFormats/CaloTowers/interface/CaloTowerDetId.h"
 
 #include "DataFormats/METReco/interface/HcalNoiseHPD.h"
 #include "DataFormats/METReco/interface/HcalNoiseRBX.h"
 #include "DataFormats/METReco/interface/HcalNoiseSummary.h"
 
 //#include "DataFormats/HcalRecHit/interface/HcalRecHitCollections.h"
-//#include "DataFormats/HcalDetId/interface/HcalDetId.h"
+#include "DataFormats/HcalDetId/interface/HcalDetId.h"
 
 #include "DataFormats/HcalDigi/interface/HBHEDataFrame.h"
 #include "DataFormats/HcalDigi/interface/HcalDigiCollections.h"
@@ -256,7 +257,7 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
   if (doReco_) {
     doJets(iEvent);
     doMuons(iEvent);
-    doTowersAboveThreshold(iEvent);
+    //    doTowersAboveThreshold(iEvent);
     doHcalNoise(iEvent);
   }
   
@@ -387,6 +388,9 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
    edm::Handle<CaloJetCollection> caloJets;
    iEvent.getByLabel(jetTag_, caloJets);
    
+   edm::Handle<CaloTowerCollection> caloTowers;
+   iEvent.getByLabel(caloTowerTag_,caloTowers);
+
    if (caloJets.isValid()) {
      for(CaloJetCollection::const_iterator it=caloJets->begin(); 
 	 it!=caloJets->end() && event_->nJet() < StoppedHSCPEvent::MAX_N_JETS;
@@ -407,13 +411,48 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
 	 jet.n60 = it->n60();
 	 jet.n90 = it->n90();
 	 event_->addJet(jet);
-	 
- 	 // get constituents for later use
-//  	 jetTowers_.insert(jetTowers_.end(), it->getCaloConstituents().begin(), it->getCaloConstituents().end());
-// 	 for (unsigned i=0; i<it->getCaloConstituents().size(); ++i) {
-// 	   towerJets_.push_back(event_->nJet());
+
+// 	 std::vector<CaloTowerDetId>::const_iterator t;
+
+// 	 for (t=it->getTowerIndices().begin(); t!=it->getTowerIndices().end(); ++t) {
+// 	   std::cout << t->iphi() << std::endl;
 // 	 }
 	 
+// 	 std::vector<CaloTowerPtr>::const_iterator t;
+
+// 	 if (it->getCaloConstituents().size()!=0) {
+// 	   for (t=it->getCaloConstituents().begin(); t!=it->getCaloConstituents().end(); ++t) {
+	     
+// 	     const CaloTower* tower = t->get();
+
+// 	     edm::LogWarning("MissingProduct") << "CaloTowerPtr " << tower << std::endl;
+	     
+// 	     if (tower != 0) {
+  
+// 	       if (tower->energy() > towerMinEnergy_ &&
+// 		   fabs(tower->eta()) < towerMaxEta_) {
+// 		 shscp::Tower tow;
+		 
+// 		 tow.e = tower->energy();
+// 		 tow.et = tower->et();
+// 		 tow.eta = tower->eta();
+// 		 tow.phi = tower->phi();
+// 		 tow.ieta = tower->ieta();
+// 		 tow.iphi = tower->iphi();
+// 		 tow.nJet = event_->nJet();
+// 		 tow.eHad = tower->hadEnergy();
+// 		 tow.etHad = tower->hadEt();
+// 		 tow.eEm = tower->emEnergy();
+// 		 tow.etEm = tower->emEt();
+// 		 event_->addTower(tow);	     
+// 	       }
+// 	     }
+// 	   }
+// 	 }
+// 	 else {
+// 	   edm::LogWarning("MissingProduct") << "CaloJetConstituents not found.  Branches will not be filled" << std::endl;
+// 	 }
+
        }
      }
    }
@@ -489,13 +528,6 @@ void StoppedHSCPTreeProducer::doTowersAboveThreshold(const edm::Event& iEvent) {
   }
   
 }
-
-
-void StoppedHSCPTreeProducer::doTowersInJets(const edm::Event& iEvent) {
-
-
-}
-
 
 void StoppedHSCPTreeProducer::doHcalNoise(const edm::Event& iEvent) {
   
@@ -595,12 +627,6 @@ void StoppedHSCPTreeProducer::doDigisAboveThreshold(const edm::Event& iEvent) {
     if (!digisMissing_) edm::LogWarning("MissingProduct") << "HBHEDigiCollection not found.  Branch will not be filled" << std::endl;
     digisMissing_ = true;
   }
-
-}
-
-
-void StoppedHSCPTreeProducer::doDigisInJets(const edm::Event& iEvent) {
-
 
 }
 
