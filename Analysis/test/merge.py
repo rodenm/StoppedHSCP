@@ -23,7 +23,7 @@ filelist=rfdir.communicate()[0]
 files=" "
 for line in filelist.splitlines():
     fields = line.split()
-    files[i]+=dir+"/"+fields[8]+' '
+    files+=dir+"/"+fields[8]+' '
 
 # call hadd
 print "hadd "+ofile+files

@@ -11,7 +11,7 @@
 // custom headers
 #include "interface/StoppedHSCPEvent.h"
 
-#include "macros/Cuts.C"
+//#include "macros/Cuts.C"
 
 void WriteSelection(TChain* chain, const char* filename, Int_t nmax=10) {
 
@@ -34,7 +34,7 @@ void WriteSelection(TChain* chain, const char* filename, Int_t nmax=10) {
     chain->GetEntry(i);
     
     // fill new tree if current event passes cuts
-    if ( AllCuts(event) ) {
+    if ( jetCuts(event) && muonCuts(event) ) {
       newtree->Fill();
       nSelected++;
     }
