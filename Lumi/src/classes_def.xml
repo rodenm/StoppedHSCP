@@ -8,6 +8,7 @@
   <class name="HCAL_HLX::LUMI_DETAIL"/>
   <class name="shscp::LumiRunSection"/>
   <class name="shscp::LumiReader"/>
+  <class name="shscp::LumiDecayMC"/>
 </selection>
 </lcgdict>
 

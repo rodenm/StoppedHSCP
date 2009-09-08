@@ -30,21 +30,26 @@ namespace shscp {
   // gathers information from the LUMI NTUPLE
   class LumiReader {
   public:
-    // use single file
-    LumiReader (const std::string& fFileName = "");
 
-    // use chain of files 
-    LumiReader (const std::vector <std::string>& fFileNames);
-
-    ~LumiReader ();
 
     // all available run/section    
     std::vector<LumiRunSection> getAllRunsections () const;
     // all available timestamps aka start of run/section
     std::vector<uint32_t> getAllTimestamps () const;
 
+    // total entries
+    int64_t entries () {return mTotalEntries;}
+
+    // convert runsection/time to index
+    int64_t getIndex (const LumiRunSection& fRunSection);
+    int64_t getIndex (uint32_t fRun, uint32_t fSection) {return getIndex (LumiRunSection (fRun, fSection));}
+    int64_t getIndex (uint32_t mTime);
+    int64_t getIndex (double mTime);
+
     // accessors to different internal LUMI objects by different means    
-    const LumiSectionHeader* getLumiHeaderByIndex (uint64_t fIndex);
+    const LumiSectionHeader* getLumiHeaderByIndex (int64_t fIndex);
+    const LumiSummary* getLumiSummaryByIndex (int64_t fIndex);
+    const LumiDetail* getLumiDetailByIndex (int64_t fIndex);
     const LumiSectionHeader* getLumiHeader (const LumiRunSection& fRunSection);
     const LumiSummary* getLumiSummary (const LumiRunSection& fRunSection);
     const LumiDetail* getLumiDetail (const LumiRunSection& fRunSection);
@@ -54,36 +59,59 @@ namespace shscp {
     const LumiSummary* getLumiSummary (uint32_t fRun, uint32_t fSection);
 
     // instant LUMI for given run/section
-    double instantLuminosity (uint32_t fRun, uint32_t fSection);
+    double instantLuminosity (int64_t fIndex);
 
     // integrated LUMI for given run/section
-    double integratedLuminosity (uint32_t fRun, uint32_t fSection);
+    double integratedLuminosity (int64_t fIndex);
 
     // start time of the run/section
-    double sectionStartTime (uint32_t fRun, uint32_t fSection);
+    double sectionStartTime (int64_t fIndex);
 
     // start time of the run/section
-    double sectionEndTime (uint32_t fRun, uint32_t fSection);
-    
+    double sectionEndTime (int64_t fIndex);
+
+    // fraction of empty BXs
+    double sectionEmptyBunchesFraction (int64_t fIndex);
+
+    // get instance
+    static LumiReader* getLumiReader (const std::string& fLumiFile);
 
   private:
+    std::vector<std::string> mFiles;
     LumiSectionHeader* mHeader;
     TBranch* mHeaderBranch;
+    int64_t mHeaderIndex;
     LumiSummary* mSummary;
     TBranch* mSummaryBranch;
+    int64_t mSummaryIndex;
     LumiDetail* mDetail;
     TBranch* mDetailBranch;
+    int64_t mDetailIndex;
     TChain* mChain;
     std::map <uint64_t, int64_t> mRunsectionIndex;
     std::map <uint32_t, int64_t> mTimestampIndex;
+    int64_t mTotalEntries;
+    static std::map <std::string, LumiReader*> mIndex; 
+
+    // all constructors are private
+    // use single file
+    LumiReader (const std::string& fFileName = "");
+
+    // use chain of files 
+    LumiReader (const std::vector <std::string>& fFileNames);
+
+    ~LumiReader ();
+
+    // copy constructors
+    LumiReader (const LumiReader& fOther);
+    LumiReader& operator= (const LumiReader& fOther);
 
     // internal routines
+    void init (); // init from list of files;
     bool initHeader ();
     bool initSummary ();
     bool initDetail ();
     bool initIndex ();
-    int64_t getIndex (const LumiRunSection& fRunSectionuin); 
-    int64_t getIndex (uint32_t mTime);
 
   };
 }

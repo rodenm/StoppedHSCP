@@ -17,6 +17,7 @@ namespace shscp {
     uint32_t  startOrbit;  // Start orbit of lumi section
     uint32_t  numOrbits;   // Total number of orbits recorded in lumi section
     uint16_t  numBunches;  // Total number of bunches (from start of orbit)
+    uint16_t  numUnfilledBunches; // Total number of unfilled bunches
     uint16_t  numHLXs;     // Number of HLXs in lumi section
     bool bCMSLive;    // Is CMS taking data?
     bool bOC0;        // Was section initialised by an OC0?
