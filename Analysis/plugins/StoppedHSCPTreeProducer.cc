@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.11 2009/08/28 12:53:07 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.12 2009/09/03 15:08:30 jbrooke Exp $
 //
 //
 
@@ -278,8 +278,8 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
 void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent){ 
   
   event_->setEventInfo(iEvent.id().event(),
-		       iEvent.orbitNumber(),
 		       iEvent.bunchCrossing(),
+		       iEvent.orbitNumber(),
 		       iEvent.luminosityBlock(),
 		       iEvent.id().run(),
 		       iEvent.eventAuxiliary().storeNumber(),

@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.7 2009/08/25 11:57:06 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.8 2009/08/26 12:55:52 jbrooke Exp $
 //
 //
 
@@ -141,6 +141,7 @@ namespace shscp {
   
   struct Muon {
   Muon() : pt(0.),eta(0.),phi(0.),hcalEta(0.),hcalPhi(0.) { }
+    double type;        // type of muon (standalone/global/cosmic/regular)
     double pt;
     double eta;
     double phi;
