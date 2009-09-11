@@ -11,9 +11,9 @@
 // custom headers
 #include "interface/StoppedHSCPEvent.h"
 
-//#include "macros/Cuts.C"
+#include "macros/Cuts.C"
 
-void WriteSelection(TChain* chain, const char* filename, Int_t nmax=10) {
+void WriteSelection(TChain* chain, const char* filename, unsigned cuts, Int_t nmax=999999999) {
 
   // count number of events selected
   unsigned nSelected = 0;
@@ -29,12 +29,14 @@ void WriteSelection(TChain* chain, const char* filename, Int_t nmax=10) {
 
   // loop over events
   Int_t nentries = (Int_t)chain->GetEntries();  
+  std::cout << "Going to run over : " << nentries << " events" << std::endl;
+
   for (Int_t i=0;i<nentries && i<nmax; i++) {
 
     chain->GetEntry(i);
     
     // fill new tree if current event passes cuts
-    if ( jetCuts(event) && muonCuts(event) ) {
+    if ( Cut(event, cuts) ) {
       newtree->Fill();
       nSelected++;
     }
@@ -47,6 +49,6 @@ void WriteSelection(TChain* chain, const char* filename, Int_t nmax=10) {
   newtree->AutoSave();
   delete newfile;
 
-  std::cout << "WriteSelection() : selected " << nSelected << " events" << std::endl;
+  std::cout << "Selected " << nSelected << " events" << std::endl;
 
 }

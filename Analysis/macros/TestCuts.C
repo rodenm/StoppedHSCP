@@ -28,35 +28,31 @@
 
     chain->GetEntry(i);
 
-    if (cut(evt, 0x1)) hTestJetE->Fill(evt->getJet(0).e);
-    if (cut(evt, 0x2)) hTestJetEta->Fill(evt->getJet(0).eta);
-    if (cut(evt, 0x4)) hTestJetN90->Fill(evt->getJet(0).n90);
-    if (cut(evt, 0x8)) hTestJetN60->Fill(evt->getJet(0).n60);
-    if (cut(evt, 0x10)) hTestMuVeto->Fill(evt->nMuon());
+    if (Cut(evt, 1))  hTestJetE->Fill(evt->getJet(0).e);
+    if (Cut(evt, 2))  hTestJetEta->Fill(evt->getJet(0).eta);
+    if (Cut(evt, 4))  hTestJetN60->Fill(evt->getJet(0).n60);
+    if (Cut(evt, 8))  hTestJetN90->Fill(evt->getJet(0).n90);
+    if (Cut(evt, 16)) hTestMuVeto->Fill(evt->nMuon());
 
   }
 
-  TPDF* pdf = new TPDF("EffPlots.pdf");
+  TPDF* pdf = new TPDF("TestCutPlots.pdf");
   TCanvas* canvas = new TCanvas("canvas");
 
-  TH1D* hTestJetE = (TH1D*)file.Get("hTestJetE");
-  hTestJetE->SetLineStyle(1);
+  canvas->SetLogy();
+
   hTestJetE->Draw();
   canvas->Update();
 
-  TH1D* hTestJetEta = (TH1D*)file.Get("hTestJetEta");
   hTestJetEta->Draw();
   canvas->Update();
 
-  TH1D* hTestJetN90 = (TH1D*)file.Get("hTestJetN90");
   hTestJetN90->Draw();
   canvas->Update();
 
-  TH1D* hTestJetN60 = (TH1D*)file.Get("hTestJetN60");
   hTestJetN60->Draw();
   canvas->Update();
 
-  TH1D* hTestMuVeto = (TH1D*)file.Get("hTestMuVeto");
   hTestMuVeto->Draw();
   canvas->Update();
 

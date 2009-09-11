@@ -16,10 +16,10 @@
 
 #include "macros/Cuts.C"
 
-void EffHistos(TChain* chain) {
+void EffHistos(TChain* chain, char* filename) {
 
   //Create a new file + a clone of old tree in new file
-  TFile *file = new TFile("EffHistos.root","recreate");
+  TFile *file = new TFile(filename,"recreate");
 
 
   // setup for errors
@@ -43,11 +43,11 @@ void EffHistos(TChain* chain) {
 
     chain->GetEntry(i);
 
-    if (cut(evt, 0x1e)) hEffJetE->Fill(evt->getJet(0).e);
-    if (cut(evt, 0x1d)) hEffJetEta->Fill(evt->getJet(0).eta);
-    if (cut(evt, 0x1b)) hEffJetN90->Fill(evt->getJet(0).n90);
-    if (cut(evt, 0x17)) hEffJetN60->Fill(evt->getJet(0).n60);
-    if (cut(evt, 0xf)) hEffMuVeto->Fill(evt->nMuon());
+    if (Cut(evt, 0x1e)) hEffJetE->Fill(evt->getJet(0).e);
+    if (Cut(evt, 0x1d)) hEffJetEta->Fill(evt->getJet(0).eta);
+    if (Cut(evt, 0x1b)) hEffJetN90->Fill(evt->getJet(0).n90);
+    if (Cut(evt, 0x17)) hEffJetN60->Fill(evt->getJet(0).n60);
+    if (Cut(evt, 0xf)) hEffMuVeto->Fill(evt->nMuon());
 
   }
 
@@ -62,32 +62,34 @@ void EffHistos(TChain* chain) {
 }
 
 
-void EffPlots() {
+void EffPlots(char* rootfile, char* pdffile) {
   
-  TFile file("EffHistos.root","read");
+  TFile file(rootfile,"read");
 
-  TPDF* pdf = new TPDF("EffPlots.pdf");
+  TPDF* pdf = new TPDF(pdffile);
   TCanvas* canvas = new TCanvas("canvas");
+  canvas->SetLogy();
 
   TH1D* hEffJetE = (TH1D*)file.Get("hEffJetE");
-  hEffJetE->SetLineStyle(1);
-  hEffJetE->Draw();
+  hEffJetE->Draw("HIST");
+  canvas->Update();
+  hEffJetE->Draw("HIST");
   canvas->Update();
 
   TH1D* hEffJetEta = (TH1D*)file.Get("hEffJetEta");
-  hEffJetEta->Draw();
+  hEffJetEta->Draw("HIST");
   canvas->Update();
 
   TH1D* hEffJetN90 = (TH1D*)file.Get("hEffJetN90");
-  hEffJetN90->Draw();
+  hEffJetN90->Draw("HIST");
   canvas->Update();
 
   TH1D* hEffJetN60 = (TH1D*)file.Get("hEffJetN60");
-  hEffJetN60->Draw();
+  hEffJetN60->Draw("HIST");
   canvas->Update();
 
   TH1D* hEffMuVeto = (TH1D*)file.Get("hEffMuVeto");
-  hEffMuVeto->Draw();
+  hEffMuVeto->Draw("HIST");
   canvas->Update();
 
   pdf->Close();

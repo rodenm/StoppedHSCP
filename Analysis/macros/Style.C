@@ -2,16 +2,16 @@
 
 // tdrGrid: Turns the grid lines on (true) or off (false)
 
-void tdrGrid(bool gridOn) {
-  tdrStyle->SetPadGridX(gridOn);
-  tdrStyle->SetPadGridY(gridOn);
-}
+// void tdrGrid(bool gridOn) {
+//   tdrStyle->SetPadGridX(gridOn);
+//   tdrStyle->SetPadGridY(gridOn);
+// }
 
-// fixOverlay: Redraws the axis
+// // fixOverlay: Redraws the axis
 
-void fixOverlay() {
-  gPad->RedrawAxis();
-}
+// void fixOverlay() {
+//   gPad->RedrawAxis();
+// }
 
 void setTDRStyle() {
   TStyle *tdrStyle = new TStyle("tdrStyle","Style for P-TDR");
@@ -44,10 +44,10 @@ void setTDRStyle() {
   tdrStyle->SetFrameLineWidth(1);
 
 // For the histo:
-  tdrStyle->SetHistFillColor(8);
-  tdrStyle->SetHistFillStyle(1);
+  tdrStyle->SetHistFillColor(kBlue);
+  tdrStyle->SetHistFillStyle(1001);
   tdrStyle->SetHistLineColor(1);
-  tdrStyle->SetHistLineStyle(0);
+  tdrStyle->SetHistLineStyle(1);
   tdrStyle->SetHistLineWidth(1);
   // tdrStyle->SetLegoInnerR(Float_t rad = 0.5);
   // tdrStyle->SetNumberContours(Int_t number = 20);
@@ -56,7 +56,7 @@ void setTDRStyle() {
   //  tdrStyle->SetErrorMarker(20);
   tdrStyle->SetErrorX(0.);
   
-  tdrStyle->SetMarkerStyle(20);
+  tdrStyle->SetMarkerStyle(12);
 
 //For the fit/function:
   tdrStyle->SetOptFit(1);
@@ -100,10 +100,10 @@ void setTDRStyle() {
   tdrStyle->SetTitleFontSize(0.05);
   // tdrStyle->SetTitleH(0); // Set the height of the title box
   // tdrStyle->SetTitleW(0); // Set the width of the title box
-   tdrStyle->SetTitleX(0.2); // Set the position of the title box
-   tdrStyle->SetTitleY(0.99); // Set the position of the title box
+  tdrStyle->SetTitleX(0.1); // Set the position of the title box
+  tdrStyle->SetTitleY(0.99); // Set the position of the title box
   //tdrStyle->SetTitleStyle(Style_t style = 1001);
-   tdrStyle->SetTitleBorderSize(0);
+   tdrStyle->SetTitleBorderSize(1);
 
 // For the axis titles:
 
@@ -133,9 +133,9 @@ void setTDRStyle() {
   tdrStyle->SetPadTickY(1);
 
 // Change for log plots:
-  tdrStyle->SetOptLogx(0);
-  tdrStyle->SetOptLogy(0);
-  tdrStyle->SetOptLogz(0);
+//   tdrStyle->SetOptLogx(0);
+//   tdrStyle->SetOptLogy(0);
+//   tdrStyle->SetOptLogz(0);
 
 // Postscript options:
   tdrStyle->SetPaperSize(20.,20.);
