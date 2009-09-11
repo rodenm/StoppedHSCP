@@ -16,7 +16,7 @@ process.load('Configuration/EventContent/EventContentCosmics_cff')
 # Magnetic field: force mag field to be 3.8 tesla
 process.load("Configuration.StandardSequences.MagneticField_38T_cff")
 # Conditions (Global Tag is used here):
-process.GlobalTag.globaltag = "CRAFT0831X_V1::All"
+process.GlobalTag.globaltag = "CRAFT0831X_V3::All"
 
 process.maxEvents = cms.untracked.PSet(  input = cms.untracked.int32(-1))
 

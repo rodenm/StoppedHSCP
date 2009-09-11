@@ -2,7 +2,7 @@
 
 jobtype = cmssw
 scheduler = glite
-server_name = bari
+#server_name =
 
 [CMSSW]
 
@@ -23,8 +23,10 @@ return_data = 0
 
 ### OUTPUT files INTO A SE
 copy_data = 1
-storage_element = T1_CH_CERN_Buffer
-user_remote_dir = StoppedHSCP_CRAFT08_v1
+storage_element          = lcgse02.phy.bris.ac.uk
+storage_path             = /srm/managerv2?SFN=/cms
+storage_port             = 8444
+user_remote_dir          = /store/user/jbrooke/StoppedHSCP_CRAFT08_v1
 
 ui_working_dir = CRAFT08_v1
 
