@@ -2,7 +2,7 @@
 #include "Math/ProbFuncMathCore.h"
 #include "Math/QuantFuncMathCore.h"
 #include "TMath.h"
-
+#include <iostream>
 Reducer::Reducer(const std::vector<Experiment> &input)
         : exps(input)
 {
@@ -84,7 +84,10 @@ TGraph *Reducer::getExclusionPlot(double mass)
         TMath::Power(cSection, 2) * (-9.36011 ) +
         cSection         * (195.055 ) +
         282.299;
-      
+      std::cout << "getExclusionPlot-> mass/lt:" << mass << '/' << xpoints[point] 
+		<< ",  s/os/ob:" << s << '/' << o_s << '/' << o_b 
+		<< ", cs/M:" << cSection << '/' << ypoints[point]
+		<< std::endl;
       ++point;
     }
   return new TGraph(point, xpoints, ypoints);
