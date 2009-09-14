@@ -4,31 +4,26 @@ import sys
 import subprocess
 
 dir=sys.argv[1]
-ofile=sys.argv[2]
+basename=sys.argv[2]
+nfiles=int(sys.argv[3])
+firstfile=int(sys.argv[4])
+
+if len(sys.argv)!=5 :
+    print "Usage : python merge.py <dir> <base filename> <n files to merge> <n of first file>"
+    exit(1)
 
 print "Merging files from "+dir
-print "to "+ofile
+print "to "+dir+"/"+basename+".root"
 
-# get list of files
-print "rfdir "+dir
-rfdir=subprocess.Popen("rfdir "+dir,
-                       shell=True,
-                       stdout=subprocess.PIPE,
-                       )
+command = "hadd "+dir+"/"+basename+".root "
 
-filelist=rfdir.communicate()[0]
-
-# remove lines and other garbage (why doesn't rfdir support this!)
-# and split into groups of N files
-files=" "
-for line in filelist.splitlines():
-    fields = line.split()
-    files+=dir+"/"+fields[8]+' '
+for i in range(firstfile, firstfile+nfiles):
+    command += dir+"/"+basename+"_"+str(i)+".root "
 
 # call hadd
-print "hadd "+ofile+files
-hadd=subprocess.Popen("hadd "+ofile+files,
-                       shell=True,
-                       )
+print command
+hadd=subprocess.Popen(command,
+                      shell=True
+                      )
 
 print hadd.communicate()[0]
