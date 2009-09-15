@@ -2,11 +2,9 @@
 
 {
 
-  gSystem->Load("libStoppedHSCPAnalysis");
-  gROOT->ProcessLine(".L macros/Chain.C+");
-  gROOT->ProcessLine(".L macros/Cuts.C+");
 
-  TChain* chain = Chain(); 
+  TChain* chain = new TChain("stoppedHSCPTree/StoppedHSCPTree");
+  chain->Add(" /storage/phjjb/StoppedHSCP_CRAFT09_v4/stoppedHSCPTree.root");
  
   TH1::SetDefaultSumw2();
 

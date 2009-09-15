@@ -23,11 +23,11 @@ void BasicHistos(TChain* chain, char* filename) {
   double rate = nEvents/time;
   
   TH1D* hbx = new TH1D("hbx", "BX number", 3564, 0., 3564.);  
-  chain->Draw("event.orbit>>hbx");
+  chain->Draw("event.bx>>hbx");
   hbx->Scale(rate/hbx->Integral());
   
   TH1D* horb = new TH1D("horb", "Orbit number", 100, 0., 10000.);  
-  chain->Draw("event.bx>>horb");
+  chain->Draw("event.orbit>>horb");
   
   TH1D* hls = new TH1D("hls", "Lumi section", 100, 0., 1000.);  
   chain->Draw("event.lumisection>>hls");
@@ -130,16 +130,16 @@ void BasicPlots(char* rootfile, char* pdffile) {
   hbx->SetYTitle("Hz");
   hbx->Draw("HIST");
   canvas->Update();
-  hbx->Draw("HIST");
-  canvas->Update();
+  //  hbx->Draw("HIST");
+  //  canvas->Update();
 
   TH1D* horb = (TH1D*)file.Get("horb");
   horb->Draw("HIST");
   canvas->Update();
 
-  TH1D* hls = (TH1D*)file.Get("hls");
-  hls->Draw("HIST");
-  canvas->Update();
+//   TH1D* hls = (TH1D*)file.Get("hls");
+//   hls->Draw("HIST");
+//   canvas->Update();
 
   TH1D* hjete = (TH1D*)file.Get("hjete");
   hjete->SetXTitle("E (GeV)");
