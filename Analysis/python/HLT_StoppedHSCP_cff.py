@@ -179,18 +179,20 @@ hltStoppedHSCPIterativeCone5CaloJets = cms.EDProducer( "IterativeConeJetProducer
     maxRecoveredHcalCells = cms.uint32( 9999999 ),
     maxProblematicHcalCells = cms.uint32( 9999999 )
 )
-hltStoppedHSCP1CaloJetEnergy = cms.EDFilter( "HLT1CaloJetEnergy",
+hltStoppedHSCP1CaloJetEnergy = cms.EDFilter(
+    "HLT1CaloJetEnergy",
     inputTag = cms.InputTag( "hltStoppedHSCPIterativeCone5CaloJets" ),
     MinE = cms.double( 20.0 ),
     MaxEta = cms.double( 3.0 ),
-    MinN = cms.int32( 1 )
+    MinN = cms.int32( 1 ),
+    saveTag = cms.untracked.bool( True )
 )
 
-HLT_StoppedHSCP_8E29 = cms.Sequence( HLTBeginSequence 
-                                     + hltL1sStoppedHSCP8E29
-                                     + hltHcalDigis 
-                                     + hltHbhereco 
-                                     + hltStoppedHSCPHpdFilter 
-                                     + hltStoppedHSCPTowerMakerForAll
-                                     + hltStoppedHSCPIterativeCone5CaloJets 
-                                     + hltStoppedHSCP1CaloJetEnergy )
+HLT_StoppedHSCP_8E29 = cms.Path( HLTBeginSequence 
+                                 + hltL1sStoppedHSCP8E29
+                                 + hltHcalDigis 
+                                 + hltHbhereco 
+                                 + hltStoppedHSCPHpdFilter 
+                                 + hltStoppedHSCPTowerMakerForAll
+                                 + hltStoppedHSCPIterativeCone5CaloJets 
+                                 + hltStoppedHSCP1CaloJetEnergy )
