@@ -3,9 +3,9 @@ import FWCore.ParameterSet.Config as cms
 stoppedHSCPTree = cms.EDAnalyzer(
     "StoppedHSCPTreeProducer",
     l1JetsTag = cms.untracked.string("l1extraParticles"),
-    hltResultsTag = cms.untracked.InputTag("TriggerResults","","SHSCPTree"),
-    hltEventTag = cms.untracked.InputTag("hltTriggerSummaryAOD","","SHSCPTree"),
-    hltL3Tag = cms.untracked.InputTag("hltStoppedHSCP1CaloJetEnergy","","SHSCPTree"),
+    hltResultsTag = cms.untracked.InputTag("TriggerResults","","SHSCP"),
+    hltEventTag = cms.untracked.InputTag("hltTriggerSummaryAOD","","SHSCP"),
+    hltL3Tag = cms.untracked.InputTag("hltStoppedHSCP1CaloJetEnergy","","SHSCP"),
 
     hltTag = cms.untracked.InputTag("HLT"),
     mcTag = cms.untracked.InputTag("generator"),
@@ -13,7 +13,7 @@ stoppedHSCPTree = cms.EDAnalyzer(
     # jets
     jetTag = cms.untracked.InputTag("iterativeCone5CaloJets"),
     jetMinEnergy = cms.untracked.double(1.),
-    jetMaxEta = cms.untracked.double(3.),xs
+    jetMaxEta = cms.untracked.double(5.),
     
     # muons
     muonTag = cms.untracked.InputTag("muons"),

@@ -7,6 +7,15 @@ process.load('Configuration/StandardSequences/Services_cff')
 process.load('FWCore/MessageService/MessageLogger_cfi')
 process.MessageLogger.cerr.INFO.limit = cms.untracked.int32(10)
 
+process.load('Configuration/StandardSequences/GeometryIdeal_cff')
+process.load('Configuration/StandardSequences/RawToDigi_Data_cff')
+process.load('Configuration/StandardSequences/ReconstructionCosmics_cff')
+process.load('DQMOffline/Configuration/DQMOfflineCosmics_cff')
+process.load('Configuration/StandardSequences/EndOfProcess_cff')
+process.load('Configuration/EventContent/EventContentCosmics_cff')
+# Magnetic field: force mag field to be 3.8 tesla
+process.load("Configuration.StandardSequences.MagneticField_38T_cff")
+
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 process.GlobalTag.globaltag = "GR09_31X_V5P::All"
 
@@ -14,6 +23,10 @@ process.options = cms.untracked.PSet(
     Rethrow = cms.untracked.vstring('ProductNotFound')
 )
 
+# re-run HLT
+process.load('StoppedHSCP.Analysis.HLT_StoppedHSCP_cff')
+
+# L1 filter
 process.load('L1Trigger/Skimmer/l1Filter_cfi')
 process.l1Filter.algorithms = cms.vstring("L1_SingleJet10_NotBptxC")
 
@@ -48,6 +61,12 @@ process.output = cms.OutputModule(
                                   
 process.endpath = cms.EndPath(
     process.output
+)
+
+process.schedule = cms.Schedule(
+    process.HLT_StoppedHSCP_8E29,
+    process.myPath,
+    process.endpath
 )
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
