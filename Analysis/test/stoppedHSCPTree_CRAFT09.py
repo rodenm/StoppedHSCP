@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("Test")
+process = cms.Process("SHSCPTree")
 
 # import of standard configurations
 process.load('Configuration/StandardSequences/Services_cff')
@@ -14,8 +14,12 @@ process.options = cms.untracked.PSet(
     Rethrow = cms.untracked.vstring('ProductNotFound')
 )
 
-process.load('L1Trigger/Skimmer/l1Filter_cfi')
-process.l1Filter.algorithms = cms.vstring("L1_SingleJet10_NotBptxC")
+# L1 filter (not needed?)
+#process.load('L1Trigger/Skimmer/l1Filter_cfi')
+#process.l1Filter.algorithms = cms.vstring("L1_SingleJet10_NotBptxC")
+
+# re-run HLT
+process.load('StoppedHSCP.Analysis.HLT_StoppedHSCP_cff')
 
 # HCAL Unpacker
 process.load('Configuration.StandardSequences.RawToDigi_Data_cff')
@@ -30,13 +34,10 @@ process.TFileService = cms.Service("TFileService",
     fileName = cms.string('stoppedHSCPTree.root')
 )
 
-# debugging, utilities
-process.load("HLTrigger.HLTcore.hltEventAnalyzerAOD_cfi")
-
 
 # path
 process.myPath = cms.Path(
-    process.hltEventAnalyzerAOD
+    +process.HLT_StoppedHSCP_8E29
 #    process.l1Filter
     +process.hcalDigis
     +process.gtDigis

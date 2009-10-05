@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("Rec2")
+process = cms.Process("SHSCPTree")
 
 # import of standard configurations
 process.load('Configuration/StandardSequences/Services_cff')
@@ -43,12 +43,14 @@ process.source.inputCommands.append('keep *_eventAuxiliaryHistoryProducer_*_*')
 process.source.dropDescendantsOfDroppedBranches=cms.untracked.bool(False)
 
 
-# stopped HSCP stuff
+# L1 filter
 process.load('L1Trigger/Skimmer/l1Filter_cfi')
 process.l1Filter.algorithms = cms.vstring("L1_SingleJet10")
 
+# re-run HLT
 process.load('StoppedHSCP.Analysis.HLT_StoppedHSCP_cff')
 
+# HSCP Tree
 process.load('StoppedHSCP/Analysis/stoppedHSCPTree_cfi')
 process.stoppedHSCPTree.l1JetsTag = cms.untracked.string("hltL1extraParticles")
 

@@ -4,6 +4,7 @@
   <use name="DataFormats/DetId"/>
   <use name="DataFormats/HcalDigi"/>
   <use name="DataFormats/HcalRecHit"/>
+  <use name="DataFormats/HLTReco"/>
   <use name="DataFormats/JetReco"/>
   <use name="DataFormats/L1GlobalTrigger"/>
   <use name="DataFormats/METReco"/>
@@ -24,6 +25,8 @@
   <use name="Geometry/CaloGeometry"/>
   <use name="Geometry/RPCGeometry"/>
   <use name="Geometry/Records"/>
+
+  <use name="HLTrigger/HLTcore"/>
 
   <use name="PhysicsTools/UtilAlgos"/>
 

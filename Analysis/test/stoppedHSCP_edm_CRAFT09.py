@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("Test")
+process = cms.Process("SHSCP")
 
 # import of standard configurations
 process.load('Configuration/StandardSequences/Services_cff')
@@ -23,43 +23,34 @@ process.load('Configuration.StandardSequences.RawToDigi_Data_cff')
 # L1 extra (missing from RECO!)
 process.load('L1Trigger.Configuration.L1Extra_cff')
 
-# Ntuple producer
-process.load('StoppedHSCP/Analysis/stoppedHSCPTree_cfi')
-
-process.TFileService = cms.Service("TFileService",
-    fileName = cms.string('stoppedHSCPTree.root')
-)
-
-# debugging, utilities
-process.load("HLTrigger.HLTcore.hltEventAnalyzerAOD_cfi")
-
 
 # path
 process.myPath = cms.Path(
-    process.hltEventAnalyzerAOD
 #    process.l1Filter
-    +process.hcalDigis
+    process.hcalDigis
     +process.gtDigis
     +process.gctDigis
     +process.l1extraParticles
-    +process.stoppedHSCPTree
 )
 
-process.TFileService = cms.Service("TFileService",
-    fileName = cms.string('stoppedHSCPTree.root')
-)
+# write EDM file
+process.load('StoppedHSCP.Analysis.StoppedHSCP_EventContent_cff')
 
-#process.output = cms.OutputModule("PoolOutputModule",
-#    fileName = cms.untracked.string('testStoppedHSCPTree.root'),
+process.output = cms.OutputModule(
+    "PoolOutputModule",
+    fileName = cms.untracked.string('stoppedHSCP_edm.root'),
 #    SelectEvents = cms.untracked.PSet(
-#    SelectEvents = cms.vstring("myPath")
-#    )
-#)
-#process.endpath = cms.EndPath(
-#    process.output
-#)
+#        SelectEvents = cms.vstring("myPath")
+#        ),
+    outputCommands = process.SHSCP_EventContent.outputCommands
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
+)
+                                  
+process.endpath = cms.EndPath(
+    process.output
+)
+
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
 readFiles = cms.untracked.vstring()
 secFiles = cms.untracked.vstring() 
 process.source = cms.Source ("PoolSource",fileNames = readFiles, secondaryFileNames = secFiles)

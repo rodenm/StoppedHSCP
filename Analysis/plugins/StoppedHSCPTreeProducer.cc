@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.12 2009/09/03 15:08:30 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.13 2009/09/09 14:58:43 jbrooke Exp $
 //
 //
 
@@ -32,11 +32,20 @@
 
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
-// data formats
+// L1
 #include "DataFormats/L1Trigger/interface/L1JetParticleFwd.h"
 #include "DataFormats/L1Trigger/interface/L1JetParticle.h"
 
 #include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
+
+// HLT
+#include "DataFormats/HLTReco/interface/TriggerEvent.h"
+#include "DataFormats/HLTReco/interface/TriggerTypeDefs.h"
+#include "DataFormats/HLTReco/interface/TriggerObject.h"
+#include "DataFormats/Common/interface/TriggerResults.h"
+#include "FWCore/ParameterSet/interface/InputTag.h"
+
+#include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 
 // jets
 #include "DataFormats/JetReco/interface/CaloJetCollection.h"
@@ -85,6 +94,7 @@ public:
   
 private:
   virtual void beginJob(const edm::EventSetup&) ;
+  virtual void beginRun(const edm::Run&, const edm::EventSetup&) ;
   virtual void analyze(const edm::Event&, const edm::EventSetup&);
   virtual void endJob() ;
   
@@ -142,7 +152,9 @@ private:
  
   // EDM input tags
   std::string l1JetsTag_;
-  edm::InputTag hltTag_;
+  edm::InputTag hltResultsTag_;
+  edm::InputTag hltEventTag_;
+  edm::InputTag hltL3Tag_;
   edm::InputTag mcTag_;
   edm::InputTag jetTag_;
   edm::InputTag muonTag_;
@@ -151,6 +163,10 @@ private:
   edm::InputTag rbxTag_;
   edm::InputTag hpdTag_;
   edm::InputTag hcalDigiTag_;
+
+  // HLT config helper
+  HLTConfigProvider hltConfig_;
+  unsigned hltPathIndex_;
 
   // cuts
   double towerMinEnergy_;
@@ -167,6 +183,7 @@ private:
 
   // debug stuff
   bool l1JetsMissing_;
+  bool hltJetsMissing_;
   bool hltMissing_;
   bool mcMissing_;
   bool jetsMissing_;
@@ -191,7 +208,9 @@ private:
 
 StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfig):
   l1JetsTag_(iConfig.getUntrackedParameter<std::string>("l1JetsTag",std::string("l1extraParticles"))),
-  hltTag_(iConfig.getUntrackedParameter<edm::InputTag>("hltTag",edm::InputTag("HLT"))),
+  hltResultsTag_(iConfig.getUntrackedParameter<edm::InputTag>("hltResultsTag",edm::InputTag("TriggerResults","","HLT"))),
+  hltEventTag_(iConfig.getUntrackedParameter<edm::InputTag>("hltEventTag",edm::InputTag("hltTriggerSummaryAOD","","HLT"))),
+  hltL3Tag_(iConfig.getUntrackedParameter<edm::InputTag>("hltL3Tag",edm::InputTag("hltStoppedHSCP1CaloJetEnergy","","HLT"))),
   mcTag_(iConfig.getUntrackedParameter<edm::InputTag>("mcTag",edm::InputTag("generator"))),
   jetTag_(iConfig.getUntrackedParameter<edm::InputTag>("jetTag",edm::InputTag("sisCone5CaloJets"))),
   muonTag_(iConfig.getUntrackedParameter<edm::InputTag>("muonTag",edm::InputTag("muons"))),
@@ -210,6 +229,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   doDigis_(iConfig.getUntrackedParameter<bool>("doDigis",false)),
   writeHistos_(iConfig.getUntrackedParameter<bool>("writeHistos",false)),
   l1JetsMissing_(false),
+  hltJetsMissing_(false),
   hltMissing_(false),
   mcMissing_(false),
   jetsMissing_(false),
@@ -251,6 +271,26 @@ StoppedHSCPTreeProducer::~StoppedHSCPTreeProducer()
 // member functions
 //
 
+// ------------ method called once each job just before starting event loop  ------------
+void 
+StoppedHSCPTreeProducer::beginJob(const edm::EventSetup&)
+{
+}
+
+// -- called once per run
+void 
+StoppedHSCPTreeProducer::beginRun(edm::Run const &, edm::EventSetup const&)
+{
+  hltConfig_.init("HLT");
+  hltPathIndex_ = hltConfig_.triggerIndex("HLT_StoppedHSCP_8E29");
+}
+
+
+// ------------ method called once each job just after ending the event loop  ------------
+void 
+StoppedHSCPTreeProducer::endJob() {
+}
+
 // ------------ method called to for each event  ------------
 void
 StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
@@ -283,37 +323,58 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent){
 		       iEvent.luminosityBlock(),
 		       iEvent.id().run(),
 		       iEvent.eventAuxiliary().storeNumber(),
-		       iEvent.time().value());
+		       iEvent.time().value()&0xffffffff,
+		       iEvent.time().value()>>32);
 
 }
   
 
 void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent) {
 
-  double l1JetEt(0.), l1JetEta(0.), l1JetPhi(0.);
-  double hltJetE(0.), hltJetEta(0.), hltJetPhi(0.);
+  unsigned gtWord0(0), gtWord1(0);
   unsigned l1BptxPlus(0), l1BptxMinus(0);
+  unsigned hltBit(0);
 
-  // get L1 jet info
-  edm::Handle<l1extra::L1JetParticleCollection> l1CenJets;
-  iEvent.getByLabel(l1JetsTag_, "Central", l1CenJets);
+  // get HLT results
+  edm::Handle<edm::TriggerResults> HLTR;
+  iEvent.getByLabel(hltResultsTag_, HLTR);
+
+  if (HLTR.isValid()) {
+    // triggerIndex must be less than the size of HLTR or you get a CMSException: _M_range_check
+    if (hltPathIndex_ < HLTR->size()) hltBit = ( HLTR->accept(hltPathIndex_) ? 1 : 0 ); 
+  }
+
+  // store bits
+  event_->setTriggerInfo(gtWord0,
+			 gtWord1,
+			 l1BptxPlus,
+			 l1BptxMinus,
+			 hltBit);
   
+
+  // L1 jets
+  edm::Handle<l1extra::L1JetParticleCollection> l1CenJets;
+  iEvent.getByLabel(l1JetsTag_, "Central", l1CenJets);  
   edm::Handle<l1extra::L1JetParticleCollection> l1TauJets;
   iEvent.getByLabel(l1JetsTag_, "Tau", l1TauJets);
   
+  // merge and sort central and tau jet collections
   std::vector<l1extra::L1JetParticle> l1jets;
+
+  l1jets.insert(l1jets.end(), l1CenJets->begin(), l1CenJets->end());
+  l1jets.insert(l1jets.end(), l1TauJets->begin(), l1TauJets->end());
+  std::sort(l1jets.begin(), l1jets.end(), l1jet_gt());
 
   if (l1CenJets.isValid() && l1TauJets.isValid()) { 
 
-    // merge & sort collections
-    l1jets.insert(l1jets.end(), l1CenJets->begin(), l1CenJets->end());
-    l1jets.insert(l1jets.end(), l1CenJets->begin(), l1CenJets->end());
-    std::sort(l1jets.begin(), l1jets.end(), l1jet_gt());
-
-    if (l1jets.size()!=0) {
-      l1JetEt=l1jets.at(0).et();
-      l1JetEta=l1jets.at(0).eta();
-      l1JetPhi=l1jets.at(0).phi();
+    for (std::vector<l1extra::L1JetParticle>::const_iterator jet=l1jets.begin(); jet!=l1jets.end(); ++jet) {
+      shscp::TrigJet j;
+      j.type = jet->type();   // 0 = central, 1 = forward, 2 = tau
+      j.e = jet->energy();
+      j.et = jet->et();
+      j.phi = jet->phi();
+      j.eta = jet->eta();
+      event_->addL1Jet(j);
     }
     
   }
@@ -322,17 +383,48 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent) {
     l1JetsMissing_ = true;
   }
 
-  // To Do - fill BPTX & HLT info
+  // get HLT jets
+  edm::Handle<trigger::TriggerEvent> trgEvent;
+  iEvent.getByLabel(hltEventTag_, trgEvent);
 
-  event_->setTriggerInfo(l1JetEt,
-			 l1JetEta,
-			 l1JetPhi,
-			 l1BptxPlus,
-			 l1BptxMinus,
-			 hltJetE,
-			 hltJetEta,
-			 hltJetPhi);
+  // for Stopped HSCP L3 filter  
+  if (trgEvent.isValid()) {
 
+    const unsigned int filterIndex (trgEvent->filterIndex(hltL3Tag_) );
+
+    edm::LogInfo("StoppedHSCP") << "Debugging HLT...  StoppedHSCP index=" << filterIndex 
+				<< ",  N paths=" << trgEvent->sizeFilters() << std::endl;
+
+    if (filterIndex < trgEvent->sizeFilters()) {
+            
+      const trigger::TriggerObjectCollection& TOC(trgEvent->getObjects());
+      
+      const trigger::Keys& keys( trgEvent->filterKeys(filterIndex) );
+	
+      edm::LogInfo("StoppedHSCP") << "  ?  " << keys.size() << std::endl;
+
+      for ( unsigned hlto = 0; hlto < keys.size() && hlto<event_->nHltJets(); hlto++ ) {
+	trigger::size_type hltf = keys[hlto];
+	const trigger::TriggerObject& L3obj(TOC[hltf]);
+        
+	shscp::TrigJet j;
+	j.type = 99;
+	j.e = L3obj.energy();
+	j.et = L3obj.et();
+	j.phi = L3obj.phi();
+	j.eta = L3obj.eta();
+	event_->addHltJet(j);
+	
+      }
+      
+    }
+
+  }
+  else {
+    if (!hltJetsMissing_) edm::LogWarning("MissingProduct") << "TriggerEvent not found.  Branch will not be filled" << std::endl;
+    hltJetsMissing_ = true;
+  }
+							       
 }
 
 
@@ -402,10 +494,13 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
      digisMissing_ = true;
    }
 
+   // count jets
+   unsigned njet=0;
+
    if (caloJets.isValid()) {
      for(CaloJetCollection::const_iterator it=caloJets->begin(); 
-	 it!=caloJets->end() && event_->nJet() < StoppedHSCPEvent::MAX_N_JETS;
-	 ++it) {
+	 it!=caloJets->end() && event_->nJets() < StoppedHSCPEvent::MAX_N_JETS;
+	 ++it, ++njet) {
        if (it->energy() > jetMinEnergy_ &&
 	   fabs(it->eta()) < jetMaxEta_) {
 	 
@@ -440,7 +535,7 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
 	     tow.phi = tower->phi();
 	     tow.ieta = tower->ieta();
 	     tow.iphi = tower->iphi();
-	     tow.nJet = event_->nJet();
+	     tow.nJet = njet;
 	     tow.eHad = tower->hadEnergy();
 	     tow.etHad = tower->hadEt();
 	     tow.eEm = tower->emEnergy();
@@ -463,7 +558,7 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
 		   // write digi
 		   shscp::HcalDigi d;
 		   d.id = digi->id();
-		   d.nJet = event_->nJet();
+		   d.nJet = njet;
 		   d.fc0 = digi->sample(0).nominal_fC();
 		   d.fc1 = digi->sample(1).nominal_fC();
 		   d.fc2 = digi->sample(2).nominal_fC();
@@ -507,15 +602,15 @@ void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent) {
    
    if (muons.isValid()) {
      for(reco::MuonCollection::const_iterator it =muons->begin();
-	 it!=muons->end() && event_->nMuon() < StoppedHSCPEvent::MAX_N_MUONS;
+	 it!=muons->end() && event_->nMuons() < StoppedHSCPEvent::MAX_N_MUONS;
 	 it++) {
        shscp::Muon mu;
        mu.pt = it->pt();
        mu.eta = it->eta();
        mu.phi = it->phi();
        mu.hcalEta = 0.;  // TODO extrapolate GlobalMuon track to HCAL surface and store position!
-	 mu.hcalPhi = 0.;
-	 event_->addMuon(mu);
+       mu.hcalPhi = 0.;
+       event_->addMuon(mu);
      }
    }
    else {
@@ -538,7 +633,7 @@ void StoppedHSCPTreeProducer::doHcalNoise(const edm::Event& iEvent) {
       
       std::vector<HcalNoiseHPD> hpds = it->HPDs();
       for (std::vector<HcalNoiseHPD>::const_iterator hpd = hpds.begin();
-	   hpd!=hpds.end() && event_->nHpd() < StoppedHSCPEvent::MAX_N_HPDS;
+	   hpd!=hpds.end() && event_->nHpds() < StoppedHSCPEvent::MAX_N_HPDS;
 	   ++hpd) {
 	
 	shscp::HPD h;
@@ -579,16 +674,6 @@ void StoppedHSCPTreeProducer::doHcalNoise(const edm::Event& iEvent) {
 }
 
 
-// ------------ method called once each job just before starting event loop  ------------
-void 
-StoppedHSCPTreeProducer::beginJob(const edm::EventSetup&)
-{
-}
-
-// ------------ method called once each job just after ending the event loop  ------------
-void 
-StoppedHSCPTreeProducer::endJob() {
-}
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(StoppedHSCPTreeProducer);
@@ -607,7 +692,7 @@ void StoppedHSCPTreeProducer::doTowersAboveThreshold(const edm::Event& iEvent) {
     sort(towers.begin(), towers.end(), calotower_gt());
     
     for(std::vector<CaloTower>::const_iterator it = towers.begin(); 
-	it!=towers.end() && event_->nTow() < StoppedHSCPEvent::MAX_N_TOWERS;
+	it!=towers.end() && event_->nTows() < StoppedHSCPEvent::MAX_N_TOWERS;
 	++it) {
       if (it->energy() > towerMinEnergy_ &&
 	  fabs(it->eta()) < towerMaxEta_) {
@@ -649,7 +734,7 @@ void StoppedHSCPTreeProducer::doDigisAboveThreshold(const edm::Event& iEvent) {
     sort(digis.begin(), digis.end(), digi_gt());
 
     for(HBHEDigiCollection::const_iterator it=digis.begin();
-	it!=digis.end() && event_->nDigi() < StoppedHSCPEvent::MAX_N_DIGIS;
+	it!=digis.end() && event_->nDigis() < StoppedHSCPEvent::MAX_N_DIGIS;
 	it++) {
 
       double totFc=0.;

@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.8 2009/08/26 12:55:52 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.9 2009/09/09 14:58:43 jbrooke Exp $
 //
 //
 
@@ -26,28 +26,38 @@
 //#include "StoppedHSCP/Analysis/interface/StoppedHSCPJet.h"
 
 namespace shscp {
+
   struct Event {
-  Event() : id(0),bx(0),orbit(0),lumisection(0),run(0),fill(0),timestamp(0) {}
+  Event() : id(0),bx(0),orbit(0),lumisection(0),run(0),fill(0),time0(0), time1(0) { }
     unsigned id;
     unsigned bx;
     unsigned orbit;
     unsigned lumisection;
     unsigned run;
     unsigned fill;
-    unsigned timestamp;
+    unsigned time0;
+    unsigned time1;
     ClassDef(Event,1);
   };
   
   struct Trigger {
-    double l1JetEt;
-    double l1JetEta;
-    double l1JetPhi;
-    double l1BptxPlus;
-    double l1BptxMinus;
-    double hltJetEt;
-    double hltJetEta;
-    double hltJetPhi;
-    ClassDef(Trigger,1);
+  Trigger() : gtTrigWord0(0),gtTrigWord1(0),l1BptxPlus(0),l1BptxMinus(0),hltBit(0) { }
+    unsigned gtTrigWord0;
+    unsigned gtTrigWord1;
+    unsigned l1BptxPlus;
+    unsigned l1BptxMinus;
+    unsigned hltBit;
+    ClassDef(Trigger,2);
+  };
+    
+  struct TrigJet {
+  TrigJet() : type(0), e(0.), et(0.), eta(0.), phi(0.) { }
+    unsigned type;   // 0 - L1 jet, 1 - L1 tau, 2, HLT jet
+    double e;
+    double et;
+    double eta;
+    double phi;
+    ClassDef(TrigJet, 1);
   };
 
   struct MC {
@@ -125,7 +135,8 @@ namespace shscp {
   };
 
   struct Jet {
-  Jet() : e(0.),et(0.),eta(0.),phi(0.),eHad(0.),eEm(0.),eMaxEcalTow(0.),eMaxHcalTow(0.),n60(0),n90(0) { }
+  Jet() : e(0.),et(0.),eta(0.),phi(0.),eHad(0.),eEm(0.),eMaxEcalTow(0.),eMaxHcalTow(0.),n60(0),n90(0),
+      r1(0.),r2(0.),rp(0.),ro(0.),r1_top5(0.),r2_top5(0.),rp_top5(0.),ro_top5(0.) { }
     double e;
     double et;
     double eta;
@@ -136,7 +147,15 @@ namespace shscp {
     double eMaxHcalTow;
     unsigned n60;
     unsigned n90;
-    ClassDef(Jet,1);
+    double r1;
+    double r2;
+    double rp;
+    double ro;
+    double r1_top5;
+    double r2_top5;
+    double rp_top5;
+    double ro_top5;
+    ClassDef(Jet,2);
   };
   
   struct Muon {
@@ -155,6 +174,7 @@ namespace shscp {
 class StoppedHSCPEvent : public TObject {
  public:
   
+  enum { MAX_N_TRIGJETS=10 };
   enum { MAX_N_MCDECAYS=10 };
   enum { MAX_N_JETS=20 };
   enum { MAX_N_MUONS=4 };
@@ -166,23 +186,23 @@ class StoppedHSCPEvent : public TObject {
   StoppedHSCPEvent();
   ~StoppedHSCPEvent();
   
-  void setEventInfo(unsigned e,
-		    unsigned b,
-		    unsigned o,
+  void setEventInfo(unsigned evt,
+		    unsigned bx,
+		    unsigned orbit,
 		    unsigned ls,
-		    unsigned r,
-		    unsigned f,
-		    unsigned ts);
+		    unsigned run,
+		    unsigned fill,
+		    unsigned ts0,
+		    unsigned ts1);
 
-  void setTriggerInfo(double l1JetEt,
-		      double l1JetEta,
-		      double l1JetPhi,
-		      double l1BptxPlus,
-		      double l1BptxMinus,
-		      double hltJetE,
-		      double hltJetEta,
-		      double hltJetPhi);
+  void setTriggerInfo(unsigned gtTrigWord0,
+		      unsigned gtTrigWord1,
+		      unsigned l1BptxPlus,
+		      unsigned l1BptxMinus,
+		      unsigned hltBit);
 
+  void addL1Jet(shscp::TrigJet j);
+  void addHltJet(shscp::TrigJet j);
   void addJet(shscp::Jet j);
   void addMuon(shscp::Muon m);
   void addTower(shscp::Tower t);
@@ -193,12 +213,16 @@ class StoppedHSCPEvent : public TObject {
   void addMCDecay(shscp::MCDecay d);
 
   // getters
-  unsigned nJet() { return nJets; }
-  unsigned nMuon() { return nMuons; }
-  unsigned nTow() { return nTowers; }
-  unsigned nHpd() { return nHpds; }
-  unsigned nDigi() { return nDigis; }
+  unsigned nL1Jets() { return nL1Jet; }
+  unsigned nHltJets() { return nHltJet; }
+  unsigned nJets() { return nJet; }
+  unsigned nMuons() { return nMuon; }
+  unsigned nTows() { return nTower; }
+  unsigned nHpds() { return nHpd; }
+  unsigned nDigis() { return nDigi; }
 
+  shscp::TrigJet getL1Jet(unsigned i);
+  shscp::TrigJet getHltJet(unsigned i);
   shscp::MCDecay getMCDecay(unsigned i);
   shscp::Jet getJet(unsigned i);
   shscp::Muon getMuon(unsigned i);
@@ -214,25 +238,31 @@ class StoppedHSCPEvent : public TObject {
 
   shscp::MC mc;
 
-  unsigned nMCDecays;
+  unsigned nL1Jet;
+  shscp::TrigJet l1Jets[MAX_N_TRIGJETS];
+
+  unsigned nHltJet;
+  shscp::TrigJet hltJets[MAX_N_TRIGJETS];
+
+  unsigned nMCDecay;
   shscp::MCDecay mcDecays[MAX_N_MCDECAYS];
 
-  unsigned nJets;
+  unsigned nJet;
   shscp::Jet jets[MAX_N_JETS];
 
-  unsigned nMuons;
+  unsigned nMuon;
   shscp::Muon muons[MAX_N_MUONS];
 
-  unsigned nTowers;
+  unsigned nTower;
   shscp::Tower towers[MAX_N_TOWERS];
 
-  unsigned nHpds;
+  unsigned nHpd;
   shscp::HPD hpds[MAX_N_HPDS];
 
-  unsigned nDigis;
+  unsigned nDigi;
   shscp::HcalDigi digis[MAX_N_DIGIS];
 
-  ClassDef(StoppedHSCPEvent,1);
+  ClassDef(StoppedHSCPEvent,2);
 
 };
 
