@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 SHSCP_EventContent = cms.PSet(
     outputCommands = cms.untracked.vstring(
         'keep *_TriggerResults_*_*',
-        'keep *_TriggerEvent_*_*',
+        'keep *_hltTriggerSummaryAOD_*_*',
         'keep *_l1extraParticles_*_*',
         'keep *_hltL1GtObjectMap_*_*',
         'keep L1GlobalTriggerReadoutRecord_gtDigis_*_*',

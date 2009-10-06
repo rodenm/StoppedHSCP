@@ -60,14 +60,18 @@ process.TFileService = cms.Service("TFileService",
 
 
 # Path and EndPath definitions
-
-process.myPath = cms.Path(process.RawToDigi
-                          +process.l1Filter
-                          +process.HLT_StoppedHSCP_8E29
-                          +process.reconstructionCosmics
-                          +process.stoppedHSCPTree
+process.myPath = cms.Path(
+    process.HLTFilter
+    +process.RawToDigi
+    +process.l1Filter
+    +process.reconstructionCosmics
+    +process.stoppedHSCPTree
 )
 
 
-# Schedule definition
-process.schedule = cms.Schedule(process.myPath)
+# schedule
+process.schedule = cms.Schedule(
+    process.HLT_StoppedHSCP_8E29,
+    process.myPath,
+#    process.endpath
+)
