@@ -36,9 +36,9 @@ process.load("HLTrigger.HLTcore.hltEventAnalyzerAOD_cfi")
 
 # path
 process.myPath = cms.Path(
-    process.hltEventAnalyzerAOD
+#    process.hltEventAnalyzerAOD
 #    process.l1Filter
-    +process.hcalDigis
+    process.hcalDigis
     +process.gtDigis
     +process.gctDigis
     +process.l1extraParticles

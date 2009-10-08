@@ -2,12 +2,14 @@ import FWCore.ParameterSet.Config as cms
 
 stoppedHSCPTree = cms.EDAnalyzer(
     "StoppedHSCPTreeProducer",
+
+    # trigger
     l1JetsTag = cms.untracked.string("l1extraParticles"),
     hltResultsTag = cms.untracked.InputTag("TriggerResults","","SHSCP"),
     hltEventTag = cms.untracked.InputTag("hltTriggerSummaryAOD","","SHSCP"),
     hltL3Tag = cms.untracked.InputTag("hltStoppedHSCP1CaloJetEnergy","","SHSCP"),
 
-    hltTag = cms.untracked.InputTag("HLT"),
+    # MC
     mcTag = cms.untracked.InputTag("generator"),
     
     # jets

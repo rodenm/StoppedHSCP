@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("SHSCPTree")
+process = cms.Process("SHSCP")
 
 # import of standard configurations
 process.load('Configuration/StandardSequences/Services_cff')
@@ -49,6 +49,12 @@ process.l1Filter.algorithms = cms.vstring("L1_SingleJet10")
 
 # re-run HLT
 process.load('StoppedHSCP.Analysis.HLT_StoppedHSCP_cff')
+
+# HLT filter
+import HLTrigger.HLTfilters.hltHighLevel_cfi
+process.HLTFilter = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
+process.HLTFilter.TriggerResultsTag = cms.InputTag("TriggerResults","","SHSCP")
+process.HLTFilter.HLTPaths = cms.vstring("HLT_StoppedHSCP_8E29")
 
 # HSCP Tree
 process.load('StoppedHSCP/Analysis/stoppedHSCPTree_cfi')

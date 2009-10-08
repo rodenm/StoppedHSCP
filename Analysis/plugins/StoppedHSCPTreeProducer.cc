@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.13 2009/09/09 14:58:43 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.14 2009/10/05 13:47:35 jbrooke Exp $
 //
 //
 
@@ -25,6 +25,8 @@
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 
+#include "FWCore/Framework/interface/ESHandle.h"
+
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 
@@ -33,6 +35,12 @@
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 // L1
+#include "CondFormats/L1TObjects/interface/L1GtTriggerMenu.h"
+#include "CondFormats/DataRecord/interface/L1GtTriggerMenuRcd.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetupFwd.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetup.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
+
 #include "DataFormats/L1Trigger/interface/L1JetParticleFwd.h"
 #include "DataFormats/L1Trigger/interface/L1JetParticle.h"
 
@@ -100,7 +108,7 @@ private:
   
   void doEventInfo(const edm::Event&);
   void doMC(const edm::Event&);
-  void doTrigger(const edm::Event&);
+  void doTrigger(const edm::Event&, const edm::EventSetup&);
   void doJets(const edm::Event&);
   void doMuons(const edm::Event&);
   void doTowersAboveThreshold(const edm::Event&);
@@ -117,6 +125,12 @@ public:
     }
   };
 
+  struct jete_gt : public std::binary_function<reco::CaloJet, reco::CaloJet, bool> {
+    bool operator()(const reco::CaloJet& x, const reco::CaloJet& y) {
+      return ( x.energy() > y.energy() ) ;
+    }
+  };
+  
   struct calotower_gt : public std::binary_function<CaloTower, CaloTower, bool> {
     bool operator()(const CaloTower& x, const CaloTower& y) {
       return ( x.energy() > y.energy() ) ;
@@ -152,6 +166,7 @@ private:
  
   // EDM input tags
   std::string l1JetsTag_;
+  edm::InputTag l1BitsTag_;
   edm::InputTag hltResultsTag_;
   edm::InputTag hltEventTag_;
   edm::InputTag hltL3Tag_;
@@ -208,6 +223,7 @@ private:
 
 StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfig):
   l1JetsTag_(iConfig.getUntrackedParameter<std::string>("l1JetsTag",std::string("l1extraParticles"))),
+  l1BitsTag_(iConfig.getUntrackedParameter<edm::InputTag>("l1BitsTag",edm::InputTag("gtDigis"))),
   hltResultsTag_(iConfig.getUntrackedParameter<edm::InputTag>("hltResultsTag",edm::InputTag("TriggerResults","","HLT"))),
   hltEventTag_(iConfig.getUntrackedParameter<edm::InputTag>("hltEventTag",edm::InputTag("hltTriggerSummaryAOD","","HLT"))),
   hltL3Tag_(iConfig.getUntrackedParameter<edm::InputTag>("hltL3Tag",edm::InputTag("hltStoppedHSCP1CaloJetEnergy","","HLT"))),
@@ -299,7 +315,7 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
   event_ = new StoppedHSCPEvent();
   
   doEventInfo(iEvent);
-  doTrigger(iEvent);
+  doTrigger(iEvent, iSetup);
   
   if (doMC_) doMC(iEvent);
   
@@ -329,11 +345,28 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent){
 }
   
 
-void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent) {
+void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
   unsigned gtWord0(0), gtWord1(0);
   unsigned l1BptxPlus(0), l1BptxMinus(0);
   unsigned hltBit(0);
+
+  // L1 results - TODO
+  edm::ESHandle<L1GtTriggerMenu> menuRcd;
+  iSetup.get<L1GtTriggerMenuRcd>().get(menuRcd) ;
+  const L1GtTriggerMenu* menu = menuRcd.product();
+
+  edm::Handle< L1GlobalTriggerReadoutRecord > gtReadoutRecord;
+  iEvent.getByLabel(l1BitsTag_, gtReadoutRecord);
+
+  const  DecisionWord& gtDecisionWordBeforeMask = gtReadoutRecord->decisionWord();
+  gtWord0 |= (menu->gtAlgorithmResult( "L1_SingleJet10_NotBptxC", gtDecisionWordBeforeMask) ? 0x1 : 0x0);
+  gtWord0 |= (menu->gtAlgorithmResult( "L1_SingleJet6", gtDecisionWordBeforeMask) ? 0x1 : 0x0);
+  gtWord0 |= (menu->gtAlgorithmResult( "L1_SingleJet10", gtDecisionWordBeforeMask) ? 0x2 : 0x0);
+  gtWord0 |= (menu->gtAlgorithmResult( "L1_SingleJet30", gtDecisionWordBeforeMask) ? 0x4 : 0x0);
+  gtWord0 |= (menu->gtAlgorithmResult( "L1_SingleJet40", gtDecisionWordBeforeMask) ? 0x8 : 0x0);
+  gtWord0 |= (menu->gtAlgorithmResult( "L1_SingleJet50", gtDecisionWordBeforeMask) ? 0x10 : 0x0);
+  gtWord0 |= (menu->gtAlgorithmResult( "L1_SingleJet60", gtDecisionWordBeforeMask) ? 0x20 : 0x0);
 
   // get HLT results
   edm::Handle<edm::TriggerResults> HLTR;
