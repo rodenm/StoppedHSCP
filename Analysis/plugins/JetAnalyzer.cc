@@ -13,7 +13,7 @@
 //
 // Original Author:  "Kenneth Rossato"
 //         Created:  Fri Oct  2 12:11:33 CDT 2009
-// $Id$
+// $Id: JetAnalyzer.cc,v 1.1 2009/10/13 20:15:38 jbrooke Exp $
 //
 //
 

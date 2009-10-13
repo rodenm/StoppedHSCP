@@ -7,7 +7,7 @@
 //
 // Original Author:  Kenneth Case Rossato
 //         Created:  Fri Oct 17 16:17:21 CEST 2008
-// $Id: HcalChannelMon.cc,v 1.2 2008/11/07 15:04:59 rossato Exp $
+// $Id: HcalTiming.cc,v 1.1 2009/10/13 20:15:38 jbrooke Exp $
 // Copied and became HcalTiming.cc 2009/01/21
 // 
 
