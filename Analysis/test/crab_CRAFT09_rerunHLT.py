@@ -33,9 +33,8 @@ return_data = 0
 ### OUTPUT files INTO A SE
 copy_data = 1
 storage_element = T1_CH_CERN_Buffer
-user_remote_dir = CRAFT09_HLT_v2
-
-ui_working_dir = CRAFT09_HLT_v2
+user_remote_dir = CRAFT09_HLT_v4
+ui_working_dir = CRAFT09_HLT_v4
 
 #if server 
 thresholdLevel = 50
