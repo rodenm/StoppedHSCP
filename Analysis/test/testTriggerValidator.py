@@ -46,14 +46,12 @@ secFiles = cms.untracked.vstring()
 process.source = cms.Source ("PoolSource",fileNames = readFiles, secondaryFileNames = secFiles)
 
 readFiles.extend( [
-		   '/store/caf/user/jbrooke/CRAFT09_HLT_v3/stoppedHSCP_HLT_1.root',
-		   '/store/caf/user/jbrooke/CRAFT09_HLT_v3/stoppedHSCP_HLT_2.root',
-		   '/store/caf/user/jbrooke/CRAFT09_HLT_v3/stoppedHSCP_HLT_3.root',
-		   '/store/caf/user/jbrooke/CRAFT09_HLT_v3/stoppedHSCP_HLT_4.root',
-		   '/store/caf/user/jbrooke/CRAFT09_HLT_v3/stoppedHSCP_HLT_5.root',
-		   '/store/caf/user/jbrooke/CRAFT09_HLT_v3/stoppedHSCP_HLT_6.root',
-		   '/store/caf/user/jbrooke/CRAFT09_HLT_v3/stoppedHSCP_HLT_7.root',
-		   '/store/caf/user/jbrooke/CRAFT09_HLT_v3/stoppedHSCP_HLT_8.root'
+		   '/store/caf/user/jbrooke/CRAFT09_HLT_v4/hltOutputA_1.root',
+		   '/store/caf/user/jbrooke/CRAFT09_HLT_v4/hltOutputA_2.root',
+		   '/store/caf/user/jbrooke/CRAFT09_HLT_v4/hltOutputA_3.root',
+		   '/store/caf/user/jbrooke/CRAFT09_HLT_v4/hltOutputA_4.root',
+		   '/store/caf/user/jbrooke/CRAFT09_HLT_v4/hltOutputA_5.root',
+		   '/store/caf/user/jbrooke/CRAFT09_HLT_v4/hltOutputA_6.root',
 ] )
 
 
