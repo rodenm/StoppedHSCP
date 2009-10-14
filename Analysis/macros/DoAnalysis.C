@@ -3,56 +3,54 @@
 
 {
 
-  // custom libs
-  gSystem->Load("libStoppedHSCPAnalysis");
+  gROOT->ProcessLine(".X macros/Setup.C");
 
-  // macros
-  gROOT->ProcessLine(".L macros/BasicHistos.C+");
-  gROOT->ProcessLine(".L macros/EffHistos.C+");
-  gROOT->ProcessLine(".L macros/Cuts.C+");
-  gROOT->ProcessLine(".L macros/WriteSelection.C+");
-  gROOT->ProcessLine(".L macros/Style.C");
+  double time = 2513; // Run 111039
+  //  double time = 178244;  // Runs 110958,110972,110987,110998,111009,111017,111023,111039,111047,111138
 
-  // set plot style
-  setTDRStyle();
-  gROOT->ForceStyle();
+//   BasicHistos(chain, "BasicHistos.root", time);
+//   BasicPlots("BasicHistos.root", "BasicPlots.ps");
 
-  // get the events
-  TChain* chain = new TChain("stoppedHSCPTree/StoppedHSCPTree");
-  chain->Add("/storage/phjjb/StoppedHSCP_CRAFT09_v4/stoppedHSCPTree.root");
+//    EffHistos(chain, "EffHistos.root", time);
+//    EffPlots("EffHistos.root", "EffPlots.ps");
 
-  // make histograms
-  std::cout << "Making basic histos" << std::endl;
-  BasicHistos(chain, "BasicHistos.root");
-  std::cout << "Making efficiency histos" << std::endl;
-  EffHistos(chain, "EffHistos.root");
-
-  // make the plots
-  std::cout << "Making basic plots" << std::endl;
-  BasicPlots("BasicHistos.root", "BasicPlots.pdf");
-  std::cout << "Making efficiency plots" << std::endl;
-  EffPlots("EffHistos.root", "EffPlots.pdf");
-
-  // write out selected events
-  std::cout << "Writing events passing jet and mu cuts" << std::endl;
-  WriteSelection(chain, "SelEvents_JetMuCuts.root", 0x1f);
-  std::cout << "Writing events passing all cuts" << std::endl;
-  WriteSelection(chain, "SelEvents_AllCuts.root", 0xffff);
+   PulseShapeHistos(chain, "PulseShapeHistos.root", time);
+   PulseShapePlots("PulseShapeHistos.root", "PulseShapePlots.ps");
 
 
-  // cross checks
   
-  // test cuts
-  std::cout << "Making test plots" << std::endl;
-  gROOT->ProcessLine(".x macros/TestCuts.C");
+  /// *** histograms from events passing jet+mu cuts ***
 
-  // make plots of selected events
-  TChain* chain_b = new TChain("StoppedHSCPTree");
-  chain_b->Add("SelEvents_JetMuCuts.root");
+//   std::cout << "Writing events passing jet and mu cuts" << std::endl;
+//   WriteSelection(chain, "SelEvents_JetMuCuts.root", 0x1f);
 
-  std::cout << "Making basic histos of events passing jet and mu cuts" << std::endl;
-  BasicHistos(chain_b, "BasicHistos_JetMuCuts.root");
-  std::cout << "Making basic plots of events passing jet and mu cuts" << std::endl;
-  BasicPlots("BasicHistos_JetMuCuts.root", "BasicPlots_JetMuCuts.pdf");
+//   TChain* chain_b = new TChain("StoppedHSCPTree");
+//   chain_b->Add("SelEvents_JetMuCuts.root");
+
+//   std::cout << "Making basic histos of events passing jet and mu cuts" << std::endl;
+//   BasicHistos(chain_b, "BasicHistos_JetMuCuts.root", time);
+//   std::cout << "Making basic plots of events passing jet and mu cuts" << std::endl;
+//    BasicPlots("BasicHistos_JetMuCuts.root", "BasicPlots_JetMuCuts.ps");
   
+//   std::cout << "Making pulse shape histos of events passing jet and mu cuts" << std::endl;
+//   PulseShapeHistos(chain_b, "PulseShapeHistos_JetMuCuts.root", time);
+//   std::cout << "Making pulse shape plots of events passing jet and mu cuts" << std::endl;
+//    PulseShapePlots("PulseShapeHistos_JetMuCuts.root", "PulseShapePlots_JetMuCuts.ps");
+  
+
+
+  /// *** histograms from events passing all cuts ***
+
+//   std::cout << "Writing events passing all cuts" << std::endl;
+//   WriteSelection(chain_b, "SelEvents_AllCuts.root", 0xffff);
+
+//   TChain* chain_c = new TChain("StoppedHSCPTree");
+//   chain_c->Add("SelEvents_AllCuts.root");
+
+//   std::cout << "Making pulse shape histos of events passing all cuts" << std::endl;
+//   PulseShapeHistos(chain_c, "PulseShapeHistos_AllCuts.root", time);
+//   std::cout << "Making pulse shape plots of events passing all cuts" << std::endl;
+//   PulseShapePlots("PulseShapeHistos_AllCuts.root", "PulseShapePlots_AllCuts.ps");
+
+
 }

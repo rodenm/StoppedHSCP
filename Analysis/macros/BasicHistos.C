@@ -2,16 +2,19 @@
 // plot some basic distributions
 
 #include <string.h>
+#include <iostream>
 
 #include "TChain.h"
 #include "TCanvas.h"
 #include "TPDF.h"
+#include "TPostScript.h"
 #include "TH1.h"
 #include "TFile.h"
+#include "TMath.h"
 
-void BasicHistos(TChain* chain, char* filename) {
+void BasicHistos(TChain* chain, char* filename, double time) {
 
-  //Create a new file + a clone of old tree in new file
+  // Create output file
   TFile *file = new TFile(filename,"recreate");
 
   // setup for errors
@@ -19,79 +22,115 @@ void BasicHistos(TChain* chain, char* filename) {
 
   // normalisation constants
   Int_t nEvents = (Int_t)chain->GetEntries();
-  double time = 178244;
-  double rate = nEvents/time;
-  
+  //  double rate = nEvents/time;
+  double scale = 1/time;  
+
+
+  // time
   TH1D* hbx = new TH1D("hbx", "BX number", 3564, 0., 3564.);  
   chain->Draw("event.bx>>hbx");
-  hbx->Scale(rate/hbx->Integral());
+  hbx->Scale(scale);
   
   TH1D* horb = new TH1D("horb", "Orbit number", 100, 0., 10000.);  
   chain->Draw("event.orbit>>horb");
   
   TH1D* hls = new TH1D("hls", "Lumi section", 100, 0., 1000.);  
   chain->Draw("event.lumisection>>hls");
-  
-  TH1D* hjete = new TH1D("hjete", "Leading jet energy", 100, 0., 10000.);
-  hjete->Scale(rate/hjete->Integral());
-  chain->Draw("jets.e[0]>>hjete");
 
-  TH1D* hjete2 = new TH1D("hjete2", "Leading jet energy (zoom)", 100, 0., 1000.);
-  hjete2->Scale(rate/hjete->Integral());
+
+  // trigger
+  TH1D* hl1et = new TH1D("hl1et", "Leading L1 jet E_{t}", 100, 0., 200.);  
+  chain->Draw("l1Jets[0].et>>hl1et");
+  hl1et->Scale(scale);
+
+  TH1D* hl1eta = new TH1D("hl1eta", "Leading L1 jet #eta", 70, -3.5, 3.5);  
+  chain->Draw("l1Jets[0].eta>>hl1eta");
+  hl1eta->Scale(scale);
+
+  TH1D* hl1phi = new TH1D("hl1phi", "Leading L1 jet #phi", 60, TMath::Pi()*-1., TMath::Pi());  
+  chain->Draw("l1Jets[0].phi>>hl1phi");
+  hl1phi->Scale(scale);
+  
+  TH1D* hhlte = new TH1D("hhlte", "Leading HLT jet energy", 100, 0., 200.);  
+  chain->Draw("hltJets[0].e>>hhlte");
+  hhlte->Scale(scale);
+
+  TH1D* hhlteta = new TH1D("hhlteta", "Leading HLT jet #eta", 70, -3.5, 3.5);  
+  chain->Draw("hltJets[0].eta>>hhlteta");
+  hhlteta->Scale(scale);
+
+  TH1D* hhltphi = new TH1D("hhltphi", "Leading HLT jet #phi", 60, TMath::Pi()*-1., TMath::Pi());
+  chain->Draw("hltJets[0].phi>>hhltphi");
+  hhltphi->Scale(scale);
+
+
+  // jets
+  TH1D* hjete = new TH1D("hjete", "Leading jet energy", 100, 0., 1000.);
+  chain->Draw("jets.e[0]>>hjete");
+  hjete->Scale(scale);
+
+  TH1D* hjete2 = new TH1D("hjete2", "Leading jet energy (zoom)", 100, 0., 200.);
   chain->Draw("jets.e[0]>>hjete2");
+  hjete2->Scale(scale);
   
   TH1D* hjeteta = new TH1D("hjeteta", "Leading jet #eta", 70, -3.5, 3.5);
-  hjeteta->Scale(rate/hjeteta->Integral());
   chain->Draw("jets.eta[0]>>hjeteta", "(jets.e[0])>20.");
+  hjeteta->Scale(scale);
 
   TH1D* hjetphi = new TH1D("hjetphi", "Leading jet #phi", 60, -3.4151, 3.4151);
-  hjetphi->Scale(rate/hjetphi->Integral());
   chain->Draw("jets.phi[0]>>hjetphi", "(jets.e[0])>20.");
+  hjetphi->Scale(scale);
 
-  TH1D* hjetem = new TH1D("hjetem", "Leading jet ECAL energy", 100, 0., 1000.);
-  hjetem->Scale(rate/hjetem->Integral());
+  TH1D* hjetem = new TH1D("hjetem", "Leading jet ECAL energy", 100, 0., 200.);
   chain->Draw("jets.eEm[0]>>hjetem");
+  hjetem->Scale(scale);
 
-  TH1D* hjethad = new TH1D("hjethad", "Leading jet HCAL energy", 100, 0., 10000.);
-  hjethad->Scale(rate/hjethad->Integral());
+  TH1D* hjethad = new TH1D("hjethad", "Leading jet HCAL energy", 100, 0., 200.);
   chain->Draw("jets.eHad[0]>>hjethad");
+  hjethad->Scale(scale);
 
   TH1D* hjetn60 = new TH1D("hjetn60", "Leading jet N60", 50, 0., 50.);
-  hjetn60->Scale(rate/hjetn60->Integral());
   chain->Draw("jets.n60[0]>>hjetn60");
+  hjetn60->Scale(scale);
 
   TH1D* hjetn90 = new TH1D("hjetn90", "Leading jet N90", 50, 0., 50.);
-  hjetn90->Scale(rate/hjetn90->Integral());
   chain->Draw("jets.n90[0]>>hjetn90");
+  hjetn90->Scale(scale);
 
 
   // muons
   TH1D* hnmu = new TH1D("hnmu", "N muons", 4, -0.5, 3.5);
-  hnmu->Scale(rate/hnmu->Integral());
-  chain->Draw("nMuons>>hnmu");
+  chain->Draw("nMuon>>hnmu");
+  hnmu->Scale(scale);
 
-  TH1D* hmupt = new TH1D("hmupt", "Leading muon p_t", 100, 0., 1000.);
-  hmupt->Scale(rate/hmupt->Integral());
+  TH1D* hmupt = new TH1D("hmupt", "Leading muon pt", 100, 0., 100.);
   chain->Draw("muons.pt[0]>>hmupt");
+  hmupt->Scale(scale);
 
 
   // towers
   TH1D* hntow = new TH1D("hntow", "N towers", 100, 0., 100.);
-  hntow->Scale(rate/hntow->Integral());
-  chain->Draw("nTowers>>hntow");
+  chain->Draw("nTower>>hntow");
+  hntow->Scale(scale);
   
-  TH1D* htowe = new TH1D("htowe", "Leading tower energy", 100, 0., 10000.);
-  htowe->Scale(rate/htowe->Integral());
+  TH1D* htowe = new TH1D("htowe", "Leading tower energy", 100, 0., 200.);
   chain->Draw("towers.e[0]>>htowe");
+  htowe->Scale(scale);
 
-  TH1D* htowem = new TH1D("htowem", "Leading tower ECAL energy", 100, 0., 1000.);
-  htowem->Scale(rate/htowem->Integral());
+  TH1D* htowem = new TH1D("htowem", "Leading tower ECAL energy", 100, 0., 200.);
   chain->Draw("towers.eEm[0]>>htowem");
+  htowem->Scale(scale);
 
-  TH1D* htowhad = new TH1D("htowhad", "Leading tower HCAL energy", 100, 0., 10000.);
-  htowhad->Scale(rate/htowhad->Integral());
+  TH1D* htowhad = new TH1D("htowhad", "Leading tower HCAL energy", 100, 0., 200.);
   chain->Draw("towers.eHad[0]>>htowhad");
+  htowhad->Scale(scale);
   
+  hl1et->Write();
+  hl1eta->Write();
+  hl1phi->Write();
+  hhlte->Write();
+  hhlteta->Write();
+  hhltphi->Write();
   hbx->Write();
   horb->Write();
   hls->Write();
@@ -114,11 +153,11 @@ void BasicHistos(TChain* chain, char* filename) {
 
 }
 
-void BasicPlots(char* rootfile, char* pdffile) {
+void BasicPlots(char* rootfile, char* psfile) {
 
   TFile file(rootfile,"read");
 
-  TPDF* pdf = new TPDF(pdffile);
+  TPostScript* ps = new TPostScript(psfile);
   TCanvas* canvas = new TCanvas("canvas");
 
   canvas->SetLogy();
@@ -130,8 +169,6 @@ void BasicPlots(char* rootfile, char* pdffile) {
   hbx->SetYTitle("Hz");
   hbx->Draw("HIST");
   canvas->Update();
-  //  hbx->Draw("HIST");
-  //  canvas->Update();
 
   TH1D* horb = (TH1D*)file.Get("horb");
   horb->Draw("HIST");
@@ -141,9 +178,48 @@ void BasicPlots(char* rootfile, char* pdffile) {
 //   hls->Draw("HIST");
 //   canvas->Update();
 
-  TH1D* hjete = (TH1D*)file.Get("hjete");
+  // L1
+  TH1D* hl1et = (TH1D*)file.Get("hl1et");
+  hl1et->SetXTitle("E (GeV)");
+  hl1et->SetYTitle("Hz / 2 GeV");
+  hl1et->Draw("HIST");
+  canvas->Update();
+
+  TH1D* hl1eta = (TH1D*)file.Get("hl1eta");
+  hl1eta->SetXTitle("#eta");
+  hl1eta->SetYTitle("Hz / 0.1");
+  hl1eta->Draw("HIST");
+  canvas->Update();
+
+  TH1D* hl1phi = (TH1D*)file.Get("hl1phi");
+  hl1phi->SetXTitle("#phi");
+  hl1phi->SetYTitle("Hz / #pi/30");
+  hl1phi->Draw("HIST");
+  canvas->Update();
+
+  // HLT
+  TH1D* hhlte = (TH1D*)file.Get("hhlte");
+  hhlte->SetXTitle("E (GeV)");
+  hhlte->SetYTitle("Hz / 2 GeV");
+  hhlte->Draw("HIST");
+  canvas->Update();
+
+  TH1D* hhlteta = (TH1D*)file.Get("hhlteta");
+  hhlteta->SetXTitle("#eta");
+  hhlteta->SetYTitle("Hz / 0.1");
+  hhlteta->Draw("HIST");
+  canvas->Update();
+
+  TH1D* hhltphi = (TH1D*)file.Get("hhltphi");
+  hhltphi->SetXTitle("#phi");
+  hhltphi->SetYTitle("Hz / #pi/30");
+  hhltphi->Draw("HIST");
+  canvas->Update();
+
+  // Jets
+  TH1D* hjete = (TH1D*)file.Get("hjete2");
   hjete->SetXTitle("E (GeV)");
-  hjete->SetYTitle("Hz / 200 GeV");
+  hjete->SetYTitle("Hz / 2 GeV");
   hjete->Draw("HIST");
   canvas->Update();
 
@@ -155,19 +231,19 @@ void BasicPlots(char* rootfile, char* pdffile) {
 
   TH1D* hjetphi = (TH1D*)file.Get("hjetphi");
   hjetphi->SetXTitle("#phi");
-  hjetphi->SetYTitle("Hz");
+  hjetphi->SetYTitle("Hz / #pi/30");
   hjetphi->Draw("HIST");
   canvas->Update();
 
   TH1D* hjetem = (TH1D*)file.Get("hjetem");
-  hjetem->SetXTitle("E_{ECAL} / GeV");
-  hjetem->SetYTitle("Hz");
+  hjetem->SetXTitle("E_{ECAL} (GeV)");
+  hjetem->SetYTitle("Hz / 2 GeV");
   hjetem->Draw("HIST");
   canvas->Update();
 
   TH1D* hjethad = (TH1D*)file.Get("hjethad");
   hjethad->SetXTitle("E_{HCAL} / GeV");
-  hjethad->SetYTitle("Hz / 200 GeV");
+  hjethad->SetYTitle("Hz / 2 GeV");
   hjethad->Draw("HIST");
   canvas->Update();
 
@@ -190,8 +266,8 @@ void BasicPlots(char* rootfile, char* pdffile) {
   canvas->Update();
 
   TH1D* hmupt = (TH1D*)file.Get("hmupt");
-  hmupt->SetXTitle("N_{#mu}");
-  hmupt->SetYTitle("Hz / 10 GeV");
+  hmupt->SetXTitle("p_{t}^{#mu}");
+  hmupt->SetYTitle("Hz / 1 GeV");
   hmupt->Draw("HIST");
   canvas->Update();
 
@@ -203,22 +279,22 @@ void BasicPlots(char* rootfile, char* pdffile) {
 
   TH1D* htowe = (TH1D*)file.Get("htowe");
   htowe->SetXTitle("E (GeV)");
-  htowe->SetYTitle("Hz / 50 GeV");
+  htowe->SetYTitle("Hz / 2 GeV");
   htowe->Draw("HIST");
   canvas->Update();
 
   TH1D* htowem = (TH1D*)file.Get("htowem");
   htowem->SetXTitle("E (GeV)");
-  htowem->SetYTitle("Hz / 20 GeV");
+  htowem->SetYTitle("Hz / 2 GeV");
   htowem->Draw("HIST");
   canvas->Update();
 
   TH1D* htowhad = (TH1D*)file.Get("htowhad");
   htowhad->SetXTitle("E (GeV)");
-  htowhad->SetYTitle("Hz / 100 GeV");
+  htowhad->SetYTitle("Hz / 2 GeV");
   htowhad->Draw("HIST");
   canvas->Update();
 
-  pdf->Close();
+  ps->Close();
 
 }

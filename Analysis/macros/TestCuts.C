@@ -1,6 +1,20 @@
 // macro to test cut code is working properly
 
 {
+  // custom libs
+  gSystem->Load("libStoppedHSCPAnalysis");
+
+  // macros
+  gROOT->ProcessLine(".L macros/BasicHistos.C+");
+  gROOT->ProcessLine(".L macros/EffHistos.C+");
+  gROOT->ProcessLine(".L macros/PulseShapeHistos.C+");
+  gROOT->ProcessLine(".L macros/Cuts.C+");
+  gROOT->ProcessLine(".L macros/WriteSelection.C+");
+  gROOT->ProcessLine(".L macros/Style.C");
+
+  // set plot style
+  setTDRStyle();
+  gROOT->ForceStyle();
 
 
   TChain* chain = new TChain("stoppedHSCPTree/StoppedHSCPTree");
@@ -34,7 +48,7 @@
 
   }
 
-  TPDF* pdf = new TPDF("TestCutPlots.pdf");
+  TPostScript* ps = new TPostScript("TestCutPlots.ps", 112);
   TCanvas* canvas = new TCanvas("canvas");
 
   canvas->SetLogy();
@@ -54,7 +68,7 @@
   hTestMuVeto->Draw();
   canvas->Update();
 
-  pdf->Close();
+  ps->Close();
 
 
 }
