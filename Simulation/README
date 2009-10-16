@@ -1,7 +1,4 @@
 
 
 Stopped HSCP Simulation instructions :
-
-./patch.sh
-cd $CMSSW_BASE/src
 scramv1 b

@@ -1,0 +1,14 @@
+#<use name=IOMC/EventVertexGenerators>
+<use name=SimG4Core/Application>
+<use name=SimG4Core/Watcher>
+<use name=SimG4Core/Notification>
+<use name=FWCore/ParameterSet>
+<use name=PhysicsTools/UtilAlgos>
+<use name=FWCore/ServiceRegistry>
+<use name=SimDataFormats/GeneratorProducts>
+<use name=geant4>
+<use name=boost>
+<use name=root>
+<library file="*.cc" name=StoppedHSCPSimulation>
+      <flags EDM_PLUGIN=1>
+</library>
