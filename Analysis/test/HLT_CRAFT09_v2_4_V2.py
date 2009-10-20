@@ -6927,9 +6927,12 @@ process.DQMHLTScalers = cms.EDAnalyzer( "HLTScalers",
     triggerResults = cms.InputTag( 'TriggerResults','','HLT' )
 )
 #process.hltOutputA = cms.OutputModule( "ShmStreamConsumer",
+
+process.load('StoppedHSCP.Analysis.StoppedHSCP_EventContent_cff')
+
 process.hltOutputA = cms.OutputModule( "PoolOutputModule",
     fileName = cms.untracked.string("hltOutputA.root"),
-    SelectEvents = cms.untracked.PSet(  SelectEvents = cms.vstring(
+#    SelectEvents = cms.untracked.PSet(  SelectEvents = cms.vstring(
 #    'HLT_BTagIP_Jet50U',
 #  'HLT_BTagMu_Jet10U',
 #  'HLT_BackwardBSC',
@@ -7004,20 +7007,12 @@ process.hltOutputA = cms.OutputModule( "PoolOutputModule",
 #  'HLT_QuadJet15U',
 #  'HLT_Random',
 #  'HLT_SingleLooseIsoTau20',
-  'HLT_StoppedHSCP_8E29'
+#  'HLT_StoppedHSCP_8E29'
 #  'HLT_TrackPointing',
 #  'HLT_TrackerCosmics',
 #  'HLT_ZeroBias'
-  ) ),
-    outputCommands = cms.untracked.vstring( 'drop *_hlt*_*_*',
-      'keep FEDRawDataCollection_source_*_*',
-      'keep FEDRawDataCollection_rawDataCollector_*_*',
-      'keep edmTriggerResults_*_*_*',
-      'keep triggerTriggerEvent_*_*_*',
-      'keep *_hltL1GtObjectMap_*_*' ),
-#    use_compression = cms.untracked.bool( True ),
-#    compression_level = cms.untracked.int32( 1 ),
-#    max_event_size = cms.untracked.int32( 7000000 )
+#  ) ),
+    outputCommands = process.SHSCP_EventContent.outputCommands
 )
 process.hltOutputDQM = cms.OutputModule( "ShmStreamConsumer",
     SelectEvents = cms.untracked.PSet(  SelectEvents = cms.vstring( 'HLT_BTagIP_Jet50U',
