@@ -15,7 +15,7 @@ if len(sys.argv)!=5 :
 print "Merging files from "+dir
 print "to "+dir+"/"+basename+".root"
 
-command = "hadd "+dir+"/"+basename+".root "
+command = "hadd "+basename+".root "
 
 for i in range(firstfile, firstfile+nfiles):
     command += dir+"/"+basename+"_"+str(i)+".root "
