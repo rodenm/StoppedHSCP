@@ -134,8 +134,8 @@ hltStoppedHSCPTowerMakerForAll = cms.EDProducer( "CaloTowersCreator",
     MomEBDepth = cms.double( 0.3 ),
     MomEEDepth = cms.double( 0.0 ),
     hbheInput = cms.InputTag( "hltHbhereco" ),
-    hoInput = cms.InputTag( "hltHoreco" ),
-    hfInput = cms.InputTag( "hltHfreco" ),
+    hoInput = cms.InputTag( '' ),
+    hfInput = cms.InputTag( '' ),
     AllowMissingInputs = cms.bool( True ),
     HcalAcceptSeverityLevel = cms.uint32( 999 ),
     EcalAcceptSeverityLevel = cms.uint32( 1 ),
@@ -157,7 +157,7 @@ hltStoppedHSCPTowerMakerForAll = cms.EDProducer( "CaloTowersCreator",
     HF1Weights = cms.vdouble(  ),
     HF2Grid = cms.vdouble(  ),
     HF2Weights = cms.vdouble(  ),
-    ecalInputs = cms.VInputTag( 'hltEcalRecHitAll:EcalRecHitsEB','hltEcalRecHitAll:EcalRecHitsEE' )
+    ecalInputs = cms.VInputTag( '','' )
 )
 hltStoppedHSCPIterativeCone5CaloJets = cms.EDProducer( "IterativeConeJetProducer",
     seedThreshold = cms.double( 1.0 ),
@@ -188,7 +188,7 @@ hltStoppedHSCP1CaloJetEnergy = cms.EDFilter(
     saveTag = cms.untracked.bool( True )
 )
 
-HLT_StoppedHSCP_8E29 = cms.Path( HLTBeginSequence 
+HLT_StoppedHSCP_8E29_Sequence = cms.Sequence( HLTBeginSequence 
                                  + hltL1sStoppedHSCP8E29
                                  + hltHcalDigis 
                                  + hltHbhereco 
@@ -196,3 +196,5 @@ HLT_StoppedHSCP_8E29 = cms.Path( HLTBeginSequence
                                  + hltStoppedHSCPTowerMakerForAll
                                  + hltStoppedHSCPIterativeCone5CaloJets 
                                  + hltStoppedHSCP1CaloJetEnergy )
+
+HLT_StoppedHSCP_8E29 = cms.Path( HLT_StoppedHSCP_8E29_Sequence )
