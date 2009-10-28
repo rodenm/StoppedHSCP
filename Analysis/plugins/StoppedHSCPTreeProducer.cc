@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.14 2009/10/05 13:47:35 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.15 2009/10/08 11:12:23 jbrooke Exp $
 //
 //
 
@@ -531,8 +531,14 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
    unsigned njet=0;
 
    if (caloJets.isValid()) {
-     for(CaloJetCollection::const_iterator it=caloJets->begin(); 
-	 it!=caloJets->end() && event_->nJets() < StoppedHSCPEvent::MAX_N_JETS;
+
+     // sort jets by energy
+     std::vector<CaloJet> jets;
+     jets.insert(jets.end(), caloJets->begin(), caloJets->end());
+     std::sort(jets.begin(), jets.end(), jete_gt() );
+
+     for(CaloJetCollection::const_iterator it=jets.begin(); 
+	 it!=jets.end() && event_->nJets() < StoppedHSCPEvent::MAX_N_JETS;
 	 ++it, ++njet) {
        if (it->energy() > jetMinEnergy_ &&
 	   fabs(it->eta()) < jetMaxEta_) {
