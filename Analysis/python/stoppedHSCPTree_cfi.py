@@ -15,7 +15,7 @@ stoppedHSCPTree = cms.EDAnalyzer(
     # jets
     jetTag = cms.untracked.InputTag("iterativeCone5CaloJets"),
     jetMinEnergy = cms.untracked.double(1.),
-    jetMaxEta = cms.untracked.double(5.),
+    jetMaxEta = cms.untracked.double(1.3),
     
     # muons
     muonTag = cms.untracked.InputTag("muons"),

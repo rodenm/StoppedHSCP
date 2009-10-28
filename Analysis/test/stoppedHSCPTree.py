@@ -30,6 +30,9 @@ process.options = cms.untracked.PSet(
     Rethrow = cms.untracked.vstring('ProductNotFound')
 )
 
+# L1 bit filter
+process.load('L1Trigger/Skimmer/l1Filter_cfi')
+process.l1Filter.algorithms = cms.vstring("L1_SingleJet10")
 
 # re-run HLT (will have subtly different EventSetup config from real HLT!!!)
 process.load('StoppedHSCP.Analysis.HLT_StoppedHSCP_cff')
@@ -61,16 +64,21 @@ process.load('StoppedHSCP/Analysis/jetanalyzer_cfi')
 # path
 process.myPath = cms.Path(
 
-# rerun HLT sequence (quick and dirty)
-    process.HLT_StoppedHSCP_8E29_Sequence
-
 # filter on HLT bit (do not re-run HLT in same job!!!)
 #    process.hltHighLevel
 
-# recreate info not in RECO
-    +process.hcalDigis
-    +process.gtDigis
-    +process.gctDigis
+# rerun HLT sequence (quick and dirty)
+    process.HLT_StoppedHSCP_8E29_Sequence
+
+# CRAFT 08 re-reco
+    +process.RawToDigi
+    +process.l1Filter
+    +process.reconstructionCosmics
+
+# CRAFT 09 reproduce missing RECO info
+#    +process.hcalDigis
+#    +process.gtDigis
+#    +process.gctDigis
     +process.l1extraParticles
 
 # Ken's histograms
@@ -93,12 +101,18 @@ readFiles = cms.untracked.vstring()
 secFiles = cms.untracked.vstring() 
 process.source = cms.Source ("PoolSource",fileNames = readFiles, secondaryFileNames = secFiles)
 
+# CRAFT 09 skim
+#readFiles.extend( [
+#    '/store/data/CRAFT09/Calo/RAW-RECO/GR09_31X_V5P_StoppedHSCP-332_v4/0022/FC9ECC6F-2299-DE11-BA40-0018F3D09636.root',
+#    '/store/data/CRAFT09/Calo/RAW-RECO/GR09_31X_V5P_StoppedHSCP-332_v4/0022/FC6A5AAA-CA98-DE11-A0F2-001A92810AE0.root',
+#    '/store/data/CRAFT09/Calo/RAW-RECO/GR09_31X_V5P_StoppedHSCP-332_v4/0022/FC351559-2299-DE11-B23A-001A92810AE4.root',
+#    '/store/data/CRAFT09/Calo/RAW-RECO/GR09_31X_V5P_StoppedHSCP-332_v4/0022/F0B42B50-1F99-DE11-B7E4-001A92810A94.root',
+#    '/store/data/CRAFT09/Calo/RAW-RECO/GR09_31X_V5P_StoppedHSCP-332_v4/0022/EAABE6E3-3999-DE11-858E-003048679076.root'
+#    ] )
+
+# CRAFT 08 test RAW data
 readFiles.extend( [
-    '/store/data/CRAFT09/Calo/RAW-RECO/GR09_31X_V5P_StoppedHSCP-332_v4/0022/FC9ECC6F-2299-DE11-BA40-0018F3D09636.root',
-    '/store/data/CRAFT09/Calo/RAW-RECO/GR09_31X_V5P_StoppedHSCP-332_v4/0022/FC6A5AAA-CA98-DE11-A0F2-001A92810AE0.root',
-    '/store/data/CRAFT09/Calo/RAW-RECO/GR09_31X_V5P_StoppedHSCP-332_v4/0022/FC351559-2299-DE11-B23A-001A92810AE4.root',
-    '/store/data/CRAFT09/Calo/RAW-RECO/GR09_31X_V5P_StoppedHSCP-332_v4/0022/F0B42B50-1F99-DE11-B7E4-001A92810A94.root',
-    '/store/data/CRAFT09/Calo/RAW-RECO/GR09_31X_V5P_StoppedHSCP-332_v4/0022/EAABE6E3-3999-DE11-858E-003048679076.root'
+        '/store/data/Commissioning08/Cosmics/RAW-RECO/CRAFT_ALL_V9_SuperPointing_225-v3/0012/1A8C28D2-0402-DE11-84C0-0018F3D09644.root'
     ] )
 
 
