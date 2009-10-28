@@ -13,7 +13,7 @@
 //
 // Original Author:  "Kenneth Rossato"
 //         Created:  Fri Oct  2 12:11:33 CDT 2009
-// $Id: JetAnalyzer.cc,v 1.1 2009/10/13 20:15:38 jbrooke Exp $
+// $Id$
 //
 //
 
@@ -55,8 +55,10 @@ class JetAnalyzer : public edm::EDAnalyzer {
       // ----------member data ---------------------------
   edm::Service<TFileService> fs;
   edm::InputTag jets;
-  TH1D *e, *e2, *eta, *phi, *n60, *n90, *ls;
+  TH1D *e, *e2, *eta, *phi, *n60, *n90, *em, *ls;
   TH2D *eEta;
+  TH1D *iEta, *iPhi;
+  TH2D *iEta_iPhi, *iEta_emEnergy, *iEta_hadEnergy, *iEta_outEnergy;
 };
 
 //
@@ -106,15 +108,16 @@ JetAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    double highestE = 0;
    double highestEt = 0;
    for (leading = current = pIn->begin(); current != pIn->end(); current++) {
-     if (current->et() > highestEt &&
+     if (current->energy() > highestE &&
 	 current->energy() > 1 &&
-	 fabs(current->eta() < 3)
+	 fabs(current->eta()) < 3
 	 ) {
        highestE = current->energy();
        highestEt = current->et();
        leading = current;
      }
    }
+
    if (highestE == 0) {
      e->Fill(0.);
      e2->Fill(0.);
@@ -123,6 +126,7 @@ JetAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      n60->Fill(0.);
      n90->Fill(0.);
      eEta->Fill(0.,0.);
+     em->Fill(0);
      return;
    }
 
@@ -133,15 +137,18 @@ JetAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    n60->Fill(leading->n60());
    n90->Fill(leading->n90());
    eEta->Fill(leading->energy(), leading->eta());
-   
-#ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
-   ESHandle<SetupData> pSetup;
-   iSetup.get<SetupRecord>().get(pSetup);
-#endif
+   em->Fill(leading->emEnergyFraction());
 
-
-
-   
+   std::vector<CaloTowerPtr> towers = leading->getCaloConstituents();
+   for (std::vector<CaloTowerPtr>::const_iterator cit = towers.begin();
+	cit != towers.end(); cit++) {
+     iEta->Fill((*cit)->ieta());
+     iPhi->Fill((*cit)->iphi());
+     iEta_iPhi->Fill((*cit)->iphi(), (*cit)->ieta());
+     iEta_emEnergy->Fill((*cit)->ieta(), (*cit)->emEnergy());
+     iEta_hadEnergy->Fill((*cit)->ieta(), (*cit)->hadEnergy());
+     iEta_outEnergy->Fill((*cit)->ieta(), (*cit)->outerEnergy());
+   }
 
 }
 
@@ -156,12 +163,33 @@ JetAnalyzer::beginJob()
   phi = fs->make<TH1D>("phi", "Leading Jet Phi", 60, -3.4151, 3.4151);
   n60 = fs->make<TH1D>("n60", "Leading Jet n60", 50, 0, 50);
   n90 = fs->make<TH1D>("n90", "Leading Jet n90", 50, 0, 50);
+  em = fs->make<TH1D>("em", "Em Fraction of leading jet",
+		      100, 0, 1);
 
   ls = fs->make<TH1D>("ls", "Lumi Section", 200, 0, 200);
 
   eEta = fs->make<TH2D>("eEta", "Leading Jet E v. Eta",
 			100, 0, 1000,
 			70, -3.5, 3.5);
+
+  iEta = fs->make<TH1D>("iEta", "ieta of CaloTowers in leading jet",
+		      99, -49.5, 49.5);
+  iPhi = fs->make<TH1D>("iPhi", "iphi of CaloTowers in leading jet",
+		      100, -0.5, 99.5);
+  
+  iEta_iPhi = fs->make<TH2D>("iEta_iPhi", "CaloTower iEta (vert) v iPhi (horz)",			     
+			     100, -0.5, 99.5,
+			     99, -49.5, 49.5);
+
+  iEta_emEnergy = fs->make<TH2D>("iEta_emEnergy", "EmEnergy v iEta",
+				 99, -49.5, 49.5,
+				 100, 0, 100);
+  iEta_hadEnergy = fs->make<TH2D>("iEta_hadEnergy", "HadEnergy v iEta",
+				 99, -49.5, 49.5,
+				 100, 0, 100);
+  iEta_outEnergy = fs->make<TH2D>("iEta_outEnergy", "OuterEnergy v iEta",
+				 99, -49.5, 49.5,
+				 100, 0, 100);
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
