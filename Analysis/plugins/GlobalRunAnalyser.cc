@@ -13,7 +13,7 @@
 //
 // Original Author:  Benjamin JONES
 //         Created:  Thu Dec  4 11:44:26 CET 2008
-// $Id: GlobalRunAnalyser.cc,v 1.3 2009/04/15 11:53:43 bjones Exp $
+// $Id: GlobalRunAnalyser.cc,v 1.1 2009/10/27 21:09:07 jbrooke Exp $
 //
 //
 
@@ -37,7 +37,7 @@
 
 #include "DataFormats/JetReco/interface/CaloJetCollection.h"
 
-#include "SimDataFormats/HepMCProduct/interface/HepMCProduct.h"
+//#include "SimDataFormats/HepMCProduct/interface/HepMCProduct.h"
 
 #include "DataFormats/HcalDigi/interface/HBHEDataFrame.h"
 #include "DataFormats/HcalDigi/interface/HcalDigiCollections.h"
@@ -666,40 +666,40 @@ GlobalRunAnalyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    if(IncludeMC_)
      {
        
-       Handle<edm::HepMCProduct> mcHandle;
-       iEvent.getByLabel(MCTag_,mcHandle);
+//        Handle<edm::HepMCProduct> mcHandle;
+//        iEvent.getByLabel(MCTag_,mcHandle);
        
-       const edm::HepMCProduct *mcProd = mcHandle.product();
-       const HepMC::GenEvent *evt = mcProd->GetEvent();
+//        const edm::HepMCProduct *mcProd = mcHandle.product();
+//        const HepMC::GenEvent *evt = mcProd->GetEvent();
        
-       for(HepMC::GenEvent::vertex_const_iterator pitr = evt->vertices_begin(); pitr!= evt->vertices_end(); ++pitr)
-	 {
+//        for(HepMC::GenEvent::vertex_const_iterator pitr = evt->vertices_begin(); pitr!= evt->vertices_end(); ++pitr)
+// 	 {
 	   
-	   if((*pitr)->barcode()==-1)
-	     {
+// 	   if((*pitr)->barcode()==-1)
+// 	     {
 	       
-	       VtxR_ = (*pitr)->point3d().perp();
-	       VtxX_ = (*pitr)->point3d().x();
-	       VtxY_ = (*pitr)->point3d().y();
-	       VtxZ_ = (*pitr)->point3d().z();
+// 	       VtxR_ = (*pitr)->point3d().perp();
+// 	       VtxX_ = (*pitr)->point3d().x();
+// 	       VtxY_ = (*pitr)->point3d().y();
+// 	       VtxZ_ = (*pitr)->point3d().z();
 	       
-	       VtxT_ = (*pitr)->position().t();
+// 	       VtxT_ = (*pitr)->position().t();
 
-	       for(HepMC::GenVertex::particles_out_const_iterator part = (*pitr)->particles_out_const_begin(); part!=(*pitr)->particles_out_const_end(); ++part)
-		 {
-		   //	std::cout << (*part)->pdg_id()<<std::endl;
-		   if((*part)->pdg_id()>=1000000)
-		     {
-		       SusyMomX_=(*part)->momentum().x();
-		       SusyMomY_=(*part)->momentum().y();
-		       SusyMomZ_=(*part)->momentum().z();
-		       SusyMomR_=(*part)->momentum().perp();
-		       SusyEnergy_=(*part)->momentum().e();
-		       SusyPDG_=(*part)->pdg_id()-1000000;
-		     }
-		 }
-	     }
-	 }
+// 	       for(HepMC::GenVertex::particles_out_const_iterator part = (*pitr)->particles_out_const_begin(); part!=(*pitr)->particles_out_const_end(); ++part)
+// 		 {
+// 		   //	std::cout << (*part)->pdg_id()<<std::endl;
+// 		   if((*part)->pdg_id()>=1000000)
+// 		     {
+// 		       SusyMomX_=(*part)->momentum().x();
+// 		       SusyMomY_=(*part)->momentum().y();
+// 		       SusyMomZ_=(*part)->momentum().z();
+// 		       SusyMomR_=(*part)->momentum().perp();
+// 		       SusyEnergy_=(*part)->momentum().e();
+// 		       SusyPDG_=(*part)->pdg_id()-1000000;
+// 		     }
+// 		 }
+// 	     }
+// 	 }
      }
    
 
