@@ -71,14 +71,14 @@ process.myPath = cms.Path(
     process.HLT_StoppedHSCP_8E29_Sequence
 
 # CRAFT 08 re-reco
-    +process.RawToDigi
-    +process.l1Filter
-    +process.reconstructionCosmics
+#    +process.RawToDigi
+#    +process.l1Filter
+#    +process.reconstructionCosmics
 
 # CRAFT 09 reproduce missing RECO info
-#    +process.hcalDigis
-#    +process.gtDigis
-#    +process.gctDigis
+    +process.hcalDigis
+    +process.gtDigis
+    +process.gctDigis
     +process.l1extraParticles
 
 # Ken's histograms

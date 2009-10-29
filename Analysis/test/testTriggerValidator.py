@@ -40,18 +40,20 @@ process.TFileService = cms.Service("TFileService",
 #    process.output
 #)
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
 readFiles = cms.untracked.vstring()
 secFiles = cms.untracked.vstring() 
 process.source = cms.Source ("PoolSource",fileNames = readFiles, secondaryFileNames = secFiles)
 
 readFiles.extend( [
-		   '/store/caf/user/jbrooke/CRAFT09_HLT_v4/hltOutputA_1.root',
-		   '/store/caf/user/jbrooke/CRAFT09_HLT_v4/hltOutputA_2.root',
-		   '/store/caf/user/jbrooke/CRAFT09_HLT_v4/hltOutputA_3.root',
-		   '/store/caf/user/jbrooke/CRAFT09_HLT_v4/hltOutputA_4.root',
-		   '/store/caf/user/jbrooke/CRAFT09_HLT_v4/hltOutputA_5.root',
-		   '/store/caf/user/jbrooke/CRAFT09_HLT_v4/hltOutputA_6.root',
+#		   '/store/caf/user/jbrooke/CRAFT09_HLT_v5/hltOutputA_1.root',
+#		   '/store/caf/user/jbrooke/CRAFT09_HLT_v5/hltOutputA_2.root',
+		   '/store/caf/user/jbrooke/CRAFT09_HLT_v5/hltOutputA_3.root'
+#		   '/store/caf/user/jbrooke/CRAFT09_HLT_v5/hltOutputA_4.root',
+#		   '/store/caf/user/jbrooke/CRAFT09_HLT_v5/hltOutputA_5.root',
+#		   '/store/caf/user/jbrooke/CRAFT09_HLT_v5/hltOutputA_6.root',
+#                   '/store/caf/user/jbrooke/CRAFT09_HLT_v5/hltOutputA_7.root',
+#                   '/store/caf/user/jbrooke/CRAFT09_HLT_v5/hltOutputA_8.root'
 ] )
 
 
