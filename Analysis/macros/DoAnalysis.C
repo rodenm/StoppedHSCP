@@ -8,14 +8,14 @@
   double time = 2513; // Run 111039
   //  double time = 178244;  // Runs 110958,110972,110987,110998,111009,111017,111023,111039,111047,111138
 
-//   BasicHistos(chain, "BasicHistos.root", time);
-//   BasicPlots("BasicHistos.root", "BasicPlots.ps");
+  BasicHistos(chain, "BasicHistos.root", time);
+  BasicPlots("BasicHistos.root", "BasicPlots.ps");
 
 //    EffHistos(chain, "EffHistos.root", time);
 //    EffPlots("EffHistos.root", "EffPlots.ps");
 
-   PulseShapeHistos(chain, "PulseShapeHistos.root", time);
-   PulseShapePlots("PulseShapeHistos.root", "PulseShapePlots.ps");
+//    PulseShapeHistos(chain, "PulseShapeHistos.root", time);
+//    PulseShapePlots("PulseShapeHistos.root", "PulseShapePlots.ps");
 
 
   

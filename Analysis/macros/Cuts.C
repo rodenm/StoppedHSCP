@@ -30,8 +30,13 @@ bool Cut(StoppedHSCPEvent* evt, unsigned cuts) {
 
   bool result=true;
 
-  if ((cuts & 0x1) > 0) result = result && (evt->getJet(0).e > CutJetEnergyCut);
-  if ((cuts & 0x2) > 0) result = result && (fabs(evt->getJet(0).eta) < CutJetEtaCut);
+  if ((cuts & 0x1) > 0) {
+    for (unsigned i=0; i<evt->nJets(); ++i) {
+      if (evt->getJet(i).e > CutJetEnergyCut &&
+	  evt->getJet(i).eta < CutJetEtaCut) result = result && true;
+    }
+  }
+
   if ((cuts & 0x4) > 0) result = result && (evt->getJet(0).n60 < CutJetN60Cut);
   if ((cuts & 0x8) > 0) result = result && (evt->getJet(0).n90 > CutJetN90Cut);
   if ((cuts & 0x10) > 0) result = result && (evt->nMuons() < CutMuonVeto);

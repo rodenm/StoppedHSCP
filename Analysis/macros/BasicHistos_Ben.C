@@ -11,6 +11,7 @@
 #include "TH1.h"
 #include "TFile.h"
 #include "TMath.h"
+#include "TCut.h"
 
 void BasicHistos(TChain* chain, char* filename, double time) {
 
@@ -90,7 +91,7 @@ void BasicHistos(TChain* chain, char* filename, double time) {
   hjethad->Scale(scale);
 
   TH1D* hjetn60 = new TH1D("hjetn60", "Leading jet N60", 50, 0., 50.);
-  chain->Draw("LaedingCenJetn60>>hjetn60");
+  chain->Draw("LeadingCenJetn60>>hjetn60");
   hjetn60->Scale(scale);
 
   TH1D* hjetn90 = new TH1D("hjetn90", "Leading jet N90", 50, 0., 50.);
@@ -124,7 +125,31 @@ void BasicHistos(TChain* chain, char* filename, double time) {
 //   TH1D* htowhad = new TH1D("htowhad", "Leading tower HCAL energy", 100, 0., 200.);
 //   chain->Draw("towers.eHad[0]>>htowhad");
 //   htowhad->Scale(scale);
-  
+
+  // N-1 efficiencies
+  // assumes jets are already restricted to |eta| < 1.3 !!!
+  TCut init("LeadingCenJetEnergy>30.");
+  TCut jete("LeadingCenJetEnergy>50.");
+  TCut n60("LeadingCenJetn60<6");
+  TCut n90("LeadingCenJetn90>3");
+  TCut nmu("NoOfMuons==0");
+
+  TH1D* heffjete = new TH1D("heffjete", "Leading jet energy (N-1)", 100, 0., 200.);
+  chain->Draw("LeadingCenJetEnergy>>heffjete", init && n60 && n90 && nmu);
+  heffjete->Scale(scale);
+
+  TH1D* heffjetn60 = new TH1D("heffjetn60", "Leading jet n60 (N-1)", 25, 0., 25.);
+  chain->Draw("LeadingCenJetn60>>heffjetn60", init && jete && n90 && nmu);
+  heffjetn60->Scale(scale);
+
+  TH1D* heffjetn90 = new TH1D("heffjetn90", "Leading jet n90 (N-1)", 15, 0., 15.);
+  chain->Draw("LeadingCenJetn90>>heffjetn90", init && jete && n60 && nmu);
+  heffjetn90->Scale(scale);
+
+  TH1D* heffnmu = new TH1D("heffnmu", "N muons (N-1)", 6, 0., 6.);
+  chain->Draw("NoOfMuons>>heffnmu", init && jete && n60 && n90);
+  heffnmu->Scale(scale);
+
 //   hl1et->Write();
 //   hl1eta->Write();
 //   hl1phi->Write();
@@ -148,6 +173,10 @@ void BasicHistos(TChain* chain, char* filename, double time) {
 //   htowe->Write();
 //   htowem->Write();
 //   htowhad->Write();
+  heffjete->Write();
+  heffjetn60->Write();
+  heffjetn90->Write();
+  heffnmu->Write();
 
   delete file;
 
@@ -294,6 +323,30 @@ void BasicPlots(char* rootfile, char* psfile) {
 //   htowhad->SetYTitle("Hz / 2 GeV");
 //   htowhad->Draw("HIST");
 //   canvas->Update();
+
+  TH1D* heffjete = (TH1D*)file.Get("heffjete");
+  heffjete->SetXTitle("E (GeV)");
+  heffjete->SetYTitle("Hz / 2 GeV");
+  heffjete->Draw("HIST");
+  canvas->Update();
+
+  TH1D* heffjetn60 = (TH1D*)file.Get("heffjetn60");
+  heffjetn60->SetXTitle("");
+  heffjetn60->SetYTitle("Hz / unit");
+  heffjetn60->Draw("HIST");
+  canvas->Update();
+
+  TH1D* heffjetn90 = (TH1D*)file.Get("heffjetn90");
+  heffjetn90->SetXTitle("");
+  heffjetn90->SetYTitle("Hz / unit");
+  heffjetn90->Draw("HIST");
+  canvas->Update();
+
+  TH1D* heffnmu = (TH1D*)file.Get("heffnmu");
+  heffnmu->SetXTitle("");
+  heffnmu->SetYTitle("Hz / unit");
+  heffnmu->Draw("HIST");
+  canvas->Update();
 
   ps->Close();
 
