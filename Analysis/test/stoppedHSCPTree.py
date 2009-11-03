@@ -24,7 +24,10 @@ process.load('Configuration/EventContent/EventContentCosmics_cff')
 process.load("Configuration.StandardSequences.MagneticField_38T_cff")
 
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
-process.GlobalTag.globaltag = "GR09_31X_V5P::All"
+
+
+#process.GlobalTag.globaltag = "GR09_31X_V5P::All"  # CRAFT 09
+process.GlobalTag.globaltag = "CRAFT08_R_V1::All"  # CRAFT 08
 
 process.options = cms.untracked.PSet(
     Rethrow = cms.untracked.vstring('ProductNotFound')
@@ -71,14 +74,13 @@ process.myPath = cms.Path(
     process.HLT_StoppedHSCP_8E29_Sequence
 
 # CRAFT 08 re-reco
-#    +process.RawToDigi
-#    +process.l1Filter
-#    +process.reconstructionCosmics
+    +process.RawToDigi
+    +process.reconstructionCosmics
 
 # CRAFT 09 reproduce missing RECO info
-    +process.hcalDigis
-    +process.gtDigis
-    +process.gctDigis
+#    +process.hcalDigis
+#    +process.gtDigis
+#    +process.gctDigis
     +process.l1extraParticles
 
 # Ken's histograms
@@ -96,7 +98,7 @@ process.schedule = cms.Schedule(
     process.myPath
 )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
 readFiles = cms.untracked.vstring()
 secFiles = cms.untracked.vstring() 
 process.source = cms.Source ("PoolSource",fileNames = readFiles, secondaryFileNames = secFiles)
