@@ -10,7 +10,7 @@
 #include "SimG4Core/Notification/interface/TrackInformation.h"
 #include "SimG4Core/Application/interface/TrackingAction.h"
 
-  
+#include <boost/regex.hpp>
 
 class RHStopTracer :  public SimWatcher,
 		      public Observer<const BeginOfRun *>, 
@@ -29,4 +29,6 @@ class RHStopTracer :  public SimWatcher,
   bool mDebug;
   std::ofstream mStream;
   double mTraceEnergy;
+  boost::regex mTraceParticleNameRegex;
+  bool matched (const std::string& fName) const;
 };

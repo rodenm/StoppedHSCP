@@ -4,12 +4,14 @@
 #include "G4Run.hh"
 #include "G4Event.hh"
 
+
 RHStopTracer::RHStopTracer(edm::ParameterSet const & p) {
   edm::ParameterSet parameters = p.getParameter<edm::ParameterSet>("RHStopTracer");
   std::string saveFile = parameters.getUntrackedParameter<std::string>("stoppedFile", "/dev/null");
   mStream.open (saveFile.c_str());
   mDebug = parameters.getUntrackedParameter<bool>("verbose", false);
   mTraceEnergy = 1000 * parameters.getUntrackedParameter<double>("traceEnergy", 1.e20); // GeV->KeV
+  mTraceParticleNameRegex = parameters.getParameter<std::string>("traceParticle");
   std::cout << "RHStopTracer::RHStopTracer->" << saveFile << '/' << mDebug << '/' << mTraceEnergy << std::endl;
 }
 
@@ -25,7 +27,7 @@ void RHStopTracer::update (const BeginOfEvent * fEvent) {
 
 void RHStopTracer::update (const BeginOfTrack * fTrack) {
   const G4Track* track = (*fTrack)();
-  if ((track->GetMomentum().mag()> mTraceEnergy) || track->GetDefinition()->GetParticleName().find ("~g") != std::string::npos) {
+  if ((track->GetMomentum().mag()> mTraceEnergy) || matched (track->GetDefinition()->GetParticleName())) {
     if (mDebug)
     std::cout << "RHStopTracer::update-> new track: ID/Name/mass/Parent: " 
 	      << track->GetTrackID() << '/' << track->GetDefinition()->GetParticleName() << '/' 
@@ -39,14 +41,14 @@ void RHStopTracer::update (const BeginOfTrack * fTrack) {
 	      << track->GetMomentum().y() << '/' << track->GetMomentum().z() << '/'<< track->GetMomentum().mag() 
 	      << std::endl;
   }
-  if (track->GetDefinition()->GetParticleName().find ("~g") == std::string::npos) { // kill regular particles
+  if (!matched (track->GetDefinition()->GetParticleName())) { // kill regular particles
     const_cast<G4Track*>(track)->SetTrackStatus(fStopAndKill);
   }
 }
 
 void RHStopTracer::update (const EndOfTrack * fTrack) {
   const G4Track* track = (*fTrack)();
-  if ((track->GetMomentum().mag()> mTraceEnergy) || track->GetDefinition()->GetParticleName().find ("~g") != std::string::npos) {
+  if ((track->GetMomentum().mag()> mTraceEnergy) || matched (track->GetDefinition()->GetParticleName())) {
     if (mDebug)
     std::cout << "RHStopTracer::update-> stop track: ID/Name/mass/Parent: " 
 	      << track->GetTrackID() << '/' << track->GetDefinition()->GetParticleName() << '/' 
@@ -65,4 +67,8 @@ void RHStopTracer::update (const EndOfTrack * fTrack) {
 	      << std::endl; 
     }
   }
+}
+
+bool RHStopTracer::matched (const std::string& fName) const {
+  return boost::regex_match (fName, mTraceParticleNameRegex);
 }

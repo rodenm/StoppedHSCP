@@ -157,6 +157,7 @@ process.g4SimHits.Watchers = cms.VPSet (
       stoppedFile = cms.untracked.string(stopPointsFile),
       verbose = cms.untracked.bool (False),
       traceEnergy = cms.untracked.double (10000.)
+      traceParticle = cms.string ("~.*")
     )        
   )
 )
