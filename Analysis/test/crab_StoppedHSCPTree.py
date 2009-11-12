@@ -17,12 +17,12 @@ scheduler = glitecoll
 
 ### The data you want to access (to be found on DBS) 
 # CRAFT 09
-#datasetpath=/Calo/CRAFT09-GR09_31X_V5P_StoppedHSCP-332_v4/RAW-RECO
-#runselection=111039
+datasetpath=/Calo/CRAFT09-GR09_31X_V5P_StoppedHSCP-332_v4/RAW-RECO
+runselection=111039
 
 # CRAFT 08
-datasetpath=/Calo/Commissioning08-v1/RAW
-runselection=68021
+#datasetpath=/Calo/Commissioning08-v1/RAW
+#runselection=68021
 
 ### The ParameterSet you want to use
 pset=test/stoppedHSCPTree.py
@@ -46,9 +46,9 @@ copy_data = 1
 storage_element          = lcgse02.phy.bris.ac.uk
 storage_path             = /srm/managerv2?SFN=/cms
 storage_port             = 8444
-user_remote_dir          = /store/user/jbrooke/StoppedHSCP_CRAFT08_v9a
+user_remote_dir          = /store/user/jbrooke/StoppedHSCP_CRAFT09_v11
 
-ui_working_dir = StoppedHSCP_CRAFT08_v9a
+ui_working_dir = StoppedHSCP_CRAFT09_v11
 
 #if server 
 thresholdLevel = 50
