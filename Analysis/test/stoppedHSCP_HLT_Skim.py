@@ -44,7 +44,7 @@ process.endpath = cms.EndPath(
 )
 
 
-process.maxEvents = cms.untracked.PSet(  input = cms.untracked.int32(1000))
+process.maxEvents = cms.untracked.PSet(  input = cms.untracked.int32(10000))
 
 #Drop old reco
 process.source = cms.Source("PoolSource",

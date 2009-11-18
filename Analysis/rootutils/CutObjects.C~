@@ -1,4 +1,0 @@
-#include "CutObjects/CraftCuts.C"
-#include "CutObjects/CraftCutsTiming.C"
-#include "CutObjects/MuonCut.C"
-#include "CutObjects/CraftCutsNoTiming.C"

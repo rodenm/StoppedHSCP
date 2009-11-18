@@ -7012,7 +7012,10 @@ process.hltOutputA = cms.OutputModule( "PoolOutputModule",
 #  'HLT_TrackerCosmics',
 #  'HLT_ZeroBias'
 #  ) ),
-    outputCommands = process.SHSCP_EventContent.outputCommands
+#    outputCommands = process.SHSCP_EventContent.outputCommands
+     outputCommands = cms.vstring(
+        "keep *"
+     )
 )
 process.hltOutputDQM = cms.OutputModule( "ShmStreamConsumer",
     SelectEvents = cms.untracked.PSet(  SelectEvents = cms.vstring( 'HLT_BTagIP_Jet50U',

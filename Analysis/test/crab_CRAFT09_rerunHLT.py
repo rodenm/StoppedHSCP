@@ -9,7 +9,7 @@ scheduler = caf
 [CMSSW]
 
 ### The data you want to access (to be found on DBS) 
-datasetpath=/Calo/CRAFT09-v1/RAW
+datasetpath=/Calo/CRAFT09-GR09_31X_V5P_StoppedHSCP-332_v4/RAW-RECO
 runselection=111039
 
 ### The ParameterSet you want to use
@@ -33,8 +33,8 @@ return_data = 0
 ### OUTPUT files INTO A SE
 copy_data = 1
 storage_element = T1_CH_CERN_Buffer
-user_remote_dir = CRAFT09_HLT_v4
-ui_working_dir = CRAFT09_HLT_v4
+user_remote_dir = CRAFT09_v6
+ui_working_dir = CRAFT09_v6
 
 #if server 
 thresholdLevel = 50

@@ -9,8 +9,8 @@ public:
 
 CraftCuts::CraftCuts()
 {
-  std::vector<TCut> Cuts;
-  std::vector<string> Names;
+  //  std::vector<TCut> Cuts;
+  //  std::vector<string> Names;
 
   AddCut("Eta < 1.3","LeadingCenJetEnergy>30");
   AddCut("n60 < 6","LeadingCenJetn60<6");
