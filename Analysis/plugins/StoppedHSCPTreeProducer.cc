@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.15 2009/10/08 11:12:23 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.16 2009/10/28 15:42:48 jbrooke Exp $
 //
 //
 
@@ -391,15 +391,15 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
   edm::Handle<l1extra::L1JetParticleCollection> l1TauJets;
   iEvent.getByLabel(l1JetsTag_, "Tau", l1TauJets);
   
-  // merge and sort central and tau jet collections
-  std::vector<l1extra::L1JetParticle> l1jets;
-
-  l1jets.insert(l1jets.end(), l1CenJets->begin(), l1CenJets->end());
-  l1jets.insert(l1jets.end(), l1TauJets->begin(), l1TauJets->end());
-  std::sort(l1jets.begin(), l1jets.end(), l1jet_gt());
-
   if (l1CenJets.isValid() && l1TauJets.isValid()) { 
 
+    // merge and sort central and tau jet collections
+    std::vector<l1extra::L1JetParticle> l1jets;
+    
+    l1jets.insert(l1jets.end(), l1CenJets->begin(), l1CenJets->end());
+    l1jets.insert(l1jets.end(), l1TauJets->begin(), l1TauJets->end());
+    std::sort(l1jets.begin(), l1jets.end(), l1jet_gt());
+    
     for (std::vector<l1extra::L1JetParticle>::const_iterator jet=l1jets.begin(); jet!=l1jets.end(); ++jet) {
       shscp::TrigJet j;
       j.type = jet->type();   // 0 = central, 1 = forward, 2 = tau
