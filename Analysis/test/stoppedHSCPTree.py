@@ -44,6 +44,15 @@ process.l1Filter.inputTag = cms.InputTag("gtDigis")
 # re-run HLT (will have subtly different EventSetup config from real HLT!!!)
 process.load('StoppedHSCP.Analysis.HLT_StoppedHSCP_cff')
 
+# L1 tech bit filter
+from HLTrigger.HLTfilters.hltLevel1GTSeed_cfi import hltLevel1GTSeed
+process.ttFilter = hltLevel1GTSeed.clone()
+process.ttFilter.L1TechTriggerSeeding = cms.bool(True)
+process.ttFilter.L1SeedsLogicalExpression = cms.string('3 AND NOT 4')
+
+process.load('L1TriggerConfig.L1GtConfigProducers.L1GtTriggerMaskTechTrigConfig_cff')
+
+
 
 # HLT bit filter
 process.load('HLTrigger.HLTfilters.hltHighLevel_cfi')
@@ -77,6 +86,9 @@ process.myPath = cms.Path(
 # filter on L1 bit
 #    process.l1Filter
 
+# filter on L1 tech bit
+    process.ttFilter
+
 # filter on HLT bit (do not re-run HLT in same job!!!)
 #    process.hltHighLevel
 
@@ -88,7 +100,7 @@ process.myPath = cms.Path(
 #    +process.reconstructionCosmics
 
 # CRAFT 09 reproduce missing RECO info
-    process.hcalDigis
+    +process.hcalDigis
     +process.gtDigis
     +process.gctDigis
     +process.l1extraParticles

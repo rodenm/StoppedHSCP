@@ -61,17 +61,19 @@ HLTBeginSequence = cms.Sequence( hltGtDigis
                                  + hltL1GtObjectMap
                                  + hltL1extraParticles)
 
-
 hltL1sStoppedHSCP8E29 = cms.EDFilter( "HLTLevel1GTSeed",
+    L1UseL1TriggerObjectMaps = cms.bool( True ),
+    L1NrBxInEvent = cms.int32( 5 ),
     L1TechTriggerSeeding = cms.bool( False ),
     L1UseAliasesForSeeding = cms.bool( True ),
-    L1SeedsLogicalExpression = cms.string( "L1_SingleJet10U" ),
+    L1SeedsLogicalExpression = cms.string( "L1_SingleJet10U_NotBptxC" ),
     L1GtReadoutRecordTag = cms.InputTag( "hltGtDigis" ),
     L1GtObjectMapTag = cms.InputTag( "hltL1GtObjectMap" ),
     L1CollectionsTag = cms.InputTag( "hltL1extraParticles" ),
     L1MuonCollectionTag = cms.InputTag( "hltL1extraParticles" ),
     saveTags = cms.untracked.bool( False )
 )
+hltPreStoppedHSCP8E29 = cms.EDFilter( "HLTPrescaler" )
 hltHcalDigis = cms.EDProducer( "HcalRawToDigi",
     InputLabel = cms.InputTag( "source" ),
     UnpackCalib = cms.untracked.bool( True ),
@@ -134,8 +136,8 @@ hltStoppedHSCPTowerMakerForAll = cms.EDProducer( "CaloTowersCreator",
     MomEBDepth = cms.double( 0.3 ),
     MomEEDepth = cms.double( 0.0 ),
     hbheInput = cms.InputTag( "hltHbhereco" ),
-    hoInput = cms.InputTag( '' ),
-    hfInput = cms.InputTag( '' ),
+    hoInput = cms.InputTag( "" ),
+    hfInput = cms.InputTag( "" ),
     AllowMissingInputs = cms.bool( True ),
     HcalAcceptSeverityLevel = cms.uint32( 999 ),
     EcalAcceptSeverityLevel = cms.uint32( 1 ),
@@ -157,21 +159,25 @@ hltStoppedHSCPTowerMakerForAll = cms.EDProducer( "CaloTowersCreator",
     HF1Weights = cms.vdouble(  ),
     HF2Grid = cms.vdouble(  ),
     HF2Weights = cms.vdouble(  ),
-    ecalInputs = cms.VInputTag( '','' )
+    ecalInputs = cms.VInputTag(  )
 )
-hltStoppedHSCPIterativeCone5CaloJets = cms.EDProducer( "IterativeConeJetProducer",
-    seedThreshold = cms.double( 1.0 ),
-    coneRadius = cms.double( 0.5 ),
-    verbose = cms.untracked.bool( False ),
-    jetType = cms.untracked.string( "CaloJet" ),
+hltStoppedHSCPIterativeCone5CaloJets = cms.EDProducer( "FastjetJetProducer",
+    jetAlgorithm = cms.string( "IterativeCone" ),
+    rParam = cms.double( 0.5 ),
     src = cms.InputTag( "hltStoppedHSCPTowerMakerForAll" ),
-    jetPtMin = cms.double( 0.0 ),
-    inputEMin = cms.double( 0.0 ),
+    srcPVs = cms.InputTag( "offlinePrimaryVertices" ),
+    jetType = cms.string( "CaloJet" ),
+    jetPtMin = cms.double( 1.0 ),
     inputEtMin = cms.double( 0.5 ),
-    debugLevel = cms.untracked.int32( 0 ),
-    alias = cms.untracked.string( "IC5CaloJet" ),
-    correctInputToSignalVertex = cms.bool( False ),
-    pvCollection = cms.InputTag( "offlinePrimaryVertices" ),
+    inputEMin = cms.double( 0.0 ),
+    doPVCorrection = cms.bool( False ),
+    doPUOffsetCorr = cms.bool( False ),
+    nSigmaPU = cms.double( 1.0 ),
+    radiusPU = cms.double( 0.5 ),
+    doPUFastjet = cms.bool( False ),
+    Active_Area_Repeats = cms.int32( 5 ),
+    GhostArea = cms.double( 0.01 ),
+    Ghost_EtaMax = cms.double( 6.0 ),
     maxBadEcalCells = cms.uint32( 9999999 ),
     maxRecoveredEcalCells = cms.uint32( 9999999 ),
     maxProblematicEcalCells = cms.uint32( 9999999 ),
@@ -179,13 +185,12 @@ hltStoppedHSCPIterativeCone5CaloJets = cms.EDProducer( "IterativeConeJetProducer
     maxRecoveredHcalCells = cms.uint32( 9999999 ),
     maxProblematicHcalCells = cms.uint32( 9999999 )
 )
-hltStoppedHSCP1CaloJetEnergy = cms.EDFilter(
-    "HLT1CaloJetEnergy",
+hltStoppedHSCP1CaloJetEnergy = cms.EDFilter( "HLT1CaloJetEnergy",
     inputTag = cms.InputTag( "hltStoppedHSCPIterativeCone5CaloJets" ),
+    saveTag = cms.untracked.bool( True ),
     MinE = cms.double( 20.0 ),
     MaxEta = cms.double( 3.0 ),
-    MinN = cms.int32( 1 ),
-    saveTag = cms.untracked.bool( True )
+    MinN = cms.int32( 1 )
 )
 
 HLT_StoppedHSCP_8E29_Sequence = cms.Sequence( HLTBeginSequence 
