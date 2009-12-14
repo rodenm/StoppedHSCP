@@ -25,8 +25,8 @@ process.load("Configuration.StandardSequences.MagneticField_38T_cff")
 
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 
-
-process.GlobalTag.globaltag = "GR09_31X_V5P::All"  # CRAFT 09
+process.GlobalTag.globaltag = "GR09_P_V7::All"  # collisions
+#process.GlobalTag.globaltag = "GR09_31X_V5P::All"  # CRAFT 09
 #process.GlobalTag.globaltag = "CRAFT08_R_V1::All"  # CRAFT 08
 
 process.options = cms.untracked.PSet(
@@ -53,10 +53,9 @@ process.ttFilter.L1SeedsLogicalExpression = cms.string('3 AND NOT 4')
 process.load('L1TriggerConfig.L1GtConfigProducers.L1GtTriggerMaskTechTrigConfig_cff')
 
 
-
 # HLT bit filter
 process.load('HLTrigger.HLTfilters.hltHighLevel_cfi')
-process.hltHighLevel.TriggerResultsTag = cms.InputTag("TriggerResults","","HLT2")
+process.hltHighLevel.TriggerResultsTag = cms.InputTag("TriggerResults","","HLT")
 process.hltHighLevel.HLTPaths = cms.vstring("HLT_StoppedHSCP_8E29")
 
 # Ben's fake HLT filter
@@ -87,26 +86,26 @@ process.myPath = cms.Path(
 #    process.l1Filter
 
 # filter on L1 tech bit
-    process.ttFilter
+#    process.ttFilter
 
 # filter on HLT bit (do not re-run HLT in same job!!!)
-#    process.hltHighLevel
+    process.hltHighLevel
 
 # rerun HLT sequence (quick and dirty, not the full one)
 #    process.HLT_StoppedHSCP_8E29_Sequence
 
 # re-reco
-#    +process.RawToDigi
-#    +process.reconstructionCosmics
+    +process.RawToDigi
+    +process.reconstructionCosmics
 
 # CRAFT 09 reproduce missing RECO info
-    +process.hcalDigis
-    +process.gtDigis
-    +process.gctDigis
-    +process.l1extraParticles
+#    +process.hcalDigis
+#    +process.gtDigis
+#    +process.gctDigis
+#    +process.l1extraParticles
 
 # fake HLT selection
-    +process.caloFilter
+#    +process.caloFilter
 
 # Ken's histograms
     +process.jetanalyzer
@@ -125,16 +124,16 @@ process.schedule = cms.Schedule(
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 readFiles = cms.untracked.vstring()
-secFiles = cms.untracked.vstring() 
+secFiles = cms.untracked.vstring()
 process.source = cms.Source ("PoolSource",fileNames = readFiles, secondaryFileNames = secFiles)
 
 # CRAFT 09 skim
 readFiles.extend( [
 
 # beam halo skim
-    'file:/afs/cern.ch/cms/CAF/CMSCOMM/COMM_CSC/data/2009/FirstBeam/selectedEvents_121964_beamhalo.root'
+#    'file:/afs/cern.ch/cms/CAF/CMSCOMM/COMM_CSC/data/2009/FirstBeam/selectedEvents_121964_beamhalo.root'
 
-    
+    '/store/data/BeamCommissioning09/MinimumBias/RAW/v1/000/124/030/EAAF17C6-6AE7-DE11-8DCB-001617DBCF6A.root'
 #   '/store/data/CRAFT09/Calo/RAW-RECO/GR09_31X_V5P_StoppedHSCP-332_v4/0022/FC9ECC6F-2299-DE11-BA40-0018F3D09636.root',
 #   '/store/data/CRAFT09/Calo/RAW-RECO/GR09_31X_V5P_StoppedHSCP-332_v4/0022/FC6A5AAA-CA98-DE11-A0F2-001A92810AE0.root',
 #   '/store/data/CRAFT09/Calo/RAW-RECO/GR09_31X_V5P_StoppedHSCP-332_v4/0022/FC351559-2299-DE11-B23A-001A92810AE4.root',

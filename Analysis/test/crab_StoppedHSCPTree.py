@@ -15,10 +15,17 @@ scheduler = glitecoll
 
 [CMSSW]
 
-### The data you want to access (to be found on DBS) 
+### The data you want to access (to be found on DBS)
+datasetpath=/MinimumBias/BeamCommissioning09-v1/RAW
+runselection=124022,124023,124024,124025,124026,124027,124029,124030
+
+# beam test
+#datasetpath=/ZeroBias/BeamCommissioning09-PromptReco-v2/RECO
+#runselection=123615
+
 # CRAFT 09
-datasetpath=/Calo/CRAFT09-GR09_31X_V5P_StoppedHSCP-332_v4/RAW-RECO
-runselection=110958,110972,110987,110998,111009,111039,111138
+#datasetpath=/Calo/CRAFT09-GR09_31X_V5P_StoppedHSCP-332_v4/RAW-RECO
+#runselection=110958,110972,110987,110998,111009,111039,111138
 
 # CRAFT 08
 #datasetpath=/Calo/Commissioning08-v1/RAW
@@ -46,9 +53,9 @@ copy_data = 1
 storage_element          = lcgse02.phy.bris.ac.uk
 storage_path             = /srm/managerv2?SFN=/cms
 storage_port             = 8444
-user_remote_dir          = /store/user/jbrooke/StoppedHSCP_CRAFT09_v13
+user_remote_dir          = /store/user/jbrooke/StoppedHSCP_Collisions09_v1
 
-ui_working_dir = StoppedHSCP_CRAFT09_v13
+ui_working_dir = StoppedHSCP_Collisions09_v1
 
 #if server 
 thresholdLevel = 50
