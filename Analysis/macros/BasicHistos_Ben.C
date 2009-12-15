@@ -69,7 +69,7 @@ void BasicHistos(TChain* chain, char* filename, double time) {
   TH1D* hjete = new TH1D("hjete", "Leading jet energy", 100, 0., 1000.);
   chain->Draw("LeadingCenJetEnergy>>hjete");
   hjete->Scale(scale);
-
+  
   TH1D* hjete2 = new TH1D("hjete2", "Leading jet energy (zoom)", 100, 0., 200.);
   chain->Draw("LeadingCenJetEnergy>>hjete2");
   hjete2->Scale(scale);
@@ -77,32 +77,32 @@ void BasicHistos(TChain* chain, char* filename, double time) {
   TH1D* hjeteta = new TH1D("hjeteta", "Leading jet #eta", 70, -3.5, 3.5);
   chain->Draw("LeadingCenJetEta>>hjeteta");
   hjeteta->Scale(scale);
-
+  
   TH1D* hjetphi = new TH1D("hjetphi", "Leading jet #phi", 60, -3.4151, 3.4151);
   chain->Draw("LeadingCenJetPhi>>hjetphi");
   hjetphi->Scale(scale);
-
+  
   TH1D* hjetem = new TH1D("hjetem", "Leading jet ECAL energy", 100, 0., 200.);
   chain->Draw("LeadingCenJetEmInEB>>hjetem");
   hjetem->Scale(scale);
-
+  
   TH1D* hjethad = new TH1D("hjethad", "Leading jet HCAL energy", 100, 0., 200.);
   chain->Draw("LeadingCenJetHadInHB>>hjethad");
   hjethad->Scale(scale);
-
+  
   TH1D* hjetn60 = new TH1D("hjetn60", "Leading jet N60", 50, 0., 50.);
   chain->Draw("LeadingCenJetn60>>hjetn60");
   hjetn60->Scale(scale);
-
+		 
   TH1D* hjetn90 = new TH1D("hjetn90", "Leading jet N90", 50, 0., 50.);
   chain->Draw("LeadingCenJetn90>>hjetn90");
   hjetn90->Scale(scale);
-
+  
 
   // muons
   TH1D* hnmu = new TH1D("hnmu", "N muons", 4, -0.5, 3.5);
   chain->Draw("NoOfMuons>>hnmu");
-  hnmu->Scale(scale);
+		 hnmu->Scale(scale);
 
 //   TH1D* hmupt = new TH1D("hmupt", "Leading muon pt", 100, 0., 100.);
 //   chain->Draw("muons.pt[0]>>hmupt");
@@ -144,11 +144,44 @@ void BasicHistos(TChain* chain, char* filename, double time) {
 
   TH1D* heffjetn90 = new TH1D("heffjetn90", "Leading jet n90 (N-1)", 15, 0., 15.);
   chain->Draw("LeadingCenJetn90>>heffjetn90", init && jete && n60 && nmu);
-  heffjetn90->Scale(scale);
+		 heffjetn90->Scale(scale);
 
   TH1D* heffnmu = new TH1D("heffnmu", "N muons (N-1)", 6, 0., 6.);
   chain->Draw("NoOfMuons>>heffnmu", init && jete && n60 && n90);
   heffnmu->Scale(scale);
+
+
+  //  plots after jet+mu cuts
+  TH1D* hjete_jetmu = new TH1D("hjete_jetmu", "Leading jet energy after jet+#mu cuts", 100, 0., 200.);
+  chain->Draw("LeadingCenJetEnergy>>hjete_jetmu", init && jete && n60 && n90 && nmu);
+  hjete_jetmu->Scale(scale);
+  
+
+
+  // timing distributions
+  TH1D* hr1 = new TH1D("hr1", "R1", 100, 0., 1.);
+  chain->Draw("TimingRightPeak>>hr1", init && jete && n60 && n90 && nmu);
+  hr1->Scale(scale);
+  
+  TH1D* hr2 = new TH1D("hr2", "R2", 100, 0., 1.);
+  chain->Draw("TimingFracRightNextRight>>hr2", init && jete && n60 && n90 && nmu);
+  hr2->Scale(scale);
+
+  TH1D* hpk = new TH1D("hpk", "Peak Fraction", 100, 0., 1.);
+  chain->Draw("TimingFracInLeader>>hpk", init && jete && n60 && n90 && nmu);
+  hpk->Scale(scale);
+
+  TH1D* hout = new TH1D("hout", "R1", 100, 0., 1.);
+  chain->Draw("TimingFracInCentralFour>>hout", init && jete && n60 && n90 && nmu);
+  hout->Scale(scale);
+
+  
+//   TCut ratioCut("(TimingRightPeak>0.15)&&(TimingFracRightNextRight>0.1)&&(TimingFracRightNextRight<0.5)");
+//   TCut peakCut("(TimingFracInLeader>0.4)&&(TimingFracInLeader<0.7)");
+//   TCut outCut("(TimingFracInCentralFour>0.90)");
+
+
+
 
 //   hl1et->Write();
 //   hl1eta->Write();
@@ -177,6 +210,8 @@ void BasicHistos(TChain* chain, char* filename, double time) {
   heffjetn60->Write();
   heffjetn90->Write();
   heffnmu->Write();
+
+  hjete_jetmu->Write();
 
   delete file;
 
@@ -346,6 +381,12 @@ void BasicPlots(char* rootfile, char* psfile) {
   heffnmu->SetXTitle("");
   heffnmu->SetYTitle("Hz / unit");
   heffnmu->Draw("HIST");
+  canvas->Update();
+
+  TH1D* hjete_jetmu = (TH1D*)file.Get("hjete_jetmu");
+  hjete_jetmu->SetXTitle("GeV");
+  hjete_jetmu->SetYTitle("Hz / unit");
+  hjete_jetmu->Draw("HIST");
   canvas->Update();
 
   ps->Close();

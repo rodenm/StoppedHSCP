@@ -15,15 +15,13 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.9 2009/09/09 14:58:43 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.10 2009/10/05 13:47:34 jbrooke Exp $
 //
 //
 
 
 #include <vector>
 #include "TObject.h"
-
-//#include "StoppedHSCP/Analysis/interface/StoppedHSCPJet.h"
 
 namespace shscp {
 
@@ -221,6 +219,8 @@ class StoppedHSCPEvent : public TObject {
   unsigned nHpds() { return nHpd; }
   unsigned nDigis() { return nDigi; }
 
+  shscp::Event getEventInfo() { return event; }
+  shscp::Trigger getTriggerInfo() { return trigger; }
   shscp::TrigJet getL1Jet(unsigned i);
   shscp::TrigJet getHltJet(unsigned i);
   shscp::MCDecay getMCDecay(unsigned i);
