@@ -105,7 +105,7 @@ process.myPath = cms.Path(
 #    +process.l1extraParticles
 
 # fake HLT selection
-#    +process.caloFilter
+    +process.caloFilter
 
 # Ken's histograms
     +process.jetanalyzer

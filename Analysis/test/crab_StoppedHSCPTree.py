@@ -72,12 +72,9 @@ proxy_server = myproxy.cern.ch
 #se_black_list = 
 #se_white_list = 
 
-se_black_list = 
-ce_black_list = 
-
 ## By ComputingElement 
-#se_white_list = heplnx204.pp.rl.ac.uk
-#ce_white_list = heplnx206.pp.rl.ac.uk,heplnx207.pp.rl.ac.uk 
+#ce_black_list = 
+ce_white_list = heplnx206.pp.rl.ac.uk,heplnx207.pp.rl.ac.uk 
 
 [CONDORG]
 
