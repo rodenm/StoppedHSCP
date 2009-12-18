@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.16 2009/10/28 15:42:48 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.17 2009/11/18 15:41:56 jbrooke Exp $
 //
 //
 
@@ -110,6 +110,7 @@ private:
   void doMC(const edm::Event&);
   void doTrigger(const edm::Event&, const edm::EventSetup&);
   void doJets(const edm::Event&);
+  void doGlobalCalo(const edm::Event&);
   void doMuons(const edm::Event&);
   void doTowersAboveThreshold(const edm::Event&);
   void doTowersInJets(const edm::Event&);
@@ -342,6 +343,16 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent){
 		       iEvent.time().value()&0xffffffff,
 		       iEvent.time().value()>>32);
 
+  event_->id = iEvent.id().event();
+  event_->bx = iEvent.bunchCrossing();
+  event_->orbit = iEvent.orbitNumber();
+  event_->lb = iEvent.luminosityBlock();
+  event_->run = iEvent.id().run();
+  event_->fill = iEvent.eventAuxiliary().storeNumber();
+  event_->time0 = iEvent.time().value()&0xffffffff;
+  event_->time1 = iEvent.time().value()>>32;
+  //  event_->time=iEvent.time().value();
+
 }
   
 
@@ -383,7 +394,10 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
 			 l1BptxPlus,
 			 l1BptxMinus,
 			 hltBit);
-  
+
+  event_->gtTrigWord0 = gtWord0;
+  event_->gtTrigWord1 = gtWord1;
+  event_->hltBit = hltBit;
 
   // L1 jets
   edm::Handle<l1extra::L1JetParticleCollection> l1CenJets;
@@ -483,6 +497,11 @@ void StoppedHSCPTreeProducer::doMC(const edm::Event& iEvent) {
 	mcEvt.vtxY = (*pitr)->point3d().y();
 	mcEvt.vtxZ = (*pitr)->point3d().z();
 	mcEvt.vtxT = (*pitr)->position().t();
+
+	event_->vtxX = (*pitr)->point3d().x();
+	event_->vtxY = (*pitr)->point3d().y();
+	event_->vtxZ = (*pitr)->point3d().z();
+	event_->vtxT = (*pitr)->position().t();
 	
 	for(HepMC::GenVertex::particles_out_const_iterator part = (*pitr)->particles_out_const_begin();
 	    part!=(*pitr)->particles_out_const_end(); 
@@ -496,6 +515,14 @@ void StoppedHSCPTreeProducer::doMC(const edm::Event& iEvent) {
 	      mcEvt.rHadPz  = (*part)->momentum().z();
 	      mcEvt.rHadPt  = (*part)->momentum().perp();
 	      mcEvt.rHadE   = (*part)->momentum().e();
+
+	      event_->rHadPdgId = (*part)->pdg_id();
+	      event_->rHadPx  = (*part)->momentum().x();
+	      event_->rHadPy  = (*part)->momentum().y();
+	      event_->rHadPz  = (*part)->momentum().z();
+	      event_->rHadPt  = (*part)->momentum().perp();
+	      event_->rHadE   = (*part)->momentum().e();
+
 	    }
 	}
 	
@@ -633,30 +660,52 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
    
 }
 
+// global calo based quantities
+void StoppedHSCPTreeProducer::doGlobalCalo(const edm::Event& iEvent) {
+
+  // get calo towers
+  edm::Handle<CaloTowerCollection> caloTowers;
+  iEvent.getByLabel(caloTowerTag_,caloTowers);
+  
+  std::vector<CaloTower> caloTowersTmp;
+  caloTowersTmp.insert(caloTowersTmp.end(), caloTowers->begin(), caloTowers->end());
+  sort(caloTowersTmp.begin(), caloTowersTmp.end(), calotower_gt());
+
+  unsigned iphiFirst=caloTowersTmp.begin()->iphi();
+  for(std::vector<CaloTower>::const_iterator twr = caloTowersTmp.begin();
+      twr!=caloTowersTmp.end();
+      ++twr) {
+    
+    // number of leading calo towers in eta range at same iphi
+    if (fabs(twr->eta()) < towerMaxEta_ && twr->iphi()==iphiFirst) event_->nTowerSameiPhi++;
+    
+  }
+  
+}
 
 void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent) {
 
-   edm::Handle<reco::MuonCollection> muons;
-   iEvent.getByLabel(muonTag_,muons);
-   
-   if (muons.isValid()) {
-     for(reco::MuonCollection::const_iterator it =muons->begin();
-	 it!=muons->end() && event_->nMuons() < StoppedHSCPEvent::MAX_N_MUONS;
-	 it++) {
-       shscp::Muon mu;
-       mu.pt = it->pt();
-       mu.eta = it->eta();
-       mu.phi = it->phi();
-       mu.hcalEta = 0.;  // TODO extrapolate GlobalMuon track to HCAL surface and store position!
-       mu.hcalPhi = 0.;
+  edm::Handle<reco::MuonCollection> muons;
+  iEvent.getByLabel(muonTag_,muons);
+  
+  if (muons.isValid()) {
+    for(reco::MuonCollection::const_iterator it =muons->begin();
+	it!=muons->end() && event_->nMuons() < StoppedHSCPEvent::MAX_N_MUONS;
+	it++) {
+      shscp::Muon mu;
+      mu.pt = it->pt();
+      mu.eta = it->eta();
+      mu.phi = it->phi();
+      mu.hcalEta = 0.;  // TODO extrapolate GlobalMuon track to HCAL surface and store position!
+      mu.hcalPhi = 0.;
        event_->addMuon(mu);
-     }
-   }
-   else {
-     if (!muonsMissing_) edm::LogWarning("MissingProduct") << "Muons not found.  Branch will not be filled" << std::endl;
-     muonsMissing_ = true;
-   }
-
+    }
+  }
+  else {
+    if (!muonsMissing_) edm::LogWarning("MissingProduct") << "Muons not found.  Branch will not be filled" << std::endl;
+    muonsMissing_ = true;
+  }
+  
 }
 
 

@@ -15,13 +15,14 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.10 2009/10/05 13:47:34 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.11 2009/12/15 14:12:43 jbrooke Exp $
 //
 //
 
 
 #include <vector>
 #include "TObject.h"
+#include "boost/cstdint.hpp"
 
 namespace shscp {
 
@@ -42,10 +43,11 @@ namespace shscp {
   Trigger() : gtTrigWord0(0),gtTrigWord1(0),l1BptxPlus(0),l1BptxMinus(0),hltBit(0) { }
     unsigned gtTrigWord0;
     unsigned gtTrigWord1;
+    unsigned gtTechTrigWord;
     unsigned l1BptxPlus;
     unsigned l1BptxMinus;
     unsigned hltBit;
-    ClassDef(Trigger,2);
+    ClassDef(Trigger,3);
   };
     
   struct TrigJet {
@@ -230,13 +232,43 @@ class StoppedHSCPEvent : public TObject {
   shscp::HPD getHPD(unsigned i);
   shscp::HcalDigi getDigi(unsigned i);
 
- private:
+ public:  // data
 
+  // event
   shscp::Event event;
+  unsigned id;
+  unsigned bx;
+  unsigned orbit;
+  unsigned lb;
+  unsigned run;
+  unsigned fill;
+  unsigned time0;
+  unsigned time1;
+  ULong64_t time;
 
+  // trigger
   shscp::Trigger trigger;
+  ULong64_t gtAlgoWord0;
+  ULong64_t gtAlgoWord1;
+  ULong64_t techTrigWord0;
+  unsigned hltBit;
 
   shscp::MC mc;
+  double vtxX;
+  double vtxY;
+  double vtxZ;
+  double vtxR;
+  double vtxT;
+  unsigned rHadPdgId;
+  double rHadE;
+  double rHadPx;
+  double rHadPy;
+  double rHadPz;
+  double rHadPt;
+
+  // global calo quantities
+  unsigned nTowerSameiPhi;
+
 
   unsigned nL1Jet;
   shscp::TrigJet l1Jets[MAX_N_TRIGJETS];
@@ -262,7 +294,7 @@ class StoppedHSCPEvent : public TObject {
   unsigned nDigi;
   shscp::HcalDigi digis[MAX_N_DIGIS];
 
-  ClassDef(StoppedHSCPEvent,2);
+  ClassDef(StoppedHSCPEvent,3);
 
 };
 

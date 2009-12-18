@@ -1,5 +1,6 @@
 #include "StoppedHSCP/Analysis/interface/StoppedHSCPEvent.h"
 #include <vector>
+#include "boost/cstdint.hpp"
 
 #ifdef __CINT__
 #pragma link C++ struct shscp::Event;
