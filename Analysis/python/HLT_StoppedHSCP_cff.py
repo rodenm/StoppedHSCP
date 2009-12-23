@@ -8,11 +8,13 @@
 
 import FWCore.ParameterSet.Config as cms
 
+
 hltGtDigis = cms.EDProducer( "L1GlobalTriggerRawToDigi",
     DaqGtInputTag = cms.InputTag( "source" ),
     DaqGtFedId = cms.untracked.int32( 813 ),
     ActiveBoardsMask = cms.uint32( 0xffff ),
-    UnpackBxInEvent = cms.int32( 1 )
+    UnpackBxInEvent = cms.int32( 5 ),
+    Verbosity = cms.untracked.int32( 0 )
 )
 hltGctDigis = cms.EDProducer( "GctRawToDigi",
     inputLabel = cms.InputTag( "source" ),
@@ -55,12 +57,6 @@ hltL1extraParticles = cms.EDProducer( "L1ExtraParticlesProd",
     centralBxOnly = cms.bool( True ),
     ignoreHtMiss = cms.bool( False )
 )
-
-HLTBeginSequence = cms.Sequence( hltGtDigis 
-                                 + hltGctDigis 
-                                 + hltL1GtObjectMap
-                                 + hltL1extraParticles)
-
 hltL1sStoppedHSCP8E29 = cms.EDFilter( "HLTLevel1GTSeed",
     L1UseL1TriggerObjectMaps = cms.bool( True ),
     L1NrBxInEvent = cms.int32( 5 ),
@@ -192,6 +188,10 @@ hltStoppedHSCP1CaloJetEnergy = cms.EDFilter( "HLT1CaloJetEnergy",
     MaxEta = cms.double( 3.0 ),
     MinN = cms.int32( 1 )
 )
+
+
+HLTBeginSequence = cms.Sequence( hltGtDigis + hltGctDigis + hltL1GtObjectMap + hltL1extraParticles )
+
 
 HLT_StoppedHSCP_8E29_Sequence = cms.Sequence( HLTBeginSequence 
                                  + hltL1sStoppedHSCP8E29

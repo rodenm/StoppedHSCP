@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.11 2009/12/15 14:12:43 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.12 2009/12/18 14:34:36 jbrooke Exp $
 //
 //
 
@@ -25,30 +25,6 @@
 #include "boost/cstdint.hpp"
 
 namespace shscp {
-
-  struct Event {
-  Event() : id(0),bx(0),orbit(0),lumisection(0),run(0),fill(0),time0(0), time1(0) { }
-    unsigned id;
-    unsigned bx;
-    unsigned orbit;
-    unsigned lumisection;
-    unsigned run;
-    unsigned fill;
-    unsigned time0;
-    unsigned time1;
-    ClassDef(Event,1);
-  };
-  
-  struct Trigger {
-  Trigger() : gtTrigWord0(0),gtTrigWord1(0),l1BptxPlus(0),l1BptxMinus(0),hltBit(0) { }
-    unsigned gtTrigWord0;
-    unsigned gtTrigWord1;
-    unsigned gtTechTrigWord;
-    unsigned l1BptxPlus;
-    unsigned l1BptxMinus;
-    unsigned hltBit;
-    ClassDef(Trigger,3);
-  };
     
   struct TrigJet {
   TrigJet() : type(0), e(0.), et(0.), eta(0.), phi(0.) { }
@@ -58,22 +34,6 @@ namespace shscp {
     double eta;
     double phi;
     ClassDef(TrigJet, 1);
-  };
-
-  struct MC {
-  MC() : vtxX(0.),vtxY(0.),vtxZ(0.),vtxR(0.),vtxT(0.),rHadPdgId(0),rHadE(0.),rHadPx(0.),rHadPy(0.),rHadPz(0.),rHadPt(0.) { } 
-    double vtxX;
-    double vtxY;
-    double vtxZ;
-    double vtxR;
-    double vtxT;
-    unsigned rHadPdgId;
-    double rHadE;
-    double rHadPx;
-    double rHadPy;
-    double rHadPz;
-    double rHadPt;
-    ClassDef(MC,1);
   };
 
   struct MCDecay {
@@ -185,21 +145,6 @@ class StoppedHSCPEvent : public TObject {
  public:
   StoppedHSCPEvent();
   ~StoppedHSCPEvent();
-  
-  void setEventInfo(unsigned evt,
-		    unsigned bx,
-		    unsigned orbit,
-		    unsigned ls,
-		    unsigned run,
-		    unsigned fill,
-		    unsigned ts0,
-		    unsigned ts1);
-
-  void setTriggerInfo(unsigned gtTrigWord0,
-		      unsigned gtTrigWord1,
-		      unsigned l1BptxPlus,
-		      unsigned l1BptxMinus,
-		      unsigned hltBit);
 
   void addL1Jet(shscp::TrigJet j);
   void addHltJet(shscp::TrigJet j);
@@ -208,8 +153,6 @@ class StoppedHSCPEvent : public TObject {
   void addTower(shscp::Tower t);
   void addHPD(shscp::HPD h);
   void addDigi(shscp::HcalDigi d);
-
-  void setMC(shscp::MC mcEvt);
   void addMCDecay(shscp::MCDecay d);
 
   // getters
@@ -221,8 +164,6 @@ class StoppedHSCPEvent : public TObject {
   unsigned nHpds() { return nHpd; }
   unsigned nDigis() { return nDigi; }
 
-  shscp::Event getEventInfo() { return event; }
-  shscp::Trigger getTriggerInfo() { return trigger; }
   shscp::TrigJet getL1Jet(unsigned i);
   shscp::TrigJet getHltJet(unsigned i);
   shscp::MCDecay getMCDecay(unsigned i);
@@ -235,25 +176,23 @@ class StoppedHSCPEvent : public TObject {
  public:  // data
 
   // event
-  shscp::Event event;
   unsigned id;
   unsigned bx;
   unsigned orbit;
   unsigned lb;
   unsigned run;
   unsigned fill;
-  unsigned time0;
-  unsigned time1;
-  ULong64_t time;
+  ULong64_t time;   // timestamp from EvF
+  ULong64_t time2;  // calculated from run start + L1 counters for LS, orbit, BX
+  ULong64_t time3;  // timestamp from LHC info in L1 data
 
   // trigger
-  shscp::Trigger trigger;
   ULong64_t gtAlgoWord0;
   ULong64_t gtAlgoWord1;
-  ULong64_t techTrigWord0;
-  unsigned hltBit;
+  ULong64_t gtTechWord;
+  bool hltBit;
 
-  shscp::MC mc;
+  //MC
   double vtxX;
   double vtxY;
   double vtxZ;
@@ -269,7 +208,7 @@ class StoppedHSCPEvent : public TObject {
   // global calo quantities
   unsigned nTowerSameiPhi;
 
-
+  // arrays
   unsigned nL1Jet;
   shscp::TrigJet l1Jets[MAX_N_TRIGJETS];
 

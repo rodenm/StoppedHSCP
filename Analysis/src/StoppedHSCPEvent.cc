@@ -1,10 +1,33 @@
 #include "StoppedHSCP/Analysis/interface/StoppedHSCPEvent.h"
 
-//#include "StoppedHSCP/Analysis/interface/StoppedHSCPJet.h"
-
 using namespace shscp;
 
 StoppedHSCPEvent::StoppedHSCPEvent() :
+  id(0),
+  bx(0),
+  orbit(0),
+  lb(0),
+  run(0),
+  fill(0),
+  time(0), // timestamp from EvF
+  time2(0),  // calculated from run start + L1 counters for LS, orbit, BX
+  time3(0),  // timestamp from LHC info in L1 data
+  gtAlgoWord0(0),
+  gtAlgoWord1(0),
+  gtTechWord(0),
+  hltBit(false),
+  vtxX(0.),
+  vtxY(0.),
+  vtxZ(0.),
+  vtxR(0.),
+  vtxT(0.),
+  rHadPdgId(0),
+  rHadE(0.),
+  rHadPx(0.),
+  rHadPy(0.),
+  rHadPz(0.),
+  rHadPt(0.),
+  nTowerSameiPhi(0),
   nL1Jet(0),
   nHltJet(0),
   nMCDecay(0),
@@ -13,45 +36,10 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   nTower(0),
   nHpd(0),
   nDigi(0)
-{ 
+{
 }
 
 StoppedHSCPEvent::~StoppedHSCPEvent() { }
-
-void StoppedHSCPEvent::setEventInfo(unsigned evt,
-				    unsigned bx,
-				    unsigned orbit,
-				    unsigned ls,
-				    unsigned run,
-				    unsigned fill,
-				    unsigned ts0,
-				    unsigned ts1) {
-  event.id = evt;
-  event.bx = bx;
-  event.orbit = orbit;
-  event.lumisection = ls;
-  event.run = run;
-  event.fill = fill;
-  event.time0 = ts0;
-  event.time0 = ts1;
-}
-
-void StoppedHSCPEvent::setTriggerInfo(unsigned gtTrigWord0,
-				      unsigned gtTrigWord1,
-				      unsigned l1BptxPlus,
-				      unsigned l1BptxMinus,
-				      unsigned hltBit) {
-  trigger.gtTrigWord0 = gtTrigWord0;
-  trigger.gtTrigWord1 = gtTrigWord1;
-  trigger.l1BptxPlus = l1BptxPlus;
-  trigger.l1BptxMinus = l1BptxMinus;
-  trigger.hltBit = hltBit;
-}
-
-
-void StoppedHSCPEvent::setMC(MC mcEvt) {
-  mc = mcEvt;
-}
 
 
 void StoppedHSCPEvent::addMCDecay(MCDecay d) { 

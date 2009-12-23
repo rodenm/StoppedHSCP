@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.17 2009/11/18 15:41:56 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.18 2009/12/18 14:34:36 jbrooke Exp $
 //
 //
 
@@ -333,15 +333,10 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
 }
 
 void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent){ 
-  
-  event_->setEventInfo(iEvent.id().event(),
-		       iEvent.bunchCrossing(),
-		       iEvent.orbitNumber(),
-		       iEvent.luminosityBlock(),
-		       iEvent.id().run(),
-		       iEvent.eventAuxiliary().storeNumber(),
-		       iEvent.time().value()&0xffffffff,
-		       iEvent.time().value()>>32);
+
+  unsigned long orbitsPerLB = 1<<20;
+  unsigned long bxPerOrbit = 3564;
+  unsigned nsPerBx = 25;
 
   event_->id = iEvent.id().event();
   event_->bx = iEvent.bunchCrossing();
@@ -349,35 +344,51 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent){
   event_->lb = iEvent.luminosityBlock();
   event_->run = iEvent.id().run();
   event_->fill = iEvent.eventAuxiliary().storeNumber();
-  event_->time0 = iEvent.time().value()&0xffffffff;
-  event_->time1 = iEvent.time().value()>>32;
-  //  event_->time=iEvent.time().value();
+  event_->time = iEvent.time().value();
+
+  // calculate event time from run start + LS, orbit, BX
+  ULong64_t nBx = ( ( (iEvent.luminosityBlock() * orbitsPerLB ) + iEvent.orbitNumber() ) * bxPerOrbit ) + iEvent.bunchCrossing() ;
+  event_->time2 = iEvent.getRun().beginTime().value() + (nBx * nsPerBx);
 
 }
   
 
 void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
-  unsigned gtWord0(0), gtWord1(0);
-  unsigned l1BptxPlus(0), l1BptxMinus(0);
-  unsigned hltBit(0);
+  // trigger bits
+  uint64_t gtAlgoWord0(0), gtAlgoWord1(0), gtTechWord(0);
+  bool hltBit(false);
 
-  // L1 results - TODO
-  edm::ESHandle<L1GtTriggerMenu> menuRcd;
-  iSetup.get<L1GtTriggerMenuRcd>().get(menuRcd) ;
-  const L1GtTriggerMenu* menu = menuRcd.product();
+  // get GT data
+//   edm::ESHandle<L1GtTriggerMenu> menuRcd;
+//   iSetup.get<L1GtTriggerMenuRcd>().get(menuRcd) ;
+//   const L1GtTriggerMenu* menu = menuRcd.product();
 
-  edm::Handle< L1GlobalTriggerReadoutRecord > gtReadoutRecord;
+  edm::Handle<L1GlobalTriggerReadoutRecord> gtReadoutRecord;
   iEvent.getByLabel(l1BitsTag_, gtReadoutRecord);
 
-  const  DecisionWord& gtDecisionWordBeforeMask = gtReadoutRecord->decisionWord();
-  gtWord0 |= (menu->gtAlgorithmResult( "L1_SingleJet10_NotBptxC", gtDecisionWordBeforeMask) ? 0x1 : 0x0);
-  gtWord0 |= (menu->gtAlgorithmResult( "L1_SingleJet6", gtDecisionWordBeforeMask) ? 0x1 : 0x0);
-  gtWord0 |= (menu->gtAlgorithmResult( "L1_SingleJet10", gtDecisionWordBeforeMask) ? 0x2 : 0x0);
-  gtWord0 |= (menu->gtAlgorithmResult( "L1_SingleJet30", gtDecisionWordBeforeMask) ? 0x4 : 0x0);
-  gtWord0 |= (menu->gtAlgorithmResult( "L1_SingleJet40", gtDecisionWordBeforeMask) ? 0x8 : 0x0);
-  gtWord0 |= (menu->gtAlgorithmResult( "L1_SingleJet50", gtDecisionWordBeforeMask) ? 0x10 : 0x0);
-  gtWord0 |= (menu->gtAlgorithmResult( "L1_SingleJet60", gtDecisionWordBeforeMask) ? 0x20 : 0x0);
+  // L1 trigger bits
+  DecisionWord gtDecisionWord = gtReadoutRecord->decisionWord();
+  unsigned i=0;
+  for(DecisionWord::const_iterator itr=gtDecisionWord.begin();
+      itr != gtDecisionWord.end();
+      itr++, i++) {
+    if (*itr) {
+      if(i<64) { gtAlgoWord0 |= (1LL<<i); }
+      else { gtAlgoWord1 |= (1LL<<(i-64)); }
+    } 
+  }
+
+  TechnicalTriggerWord gtTechDecisionWord = gtReadoutRecord->technicalTriggerWord();    
+  i=0;
+  for(TechnicalTriggerWord::const_iterator itr=gtDecisionWord.begin();
+      itr != gtDecisionWord.end();
+      itr++, i++) {
+    if (*itr) {
+      gtTechWord |= (1LL<<i);
+    } 
+  }
+ 
 
   // get HLT results
   edm::Handle<edm::TriggerResults> HLTR;
@@ -385,18 +396,13 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
 
   if (HLTR.isValid()) {
     // triggerIndex must be less than the size of HLTR or you get a CMSException: _M_range_check
-    if (hltPathIndex_ < HLTR->size()) hltBit = ( HLTR->accept(hltPathIndex_) ? 1 : 0 ); 
+    if (hltPathIndex_ < HLTR->size()) hltBit = HLTR->accept(hltPathIndex_); 
   }
 
   // store bits
-  event_->setTriggerInfo(gtWord0,
-			 gtWord1,
-			 l1BptxPlus,
-			 l1BptxMinus,
-			 hltBit);
-
-  event_->gtTrigWord0 = gtWord0;
-  event_->gtTrigWord1 = gtWord1;
+  event_->gtAlgoWord0 = gtAlgoWord0;
+  event_->gtAlgoWord1 = gtAlgoWord1;
+  event_->gtTechWord = gtTechWord;
   event_->hltBit = hltBit;
 
   // L1 jets
@@ -485,18 +491,11 @@ void StoppedHSCPTreeProducer::doMC(const edm::Event& iEvent) {
     const edm::HepMCProduct *mcProd = mcHandle.product();
     const HepMC::GenEvent *evt = mcProd->GetEvent();
     
-    shscp::MC mcEvt;
-    
     for(HepMC::GenEvent::vertex_const_iterator pitr = evt->vertices_begin();
 	pitr!= evt->vertices_end();
 	++pitr) {
       
       if((*pitr)->barcode()==-1)  {
-	
-	mcEvt.vtxX = (*pitr)->point3d().x();
-	mcEvt.vtxY = (*pitr)->point3d().y();
-	mcEvt.vtxZ = (*pitr)->point3d().z();
-	mcEvt.vtxT = (*pitr)->position().t();
 
 	event_->vtxX = (*pitr)->point3d().x();
 	event_->vtxY = (*pitr)->point3d().y();
@@ -509,13 +508,6 @@ void StoppedHSCPTreeProducer::doMC(const edm::Event& iEvent) {
 
 	  if((*part)->pdg_id()>=1000000)
 	    {
-	      mcEvt.rHadPdgId = (*part)->pdg_id();
-	      mcEvt.rHadPx  = (*part)->momentum().x();
-	      mcEvt.rHadPy  = (*part)->momentum().y();
-	      mcEvt.rHadPz  = (*part)->momentum().z();
-	      mcEvt.rHadPt  = (*part)->momentum().perp();
-	      mcEvt.rHadE   = (*part)->momentum().e();
-
 	      event_->rHadPdgId = (*part)->pdg_id();
 	      event_->rHadPx  = (*part)->momentum().x();
 	      event_->rHadPy  = (*part)->momentum().y();
@@ -528,8 +520,6 @@ void StoppedHSCPTreeProducer::doMC(const edm::Event& iEvent) {
 	
       }
     }
-    
-    event_->setMC(mcEvt);
     
   }
   else {
@@ -663,6 +653,8 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
 // global calo based quantities
 void StoppedHSCPTreeProducer::doGlobalCalo(const edm::Event& iEvent) {
 
+  unsigned nTowerSameiPhi(0);
+
   // get calo towers
   edm::Handle<CaloTowerCollection> caloTowers;
   iEvent.getByLabel(caloTowerTag_,caloTowers);
@@ -671,16 +663,17 @@ void StoppedHSCPTreeProducer::doGlobalCalo(const edm::Event& iEvent) {
   caloTowersTmp.insert(caloTowersTmp.end(), caloTowers->begin(), caloTowers->end());
   sort(caloTowersTmp.begin(), caloTowersTmp.end(), calotower_gt());
 
-  unsigned iphiFirst=caloTowersTmp.begin()->iphi();
+  int iphiFirst=caloTowersTmp.begin()->iphi();
   for(std::vector<CaloTower>::const_iterator twr = caloTowersTmp.begin();
       twr!=caloTowersTmp.end();
       ++twr) {
     
     // number of leading calo towers in eta range at same iphi
-    if (fabs(twr->eta()) < towerMaxEta_ && twr->iphi()==iphiFirst) event_->nTowerSameiPhi++;
-    
+    if (fabs(twr->eta()) < towerMaxEta_ && twr->iphi()==iphiFirst) nTowerSameiPhi++;
   }
   
+  event_->nTowerSameiPhi = nTowerSameiPhi;
+
 }
 
 void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent) {

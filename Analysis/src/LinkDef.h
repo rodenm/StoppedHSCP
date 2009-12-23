@@ -3,10 +3,7 @@
 #include "boost/cstdint.hpp"
 
 #ifdef __CINT__
-#pragma link C++ struct shscp::Event;
-#pragma link C++ struct shscp::Trigger;
 #pragma link C++ struct shscp::TrigJet;
-#pragma link C++ struct shscp::MC;
 #pragma link C++ struct shscp::MCDecay;
 #pragma link C++ struct shscp::Jet;
 #pragma link C++ struct shscp::Muon;

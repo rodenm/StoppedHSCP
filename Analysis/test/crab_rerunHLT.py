@@ -1,19 +1,38 @@
+#
+# Use this CRAB config for generating stopped HSCP Trees
+# Multiple options for filtering, re-running HLT etc
+# Jim Brooke, Sept 09
+# 
+
+
 [CRAB]
 
 jobtype = cmssw
-scheduler = caf
+scheduler = glitecoll
 ### NOTE: just setting the name of the server (pi, lnl etc etc ) 
 ###       crab will submit the jobs to the server...   
 #server_name = cnaf
 
 [CMSSW]
 
-### The data you want to access (to be found on DBS) 
+### The data you want to access (to be found on DBS)
+#datasetpath=/MinimumBias/BeamCommissioning09-v1/RAW
+#runselection=124022,124023,124024,124025,124026,124027,124029,124030
+
+# beam test
+#datasetpath=/ZeroBias/BeamCommissioning09-PromptReco-v2/RECO
+#runselection=123615
+
+# CRAFT 09
 datasetpath=/Calo/CRAFT09-GR09_31X_V5P_StoppedHSCP-332_v4/RAW-RECO
 runselection=111039
 
+# CRAFT 08
+#datasetpath=/Calo/Commissioning08-v1/RAW
+#runselection=68021
+
 ### The ParameterSet you want to use
-pset=test/HLT_CRAFT09_v2_4_V2.py
+pset=test/stoppedHSCPTree_CRAFT09_rerunHLT.py
 
 ### Splitting parameters
 total_number_of_events=-1 
@@ -21,9 +40,8 @@ events_per_job = 100000
 #number_of_jobs = -1
 
 ### The output files (comma separated list)
-#output_file = stoppedHSCPTree.root
-get_edm_output = 1
-
+output_file = stoppedHSCPTree.root
+	
 [USER]
 
 ### OUTPUT files Management
@@ -32,9 +50,12 @@ return_data = 0
 
 ### OUTPUT files INTO A SE
 copy_data = 1
-storage_element = T1_CH_CERN_Buffer
-user_remote_dir = CRAFT09_v6
-ui_working_dir = CRAFT09_v6
+storage_element          = lcgse02.phy.bris.ac.uk
+storage_path             = /srm/managerv2?SFN=/cms
+storage_port             = 8444
+user_remote_dir          = /store/user/jbrooke/StoppedHSCP_CRAFT09_test_v1
+
+ui_working_dir = StoppedHSCP_CRAFT09_test_v1
 
 #if server 
 thresholdLevel = 50
@@ -51,12 +72,9 @@ proxy_server = myproxy.cern.ch
 #se_black_list = 
 #se_white_list = 
 
-se_black_list = 
-ce_black_list = 
-
 ## By ComputingElement 
-#se_white_list = heplnx204.pp.rl.ac.uk
-
+#ce_black_list = 
+ce_white_list = heplnx206.pp.rl.ac.uk,heplnx207.pp.rl.ac.uk 
 
 [CONDORG]
 
