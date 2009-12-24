@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-# merge root files on castor
+# merge root files
 
 import sys
 import subprocess
@@ -17,7 +17,7 @@ if len(sys.argv)!=5 :
 print "Merging files from "+dir
 print "to "+dir+"/"+basename+".root"
 
-command = "hadd "+basename+".root "
+command = "hadd "+dir+"/"+basename+".root "
 
 for i in range(firstfile, firstfile+nfiles):
     command += dir+"/"+basename+"_"+str(i)+".root "

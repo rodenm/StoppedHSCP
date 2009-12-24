@@ -11,159 +11,6 @@ def basicHistos(tree, filename, time, cuts) :
     nEvents = tree.GetEntries()
     scale = 1./time
 
-    # event time
-    hbx = TH1D("hbx", "BX number", 3564, 0., 3564.)
-    tree.Draw("event.bx>>hbx")
-    hbx.Scale(scale)
-    hbx.Write()
-  
-    horb = TH1D("horb", "Orbit number", 100, 0., 10000.)
-    tree.Draw("event.orbit>>horb")
-    horb.Scale(scale)
-    horb.Write()
-    
-    hls = TH1D("hls", "Lumi section", 100, 0., 1000.)  
-    tree.Draw("event.lumisection>>hls")
-    hls.Scale(scale)
-    hls.Write()
-    
-    # trigger
-    hl1et = TH1D("hl1et", "Leading L1 jet E_{t}", 100, 0., 200.)  
-    tree.Draw("l1Jets[0].et>>hl1et")
-    hl1et.Scale(scale)
-    hl1et.Write()
-    
-    hl1eta = TH1D("hl1eta", "Leading L1 jet #eta", 70, -3.5, 3.5)  
-    tree.Draw("l1Jets[0].eta>>hl1eta")
-    hl1eta.Scale(scale)
-    hl1eta.Write()
-    
-    hl1phi = TH1D("hl1phi", "Leading L1 jet #phi", 60, TMath.Pi()*-1., TMath.Pi())  
-    tree.Draw("l1Jets[0].phi>>hl1phi")
-    hl1phi.Scale(scale)
-    hl1phi.Write()
-    
-    hhlte = TH1D("hhlte", "Leading HLT jet energy", 100, 0., 200.)  
-    tree.Draw("hltJets[0].e>>hhlte")
-    hhlte.Scale(scale)
-    hhlte.Write()
-    
-    hhlteta = TH1D("hhlteta", "Leading HLT jet #eta", 70, -3.5, 3.5)  
-    tree.Draw("hltJets[0].eta>>hhlteta")
-    hhlteta.Scale(scale)
-    hhlteta.Write()
-    
-    hhltphi = TH1D("hhltphi", "Leading HLT jet #phi", 60, -1 * pi, pi)
-    tree.Draw("hltJets[0].phi>>hhltphi")
-    hhltphi.Scale(scale)
-    hhltphi.Write()
-    
-    # jets
-    hjete = TH1D("hjete", "Leading jet energy", 100, 0., 1000.)
-    tree.Draw("jets.e[0]>>hjete")
-    hjete.Scale(scale)
-    hjete.Write()
-    
-    hjete2 = TH1D("hjete2", "Leading jet energy (zoom)", 100, 0., 200.)
-    tree.Draw("jets.e[0]>>hjete2")
-    hjete2.Scale(scale)
-    hjete2.Write()
-    
-    hjeteta = TH1D("hjeteta", "Leading jet #eta", 70, -3.5, 3.5)
-    tree.Draw("jets.eta[0]>>hjeteta", "(jets.e[0])>20.")
-    hjeteta.Scale(scale)
-    hjeteta.Write()
-    
-    hjetphi = TH1D("hjetphi", "Leading jet #phi", 60, -3.4151, 3.4151)
-    tree.Draw("jets.phi[0]>>hjetphi", "(jets.e[0])>20.")
-    hjetphi.Scale(scale)
-    hjetphi.Write()
-    
-    hjetem = TH1D("hjetem", "Leading jet ECAL energy", 100, 0., 200.)
-    tree.Draw("jets.eEm[0]>>hjetem")
-    hjetem.Scale(scale)
-    hjetem.Write()
-    
-    hjethad = TH1D("hjethad", "Leading jet HCAL energy", 100, 0., 200.)
-    tree.Draw("jets.eHad[0]>>hjethad")
-    hjethad.Scale(scale)
-    hjethad.Write()
-    
-    hjetn60 = TH1D("hjetn60", "Leading jet N60", 50, 0., 50.)
-    tree.Draw("jets.n60[0]>>hjetn60")
-    hjetn60.Scale(scale)
-    hjetn60.Write()
-    
-    hjetn90 = TH1D("hjetn90", "Leading jet N90", 50, 0., 50.)
-    tree.Draw("jets.n90[0]>>hjetn90")
-    hjetn90.Scale(scale)
-    hjetn90.Write()
-    
-    # muons
-    hnmu = TH1D("hnmu", "N muons", 4, -0.5, 3.5)
-    tree.Draw("nMuon>>hnmu")
-    hnmu.Scale(scale)
-    hnmu.Write()
-    
-    hmupt = TH1D("hmupt", "Leading muon pt", 100, 0., 100.)
-    tree.Draw("muons.pt[0]>>hmupt")
-    hmupt.Scale(scale)
-    hmupt.Write()
-    
-    # towers
-    hntow = TH1D("hntow", "N towers", 100, 0., 100.)
-    tree.Draw("nTower>>hntow")
-    hntow.Scale(scale)
-    hntow.Write()
-    
-    htowe = TH1D("htowe", "Leading tower energy", 100, 0., 200.)
-    tree.Draw("towers.e[0]>>htowe")
-    htowe.Scale(scale)
-    htowe.Write()
-    
-    htowem = TH1D("htowem", "Leading tower ECAL energy", 100, 0., 200.)
-    tree.Draw("towers.eEm[0]>>htowem")
-    htowem.Scale(scale)
-    htowem.Write()
-    
-    htowhad = TH1D("htowhad", "Leading tower HCAL energy", 100, 0., 200.)
-    tree.Draw("towers.eHad[0]>>htowhad")
-    htowhad.Scale(scale)
-    htowhad.Write()
-    
-    # N-1 efficiencies
-    # assumes jets are already restricted to |eta| < 1.3 !!!
-    
-    heffjete = TH1D("heffjete", "Leading jet energy (N-1)", 100, 0., 200.)
-    tree.Draw("jets[0].e>>heffjete", cuts.nMinusOneJetE() )
-    heffjete.Scale(scale)
-    heffjete.Write()
-    
-    heffjetn60 = TH1D("heffjetn60", "Leading jet n60 (N-1)", 25, 0., 25.)
-    tree.Draw("jets[0].n60>>heffjetn60", cuts.nMinusOneN60() )
-    heffjetn60.Scale(scale)
-    heffjetn60.Write()
-    
-    heffjetn90 = TH1D("heffjetn90", "Leading jet n90 (N-1)", 15, 0., 15.)
-    tree.Draw("jets[0].n90>>heffjetn90", cuts.nMinusOneN90() )
-    heffjetn90.Scale(scale)
-    heffjetn90.Write()
-    
-    heffnmu = TH1D("heffnmu", "N muons (N-1)", 6, 0., 6.)
-    tree.Draw("nMuon>>heffnmu", cuts.nMinusOneNMu() )
-    heffnmu.Scale(scale)
-    heffnmu.Write()
-
-    hfile.Close()
-
-    
-# Reduced set of histograms to make from old TTree
-def basicHistosOld(tree, filename, time, cuts) :
-
-    hfile = TFile(filename,"recreate")
-    nEvents = tree.GetEntries()
-    scale = 1./time
-
     # jets
     hjete = TH1D("hjete", "Leading jet energy", 100, 0., 1000.)
     tree.Draw("LeadingCenJetEnergy>>hjete")
@@ -321,9 +168,161 @@ def basicHistosOld(tree, filename, time, cuts) :
     hjete_allcuts.Scale(scale)
     hjete_allcuts.Write()
 
-    
-    hfile.Close()
+
+    # new plots
+
+    # event time
+    hbx = TH1D("hbx", "BX number (new)", 3564, 0., 3564.)
+    tree.Draw("bx>>hbx")
+    hbx.Scale(scale)
+    hbx.Write()
   
+    horb = TH1D("horb", "Orbit number (new)", 100, 0., 10000.)
+    tree.Draw("orbit>>horb")
+    horb.Scale(scale)
+    horb.Write()
+    
+    hlb = TH1D("hlb", "Lumi block (new)", 100, 0., 1000.)  
+    tree.Draw("lb>>hlb")
+    hlb.Scale(scale)
+    hlb.Write()
+    
+    # trigger
+    hl1et = TH1D("hl1et", "Leading L1 jet E_{t} (new)", 100, 0., 200.)  
+    tree.Draw("l1Jets[0].et>>hl1et")
+    hl1et.Scale(scale)
+    hl1et.Write()
+    
+    hl1eta = TH1D("hl1eta", "Leading L1 jet #eta (new)", 70, -3.5, 3.5)  
+    tree.Draw("l1Jets[0].eta>>hl1eta")
+    hl1eta.Scale(scale)
+    hl1eta.Write()
+    
+    hl1phi = TH1D("hl1phi", "Leading L1 jet #phi (new)", 60, TMath.Pi()*-1., TMath.Pi())  
+    tree.Draw("l1Jets[0].phi>>hl1phi")
+    hl1phi.Scale(scale)
+    hl1phi.Write()
+    
+    hhlte = TH1D("hhlte", "Leading HLT jet energy (new)", 100, 0., 200.)  
+    tree.Draw("hltJets[0].e>>hhlte")
+    hhlte.Scale(scale)
+    hhlte.Write()
+    
+    hhlteta = TH1D("hhlteta", "Leading HLT jet #eta (new)", 70, -3.5, 3.5)  
+    tree.Draw("hltJets[0].eta>>hhlteta")
+    hhlteta.Scale(scale)
+    hhlteta.Write()
+    
+    hhltphi = TH1D("hhltphi", "Leading HLT jet #phi (new)", 60, -1 * pi, pi)
+    tree.Draw("hltJets[0].phi>>hhltphi")
+    hhltphi.Scale(scale)
+    hhltphi.Write()
+
+    # global quantities
+    hntowsamephi = TH1D("hntowsamephi", "N leading towers at same iphi (new)", 20, -0.5, 19.5)
+    tree.Draw("nTowerSameiPhi")
+    hntowsamephi.Scale(scale)
+    hntowsamephi.Write()
+    
+    # jets
+##     hjete_new = TH1D("hjete_new", "Leading jet energy (new)", 100, 0., 1000.)
+##     tree.Draw("jets.e[0]>>hjete_new")
+##     hjete_new.Scale(scale)
+##     hjete_new.Write()
+    
+##     hjete2_new = TH1D("hjete2_new", "Leading jet energy (zoom) (new)", 100, 0., 200.)
+##     tree.Draw("jets.e[0]>>hjete2_new")
+##     hjete2_new.Scale(scale)
+##     hjete2_new.Write()
+    
+##     hjeteta_new = TH1D("hjeteta_new", "Leading jet #eta (new)", 70, -3.5, 3.5)
+##     tree.Draw("jets.eta[0]>>hjeteta_new", cuts.init)
+##     hjeteta_new.Scale(scale)
+##     hjeteta_new.Write()
+    
+##     hjetphi_new = TH1D("hjetphi_new", "Leading jet #phi (new)", 60, -3.4151, 3.4151)
+##     tree.Draw("jets.phi[0]>>hjetphi_new", cuts.init)
+##     hjetphi_new.Scale(scale)
+##     hjetphi_new.Write()
+    
+##     hjetem_new = TH1D("hjetem_new", "Leading jet ECAL energy (new)", 100, 0., 200.)
+##     tree.Draw("jets.eEm[0]>>hjetem_new")
+##     hjetem_new.Scale(scale)
+##     hjetem_new.Write()
+    
+##     hjethad_new = TH1D("hjethad_new", "Leading jet HCAL energy (new)", 100, 0., 200.)
+##     tree.Draw("jets.eHad[0]>>hjethad_new")
+##     hjethad_new.Scale(scale)
+##     hjethad_new.Write()
+    
+##     hjetn60_new = TH1D("hjetn60_new", "Leading jet N60 (new)", 50, 0., 50.)
+##     tree.Draw("jets.n60[0]>>hjetn60_new")
+##     hjetn60_new.Scale(scale)
+##     hjetn60_new.Write()
+    
+##     hjetn90_new = TH1D("hjetn90_new", "Leading jet N90 (new)", 50, 0., 50.)
+##     tree.Draw("jets.n90[0]>>hjetn90_new")
+##     hjetn90_new.Scale(scale)
+##     hjetn90_new.Write()
+    
+##     # muons
+##     hnmu_new = TH1D("hnmu_new", "N muons (new)", 4, -0.5, 3.5)
+##     tree.Draw("nMuon>>hnmu_new")
+##     hnmu_new.Scale(scale)
+##     hnmu_new.Write()
+    
+##     hmupt_new = TH1D("hmupt_new", "Leading muon pt (new)", 100, 0., 100.)
+##     tree.Draw("muons.pt[0]>>hmupt_new")
+##     hmupt_new.Scale(scale)
+##     hmupt_new.Write()
+    
+##     # towers
+##     hntow = TH1D("hntow", "N towers (new)", 100, 0., 100.)
+##     tree.Draw("nTower>>hntow")
+##     hntow.Scale(scale)
+##     hntow.Write()
+    
+##     htowe = TH1D("htowe", "Leading tower energy (new)", 100, 0., 200.)
+##     tree.Draw("towers.e[0]>>htowe")
+##     htowe.Scale(scale)
+##     htowe.Write()
+    
+##     htowem = TH1D("htowem", "Leading tower ECAL energy (new)", 100, 0., 200.)
+##     tree.Draw("towers.eEm[0]>>htowem")
+##     htowem.Scale(scale)
+##     htowem.Write()
+    
+##     htowhad = TH1D("htowhad", "Leading tower HCAL energy (new)", 100, 0., 200.)
+##     tree.Draw("towers.eHad[0]>>htowhad")
+##     htowhad.Scale(scale)
+##     htowhad.Write()
+    
+##     # N-1 efficiencies
+##     # assumes jets are already restricted to |eta| < 1.3 !!!
+    
+##     heffjete_new = TH1D("heffjete_new", "Leading jet energy (N-1) (new)", 100, 0., 200.)
+##     tree.Draw("jets[0].e>>heffjete_new", cuts.nMinusOneJetE )
+##     heffjete_new.Scale(scale)
+##     heffjete_new.Write()
+    
+##     heffjetn60_new = TH1D("heffjetn60_new", "Leading jet n60 (N-1) (new)", 25, 0., 25.)
+##     tree.Draw("jets[0].n60>>heffjetn60_new", cuts.nMinusOneN60 )
+##     heffjetn60_new.Scale(scale)
+##     heffjetn60_new.Write()
+    
+##     heffjetn90_new = TH1D("heffjetn90_new", "Leading jet n90 (N-1) (new)", 15, 0., 15.)
+##     tree.Draw("jets[0].n90>>heffjetn90_new", cuts.nMinusOneN90 )
+##     heffjetn90_new.Scale(scale)
+##     heffjetn90_new.Write()
+    
+##     heffnmu_new = TH1D("heffnmu_new", "N muons (N-1) (new)", 6, 0., 6.)
+##     tree.Draw("nMuon>>heffnmu_new", cuts.nMinusOneNMu )
+##     heffnmu_new.Scale(scale)
+##     heffnmu_new.Write()
+
+    hfile.Close()
+
+    
 def basicPlots(rootfile, psfile, new) :
     
     file = TFile(rootfile, "read")
@@ -499,90 +498,94 @@ def basicPlots(rootfile, psfile, new) :
 
     # plot an extended set of histograms if new ntuples are used
     
-    if (new):
+    hbx = file.Get("hbx")
+    hbx.SetTitle("BX number")
+    hbx.SetXTitle("N_{BX}")
+    hbx.SetYTitle("Hz")
+    hbx.Draw("HIST")
+    canvas.Update()
+    
+    horb = file.Get("horb")
+    horb.Draw("HIST")
+    canvas.Update()
+    
+    hlb = file.Get("hlb")
+    hlb.Draw("HIST")
+    canvas.Update()
+        
+    # L1
+    hl1et = file.Get("hl1et")
+    hl1et.SetXTitle("E (GeV)")
+    hl1et.SetYTitle("Hz / 2 GeV")
+    hl1et.Draw("HIST")
+    canvas.Update()
+    
+    hl1eta = file.Get("hl1eta")
+    hl1eta.SetXTitle("#eta")
+    hl1eta.SetYTitle("Hz / 0.1")
+    hl1eta.Draw("HIST")
+    canvas.Update()
+    
+    hl1phi = file.Get("hl1phi")
+    hl1phi.SetXTitle("#phi")
+    hl1phi.SetYTitle("Hz / #pi/30")
+    hl1phi.Draw("HIST")
+    canvas.Update()
+    
+    # HLT
+    hhlte = file.Get("hhlte")
+    hhlte.SetXTitle("E (GeV)")
+    hhlte.SetYTitle("Hz / 2 GeV")
+    hhlte.Draw("HIST")
+    canvas.Update()
+    
+    hhlteta = file.Get("hhlteta")
+    hhlteta.SetXTitle("#eta")
+    hhlteta.SetYTitle("Hz / 0.1")
+    hhlteta.Draw("HIST")
+    canvas.Update()
+    
+    hhltphi = file.Get("hhltphi")
+    hhltphi.SetXTitle("#phi")
+    hhltphi.SetYTitle("Hz / #pi/30")
+    hhltphi.Draw("HIST")
+    canvas.Update()
 
-        hbx = file.Get("hbx")
-        hbx.SetTitle("BX number")
-        hbx.SetXTitle("N_{BX}")
-        hbx.SetYTitle("Hz")
-        hbx.Draw("HIST")
-        canvas.Update()
-        
-        horb = file.Get("horb")
-        horb.Draw("HIST")
-        canvas.Update()
-        
-        hls = file.Get("hls")
-        hls.Draw("HIST")
-        canvas.Update()
-        
-        # L1
-        hl1et = file.Get("hl1et")
-        hl1et.SetXTitle("E (GeV)")
-        hl1et.SetYTitle("Hz / 2 GeV")
-        hl1et.Draw("HIST")
-        canvas.Update()
-        
-        hl1eta = file.Get("hl1eta")
-        hl1eta.SetXTitle("#eta")
-        hl1eta.SetYTitle("Hz / 0.1")
-        hl1eta.Draw("HIST")
-        canvas.Update()
-        
-        hl1phi = file.Get("hl1phi")
-        hl1phi.SetXTitle("#phi")
-        hl1phi.SetYTitle("Hz / #pi/30")
-        hl1phi.Draw("HIST")
-        canvas.Update()
-        
-        # HLT
-        hhlte = file.Get("hhlte")
-        hhlte.SetXTitle("E (GeV)")
-        hhlte.SetYTitle("Hz / 2 GeV")
-        hhlte.Draw("HIST")
-        canvas.Update()
-        
-        hhlteta = file.Get("hhlteta")
-        hhlteta.SetXTitle("#eta")
-        hhlteta.SetYTitle("Hz / 0.1")
-        hhlteta.Draw("HIST")
-        canvas.Update()
-        
-        hhltphi = file.Get("hhltphi")
-        hhltphi.SetXTitle("#phi")
-        hhltphi.SetYTitle("Hz / #pi/30")
-        hhltphi.Draw("HIST")
-        canvas.Update()
-        
-        hmupt = file.Get("hmupt")
-        hmupt.SetXTitle("p_{t}^{#mu}")
-        hmupt.SetYTitle("Hz / 1 GeV")
-        hmupt.Draw("HIST")
-        canvas.Update()
-        
-        hntow = file.Get("hntow")
-        hntow.SetXTitle("N_{towers}")
-        hntow.SetYTitle("Hz")
-        hntow.Draw("HIST")
-        canvas.Update()
-        
-        htowe = file.Get("htowe")
-        htowe.SetXTitle("E (GeV)")
-        htowe.SetYTitle("Hz / 2 GeV")
-        htowe.Draw("HIST")
-        canvas.Update()
-        
-        htowem = file.Get("htowem")
-        htowem.SetXTitle("E (GeV)")
-        htowem.SetYTitle("Hz / 2 GeV")
-        htowem.Draw("HIST")
-        canvas.Update()
-        
-        htowhad = file.Get("htowhad")
-        htowhad.SetXTitle("E (GeV)")
-        htowhad.SetYTitle("Hz / 2 GeV")
-        htowhad.Draw("HIST")
-        canvas.Update()
-
+    hntowsamephi = file.Get("hntowsamephi")
+    hntowsamephi.SetXTitle("N towers")
+    hntowsamephi.SetYTitle("Hz / N")
+    hntowsamephi.Draw("HIST")
+    canvas.Update()
+    
+##     hmupt = file.Get("hmupt")
+##     hmupt.SetXTitle("p_{t}^{#mu}")
+##     hmupt.SetYTitle("Hz / 1 GeV")
+##     hmupt.Draw("HIST")
+##     canvas.Update()
+    
+##     hntow = file.Get("hntow")
+##     hntow.SetXTitle("N_{towers}")
+##     hntow.SetYTitle("Hz")
+##     hntow.Draw("HIST")
+##     canvas.Update()
+    
+##     htowe = file.Get("htowe")
+##     htowe.SetXTitle("E (GeV)")
+##     htowe.SetYTitle("Hz / 2 GeV")
+##     htowe.Draw("HIST")
+##     canvas.Update()
+    
+##     htowem = file.Get("htowem")
+##     htowem.SetXTitle("E (GeV)")
+##     htowem.SetYTitle("Hz / 2 GeV")
+##     htowem.Draw("HIST")
+##     canvas.Update()
+    
+##     htowhad = file.Get("htowhad")
+##     htowhad.SetXTitle("E (GeV)")
+##     htowhad.SetYTitle("Hz / 2 GeV")
+##     htowhad.Draw("HIST")
+##     canvas.Update()
+    
     # close file
     ps.Close()

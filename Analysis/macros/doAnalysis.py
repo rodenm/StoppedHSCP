@@ -35,18 +35,19 @@ tdrStyle()
 gROOT.SetStyle("tdrStyle")
 gROOT.ForceStyle()
 
-# run analysis - old TTree
+
+# get tree & add old tree as friend
+tree = ifile.Get("stoppedHSCPTree/StoppedHSCPTree")
 #oldtree = ifile.Get("an_HLT/EventTree")
 oldtree = ifile.Get("globalRunAnalyser/EventTree")
-cutsOld = CutsOld()
-basicHistosOld(oldtree, odir+"/BasicHistosOld.root", time, cutsOld)
-basicPlots(odir+"/BasicHistosOld.root", odir+"/BasicPlotsOld.ps", false)
+tree.AddFriend(oldtree)
 
-# run analysis - new TTree
-#tree = ifile.Get("stoppedHSCPTree/StoppedHSCPTree")
-#cuts = Cuts()
-#basicHistos(tree, odir+"/BasicHistos.root", time, cuts)
-#basicPlots(odir+"/BasicHistos.root", odir+"/BasicPlots.ps", false)
+# run analysis
+cuts = CutsOld()
+
+basicHistos(tree, odir+"/BasicHistos.root", time, cuts)
+
+basicPlots(odir+"/BasicHistos.root", odir+"/BasicPlots.ps", false)
 
 
 tar = tarfile.open(name = odir+".tgz", mode = 'w:gz')

@@ -27,14 +27,14 @@ class CutsOld:
     r2 = TCut("TimingFracRightNextRight>0.1 && TimingFracRightNextRight<0.5")
     rpeak = TCut("TimingFracInLeader>0.4 && TimingFracInLeader<0.7")
     rout = TCut("TimingFracInCentralFour>0.90")
-    nMinusOneJetE = TCut("LeadingCenJetEnergy>30. && LeadingCenJetn60<6 && LeadingCenJetn90>3 && NoOfMuons==0")
-    nMinusOneN60 = TCut("LeadingCenJetEnergy>30. && LeadingCenJetEnergy>50. && LeadingCenJetn90>3 && NoOfMuons==0")
+    nMinusOneJetE = TCut("LeadingCenJetEnergy>30. && nTowerSameiPhi<5 && LeadingCenJetn60<6 && LeadingCenJetn90>3 && NoOfMuons==0")
+    nMinusOneN60 = TCut("LeadingCenJetEnergy>30. && nTowerSameiPhi<5 && LeadingCenJetEnergy>50. && LeadingCenJetn90>3 && NoOfMuons==0")
     
-    nMinusOneN90 = TCut("LeadingCenJetEnergy>30. && LeadingCenJetEnergy>50. && LeadingCenJetn60<6 && NoOfMuons==0")
+    nMinusOneN90 = TCut("LeadingCenJetEnergy>30. && nTowerSameiPhi<5 && LeadingCenJetEnergy>50. && LeadingCenJetn60<6 && NoOfMuons==0")
     
-    nMinusOneNMu = TCut("LeadingCenJetEnergy>30. && LeadingCenJetEnergy>50. && LeadingCenJetn60<6 && LeadingCenJetn90>3")
+    nMinusOneNMu = TCut("LeadingCenJetEnergy>30. && nTowerSameiPhi<5 && LeadingCenJetEnergy>50. && LeadingCenJetn60<6 && LeadingCenJetn90>3")
 
-    jetMu = TCut("LeadingCenJetEnergy>30. && LeadingCenJetEnergy>50. && LeadingCenJetn60<6 && LeadingCenJetn90>3 && NoOfMuons==0")
+    jetMu = TCut("LeadingCenJetEnergy>30. && nTowerSameiPhi<5 && LeadingCenJetEnergy>50. && LeadingCenJetn60<6 && LeadingCenJetn90>3 && NoOfMuons==0")
 
-    all = TCut("LeadingCenJetEnergy>30. && LeadingCenJetEnergy>50. && LeadingCenJetn60<6 && LeadingCenJetn90>3 && NoOfMuons==0 && TimingRightPeak>0.15 && TimingFracRightNextRight>0.1 && TimingFracRightNextRight<0.5 && TimingFracInLeader>0.4 && TimingFracInLeader<0.7 && TimingFracInCentralFour>0.90")
+    all = TCut("LeadingCenJetEnergy>30. && nTowerSameiPhi<5 && LeadingCenJetEnergy>50. && LeadingCenJetn60<6 && LeadingCenJetn90>3 && NoOfMuons==0 && TimingRightPeak>0.15 && TimingFracRightNextRight>0.1 && TimingFracRightNextRight<0.5 && TimingFracInLeader>0.4 && TimingFracInLeader<0.7 && TimingFracInCentralFour>0.90")
 
