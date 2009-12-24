@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 # copy files from grid location to local disk
 
 import sys

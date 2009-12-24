@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 # merge root files on castor
 
 import sys

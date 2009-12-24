@@ -18,7 +18,7 @@ class Cuts:
 # using old TTree definition
 
 class CutsOld:
-    init = TCut("LeadingCenJetEnergy>30.")
+    init = TCut("LeadingCenJetEnergy>30. && nTowerSameiPhi<5")
     jetE = TCut("LeadingCenJetEnergy>50.")
     n60 = TCut("LeadingCenJetn60<6")
     n90 = TCut("LeadingCenJetn90>3")
