@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.18 2009/12/18 14:34:36 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.19 2009/12/23 22:34:57 jbrooke Exp $
 //
 //
 
@@ -632,13 +632,7 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
 	     }
 	     
 	   }
-	   else {
-	     if (!towersMissing_) {
-	       edm::LogWarning("MissingProduct") << "CaloJetConstituents not found.  Branches will not be filled" << std::endl;
-	       towersMissing_ = true;
-	     }
-	     
-	   }
+	   
 	 }
        }
      }
@@ -658,22 +652,29 @@ void StoppedHSCPTreeProducer::doGlobalCalo(const edm::Event& iEvent) {
   // get calo towers
   edm::Handle<CaloTowerCollection> caloTowers;
   iEvent.getByLabel(caloTowerTag_,caloTowers);
-  
-  std::vector<CaloTower> caloTowersTmp;
-  caloTowersTmp.insert(caloTowersTmp.end(), caloTowers->begin(), caloTowers->end());
-  sort(caloTowersTmp.begin(), caloTowersTmp.end(), calotower_gt());
 
-  int iphiFirst=caloTowersTmp.begin()->iphi();
-  for(std::vector<CaloTower>::const_iterator twr = caloTowersTmp.begin();
-      twr!=caloTowersTmp.end();
-      ++twr) {
+  if (caloTowers.isValid()) {
     
-    // number of leading calo towers in eta range at same iphi
-    if (fabs(twr->eta()) < towerMaxEta_ && twr->iphi()==iphiFirst) nTowerSameiPhi++;
+    std::vector<CaloTower> caloTowersTmp;
+    caloTowersTmp.insert(caloTowersTmp.end(), caloTowers->begin(), caloTowers->end());
+    sort(caloTowersTmp.begin(), caloTowersTmp.end(), calotower_gt());
+    
+    int iphiFirst=caloTowersTmp.begin()->iphi();
+    for(std::vector<CaloTower>::const_iterator twr = caloTowersTmp.begin();
+	twr!=caloTowersTmp.end();
+	++twr) {
+      
+      // number of leading calo towers in eta range at same iphi
+      if (fabs(twr->eta()) < towerMaxEta_ && twr->iphi()==iphiFirst) nTowerSameiPhi++;
+    }
+    
+    event_->nTowerSameiPhi = nTowerSameiPhi;
+  }
+  else {
+    if (!towersMissing_) edm::LogWarning("MissingProduct") << "CaloTowers not found.  Branches will not be filled" << std::endl;
+    towersMissing_ = true;
   }
   
-  event_->nTowerSameiPhi = nTowerSameiPhi;
-
 }
 
 void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent) {
