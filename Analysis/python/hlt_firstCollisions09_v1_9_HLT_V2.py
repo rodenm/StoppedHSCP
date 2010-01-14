@@ -2,7 +2,7 @@
 
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process( "HLT" )
+process = cms.Process( "HLT2" )
 
 process.HLTConfigVersion = cms.PSet(
   tableName = cms.string('/cdaq/physics/firstCollisions09/v1.9/HLT/V2')

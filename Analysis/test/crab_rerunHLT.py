@@ -1,9 +1,6 @@
 #
-# Use this CRAB config for generating stopped HSCP Trees
-# Multiple options for filtering, re-running HLT etc
-# Jim Brooke, Sept 09
-# 
-
+# Re-run HLT for skimming CRAFT 09 data 
+#
 
 [CRAB]
 
@@ -25,14 +22,14 @@ scheduler = glitecoll
 
 # CRAFT 09
 datasetpath=/Calo/CRAFT09-GR09_31X_V5P_StoppedHSCP-332_v4/RAW-RECO
-runselection=111039
+runselection=110958,110972,110987,110998,111009,111039,111138
 
 # CRAFT 08
 #datasetpath=/Calo/Commissioning08-v1/RAW
 #runselection=68021
 
 ### The ParameterSet you want to use
-pset=test/stoppedHSCPTree_CRAFT09_rerunHLT.py
+pset=rerunHLT.py
 
 ### Splitting parameters
 total_number_of_events=-1 
@@ -40,9 +37,11 @@ events_per_job = 100000
 #number_of_jobs = -1
 
 ### The output files (comma separated list)
-output_file = stoppedHSCPTree.root
+output_file = stoppedHSCP_HLT_Skim.root
 	
 [USER]
+
+ui_working_dir = StoppedHSCP_CRAFT09_rerunHLT_v1
 
 ### OUTPUT files Management
 ##  output back into UI 
@@ -50,16 +49,18 @@ return_data = 0
 
 ### OUTPUT files INTO A SE
 copy_data = 1
-storage_element          = lcgse02.phy.bris.ac.uk
-storage_path             = /srm/managerv2?SFN=/cms
-storage_port             = 8444
-user_remote_dir          = /store/user/jbrooke/StoppedHSCP_CRAFT09_test_v1
+storage_element          = T2_UK_SGrid_Bristol
+#user_remote_dir          = StoppedHSCP_CRAFT09_rerunHLT_v1
 
-ui_working_dir = StoppedHSCP_CRAFT09_test_v1
+# DBS publication
+publish_data = 1
+publish_data_name = StoppedHSCP_CRAFT09_rerunHLT_v1
+dbs_url_for_publication = https://cmsdbsprod.cern.ch:8443/cms_dbs_ph_analysis_02_writer/servlet/DBSServlet
+
 
 #if server 
-thresholdLevel = 50
-eMail = jim.brooke@cern.ch
+#thresholdLevel = 50
+#eMail = jim.brooke@cern.ch
 
 [GRID]
 

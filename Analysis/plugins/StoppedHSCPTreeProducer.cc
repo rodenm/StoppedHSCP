@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.19 2009/12/23 22:34:57 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.20 2010/01/11 14:40:07 jbrooke Exp $
 //
 //
 
@@ -321,6 +321,7 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
   if (doMC_) doMC(iEvent);
   
   if (doReco_) {
+    doGlobalCalo(iEvent);
     doJets(iEvent);
     doMuons(iEvent);
     doHcalNoise(iEvent);

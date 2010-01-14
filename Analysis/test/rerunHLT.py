@@ -15,11 +15,11 @@ process.load('Configuration/EventContent/EventContentCosmics_cff')
 # Magnetic field: force mag field to be 3.8 tesla
 process.load("Configuration.StandardSequences.MagneticField_38T_cff")
 # Conditions (Global Tag is used here):
-process.GlobalTag.globaltag = "CRAFT0831X_V3::All"
+process.GlobalTag.globaltag = "GR09_P_V1::All"
 
 process.load('Configuration/StandardSequences/Services_cff')
 process.load('FWCore/MessageService/MessageLogger_cfi')
-process.MessageLogger.cerr.INFO.limit = cms.untracked.int32(10)
+#process.MessageLogger.cerr.INFO.limit = cms.untracked.int32(10)
 
 # re-run HLT
 process.load('StoppedHSCP.Analysis.HLT_StoppedHSCP_cff')
@@ -58,7 +58,3 @@ process.source = cms.Source("PoolSource",
     ),
     inputCommands = cms.untracked.vstring('drop *')
 )
-process.source.inputCommands.extend(process.RAWEventContent.outputCommands)
-process.source.inputCommands.append('drop *_*_*_Rec')
-process.source.inputCommands.append('keep *_eventAuxiliaryHistoryProducer_*_*')
-process.source.dropDescendantsOfDroppedBranches=cms.untracked.bool(False)

@@ -65,13 +65,8 @@ secFiles = cms.untracked.vstring()
 process.source = cms.Source ("PoolSource",fileNames = readFiles, secondaryFileNames = secFiles)
 
 readFiles.extend( [
-'/store/data/BeamCommissioning09/MinimumBias/RAW/v1/000/124/030/EAAF17C6-6AE7-DE11-8DCB-001617DBCF6A.root'
-#        '/store/data/CRAFT09/Calo/RAW-RECO/GR09_31X_V5P_StoppedHSCP-332_v4/0019/F0A84670-6F8D-DE11-ABDE-001731AF6847.root',
-#        '/store/data/CRAFT09/Calo/RAW-RECO/GR09_31X_V5P_StoppedHSCP-332_v4/0019/C44B8164-6F8D-DE11-A379-0030486792AC.root',
-#        '/store/data/CRAFT09/Calo/RAW-RECO/GR09_31X_V5P_StoppedHSCP-332_v4/0019/C2E5E378-6F8D-DE11-AF21-003048679168.root',
-#        '/store/data/CRAFT09/Calo/RAW-RECO/GR09_31X_V5P_StoppedHSCP-332_v4/0019/AAAEAE6B-6F8D-DE11-9ECB-001A92810ADE.root',
-#        '/store/data/CRAFT09/Calo/RAW-RECO/GR09_31X_V5P_StoppedHSCP-332_v4/0019/A85D8C68-6F8D-DE11-A7D3-0018F3D09604.root',
-#        '/store/data/CRAFT09/Calo/RAW-RECO/GR09_31X_V5P_StoppedHSCP-332_v4/0019/9E769D95-6D8D-DE11-9165-001731AF684D.root',
+        '/store/data/CRAFT09/Calo/RAW-RECO/StoppedHSCP-CRAFT09_R_V4_CosmicsSeq_v1/0044/0A369A8B-0EBF-DE11-B9A9-001A92971BB8.root',
+        '/store/data/CRAFT09/Calo/RAW-RECO/StoppedHSCP-CRAFT09_R_V4_CosmicsSeq_v1/0041/F6D84B79-82BD-DE11-9D3C-002618943973.root'
 ] );
 
 
