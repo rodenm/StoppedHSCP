@@ -40,7 +40,7 @@ process.output = cms.OutputModule(
     SelectEvents = cms.untracked.PSet(
         SelectEvents = cms.vstring("HLT_StoppedHSCP_8E29")
         ),
-    outputCommands = cms.vstring("keep *")
+    outputCommands = cms.untracked.vstring("keep *")
 
 )
                                   
