@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 
 # Run analysis macros for a given processing
 
@@ -45,9 +46,14 @@ tree.AddFriend(oldtree)
 # run analysis
 cuts = CutsOld()
 
-basicHistos(tree, odir+"/BasicHistos.root", time, cuts)
+basicHistos(tree, odir+"/BasicHistos.root", cuts)
 
-basicPlots(odir+"/BasicHistos.root", odir+"/BasicPlots.ps", false)
+if (time==0):
+    scale=1
+else:
+    scale=1./time
+
+basicPlots(odir+"/BasicHistos.root", odir+"/BasicPlots.ps", false, scale)
 
 
 tar = tarfile.open(name = odir+".tgz", mode = 'w:gz')
