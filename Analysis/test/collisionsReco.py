@@ -5,9 +5,14 @@
 #
 # Jim B
 
+# Auto generated configuration file
+# using: 
+# Revision: 1.149 
+# Source: /cvs_server/repositories/CMSSW/CMSSW/Configuration/PyReleaseValidation/python/ConfigBuilder.py,v 
+# with command line options: promptCollisionReco -s RAW2DIGI,L1Reco,RECO,DQM,ALCA:SiStripCalZeroBias --datatier RECO --eventcontent RECO --conditions CRAFT09_R_V4::All --scenario pp --no_exec --data --magField AutoFromDBCurrent -n 100
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process('RECO')
+process = cms.Process('RECO2')
 
 # import of standard configurations
 process.load('Configuration/StandardSequences/Services_cff')
@@ -36,17 +41,16 @@ process.options = cms.untracked.PSet(
 )
 # Input source
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring(
-    '/castor/cern.ch/user/j/jbrooke/hscp/test/Calo_CRAFT09-GR09_31X_V5P_StoppedHSCP-332_v4_RAW-RECO_111039_test.root'
+    fileNames = cms.untracked.vstring( 
+    'rfio:/castor/cern.ch/user/j/jbrooke/hscp/test/Calo_CRAFT09-GR09_31X_V5P_StoppedHSCP-332_v4_RAW-RECO_111039_test.root'
+#'/store/data/BeamCommissioning09/MinimumBias/RAW/v1/000/124/120/DC0FA50D-6BE8-DE11-8A92-000423D94E70.root'
+#'file:/data/withvertex732.root'
+#'/store/express/BeamCommissioning09/ExpressPhysics/FEVT/v2/000/123/615/38379AF1-B4E2-DE11-BB10-001617C3B706.root'
+#'rfio:/castor.cern.ch/cms/store/data/BeamCommissioning09/castor/MinimumBias/RAW/v1/000/122/314/CC89C4BC-DE11-B365-0030487D0D3A.root'
     )
 )
 
-process.source.inputCommands = cms.untracked.vstring(
-    "drop *",
-    "keep *_*_*_HLT",
-    "drop *_MEtoEDMConverter_*_*",
-    "drop L1GlobalTriggerObjectMapRecord_hltL1GtObjectMap__HLT"
-    )
+process.source.inputCommands = cms.untracked.vstring("keep *", "drop *_MEtoEDMConverter_*_*", "drop L1GlobalTriggerObjectMapRecord_hltL1GtObjectMap__HLT")
 
 # Output definition
 process.FEVT = cms.OutputModule("PoolOutputModule",
@@ -71,11 +75,11 @@ process.GlobalTag.globaltag = 'GR09_R_V5::All'
 
 ## TRACKING:
 ## Skip events with HV off
-process.newSeedFromTriplets.ClusterCheckPSet.MaxNumberOfPixelClusters=2000
-process.newSeedFromPairs.ClusterCheckPSet.MaxNumberOfCosmicClusters=10000
-process.secTriplets.ClusterCheckPSet.MaxNumberOfPixelClusters=1000
-process.fifthSeeds.ClusterCheckPSet.MaxNumberOfCosmicClusters = 5000
-process.fourthPLSeeds.ClusterCheckPSet.MaxNumberOfCosmicClusters=10000
+#process.newSeedFromTriplets.ClusterCheckPSet.MaxNumberOfPixelClusters=2000
+#process.newSeedFromPairs.ClusterCheckPSet.MaxNumberOfCosmicClusters=10000
+#process.secTriplets.ClusterCheckPSet.MaxNumberOfPixelClusters=1000
+#process.fifthSeeds.ClusterCheckPSet.MaxNumberOfCosmicClusters = 5000
+#process.fourthPLSeeds.ClusterCheckPSet.MaxNumberOfCosmicClusters=10000
 
 ## Primary Vertex
 process.offlinePrimaryVerticesWithBS.PVSelParameters.maxDistanceToBeam = 2
@@ -162,7 +166,15 @@ process.endjob_step = cms.Path(process.endOfProcess)
 process.out_step = cms.EndPath(process.FEVT)
 
 # Schedule definition
-process.schedule = cms.Schedule(process.out_step)
-    #process.raw2digi_step,process.L1Reco_step,process.reconstruction_step,process.dqmoffline_step,process.endjob_step,process.out_step)
+process.schedule = cms.Schedule(process.raw2digi_step,process.L1Reco_step,process.reconstruction_step,process.dqmoffline_step,process.endjob_step,process.out_step)
 
+# Jim B changes
+
+
+process.source.inputCommands = cms.untracked.vstring(
+    "drop *",
+    "keep *_*_*_HLT",
+    "drop *_MEtoEDMConverter_*_*",
+    "drop L1GlobalTriggerObjectMapRecord_hltL1GtObjectMap__HLT"
+    )
 
