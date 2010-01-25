@@ -7,10 +7,10 @@
 from test.stoppedHSCPTree import *
 
 # change Global Tag
-#process.GlobalTag.globaltag = "STARTUP3X_V8I::All" # MC
-process.GlobalTag.globaltag = "GR09_R_V5::All"  # collisions reprocessing
-#process.GlobalTag.globaltag = "GR09_31X_V5P::All"  # CRAFT 09
-#process.GlobalTag.globaltag = "CRAFT08_R_V1::All"  # CRAFT 08
+process.GlobalTag.globaltag = "STARTUP3X_V8I::All" # MC
+
+# things missing from RECO
+process.load('Configuration/StandardSequences/RawToDigi_cff')
 
 # input files
 readFiles.extend( [
