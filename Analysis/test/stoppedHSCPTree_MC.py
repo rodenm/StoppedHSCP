@@ -1,19 +1,25 @@
 #
 #  produce stopped HSCP TTree
 #  assumes RAW, HLT, RECO data present
-#  Run this on StoppedHSCP Skim
+#  Run this on Stopped HSCP MC samples
 #
 
-from test.stoppedHSCPTree import *
+import FWCore.ParameterSet.Config as cms
+
+from StoppedHSCP.Analysis.stoppedHSCPTree_cfg import *
 
 # change Global Tag
 process.GlobalTag.globaltag = "STARTUP3X_V8I::All" # MC
 
-# things missing from RECO
-process.load('Configuration/StandardSequences/RawToDigi_cff')
+# change RawToDigi RAW data label
+process.gctDigis.inputLabel = 'rawDataCollector'
+process.gtDigis.DaqGtInputTag = 'rawDataCollector'
+process.hcalDigis.InputLabel = 'rawDataCollector'
+
+process.path.remove(process.hltHighLevel)
 
 # input files
 readFiles.extend( [
-    'file:/storage/phjjb/StoppedHSCP_MC_336/gluino_336_300_100.root'
+    'file:/storage/phjjb/StoppedHSCP_MC_312/stoppedGluino_300_100.1K.root'
     ] )
 
