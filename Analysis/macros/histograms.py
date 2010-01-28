@@ -1,8 +1,17 @@
 
 # utility methods for making histograms from TTrees
 
-def histogram1D(name, treecommand, title, nbins, xlo, xhi) :
-    h = TH1D(name, title, nbins, xlo, xhi)
-    tree.Draw(treecommand)
-    h.Write()
+from ROOT import *
 
+def histogram1D(tree, name, treecommand, cuts, title, nbins, xlo, xhi) :
+    h = TH1D(name, title, nbins, xlo, xhi)
+    tree.Draw(treecommand, cuts)
+    h.Write()
+    return h
+
+
+def histogram2D(tree, name, treecommand, cuts, title, nbins, xlo, xhi, ylo, yhi) :
+    h = TH2D(name, title, nbins, xlo, xhi, ylo, yhi)
+    tree.Draw(treecommand, cuts)
+    h.Write()
+    return h

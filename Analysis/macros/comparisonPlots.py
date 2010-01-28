@@ -57,7 +57,7 @@ compPlot("hnmu", fdata, fcraft, fmc, canvas, True, True, "", "N_{#mu}", "")
 compPlot("heffjete", fdata, fcraft, fmc, canvas, True, True, "", "E (GeV)", "")
 compPlot("heffjetn60", fdata, fcraft, fmc, canvas, True, True, "", "n60", "")
 compPlot("heffjetn90", fdata, fcraft, fmc, canvas, True, True, "", "n90", "")
-compPlot("heffnmu", fdata, fcraft, fmc, canvas, True, True, "", "N_{#mu}", "")
+compPlot("heffnmu", fdata, fcraft, fmc, canvas, True, False, "", "N_{#mu}", "")
 
 
 compPlot("hr1", fdata, fcraft, fmc, canvas, True, True, "", "R1", "")

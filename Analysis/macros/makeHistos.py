@@ -13,39 +13,39 @@ def makeHistos(tree, filename, cuts) :
     nEvents = tree.GetEntries()
 
     # event time
-    histogram1D("hbx", "bx>>hbx", "", "BX number (new)", 3564, 0., 3564.)
-    histogram1D("horb", "orbit>>horb", "", "Orbit number (new)", 100, 0., 10000.)    
-    histogram1D("hlb", "lb>>hlb", "", "Lumi block (new)", 100, 0., 1000.)  
+    histogram1D(tree, "hbx", "bx>>hbx", "", "BX number (new)", 3564, 0., 3564.)
+    histogram1D(tree, "horb", "orbit>>horb", "", "Orbit number (new)", 100, 0., 10000.)    
+    histogram1D(tree, "hlb", "lb>>hlb", "", "Lumi block (new)", 100, 0., 1000.)  
 
     # trigger
-    histogram1D("hl1et", "l1Jets[0].et>>hl1et", "", "Leading L1 jet E_{t} (new)", 100, 0., 200.)  
-    histogram1D("hl1eta", "l1Jets[0].eta>>hl1eta", "", "Leading L1 jet #eta (new)", 70, -3.5, 3.5)  
-    histogram1D("hl1phi", "l1Jets[0].phi>>hl1phi", "", "Leading L1 jet #phi (new)", 60, TMath.Pi()*-1., TMath.Pi())  
-    histogram1D("hhlte", "hltJets[0].e>>hhlte", "", "Leading HLT jet energy (new)", 100, 0., 200.)      
-    histogram1D("hhlteta", "hltJets[0].eta>>hhlteta", "", "Leading HLT jet #eta (new)", 70, -3.5, 3.5)  
-    histogram1D("hhltphi", "hltJets[0].phi>>hhltphi", "", "Leading HLT jet #phi (new)", 60, -1 * pi, pi)
+    histogram1D(tree, "hl1et", "l1Jets[0].et>>hl1et", "", "Leading L1 jet E_{t} (new)", 100, 0., 200.)  
+    histogram1D(tree, "hl1eta", "l1Jets[0].eta>>hl1eta", "", "Leading L1 jet #eta (new)", 70, -3.5, 3.5)  
+    histogram1D(tree, "hl1phi", "l1Jets[0].phi>>hl1phi", "", "Leading L1 jet #phi (new)", 60, TMath.Pi()*-1., TMath.Pi())  
+    histogram1D(tree, "hhlte", "hltJets[0].e>>hhlte", "", "Leading HLT jet energy (new)", 100, 0., 200.)      
+    histogram1D(tree, "hhlteta", "hltJets[0].eta>>hhlteta", "", "Leading HLT jet #eta (new)", 70, -3.5, 3.5)  
+    histogram1D(tree, "hhltphi", "hltJets[0].phi>>hhltphi", "", "Leading HLT jet #phi (new)", 60, -1 * pi, pi)
 
     # global quantities
-    histogram1D("hntowsamephi", "nTowerSameiPhi>>hntowsamephi", "", "N leading towers at same iphi (new)", 20, -0.5, 19.5)
+    histogram1D(tree, "hntowsamephi", "nTowerSameiPhi>>hntowsamephi", "", "N leading towers at same iphi (new)", 20, -0.5, 19.5)
 
     # jets
-    histogram1D("hjete", "LeadingCenJetEnergy>>hjete", "", "Leading jet energy", 100, 0., 1000.)
-    histogram1D("hjete2", "LeadingCenJetEnergy>>hjete2", "", "Leading jet energy (zoom)", 100, 0., 200.)
-    histogram1D("hjeteta", "LeadingCenJetEta>>hjeteta", "", "Leading jet #eta", 70, -3.5, 3.5)
-    histogram1D("hjetphi", "LeadingCenJetPhi>>hjetphi", "", "Leading jet #phi", 60, -1 * pi, pi)
-    histogram1D("hjetem", "LeadingCenJetEmInEB>>hjetem", "", "Leading jet ECAL energy", 100, 0., 200.)
-    histogram1D("hjethad", "LeadingCenJetHadInHB>>hjethad", "", "Leading jet HCAL energy", 100, 0., 200.)
-    histogram1D("hjetn60", "LeadingCenJetn60>>hjetn60", "", "Leading jet N60", 50, 0., 50.)
-    histogram1D("hjetn90", "LeadingCenJetn90>>hjetn90", "", "Leading jet N90", 50, 0., 50.)
+    histogram1D(tree, "hjete", "LeadingCenJetEnergy>>hjete", "", "Leading jet energy", 100, 0., 1000.)
+    histogram1D(tree, "hjete2", "LeadingCenJetEnergy>>hjete2", "", "Leading jet energy (zoom)", 100, 0., 200.)
+    histogram1D(tree, "hjeteta", "LeadingCenJetEta>>hjeteta", "", "Leading jet #eta", 70, -3.5, 3.5)
+    histogram1D(tree, "hjetphi", "LeadingCenJetPhi>>hjetphi", "", "Leading jet #phi", 60, -1 * pi, pi)
+    histogram1D(tree, "hjetem", "LeadingCenJetEmInEB>>hjetem", "", "Leading jet ECAL energy", 100, 0., 200.)
+    histogram1D(tree, "hjethad", "LeadingCenJetHadInHB>>hjethad", "", "Leading jet HCAL energy", 100, 0., 200.)
+    histogram1D(tree, "hjetn60", "LeadingCenJetn60>>hjetn60", "", "Leading jet N60", 50, 0., 50.)
+    histogram1D(tree, "hjetn90", "LeadingCenJetn90>>hjetn90", "", "Leading jet N90", 50, 0., 50.)
     
     # muons
-    histogram1D("hnmu", "NoOfMuons>>hnmu", "", "N muons", 4, -0.5, 3.5)
+    histogram1D(tree, "hnmu", "NoOfMuons>>hnmu", "", "N muons", 4, -0.5, 3.5)
 
     # timing distributions (before any cuts)
-    histogram1D("hr1", "TimingRightPeak>>hr1", "", "R_{1}", 50, 0., 1.)
-    histogram1D("hr2", "TimingFracRightNextRight>>hr2", "", "R_{2}", 50, 0., 1.)
-    histogram1D("hpk", "TimingFracInLeader>>hpk", "", "R_{peak}", 50, 0., 1.)
-    histogram1D("hout", "(1-TimingFracInCentralFour)>>hout", "", "R_{outer}", 30, 0., 1.)
+    histogram1D(tree, "hr1", "TimingRightPeak>>hr1", "", "R_{1}", 50, 0., 1.)
+    histogram1D(tree, "hr2", "TimingFracRightNextRight>>hr2", "", "R_{2}", 50, 0., 1.)
+    histogram1D(tree, "hpk", "TimingFracInLeader>>hpk", "", "R_{peak}", 50, 0., 1.)
+    histogram1D(tree, "hout", "(1-TimingFracInCentralFour)>>hout", "", "R_{outer}", 30, 0., 1.)
     
     # 2D timing histograms
     hr1r2 = TH2D("hr1r2", "R_{1} vs R_{2}", 50, 0., 1., 50, 0., 1.)
@@ -64,17 +64,17 @@ def makeHistos(tree, filename, cuts) :
 
 
     # N-1 efficiencies
-    histogram1D("heffjete", "LeadingCenJetEnergy>>heffjete", cuts.nMinusOneJetE, "Leading jet energy (N-1)", 100, 0., 200.)    
-    histogram1D("heffjetn60", "LeadingCenJetn60>>heffjetn60", cuts.nMinusOneN60, "Leading jet n60 (N-1)", 25, 0., 25.)
-    histogram1D("heffjetn90", "LeadingCenJetn90>>heffjetn90", cuts.nMinusOneN90, "Leading jet n90 (N-1)", 15, 0., 15.)
-    histogram1D("heffnmu", "NoOfMuons>>heffnmu", cuts.nMinusOneNMu, "N muons (N-1)", 6, 0., 6.)
+    histogram1D(tree, "heffjete", "LeadingCenJetEnergy>>heffjete", cuts.nMinusOneJetE, "Leading jet energy (N-1)", 100, 0., 200.)    
+    histogram1D(tree, "heffjetn60", "LeadingCenJetn60>>heffjetn60", cuts.nMinusOneN60, "Leading jet n60 (N-1)", 25, 0., 25.)
+    histogram1D(tree, "heffjetn90", "LeadingCenJetn90>>heffjetn90", cuts.nMinusOneN90, "Leading jet n90 (N-1)", 15, 0., 15.)
+    histogram1D(tree, "heffnmu", "NoOfMuons>>heffnmu", cuts.nMinusOneNMu, "N muons (N-1)", 6, 0., 6.)
     
     #  plots after jet+mu cuts
-    histogram1D("hjete_jetmu", "LeadingCenJetEnergy>>hjete_jetmu", cuts.jetMu, "Leading jet energy after jet+#mu cuts", 100, 0., 200.)
-    histogram1D("hr1_jetmu", "TimingRightPeak>>hr1_jetmu", cuts.jetMu, "R_{1} after jet+#mu cuts", 50, 0., 1.)  
-    histogram1D("hr2_jetmu", "TimingFracRightNextRight>>hr2_jetmu", cuts.jetMu, "R_{2} after jet+#mu cuts", 50, 0., 1.)
-    histogram1D("hpk_jetmu", "TimingFracInLeader>>hpk_jetmu", cuts.jetMu, "R_{peak} after jet+#mu cuts", 50, 0., 1.)
-    histogram1D("hout_jetmu", "(1-TimingFracInCentralFour)>>hout_jetmu", cuts.jetMu, "R_{outer} after jet+#mu cuts", 30, 0., 1.)
+    histogram1D(tree, "hjete_jetmu", "LeadingCenJetEnergy>>hjete_jetmu", cuts.jetMu, "Leading jet energy after jet+#mu cuts", 100, 0., 200.)
+    histogram1D(tree, "hr1_jetmu", "TimingRightPeak>>hr1_jetmu", cuts.jetMu, "R_{1} after jet+#mu cuts", 50, 0., 1.)  
+    histogram1D(tree, "hr2_jetmu", "TimingFracRightNextRight>>hr2_jetmu", cuts.jetMu, "R_{2} after jet+#mu cuts", 50, 0., 1.)
+    histogram1D(tree, "hpk_jetmu", "TimingFracInLeader>>hpk_jetmu", cuts.jetMu, "R_{peak} after jet+#mu cuts", 50, 0., 1.)
+    histogram1D(tree, "hout_jetmu", "(1-TimingFracInCentralFour)>>hout_jetmu", cuts.jetMu, "R_{outer} after jet+#mu cuts", 30, 0., 1.)
 
     # 2D timing plots after jet+mu cuts
     hr1r2_jetmu = TH2D("hr1r2_jetmu", "R_{1} vs R_{2} after jet+#mu cuts", 50, 0., 1., 50, 0., 1.)
@@ -92,9 +92,12 @@ def makeHistos(tree, filename, cuts) :
     hpkout_jetmu.Write()
 
     # distributions after all cuts
-    histogram1D("hjete_allcuts", "LeadingCenJetEnergy>>hjete_allcuts", cuts.all, "Leading jet energy after all cuts", 100, 0., 200.)
+    histogram1D(tree, "hjete_allcuts", "LeadingCenJetEnergy>>hjete_allcuts", cuts.all, "Leading jet energy after all cuts", 100, 0., 200.)
 
-    
+    histogram1D(tree, "hbx_allcuts", "bx>>hbx", cuts.all, "BX after all cuts", 3564, 0., 3564.)
+    histogram1D(tree, "horb_allcuts", "orbit>>horb", cuts.all, "Orbit after all cuts", 100, 0., 10000.)    
+    histogram1D(tree, "hlb_allcuts", "lb>>hlb", cuts.all, "Lumi block after all cuts", 100, 0., 1000.)  
+
 
 
     hfile.Close()

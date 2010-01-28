@@ -15,73 +15,9 @@ def makePlots(rootfile, psfile) :
 
     canvas = TCanvas("canvas")
 
-    # jet variables
-    histPlot("hjete2", file, canvas, False, True, "", "E (GeV)", "")
-    histPlot("hjeteta", file, canvas, False, True, "", "#eta", "")
-    histPlot("hjetphi", file, canvas, False, True, "", "#phi", "")
-    histPlot("hjetem", file, canvas, False, True, "", "E_{ECAL}", "")
-    histPlot("hjethad", file, canvas, False, True, "", "E_{HCAL}", "")
-    histPlot("hjetn60", file, canvas, False, True, "", "n60", "")
-    histPlot("hjetn90", file, canvas, False, True, "", "n90", "")
-
-    # muon variables
-    histPlot("hnmu", file, canvas, False, True, "", "N_{#mu}", "")
-
-    # N-1 efficiencies
-    histPlot("heffjete", file, canvas, False, True, "", "E (GeV)", "")
-    histPlot("heffjetn60", file, canvas, False, True, "", "n60", "")
-    histPlot("heffjetn90", file, canvas, False, True, "", "n90", "")
-    histPlot("heffnmu", file, canvas, False, True, "", "N_{#mu}", "")
-
-    # pulse shape variables
-    histPlot("hr1", file, canvas, False, False, "", "R1", "")
-    histPlot("hr2", file, canvas, False, False, "", "R2", "")
-    histPlot("hpk", file, canvas, False, False, "", "R_{peak}", "")
-    histPlot("hout", file, canvas, False, False, "", "R_{outer}", "")
-
-
-    # 2D timing plots
-    canvas.SetLogy(0)
-    
-    hr1r2 = file.Get("hr1r2")
-    hr1r2.SetXTitle("R_{2}")
-    hr1r2.SetYTitle("R_{1}")
-    hr1r2.SetStats(False)
-    hr1r2.Draw("CONT")
-    canvas.Update()
-
-    hpkout = file.Get("hpkout")
-    hpkout.SetXTitle("R_{out}")
-    hpkout.SetYTitle("R_{peak}")
-    hpkout.SetStats(False)
-    hpkout.Draw("CONT")
-    canvas.Update()
-
-    # plots after jet + mu cuts
-    histPlot("hr1_jetmu", file, canvas, False, False, "", "R1", "")
-    histPlot("hr2_jetmu", file, canvas, False, False, "", "R2", "")
-    histPlot("hpk_jetmu", file, canvas, False, False, "", "R_{peak}", "")
-    histPlot("hout_jetmu", file, canvas, False, False, "", "R_{outer}", "")
-
-    # 2D timing plots
-    canvas.SetLogy(0)
-    
-    hr1r2_jetmu = file.Get("hr1r2_jetmu")
-    hr1r2_jetmu.SetXTitle("R_{2}")
-    hr1r2_jetmu.SetYTitle("R_{1}")
-    hr1r2_jetmu.SetStats(False)
-    hr1r2_jetmu.Draw("CONT")
-    canvas.Update()
-
-    hpkout_jetmu = file.Get("hpkout_jetmu")
-    hpkout_jetmu.SetXTitle("R_{out}")
-    hpkout_jetmu.SetYTitle("R_{peak}")
-    hpkout_jetmu.SetStats(False)
-    hpkout_jetmu.Draw("CONT")
-    canvas.Update()
-
-    # plots after all cuts
-    histPlot("hjete_allcuts", file, canvas, False, True, "", "E (GeV)", "")
+    # reminder of method arguments
+    # histPlot(hist, file, canvas, norm=False, log=False, title="histogram", xtitle="", ytitle="", opt="HIST")
+    # hist2DPlot(hist, file, canvas, norm=False, log=False, title="histogram", xtitle="", ytitle="", ztitle="", opt="")
 
     # event time
     histPlot("hbx", file, canvas, False, True, "", "BX", "")
@@ -100,6 +36,52 @@ def makePlots(rootfile, psfile) :
 
     # misc
     histPlot("hntowsamephi", file, canvas, False, True, "", "N_{towers}", "")
+
+    # jet variables
+    histPlot("hjete2", file, canvas, False, True, "", "E (GeV)", "")
+    histPlot("hjeteta", file, canvas, False, True, "", "#eta", "")
+    histPlot("hjetphi", file, canvas, False, True, "", "#phi", "")
+    histPlot("hjetem", file, canvas, False, True, "", "E_{ECAL}", "")
+    histPlot("hjethad", file, canvas, False, True, "", "E_{HCAL}", "")
+    histPlot("hjetn60", file, canvas, False, True, "", "n60", "")
+    histPlot("hjetn90", file, canvas, False, True, "", "n90", "")
+
+    # muon variables
+    histPlot("hnmu", file, canvas, False, False, "", "N_{#mu}", "")
+
+    # N-1 efficiencies
+    histPlot("heffjete", file, canvas, False, True, "", "E (GeV)", "")
+    histPlot("heffjetn60", file, canvas, False, True, "", "n60", "")
+    histPlot("heffjetn90", file, canvas, False, True, "", "n90", "")
+    histPlot("heffnmu", file, canvas, False, True, "", "N_{#mu}", "")
+
+    # pulse shape variables
+    histPlot("hr1", file, canvas, False, False, "", "R1", "")
+    histPlot("hr2", file, canvas, False, False, "", "R2", "")
+    histPlot("hpk", file, canvas, False, False, "", "R_{peak}", "")
+    histPlot("hout", file, canvas, False, False, "", "R_{outer}", "")
+
+    # 2D timing plots
+    hist2DPlot("hr1r2", file, canvas, False, True, "", "R_{2}", "R_{1}", "", "CONT")
+    hist2DPlot("hpkout", file, canvas, False, True, "", "R_{out}", "R_{peak}", "", "CONT")
+
+    # plots after jet + mu cuts
+    histPlot("hr1_jetmu", file, canvas, False, False, "", "R1", "")
+    histPlot("hr2_jetmu", file, canvas, False, False, "", "R2", "")
+    histPlot("hpk_jetmu", file, canvas, False, False, "", "R_{peak}", "")
+    histPlot("hout_jetmu", file, canvas, False, False, "", "R_{outer}", "")
+
+    # 2D timing plots
+    hist2DPlot("hr1r2_jetmu", file, canvas, False, False, "", "R_{2}", "R_{1}", "", "CONT")
+    hist2DPlot("hpkout_jetmu", file, canvas, False, False, "", "R_{out}", "R_{peak}", "", "CONT")
+
+    # plots after all cuts
+    histPlot("hjete_allcuts", file, canvas, False, True, "", "E (GeV)", "")
+    histPlot("hbx_allcuts", file, canvas, False, True, "", "BX", "")
+    histPlot("horb_allcuts", file, canvas, False, True, "", "orbit", "")
+    histPlot("hlb_allcuts", file, canvas, False, True, "", "Lumi block", "")
+
+
 
 
     # close file

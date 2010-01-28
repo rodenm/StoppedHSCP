@@ -3,6 +3,65 @@
 
 from ROOT import *
 
+
+# just plot one quantity
+def histPlot(hist, file, canvas, norm=False, log=False, title="histogram", xtitle="", ytitle="", opt="HIST") :
+    h = file.Get(hist)
+
+    if (norm) :
+        h.Scale(1./h.Integral())
+
+    if (log) :
+        canvas.SetLogy(1)
+    else :
+        canvas.SetLogy(0)
+
+    h.SetLineColor(1)
+    h.SetFillColor(2)
+
+    if (not (title == "")) :
+        h.SetTitle(title)
+    if (not (ytitle == "")) :
+        h.SetYTitle(ytitle)
+    if (not (xtitle == "")) :
+        h.SetXTitle(xtitle)
+
+    h.Draw(opt)
+
+    canvas.Update()
+
+
+
+# make a 2D plot
+def hist2DPlot(hist, file, canvas, norm=False, log=False, title="histogram", xtitle="", ytitle="", ztitle="", opt="") :
+    h = file.Get(hist)
+
+    if (norm) :
+        h.Scale(1./h.Integral())
+
+    if (log) :
+        canvas.SetLogz()
+    else :
+        canvas.SetLogz(0)
+
+    if (not (title == "")) :
+        h.SetTitle(title)
+    if (not (ytitle == "")) :
+        h.SetYTitle(ytitle)
+    if (not (xtitle == "")) :
+        h.SetXTitle(xtitle)
+    if (not (ztitle == "")) :
+        h.SetZTitle(ztitle)
+
+    # options
+    canvas.SetLogy(0)
+    h.SetStats(False)
+
+    h.Draw(opt)
+
+    canvas.Update()
+
+
 # superimpose 3 plots
 def compPlot(hist, fdata, fcraft, fmc, canvas, norm=False, log=False, title="histogram", xtitle="", ytitle="") :
     hdata = fdata.Get(hist)
@@ -15,7 +74,9 @@ def compPlot(hist, fdata, fcraft, fmc, canvas, norm=False, log=False, title="his
         hmc.Scale(1./hmc.Integral())
 
     if (log) :
-        canvas.SetLogy()
+        canvas.SetLogy(1)
+    else :
+        canvas.SetLogy(0)
 
     hdata.SetLineColor(1)
     hcraft.SetLineColor(2)
@@ -41,30 +102,5 @@ def compPlot(hist, fdata, fcraft, fmc, canvas, norm=False, log=False, title="his
     hdata.Draw("HIST")
     hcraft.Draw("SAME")
     hmc.Draw("SAME")
-
-    canvas.Update()
-
-
-# just plot one quantity
-def histPlot(hist, file, canvas, norm=False, log=False, title="histogram", xtitle="", ytitle="") :
-    h = file.Get(hist)
-
-    if (norm) :
-        h.Scale(1./h.Integral())
-
-    if (log) :
-        canvas.SetLogy()
-
-    h.SetLineColor(1)
-    h.SetFillColor(2)
-
-    if (not (title == "")) :
-        h.SetTitle(title)
-    if (not (ytitle == "")) :
-        h.SetYTitle(ytitle)
-    if (not (xtitle == "")) :
-        h.SetXTitle(xtitle)
-
-    h.Draw("HIST")
 
     canvas.Update()
