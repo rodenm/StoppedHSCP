@@ -61,7 +61,6 @@ process.maxEvents = cms.untracked.PSet(  input = cms.untracked.int32(100))
 process.source = cms.Source("PoolSource",
 #    skipEvents = cms.untracked.uint32(523),
     fileNames = cms.untracked.vstring(
-#    '/store/data/CRAFT09/RPCMonitor/RAW/v1/000/111/039/88123E7F-BF8A-DE11-990E-000423D98800.root'
-'/store/data/BeamCommissioning09/Calo/RAW/v1/000/121/620/F0E42AD6-CED4-DE11-8C24-000423D985E4.root'
+     'rfio:/castor/cern.ch/user/j/jbrooke/hscp/test/Calo_CRAFT09-GR09_31X_V5P_StoppedHSCP-332_v4_RAW-RECO_111039_test.root'
     )
 )

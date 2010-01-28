@@ -38,23 +38,23 @@ events_per_job = 100000
 
 ### The output files (comma separated list)
 get_edm_output = 1
-	
+
 [USER]
 
-ui_working_dir = StoppedHSCP_CRAFT09_rerunHLT_v2
+ui_working_dir = StoppedHSCP_CRAFT09_rerunHLT_v3
 
 ### OUTPUT files Management
 ##  output back into UI 
 return_data = 0
 
 ### OUTPUT files INTO A SE
-copy_data = 1
-storage_element          = T2_UK_SGrid_Bristol
-#user_remote_dir          = StoppedHSCP_CRAFT09_rerunHLT_v2
+copy_data         = 1
+storage_element   = T2_UK_SGrid_Bristol
+#user_remote_dir  = StoppedHSCP_CRAFT09_rerunHLT_v3
 
 # DBS publication
 publish_data = 1
-publish_data_name = StoppedHSCP_CRAFT09_rerunHLT_v2
+publish_data_name = StoppedHSCP_CRAFT09_rerunHLT_v3
 dbs_url_for_publication = https://cmsdbsprod.cern.ch:8443/cms_dbs_ph_analysis_02_writer/servlet/DBSServlet
 
 
@@ -75,7 +75,7 @@ proxy_server = myproxy.cern.ch
 
 ## By ComputingElement 
 #ce_black_list = 
-#ce_white_list = heplnx206.pp.rl.ac.uk,heplnx207.pp.rl.ac.uk 
+ce_white_list = heplnx206.pp.rl.ac.uk,heplnx207.pp.rl.ac.uk 
 
 [CONDORG]
 
