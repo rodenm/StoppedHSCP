@@ -3,8 +3,9 @@
 #  assumes RAW, HLT, RECO data present
 #  Run this on StoppedHSCP Skim
 #
+import FWCore.ParameterSet.Config as cms
 
-from test.stoppedHSCPTree import *
+from StoppedHSCP.Analysis.stoppedHSCPTree_cfg import *
 
 # change Global Tag
 #process.GlobalTag.globaltag = "STARTUP3X_V8I::All" # MC
@@ -14,6 +15,7 @@ process.GlobalTag.globaltag = "GR09_R_V5::All"  # collisions reprocessing
 
 # input files
 readFiles.extend( [
-    'file:/storage/phjjb/StoppedHSCP_MC_336/gluino_336_300_100.root'
+    'rfio:/castor/cern.ch/user/j/jbrooke/hscp/test/Calo_CRAFT09-GR09_31X_V5P_StoppedHSCP-332_v4_RAW-RECO_111039_test.root'
     ] )
+
 
