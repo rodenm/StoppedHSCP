@@ -6,6 +6,7 @@
 
 import sys
 import os
+import subprocess
 import tarfile
 
 from ROOT import *
@@ -49,14 +50,19 @@ tree.AddFriend(oldtree)
 # run analysis
 cuts = CutsOld()
 
-makeHistos(tree, odir+"/BasicHistos.root", cuts)
+# make histograms
+makeHistos(tree, odir+"/"+dir+"_BasicHistos.root", cuts)
 
+# make plots (with normalisation if chosen)
 if (time==0):
     scale=1
 else:
     scale=1./time
 
-makePlots(odir+"/BasicHistos.root", odir+"/BasicPlots.ps")
+makePlots(odir+"/"+dir+"_BasicHistos.root", odir+"/"+dir+"_BasicPlots.ps", scale)
+
+# convert to PDF
+subprocess.call(["ps2pdf", odir+"/"+dir+"_BasicPlots.ps", odir+"/"+dir+"_BasicPlots.pdf"])
 
 
 tar = tarfile.open(name = odir+".tgz", mode = 'w:gz')

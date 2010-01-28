@@ -8,7 +8,7 @@ from plots import *
 from math import pi
 
 # plot all quantities
-def makePlots(rootfile, psfile) :
+def makePlots(rootfile, psfile, scale) :
     
     file = TFile(rootfile, "read")
     ps = TPostScript(psfile)

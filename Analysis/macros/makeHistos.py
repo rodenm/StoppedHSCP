@@ -29,23 +29,23 @@ def makeHistos(tree, filename, cuts) :
     histogram1D(tree, "hntowsamephi", "nTowerSameiPhi>>hntowsamephi", "", "N leading towers at same iphi (new)", 20, -0.5, 19.5)
 
     # jets
-    histogram1D(tree, "hjete", "LeadingCenJetEnergy>>hjete", "", "Leading jet energy", 100, 0., 1000.)
-    histogram1D(tree, "hjete2", "LeadingCenJetEnergy>>hjete2", "", "Leading jet energy (zoom)", 100, 0., 200.)
-    histogram1D(tree, "hjeteta", "LeadingCenJetEta>>hjeteta", "", "Leading jet #eta", 70, -3.5, 3.5)
-    histogram1D(tree, "hjetphi", "LeadingCenJetPhi>>hjetphi", "", "Leading jet #phi", 60, -1 * pi, pi)
-    histogram1D(tree, "hjetem", "LeadingCenJetEmInEB>>hjetem", "", "Leading jet ECAL energy", 100, 0., 200.)
-    histogram1D(tree, "hjethad", "LeadingCenJetHadInHB>>hjethad", "", "Leading jet HCAL energy", 100, 0., 200.)
-    histogram1D(tree, "hjetn60", "LeadingCenJetn60>>hjetn60", "", "Leading jet N60", 50, 0., 50.)
-    histogram1D(tree, "hjetn90", "LeadingCenJetn90>>hjetn90", "", "Leading jet N90", 50, 0., 50.)
+    histogram1D(tree, "hjete", "LeadingCenJetEnergy>>hjete", cuts.init, "Leading jet energy", 100, 0., 1000.)
+    histogram1D(tree, "hjete2", "LeadingCenJetEnergy>>hjete2", cuts.init, "Leading jet energy (zoom)", 100, 0., 200.)
+    histogram1D(tree, "hjeteta", "LeadingCenJetEta>>hjeteta", cuts.init, "Leading jet #eta", 70, -3.5, 3.5)
+    histogram1D(tree, "hjetphi", "LeadingCenJetPhi>>hjetphi", cuts.init, "Leading jet #phi", 60, -1 * pi, pi)
+    histogram1D(tree, "hjetem", "LeadingCenJetEmInEB>>hjetem", cuts.init, "Leading jet ECAL energy", 100, 0., 200.)
+    histogram1D(tree, "hjethad", "LeadingCenJetHadInHB>>hjethad", cuts.init, "Leading jet HCAL energy", 100, 0., 200.)
+    histogram1D(tree, "hjetn60", "LeadingCenJetn60>>hjetn60", cuts.init, "Leading jet N60", 50, 0., 50.)
+    histogram1D(tree, "hjetn90", "LeadingCenJetn90>>hjetn90", cuts.init, "Leading jet N90", 50, 0., 50.)
     
     # muons
-    histogram1D(tree, "hnmu", "NoOfMuons>>hnmu", "", "N muons", 4, -0.5, 3.5)
+    histogram1D(tree, "hnmu", "NoOfMuons>>hnmu", cuts.init, "N muons", 4, -0.5, 3.5)
 
     # timing distributions (before any cuts)
-    histogram1D(tree, "hr1", "TimingRightPeak>>hr1", "", "R_{1}", 50, 0., 1.)
-    histogram1D(tree, "hr2", "TimingFracRightNextRight>>hr2", "", "R_{2}", 50, 0., 1.)
-    histogram1D(tree, "hpk", "TimingFracInLeader>>hpk", "", "R_{peak}", 50, 0., 1.)
-    histogram1D(tree, "hout", "(1-TimingFracInCentralFour)>>hout", "", "R_{outer}", 30, 0., 1.)
+    histogram1D(tree, "hr1", "TimingRightPeak>>hr1", cuts.init, "R_{1}", 50, 0., 1.)
+    histogram1D(tree, "hr2", "TimingFracRightNextRight>>hr2", cuts.init, "R_{2}", 50, 0., 1.)
+    histogram1D(tree, "hpk", "TimingFracInLeader>>hpk", cuts.init, "R_{peak}", 50, 0., 1.)
+    histogram1D(tree, "hout", "(1-TimingFracInCentralFour)>>hout", cuts.init, "R_{outer}", 30, 0., 1.)
     
     # 2D timing histograms
     hr1r2 = TH2D("hr1r2", "R_{1} vs R_{2}", 50, 0., 1., 50, 0., 1.)
