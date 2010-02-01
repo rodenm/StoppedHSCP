@@ -23,7 +23,7 @@ inline void importLumi (const std::vector<std::string>& inFileNames,
   gSystem->Load("libFWCoreFWLite.so");
   AutoLibraryLoader::enable();
 
-  TChain inChain ("LumiTree");
+  TChain inChain ("HLXData");
   for (size_t i = 0; i < inFileNames.size (); ++i) {
     inChain.AddFile (inFileNames[i].c_str());
   std::cout << "Input file-> " << inFileNames[i] << std::endl;
