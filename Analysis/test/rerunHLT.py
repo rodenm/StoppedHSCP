@@ -19,6 +19,8 @@ process.GlobalTag.globaltag = "GR09_P_V1::All"
 process.load('Configuration/StandardSequences/Services_cff')
 process.load('FWCore/MessageService/MessageLogger_cfi')
 #process.MessageLogger.cerr.INFO.limit = cms.untracked.int32(10)
+process.MessageLogger.cerr.threshold = ''
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 # re-run HLT
 process.load('HLTrigger.Configuration.HLT_8E29_cff')
