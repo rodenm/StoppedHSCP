@@ -17,7 +17,8 @@
 
 RHDecay::RHDecay(const edm::ParameterSet & p) 
   : BaseEvtVtxGenerator(p),
-    mFileName (p.getParameter<edm::FileInPath>( "stoppedData").fullPath()),
+    //    mFileName (p.getParameter<edm::FileInPath>( "stoppedData").fullPath()),
+    mFileName (p.getParameter<std::string>( "stoppedData")),
     mTimeMin (p.getParameter<double>( "timeOffsetMin") * ns * c_light),
     mTimeMax (p.getParameter<double>( "timeOffsetMax") * ns * c_light),
     mRandom (new CLHEP::RandFlat(getEngine())),

@@ -1,31 +1,70 @@
 import sys
+import StoppedHSCP.Simulation.Helper as hscp
 
-hadronId = 1092224
+doc = """
+    rdecay_GEN_SIM_DIGI_L1_DIGI2RAW_HLT.py
 
-if len(sys.argv) < 6:
+    - Decays R-hadron in given locations, then runs SIM+DIGI+DIGI2RAW+HLT steps
+
+    required parameters:
+    nevents          :       # of events to generate
+    gluinoMass       :       gluino mass
+    neutralinoMass   :       neutralino mass
+    outputFile       :       output events file
+
+    optional parameters:
+    stoppedPoints    :       file to store stopping points
+    globalTag        :       global tag to be used
+    rhadronId        :       PDG code of decaying R-hadron
+    randomize        :       randomize seeds, set run to given value
+    """
+
+nEvents = None
+iGluinoMass = None
+iNeutralinoMass = None
+outputFile = None
+
+globalTag = 'STARTUP3X_V8M::All'
+rhadronId = 1092224
+stopPointsFile = None
+randomize = None
+
+for (opt, value) in hscp.parseParams ():
+    if opt == "gluinoMass": iGluinoMass = int (value)
+    if opt == "neutralinoMass": iNeutralinoMass = int (value)
+    if opt == "outputFile": outputFile = value
+    if opt == "nevents": nEvents = int (value)
+    if opt == "stoppedPoints": stopPointsFile = value
+    if opt == "globalTag": globalTag = value   
+    if opt == "rhadronId": rhadronId = int(value)   
+    if opt == "randomize": randomize = int (value)
+
+if not nEvents or not iGluinoMass or not iNeutralinoMass or not outputFile:
     print '======> Missing parameters! <======'
-    print '======> Use:', sys.argv[0], sys.argv[1], '<# events> <gluino mass> <neutralino mass> <output file> [stop points] [R-hadron decay description]'
-    sys.exit(-1)
-nEvents = int (sys.argv[2])
-iGluinoMass = int (sys.argv[3])
+    print doc
+    sys.exit(1)
+
+
 gluinoMass = float (iGluinoMass)
-iNeutralinoMass = int (sys.argv[4])
 neutralinoMass = float (iNeutralinoMass)
-outputFile = sys.argv[5]
-stopPointsFile = 'StoppedHSCP/Simulation/data/stopped_rhadrons_gluino%s.txt' % iGluinoMass
-decayFile = 'StoppedHSCP/Simulation/data/Rhadron_1jet_%s_%s.dat' % (iGluinoMass, iNeutralinoMass)
-if len(sys.argv) >= 7: stopPointsFile = sys.argv[6]
-if len(sys.argv) >= 8: decayFile = sys.argv[7]
+if not stopPointsFile:
+    stopPointsFile = 'StoppedHSCP/Simulation/data/stopped_rhadrons_gluino%s.txt' % iGluinoMass
+decayFile = 'Rhadron_1jet_%s_%s.dat' % (iGluinoMass, iNeutralinoMass)
+hscp.makeSingleJetRhadronDecay (decayFile, rhadronId, gluinoMass, neutralinoMass)
+firstRun = 1
+if randomize: firstRun = randomize
 
 print '**********************************************'
 print 'Generating stopped R-hadrons decays'
-print 'R-hadron:', hadronId
+print 'R-hadron:', rhadronId
 print 'Total events:', nEvents
 print 'Output file:', outputFile 
 print 'Gluino mass:', gluinoMass
 print 'Neutralinoino mass:', neutralinoMass
+print 'Global Tag:', globalTag
 print 'Stopped points:', stopPointsFile
 print 'Decay description file:', decayFile
+print 'randomize job:', randomize
 print '**********************************************'
 
 
@@ -50,7 +89,9 @@ process.load('Configuration/StandardSequences/Sim_cff')
 process.load('Configuration/StandardSequences/Digi_cff')
 process.load('Configuration/StandardSequences/SimL1Emulator_cff')
 process.load('Configuration/StandardSequences/DigiToRaw_cff')
-process.load('HLTrigger/Configuration/HLT_1E31_cff')
+#process.load('HLTrigger/Configuration/HLT_1E31_cff')
+process.load('HLTrigger/Configuration/HLT_8E29_cff')
+process.hltL1sStoppedHSCP8E29.L1SeedsLogicalExpression = cms.string( "L1_SingleJet10U" )
 process.load('Configuration/StandardSequences/EndOfProcess_cff')
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 process.load('Configuration/EventContent/EventContent_cff')
@@ -62,7 +103,13 @@ process.options = cms.untracked.PSet(
     Rethrow = cms.untracked.vstring('ProductNotFound')
 )
 # Input source
-process.source = cms.Source("EmptySource")
+process.source = cms.Source("EmptySource",
+                            firstRun = cms.untracked.uint32(firstRun)
+                            )
+
+#smear random numbers if necessary
+if randomize: hscp.randomize (process.RandomNumberGeneratorService)
+
 
 # Output definition
 process.output = cms.OutputModule("PoolOutputModule",
@@ -81,7 +128,7 @@ process.output = cms.OutputModule("PoolOutputModule",
 # Additional output definition
 
 # Other statements
-process.GlobalTag.globaltag = 'MC_31X_V5::All'
+process.GlobalTag.globaltag = globalTag
 
 
 process.generator = cms.EDProducer("Pythia6PtGun",
@@ -90,7 +137,7 @@ process.generator = cms.EDProducer("Pythia6PtGun",
                                    maxEventsToPrint = cms.untracked.int32(1),
                                    
                                    PGunParameters = cms.PSet(
-    ParticleID = cms.vint32(hadronId),
+    ParticleID = cms.vint32(rhadronId),
     AddAntiParticle = cms.bool(False),
     MinPhi = cms.double(-3.14159265359),
     MaxPhi = cms.double(3.14159265359),

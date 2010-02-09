@@ -1,24 +1,54 @@
+import getopt, sys
+import StoppedHSCP.Simulation.Helper as hscp
 
-import sys
+doc = """
+    rhadron_stage1.py
 
-if len(sys.argv) < 4:
+    - Runs stage1 R-hadrons simulation, traces R-hadron stopping points, stores stopping points
+
+    required parameters:
+    nevents          :       # of events to generate
+    gluinoMass       :       gluino mass (must be in 50, 200, 250, 300, 400, 500, 600, 900, 1200, 2000, 5000,
+                               not all masses actually work)
+
+    optional parameters:
+    stoppedPoints    :       file to store stopping points
+    globalTag        :       global tag to be used
+    randomize        :       randomize seeds, set run to given value
+    """
+
+nEvents = None
+iGluinoMass = None
+globalTag = 'STARTUP3X_V8M::All'
+stopPointsFile = None
+randomize = None
+
+for (opt, value) in hscp.parseParams ():
+    if opt == "nevents": nEvents = int (value)
+    if opt == "gluinoMass": iGluinoMass = int (value)
+    if opt == "stoppedPoints": stopPointsFile = value
+    if opt == "globalTag": globalTag = value
+    if opt == "randomize": randomize = int (value)
+
+if not nEvents or not iGluinoMass:
     print '======> Missing parameters! <======'
-    print '======> Use:', sys.argv[0], sys.argv[1], '<# events> <gluino mass> [stop points file] [R-hadrons file]'
-    sys.exit(-1)
+    print doc
+    sys.exit(1)
 
-nEvents = int (sys.argv[2])
-iGluinoMass = int (sys.argv[3])
 gluinoMass = float (iGluinoMass)
 particlesGluinoFile = 'StoppedHSCP/Simulation/data/particles_gluino_%s_GeV.txt' % iGluinoMass
-stopPointsFile = 'stopped_rhadrons_gluino%s.txt' % iGluinoMass
-if len(sys.argv) >= 5: stopPointsFile = sys.argv[4]
-if len(sys.argv) >= 6: particlesGluinoFile = sys.argv[5]
+if not stopPointsFile:
+    stopPointsFile = 'stopped_rhadrons_gluino%s.txt' % iGluinoMass
+firstRun = 1
+if randomize: firstRun = randomize
+
 print '**********************************************'
 print 'Generating R-hadrons production and passing through the detector'
 print 'Total events:', nEvents
 print 'Gluino mass:', gluinoMass
 print 'Output stopping points file:', stopPointsFile
 print 'R-hadrons listing file:', particlesGluinoFile
+print 'randomize job:', randomize
 print '**********************************************'
 
 import FWCore.ParameterSet.Config as cms
@@ -46,6 +76,7 @@ process.load('Configuration/StandardSequences/EndOfProcess_cff')
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 process.load('Configuration/EventContent/EventContent_cff')
 
+
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(nEvents)
 )
@@ -53,26 +84,16 @@ process.options = cms.untracked.PSet(
     Rethrow = cms.untracked.vstring('ProductNotFound')
 )
 # Input source
-process.source = cms.Source("EmptySource")
+process.source = cms.Source("EmptySource",
+                            firstRun = cms.untracked.uint32(firstRun)
+                            )
 
-# Output definition
-process.output = cms.OutputModule("PoolOutputModule",
-    splitLevel = cms.untracked.int32(0),
-    outputCommands = process.RAWSIMEventContent.outputCommands,
-    fileName = cms.untracked.string('%s.root' % particlesGluinoFile),
-    dataset = cms.untracked.PSet(
-        dataTier = cms.untracked.string('GEN'),
-        filterName = cms.untracked.string('')
-    ),
-    SelectEvents = cms.untracked.PSet(
-        SelectEvents = cms.vstring('generation_step')
-    )
-)
+#smear random numbers if necessary
+if randomize: hscp.randomize (process.RandomNumberGeneratorService)
 
-# Additional output definition
 
 # Other statements
-process.GlobalTag.globaltag = 'MC_31X_V5::All'
+process.GlobalTag.globaltag = globalTag
 
 process.generator = cms.EDFilter("Pythia6GeneratorFilter",
                             pythiaPylistVerbosity = cms.untracked.int32(2),
@@ -156,7 +177,7 @@ process.g4SimHits.Watchers = cms.VPSet (
     RHStopTracer = cms.PSet(
       stoppedFile = cms.untracked.string(stopPointsFile),
       verbose = cms.untracked.bool (False),
-      traceEnergy = cms.untracked.double (10000.)
+      traceEnergy = cms.untracked.double (10000.),
       traceParticle = cms.string ("~.*")
     )        
   )
@@ -185,12 +206,12 @@ process.ProductionFilterSequence = cms.Sequence(process.generator)
 # Path and EndPath definitions
 process.generation_step = cms.Path(process.pgen)
 process.simulation_step = cms.Path(process.psim)
-process.endjob_step = cms.Path(process.endOfProcess)
-process.out_step = cms.EndPath(process.output)
+#process.endjob_step = cms.Path(process.endOfProcess)
 
 # Schedule definition
 process.schedule = cms.Schedule(process.generation_step,process.simulation_step)
-process.schedule.extend([process.endjob_step,process.out_step])
+#process.schedule.extend([process.endjob_step,process.out_step])
 # special treatment in case of production filter sequence  
 for path in process.paths: 
     getattr(process,path)._seq = process.ProductionFilterSequence*getattr(process,path)._seq
+
