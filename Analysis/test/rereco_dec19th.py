@@ -28,7 +28,7 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 process.load('Configuration/EventContent/EventContent_cff')
 
 process.configurationMetadata = cms.untracked.PSet(
-    version = cms.untracked.string('$Revision: 1.4 $'),
+    version = cms.untracked.string('$Revision: 1.1 $'),
     annotation = cms.untracked.string('rereco nevts:100'),
     name = cms.untracked.string('PyReleaseValidation')
 )
@@ -172,10 +172,10 @@ process.schedule = cms.Schedule(process.raw2digi_step,process.L1Reco_step,proces
 
 process.source.fileNames = cms.untracked.vstring(
     # test file
-#    'rfio:/castor/cern.ch/user/j/jbrooke/hscp/test/Calo_CRAFT09-GR09_31X_V5P_StoppedHSCP-332_v4_RAW-RECO_111039_test.root'
+    'rfio:/castor/cern.ch/user/j/jbrooke/hscp/test/Calo_CRAFT09-GR09_31X_V5P_StoppedHSCP-332_v4_RAW-RECO_111039_test.root'
 
     # HLT reskim files on Bristol SE
-    '/store/user/jbrooke/Calo/StoppedHSCP_CRAFT09_rerunHLT_v3/a9f20537e9e1239e6910ee9cb81f358d/stoppedHSCP_rerunHLT_9.root'
+#    '/store/user/jbrooke/Calo/StoppedHSCP_CRAFT09_rerunHLT_v3/a9f20537e9e1239e6910ee9cb81f358d/stoppedHSCP_rerunHLT_9.root'
 )
 
 process.GlobalTag.globaltag = 'CRAFT09_R2_V2::All'
@@ -194,4 +194,4 @@ process.source.inputCommands = cms.untracked.vstring(
 #    process.FEVTEventContent.outputCommands
 #    )
 
-process.FEVT.fileName = cms.untracked.string('/tmp/jbrooke/ReReco.root')
+process.FEVT.fileName = cms.untracked.string('StoppedHSCP_ReReco.root')

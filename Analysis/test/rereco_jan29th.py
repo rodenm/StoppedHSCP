@@ -21,7 +21,7 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 process.load('Configuration/EventContent/EventContent_cff')
 
 process.configurationMetadata = cms.untracked.PSet(
-    version = cms.untracked.string('$Revision: 1.14 $'),
+    version = cms.untracked.string('$Revision: 1.1 $'),
     annotation = cms.untracked.string('rereco nevts:100'),
     name = cms.untracked.string('PyReleaseValidation')
 )
@@ -216,7 +216,7 @@ process.source.fileNames = cms.untracked.vstring(
 #    '/store/user/jbrooke/Calo/StoppedHSCP_CRAFT09_rerunHLT_v3/a9f20537e9e1239e6910ee9cb81f358d/stoppedHSCP_rerunHLT_1.root'
 )
 
-process.GlobalTag.globaltag = 'CRAFT09_R2_V2::All'
+process.GlobalTag.globaltag = 'CRAFT09_R_V9::All'
 
 process.schedule = cms.Schedule(process.raw2digi_step,process.L1Reco_step,process.reconstruction_step,process.endjob_step,process.out_step)
 
@@ -232,4 +232,4 @@ process.FEVT.outputCommands = cms.untracked.vstring(
     process.FEVTEventContent.outputCommands
     )
 
-process.FEVT.fileName = cms.untracked.string('/tmp/jbrooke/ReReco.root')
+process.FEVT.fileName = cms.untracked.string('StoppedHSCP_ReReco.root')
