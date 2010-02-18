@@ -12,7 +12,7 @@
   l1->SetLineColor(2);
   l1->SetLineWidth(2);
 
-  TLatex fs(21., 5.05, "5#sigma discovery");
+  TLatex fs(22., 5.05, "5#sigma discovery");
   fs.SetTextSize(0.03);
 
   TLine * l2  = new TLine(0., 1.96, 30., 1.96);
@@ -22,8 +22,8 @@
   TLatex fs2(4., 2.01, "95% C.L.");
   fs2.SetTextSize(0.03);
 
-  TPaveText blurb(22., 9., 29., 10.8);
-  TText* t2=blurb.AddText("#sqrt{s} = 10 TeV");
+  TPaveText blurb(1.2, 9., 8.2, 10.8);
+  //TText* t2=blurb.AddText("#sqrt{s} = 10 TeV");
   TText* t3=blurb.AddText("L_{inst} = 10^{32}cm^{-2}s^{-1}");
   //TText* t3a=blurb.AddText("N_{BX} = 2808");
   //  TText* l5=blurb.AddText("30 days");
@@ -35,9 +35,9 @@
   blurb.SetTextAlign(12);
   //  blurb.SetMargin(0.1);
 
-  TLatex p(12., 1., "CMS Preliminary");
+  TLatex p(12., 2., "CMS Preliminary");
   p.SetTextSize(0.06);
-  p.SetTextColor(9);
+  p.SetTextColor(4);
 
   // beamgap expt 30 days
   TH1F * h = c->DrawFrame(0., 0., 30., 11.);
@@ -99,7 +99,7 @@
 //   t6.SetTextSize(0.03);
 //   t6.Draw();
 
-  TLegend leg(22., 6., 29., 8.8, "Gluino lifetime", ""); //#tau_{#tilde{g}}", "");
+  TLegend leg(1.2, 6., 8.2, 8.8, "Gluino lifetime", ""); //#tau_{#tilde{g}}", "");
   //  leg.SetHeader("#tau_{#tilde{g}}");
   leg.SetFillColor(0);
   //  leg.SetMargin(0.05);
@@ -271,6 +271,10 @@
   fs->Draw();
   p.Draw();
 
+  TLatex roots(12.1, 1.5., "EXO-09-001 scaled to #sqrt{s} = 7 TeV");
+  roots.SetTextSize(0.03);
+  roots->Draw();
+  
   c->Update();
   c->Print("SigVsTime_Combined_m300.png");
   c->Print("SigVsTime_Combined_m300.eps");
