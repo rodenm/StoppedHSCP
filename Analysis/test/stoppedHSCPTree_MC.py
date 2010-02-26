@@ -8,6 +8,9 @@ import FWCore.ParameterSet.Config as cms
 
 from StoppedHSCP.Analysis.stoppedHSCPTree_cfg import *
 
+process.MessageLogger.cerr.threshold = ''
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+
 # change Global Tag
 process.GlobalTag.globaltag = "STARTUP3X_V8I::All" # MC
 

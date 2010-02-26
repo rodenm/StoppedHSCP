@@ -13,7 +13,8 @@ process = cms.Process("SHSCPTree")
 
 process.load('Configuration/StandardSequences/Services_cff')
 process.load('FWCore/MessageService/MessageLogger_cfi')
-process.MessageLogger.cerr.INFO.limit = cms.untracked.int32(10)
+#process.MessageLogger.cerr.INFO.limit = cms.untracked.int32(10)
+
 
 # geometry & magnetic field
 process.load('Configuration/StandardSequences/GeometryIdeal_cff')

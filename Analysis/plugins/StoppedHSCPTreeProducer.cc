@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.20 2010/01/11 14:40:07 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.21 2010/01/14 15:26:08 jbrooke Exp $
 //
 //
 
@@ -101,7 +101,7 @@ public:
   
   
 private:
-  virtual void beginJob(const edm::EventSetup&) ;
+  virtual void beginJob() ;
   virtual void beginRun(const edm::Run&, const edm::EventSetup&) ;
   virtual void analyze(const edm::Event&, const edm::EventSetup&);
   virtual void endJob() ;
@@ -290,16 +290,17 @@ StoppedHSCPTreeProducer::~StoppedHSCPTreeProducer()
 
 // ------------ method called once each job just before starting event loop  ------------
 void 
-StoppedHSCPTreeProducer::beginJob(const edm::EventSetup&)
+StoppedHSCPTreeProducer::beginJob()
 {
 }
 
 // -- called once per run
 void 
-StoppedHSCPTreeProducer::beginRun(edm::Run const &, edm::EventSetup const&)
+StoppedHSCPTreeProducer::beginRun(edm::Run const & run, edm::EventSetup const& iSetup)
 {
-  hltConfig_.init("HLT");
-  hltPathIndex_ = hltConfig_.triggerIndex("HLT_StoppedHSCP_8E29");
+  //  bool changed;
+  //  hltConfig_.init(run, iSetup, hltResultsTag_.process(), changed);
+  //  hltPathIndex_ = hltConfig_.triggerIndex("HLT_StoppedHSCP_8E29");
 }
 
 
@@ -391,6 +392,11 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
   }
  
 
+  // HLT config setup
+  bool changed;
+  hltConfig_.init(iEvent, hltResultsTag_.process(), changed);
+  hltPathIndex_ = hltConfig_.triggerIndex("HLT_StoppedHSCP_8E29");
+
   // get HLT results
   edm::Handle<edm::TriggerResults> HLTR;
   iEvent.getByLabel(hltResultsTag_, HLTR);
@@ -446,20 +452,23 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
 
     const unsigned int filterIndex (trgEvent->filterIndex(hltL3Tag_) );
 
-    edm::LogInfo("StoppedHSCP") << "Debugging HLT...  StoppedHSCP index=" << filterIndex 
-				<< ",  N paths=" << trgEvent->sizeFilters() << std::endl;
-
+    //   edm::LogInfo("StoppedHSCP") << "Debugging HLT...  StoppedHSCP index=" << filterIndex 
+    //				<< ",  N paths=" << trgEvent->sizeFilters() << std::endl;
+    
     if (filterIndex < trgEvent->sizeFilters()) {
             
       const trigger::TriggerObjectCollection& TOC(trgEvent->getObjects());
-      
       const trigger::Keys& keys( trgEvent->filterKeys(filterIndex) );
 	
-      edm::LogInfo("StoppedHSCP") << "  ?  " << keys.size() << std::endl;
+      //      edm::LogInfo("StoppedHSCP") << "Found  " << keys.size() << " HLT jets" << std::endl;
 
-      for ( unsigned hlto = 0; hlto < keys.size() && hlto<event_->nHltJets(); hlto++ ) {
+      for ( unsigned hlto = 0; 
+	    hlto < keys.size() && event_->nHltJets() < StoppedHSCPEvent::MAX_N_TRIGJETS; 
+	    hlto++ ) {
 	trigger::size_type hltf = keys[hlto];
 	const trigger::TriggerObject& L3obj(TOC[hltf]);
+
+	//	edm::LogInfo("StoppedHSCP") << "HLT jet e=" << L3obj.energy() << std::endl;
         
 	shscp::TrigJet j;
 	j.type = 99;

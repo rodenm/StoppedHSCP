@@ -13,7 +13,7 @@
 //
 // Original Author:  Benjamin JONES
 //         Created:  Thu Dec  4 11:44:26 CET 2008
-// $Id: GlobalRunAnalyser.cc,v 1.1 2009/10/27 21:09:07 jbrooke Exp $
+// $Id: GlobalRunAnalyser.cc,v 1.2 2009/10/28 14:46:16 jbrooke Exp $
 //
 //
 
@@ -67,7 +67,7 @@ class GlobalRunAnalyser : public edm::EDAnalyzer {
 
 
    private:
-      virtual void beginJob(const edm::EventSetup&) ;
+      virtual void beginJob() ;
       virtual void analyze(const edm::Event&, const edm::EventSetup&);
       virtual void endJob() ;
 
@@ -1459,7 +1459,7 @@ GlobalRunAnalyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
 // ------------ method called once each job just before starting event loop  ------------
 void 
-GlobalRunAnalyser::beginJob(const edm::EventSetup&)
+GlobalRunAnalyser::beginJob()
 {
 }
 
