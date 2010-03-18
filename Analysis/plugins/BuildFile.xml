@@ -31,7 +31,7 @@
 
   <use name="HLTrigger/HLTcore"/>
 
-  <use name="PhysicsTools/UtilAlgos"/>
+  <use name="CommonTools/UtilAlgos"/>
 
   <use name="TrackingTools/TrajectoryState"/>
   <use name="TrackingTools/TrackAssociator"/>

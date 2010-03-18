@@ -13,7 +13,7 @@
 //
 // Original Author:  "Kenneth Rossato"
 //         Created:  Fri Oct  2 12:11:33 CDT 2009
-// $Id$
+// $Id: JetAnalyzer.cc,v 1.2 2009/10/28 20:48:41 rossato Exp $
 //
 //
 
@@ -32,7 +32,7 @@
 #include "DataFormats/JetReco/interface/CaloJetCollection.h"
 
 #include "FWCore/ServiceRegistry/interface/Service.h"
-#include "PhysicsTools/UtilAlgos/interface/TFileService.h"
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 #include "TH1D.h"
 #include "TH2D.h"

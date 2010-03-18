@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.21 2010/01/14 15:26:08 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.22 2010/02/26 15:56:34 jbrooke Exp $
 //
 //
 
@@ -79,7 +79,7 @@
 
 // ROOT output stuff
 #include "FWCore/ServiceRegistry/interface/Service.h"
-#include "PhysicsTools/UtilAlgos/interface/TFileService.h"
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "TH1.h"
 #include "TTree.h"
 #include "TF1.h"

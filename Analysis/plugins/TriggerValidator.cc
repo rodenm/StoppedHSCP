@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  Fri Oct  9 14:28:32 CEST 2009
-// $Id$
+// $Id: TriggerValidator.cc,v 1.1 2009/10/12 16:18:51 jbrooke Exp $
 //
 //
 
@@ -37,7 +37,7 @@
 #include "FWCore/Framework/interface/ESHandle.h"
 
 #include "FWCore/ServiceRegistry/interface/Service.h"
-#include "PhysicsTools/UtilAlgos/interface/TFileService.h"
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 // L1
 #include "CondFormats/L1TObjects/interface/L1GtTriggerMenu.h"
