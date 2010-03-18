@@ -62,13 +62,63 @@ def hist2DPlot(hist, file, canvas, norm=False, log=False, title="histogram", xti
     canvas.Update()
 
 
+# superimpose multiple histograms
+def multiPlot(hists, canvas, norm=False, log=False, title="histogram", xtitle="", ytitle="", opt="HIST") :
+
+    # set log scale, or not
+    if (log) :
+        canvas.SetLogy(1)
+    else :
+        canvas.SetLogy(0)
+
+    # set y axis maximum
+    ymax = 1.1
+    if (not norm) :
+        for hist in hists:
+            if hist.GetMaximum() > ymax:
+                ymax=1.1*hist.GetMaximum()
+    hists[0].SetMaximum(ymax)
+
+    # set titles
+    if (not (title == "")) :
+        hists[0].SetTitle(title)
+    if (not (ytitle == "")) :
+        hists[0].SetYTitle(ytitle)
+    if (not (xtitle == "")) :
+        hists[0].SetXTitle(xtitle)
+
+    # set list of colours
+    colours = [0,1,2,4,5,6,7,8,9]
+
+    # iterate over histograms
+    first=True
+    for hist,col in zip(hists,colours):
+
+        # set colour
+        hist.SetLineColor(col)
+        hist.SetMarkerColor(col)
+
+        # normalise if required
+        if (norm and hist.Integral() > 0.):
+            hist.Scale(1./hist.Integral())
+
+        # plot histogram
+        if first:
+            hist.Draw(opt)
+            first=False
+        else:
+            hist.Draw(opt+" SAME")
+
+    canvas.Update()
+
+
 # superimpose 3 plots
 def compPlot(hist, fdata, fcraft, fmc, canvas, norm=False, log=False, title="histogram", xtitle="", ytitle="") :
     hdata = fdata.Get(hist)
     hcraft = fcraft.Get(hist)
     hmc = fmc.Get(hist)
 
-    if (norm) :
+    if (norm and (hdata.Integral() > 0) and (hcraft.Integral() > 0) and (hmc.Integral() > 0) ) :
         hdata.Scale(1./hdata.Integral())
         hcraft.Scale(1./hcraft.Integral())
         hmc.Scale(1./hmc.Integral())
@@ -100,7 +150,9 @@ def compPlot(hist, fdata, fcraft, fmc, canvas, norm=False, log=False, title="his
         hdata.SetXTitle(xtitle)
 
     hdata.Draw("HIST")
-    hcraft.Draw("SAME")
-    hmc.Draw("SAME")
+    hdata.SetMarkerColor(1)
+    hcraft.Draw("HIST SAME")
+    hcraft.SetMarkerColor(2)
+    hmc.Draw("HIST SAME")
 
     canvas.Update()

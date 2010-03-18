@@ -16,15 +16,28 @@ from makeHistos import *
 from makePlots import *
 from cuts import *
 
+
 # arguments : file location and local dir for results
-if len(sys.argv)!=4 :
+try:
+    opts, args = getopt.getopt(sys.argv[1:], "bh")
+except getopt.GetoptError:
+    usage()
+    sys.exit(2)
+
+for opt, arg in opts:
+    if opt=='-h':
+        usage()
+        exit.sys()
+
+
+if len(arg) < 4 :
     print "Wrong number of arguments"
-    print "Usage : python analyseDataset.py <input file> <output dir> <time>"
+    print "Usage : python analyseDataset.py <input file> <output dir> <run file>"
     sys.exit(1)
 
-filename=sys.argv[1]
-dir=sys.argv[2]
-time=int(sys.argv[3])
+filename=arg[1]
+dir=arg[2]
+rfilename=arg[3]
 
 # make dir to store results if not present
 odir = os.getcwd()+"/"+dir
@@ -40,6 +53,10 @@ tdrStyle()
 gROOT.SetStyle("tdrStyle")
 gROOT.ForceStyle()
 
+# cuts
+print oldcuts
+print oldcuts.jetMu
+print oldcuts.allCuts()
 
 # get tree & add old tree as friend
 tree = ifile.Get("stoppedHSCPTree/StoppedHSCPTree")
@@ -47,23 +64,21 @@ tree = ifile.Get("stoppedHSCPTree/StoppedHSCPTree")
 oldtree = ifile.Get("globalRunAnalyser/EventTree")
 tree.AddFriend(oldtree)
 
-# run analysis
-cuts = CutsOld()
+# get run list
+rfile = TFile(rfilename)
+runtree = rfile.Get("StoppedHSCPRunTree")
+
+# print info
+printInfo(tree, runtree, oldcuts)
 
 # make histograms
-makeHistos(tree, odir+"/"+dir+"_BasicHistos.root", cuts)
+makeHistos(tree, odir+"/"+dir+"_Histos.root", oldcuts, runtree)
 
-# make plots (with normalisation if chosen)
-if (time==0):
-    scale=1
-else:
-    scale=1./time
+# make plots
+makePlots(odir+"/"+dir+"_Histos.root", odir+"/"+dir+"_Plots", runtree)
 
-makePlots(odir+"/"+dir+"_BasicHistos.root", odir+"/"+dir+"_BasicPlots.ps", scale)
-
-# convert to PDF
-subprocess.call(["ps2pdf", odir+"/"+dir+"_BasicPlots.ps", odir+"/"+dir+"_BasicPlots.pdf"])
-
+# clean up
+#subprocess.call(["rm", odir+"/"+"*.ps"])
 
 tar = tarfile.open(name = odir+".tgz", mode = 'w:gz')
 tar.add(dir)
@@ -71,5 +86,4 @@ tar.add(dir)
 #for file in os.listdir(odir):
 #	t.add(file);
 tar.close()
-
 
