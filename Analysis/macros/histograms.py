@@ -28,13 +28,13 @@ def datasetHistos(tree, filebase, cutObj, runtree) :
 def runHistos(tree, filebase, cutObj, runtree, run):
 
     runstr=str(run)
-    hfile = TFile(filebase+"_"+runstr+".root","recreate")
+    hfile = TFile(filebase+runstr+".root","recreate")
 
     livetime=getLivetime(runtree, run)
 
-    basicHistos(tree, file, "NoCuts",  "run=="+runstr, 1./livetime)
-    basicHistos(tree, file, "JetMuCuts", cutObj.jetMu and TCut("run=="+runstr), 1./livetime)
-    basicHistos(tree, file, "AllCuts", cutObj.allCuts() and TCut("run=="+runstr), 1./livetime)
+    basicHistos(tree, hfile, "NoCuts",  "run=="+runstr, 1./livetime)
+    basicHistos(tree, hfile, "JetMuCuts", cutObj.jetMu and TCut("run=="+runstr), 1./livetime)
+    basicHistos(tree, hfile, "AllCuts", cutObj.allCuts() and TCut("run=="+runstr), 1./livetime)
 
     hfile.Close()
     

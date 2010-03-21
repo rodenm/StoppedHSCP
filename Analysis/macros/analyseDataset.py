@@ -6,6 +6,7 @@
 
 import sys
 import os
+import getopt
 import subprocess
 import tarfile
 
@@ -30,13 +31,13 @@ for opt, arg in opts:
         exit.sys()
 
 
-if len(arg) < 4 :
+if len(args) < 4 :
     print "Wrong number of arguments"
     print "Usage : python analyseDataset.py <input file> <output dir> <run file>"
     sys.exit(1)
 
-filename=arg[1]
-dir=arg[2]
+filename=args[1]
+dir=args[2]
 rfilename=arg[3]
 
 # make dir to store results if not present
