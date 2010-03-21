@@ -12,8 +12,8 @@ import tarfile
 from ROOT import *
 
 from style import *
-from makeHistos import *
-from makePlots import *
+from histos import *
+from plots import *
 from cuts import *
 
 
@@ -72,10 +72,10 @@ runtree = rfile.Get("StoppedHSCPRunTree")
 printInfo(tree, runtree, oldcuts)
 
 # make histograms
-makeHistos(tree, odir+"/"+dir+"_Histos.root", oldcuts, runtree)
+datasetHistos(tree, odir+"/"+dir+"_Histos", oldcuts, runtree)
 
 # make plots
-makePlots(odir+"/"+dir+"_Histos.root", odir+"/"+dir+"_Plots", runtree)
+datasetPlots(odir+"/"+dir+"_Histos", odir+"/"+dir+"_Plots", runtree)
 
 # clean up
 #subprocess.call(["rm", odir+"/"+"*.ps"])
