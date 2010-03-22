@@ -47,7 +47,9 @@ def nEvents(tree, cuts, run):
         if (cuts==""):
             return tree.Draw("", TCut("run=="+str(run)));
         else:
-            return tree.Draw("", cuts and TCut("run=="+str(run)));
+            c = TCut(cuts)
+            c += TCut("run=="+str(run))
+            return tree.Draw("", c);
 
 
 # get rate for given cut and run

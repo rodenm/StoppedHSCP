@@ -42,49 +42,61 @@ class CutCollection:
     
 
 newcuts = CutCollection(["nTowerSameiPhi<5", \
-                             "jets[0].e>30.", \
-                             "jets[0].e>50.", \
-                             "jets[0].n60<6", \
-                             "jets[0].n90>3", \
-                             "nMuon==0", \
-                             "TimingRightPeak>0.15", \
-                             "TimingFracRightNextRight>0.1 && TimingFracRightNextRight<0.5", \
-                             "TimingFracInLeader>0.4 && TimingFracInLeader<0.7", \
-                             "TimingFracInCentralFour>0.90"])
+                         "jets[0].e>30.", \
+                         "jets[0].e>50.", \
+                         "jets[0].n60<6", \
+                         "jets[0].n90>3", \
+                         "nMuon==0", \
+                         "TimingRightPeak>0.15", \
+                         "TimingFracRightNextRight>0.1 && TimingFracRightNextRight<0.5", \
+                         "TimingFracInLeader>0.4 && TimingFracInLeader<0.7", \
+                         "TimingFracInCentralFour>0.90"])
 
-newcuts.jetMu = newcuts[0] and newcuts[1] and newcuts[2] and newcuts[3] and newcuts[4] and newcuts[5]
+newcuts.jetMu = newcuts[0]
+newcuts.jetMu += newcuts[1]
+newcuts.jetMu += newcuts[2]
+newcuts.jetMu += newcuts[3]
+newcuts.jetMu += newcuts[4]
+newcuts.jetMu += newcuts[5]
+
 
 newjmcuts = CutCollection(["nTowerSameiPhi<5", \
-                             "jets[0].e>30.", \
-                             "jets[0].e>50.", \
-                             "jets[0].n60<6", \
-                             "jets[0].n90>3", \
-                             "nMuon==0"])
+                           "jets[0].e>30.", \
+                           "jets[0].e>50.", \
+                           "jets[0].n60<6", \
+                           "jets[0].n90>3", \
+                           "nMuon==0"])
 
 oldcuts = CutCollection(["nTowerSameiPhi<5", \
-                             "LeadingCenJetEnergy>30.", \
-                             "LeadingCenJetEnergy>50.", \
-                             "LeadingCenJetn60<6", \
-                             "LeadingCenJetn90>3", \
-                             "NoOfMuons==0", \
-                             "TimingRightPeak>0.15", \
-                             "TimingFracRightNextRight>0.1 && TimingFracRightNextRight<0.5", \
-                             "TimingFracInLeader>0.4 && TimingFracInLeader<0.7", \
-                             "TimingFracInCentralFour>0.90"])
+                         "LeadingCenJetEnergy>30.", \
+                         "LeadingCenJetEnergy>50.", \
+                         "LeadingCenJetn60<6", \
+                         "LeadingCenJetn90>3", \
+                         "NoOfMuons==0", \
+                         "TimingRightPeak>0.15", \
+                         "TimingFracRightNextRight>0.1 && TimingFracRightNextRight<0.5", \
+                         "TimingFracInLeader>0.4 && TimingFracInLeader<0.7", \
+                         "TimingFracInCentralFour>0.90"])
 
-oldcuts.jetMu = oldcuts[0] and oldcuts[1] and oldcuts[2] and oldcuts[3] and oldcuts[4] and oldcuts[5]
+oldcuts.jetMu = oldcuts[0]
+oldcuts.jetMu += oldcuts[1]
+oldcuts.jetMu += oldcuts[2]
+oldcuts.jetMu += oldcuts[3]
+oldcuts.jetMu += oldcuts[4]
+oldcuts.jetMu += oldcuts[5]
+
 
 oldjmcuts = CutCollection(["nTowerSameiPhi<5", \
-                             "LeadingCenJetEnergy>30.", \
-                             "LeadingCenJetEnergy>50.", \
-                             "LeadingCenJetn60<6", \
-                             "LeadingCenJetn90>3", \
-                             "NoOfMuons==0"])
+                           "LeadingCenJetEnergy>30.", \
+                           "LeadingCenJetEnergy>50.", \
+                           "LeadingCenJetn60<6", \
+                           "LeadingCenJetn90>3", \
+                           "NoOfMuons==0"])
 
 timingcuts = CutCollection(["TimingRightPeak>0.15", \
-                             "TimingFracRightNextRight>0.1 && TimingFracRightNextRight<0.5", \
-                             "TimingFracInLeader>0.4 && TimingFracInLeader<0.7", \
-                             "TimingFracInCentralFour>0.90"])
+                            "TimingFracRightNextRight>0.1 && TimingFracRightNextRight<0.5", \
+                            "TimingFracInLeader>0.4 && TimingFracInLeader<0.7", \
+                            "TimingFracInCentralFour>0.90"])
 
 #class Cuts:
 #    init = "jets[0].e>30. && nTowerSameiPhi<5"

@@ -61,7 +61,6 @@ print oldcuts.allCuts()
 
 # get tree & add old tree as friend
 tree = ifile.Get("stoppedHSCPTree/StoppedHSCPTree")
-#oldtree = ifile.Get("an_HLT/EventTree")
 oldtree = ifile.Get("globalRunAnalyser/EventTree")
 tree.AddFriend(oldtree)
 
