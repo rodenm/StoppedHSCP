@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.22 2010/02/26 15:56:34 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.23 2010/03/18 13:06:10 jbrooke Exp $
 //
 //
 
@@ -174,6 +174,7 @@ private:
   edm::InputTag mcTag_;
   edm::InputTag jetTag_;
   edm::InputTag muonTag_;
+  edm::InputTag cosmicMuonTag_;
   edm::InputTag caloTowerTag_;
   edm::InputTag hcalNoiseTag_;
   edm::InputTag rbxTag_;
@@ -231,6 +232,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   mcTag_(iConfig.getUntrackedParameter<edm::InputTag>("mcTag",edm::InputTag("generator"))),
   jetTag_(iConfig.getUntrackedParameter<edm::InputTag>("jetTag",edm::InputTag("sisCone5CaloJets"))),
   muonTag_(iConfig.getUntrackedParameter<edm::InputTag>("muonTag",edm::InputTag("muons"))),
+  cosmicMuonTag_(iConfig.getUntrackedParameter<edm::InputTag>("muonTag",edm::InputTag("muonsFromCosmics"))),
   caloTowerTag_(iConfig.getUntrackedParameter<edm::InputTag>("caloTowerTag",edm::InputTag("towerMaker"))),
   hcalNoiseTag_(iConfig.getUntrackedParameter<edm::InputTag>("rbxTag",edm::InputTag("hcalnoise"))),
   rbxTag_(iConfig.getUntrackedParameter<edm::InputTag>("rbxTag",edm::InputTag("hcalnoise"))),
@@ -689,9 +691,10 @@ void StoppedHSCPTreeProducer::doGlobalCalo(const edm::Event& iEvent) {
 
 void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent) {
 
+  // loop over reco muons
   edm::Handle<reco::MuonCollection> muons;
   iEvent.getByLabel(muonTag_,muons);
-  
+
   if (muons.isValid()) {
     for(reco::MuonCollection::const_iterator it =muons->begin();
 	it!=muons->end() && event_->nMuons() < StoppedHSCPEvent::MAX_N_MUONS;
@@ -702,6 +705,7 @@ void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent) {
       mu.phi = it->phi();
       mu.hcalEta = 0.;  // TODO extrapolate GlobalMuon track to HCAL surface and store position!
       mu.hcalPhi = 0.;
+      mu.type = it->type();
        event_->addMuon(mu);
     }
   }
@@ -710,6 +714,29 @@ void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent) {
     muonsMissing_ = true;
   }
   
+  // loop over cosmic muons
+  edm::Handle<reco::MuonCollection> cosmicMuons;
+  iEvent.getByLabel(cosmicMuonTag_,cosmicMuons);
+ 
+  if (cosmicMuons.isValid()) {
+    for(reco::MuonCollection::const_iterator it =cosmicMuons->begin();
+	it!=muons->end() && event_->nMuons() < StoppedHSCPEvent::MAX_N_MUONS;
+	it++) {
+      shscp::Muon mu;
+      mu.pt = it->pt();
+      mu.eta = it->eta();
+      mu.phi = it->phi();
+      mu.hcalEta = 0.;  // TODO extrapolate GlobalMuon track to HCAL surface and store position!
+      mu.hcalPhi = 0.;
+      mu.type = it->type() + 8;
+       event_->addMuon(mu);
+    }
+  }
+  else {
+    if (!muonsMissing_) edm::LogWarning("MissingProduct") << "Muons not found.  Branch will not be filled" << std::endl;
+    muonsMissing_ = true;
+  }
+
 }
 
 
