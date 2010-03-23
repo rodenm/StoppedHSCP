@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.23 2010/03/18 13:06:10 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.24 2010/03/22 12:50:48 jbrooke Exp $
 //
 //
 
@@ -705,7 +705,7 @@ void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent) {
       mu.phi = it->phi();
       mu.hcalEta = 0.;  // TODO extrapolate GlobalMuon track to HCAL surface and store position!
       mu.hcalPhi = 0.;
-      mu.type = it->type();
+      mu.type = (0xf & it->type());
        event_->addMuon(mu);
     }
   }
@@ -728,7 +728,7 @@ void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent) {
       mu.phi = it->phi();
       mu.hcalEta = 0.;  // TODO extrapolate GlobalMuon track to HCAL surface and store position!
       mu.hcalPhi = 0.;
-      mu.type = it->type() + 8;
+      mu.type = (0xf & it->type())<<8;
        event_->addMuon(mu);
     }
   }
