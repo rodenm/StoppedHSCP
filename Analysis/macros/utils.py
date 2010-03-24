@@ -1,6 +1,6 @@
 
 from math import sqrt
-from ROOT import TTree, TCut
+from ROOT import *
 
 # useful methods for getting info from the data and run trees
 
@@ -68,7 +68,8 @@ def getRateErr(tree, runtree, cuts, run):
         return 0.
     
 
-def printInfo(tree, runtree, jmcuts, allcuts):
+def printInfo(tree, runtree, cutobj):
+
     print "Total events  : ", nEvents(tree, "", 0)
     print "Live time     : ", getLivetime(runtree, 0)
     print "HLT rate      : ", getRate(tree, runtree, "", 0), " +/- ", getRateErr(tree, runtree, "", 0)
@@ -84,3 +85,5 @@ def printInfo(tree, runtree, jmcuts, allcuts):
         print "all cuts rate : ", getRate(tree, runtree, cutobj.allCuts(), run), " +/- ", getRateErr(tree, runtree, cutobj.allCuts(), run)
         print
 
+
+    

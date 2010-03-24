@@ -9,42 +9,21 @@ from utils import *
 
 from math import pi
 
-# plot all quantities
-def datasetPlots(rootbase, psbasee, runtree) :
+# plot histograms from a ROOT file
+def makePlots(filebase, doEff) :
 
-    file = TFile(rootbase+".root", "read")
+    file = TFile(filebase+".root", "read")
+    ps = TPostScript(filebase+".ps")
     canvas = TCanvas("canvas")
 
-    # plots for all runs
-    ps = TPostScript(psbase+".ps")
     basicPlots(file, "NoCuts", canvas)
     basicPlots(file, "JetMuCuts", canvas)
     basicPlots(file, "AllCuts", canvas)
-    effPlots(file, "EffPlots", canvas)
+    if doEff:
+        effPlots(file, "EffPlots", canvas)
+
     ps.Close()
-
-    # convert to PDF
-    subprocess.call(["ps2pdf", psbase+".ps", psbase+".pdf"])
-
-    runs=getRuns(runtree)
-
-    for run in runs:
-        runPlots(rootbase, psbase, run)
-
-
-def runPlots(rootbase, psbase, run):
-
-    runstr = str(run)
-    hfile  = TFile(rootbase+"_"+runstr+".root", "read")
-    psfile = TPostScript(psbase+"_"+runstr+".ps")
-    
-    basicPlots(hfile, "NoCuts", canvas)
-    basicPlots(hfile, "JetMuCuts", canvas)
-    basicPlots(hfile, "AllCuts", canvas)
-    
-    psfile.Close()
-    
-    subprocess.call(["ps2pdf", psbase+"_"+runstr+".ps", psbase+"_"+runstr+".pdf"])
+    subprocess.call(["ps2pdf", filebase+".ps", filebase+".pdf"])
     
 
 def basicPlots(file, dir, canvas):

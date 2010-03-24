@@ -28,7 +28,7 @@ def datasetHistos(tree, filebase, cutObj, runtree) :
 def runHistos(tree, filebase, cutObj, runtree, run):
 
     runstr=str(run)
-    hfile = TFile(filebase+runstr+".root","recreate")
+    hfile = TFile(filebase+"-"+runstr+".root","recreate")
 
     livetime=getLivetime(runtree, run)
 
@@ -48,10 +48,10 @@ def basicHistos(tree, file, dir, cuts, scale) :
         file.cd(dir)
 
     # event time
-    histogram1D(tree, "hbx", "bx>>hbx", cuts, scale, "BX number (new)", 3564, 0., 3564.)
-    histogram1D(tree, "horb", "orbit>>horb", cuts, scale, "Orbit number (new)", 100, 0., 10000.)    
-    histogram1D(tree, "hlb", "lb>>hlb", cuts, scale, "Lumi block (new)", 100, 0., 1000.)  
-    histogram1D(tree, "htime", "time>>htime", cuts, scale, "Event time", 100, 0., 1.E8)
+    histogram1D(tree, "hbx", "bx>>hbx", cuts, 1., "BX number (new)", 3564, 0., 3564.)
+    histogram1D(tree, "horb", "orbit>>horb", cuts, 1., "Orbit number (new)", 100, 0., 10000.)    
+    histogram1D(tree, "hlb", "lb>>hlb", cuts, 1./pow(2., 18), "Lumi block (new)", 200, 0., 200.)  
+    histogram1D(tree, "htime", "time>>htime", cuts, 1., "Event time", 100, 0., 1.E8)
 
     # trigger
     histogram1D(tree, "hl1et", "l1Jets[0].et>>hl1et", cuts, scale, "Leading L1 jet E_{t} (new)", 100, 0., 200.)  

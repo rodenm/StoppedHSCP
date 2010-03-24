@@ -13,7 +13,7 @@ import tarfile
 from ROOT import *
 
 from style import *
-from histos import *
+from histograms import *
 from plots import *
 from cuts import *
 
@@ -31,14 +31,14 @@ for opt, arg in opts:
         exit.sys()
 
 
-if len(args) < 4 :
+if len(args) < 3 :
     print "Wrong number of arguments"
     print "Usage : python analyseDataset.py <input file> <output dir> <run file>"
     sys.exit(1)
 
-filename=args[1]
-dir=args[2]
-rfilename=arg[3]
+filename=args[0]
+dir=args[1]
+rfilename=args[2]
 
 # make dir to store results if not present
 odir = os.getcwd()+"/"+dir
@@ -54,10 +54,6 @@ tdrStyle()
 gROOT.SetStyle("tdrStyle")
 gROOT.ForceStyle()
 
-# cuts
-print oldcuts
-print oldcuts.jetMu
-print oldcuts.allCuts()
 
 # get tree & add old tree as friend
 tree = ifile.Get("stoppedHSCPTree/StoppedHSCPTree")
@@ -71,11 +67,16 @@ runtree = rfile.Get("StoppedHSCPRunTree")
 # print info
 printInfo(tree, runtree, oldcuts)
 
-# make histograms
-datasetHistos(tree, odir+"/"+dir+"_Histos", oldcuts, runtree)
+# make histograms for dataset
+datasetHistos(tree, odir+"/"+dir, oldcuts, runtree)
+makePlots(odir+"/"+dir, true)
 
-# make plots
-datasetPlots(odir+"/"+dir+"_Histos", odir+"/"+dir+"_Plots", runtree)
+# make run histos
+for run in getRuns(runtree):
+    print "Making histograms for run "+str(run)
+    runHistos(tree, odir+"/"+dir, oldcuts, runtree, run)
+    makePlots(odir+"/"+dir+"-"+str(run), false)
+
 
 # clean up
 #subprocess.call(["rm", odir+"/"+"*.ps"])
