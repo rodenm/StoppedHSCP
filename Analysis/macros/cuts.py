@@ -136,5 +136,5 @@ class CutsOld:
 
     jetMu = TCut("LeadingCenJetEnergy>30. && nTowerSameiPhi<5 && LeadingCenJetEnergy>50. && LeadingCenJetn60<6 && LeadingCenJetn90>3 && NoOfMuons==0")
 
-    all = TCut("nTowerSameiPhi<5 && LeadingCenJetEnergy>50. && LeadingCenJetn60<6 && LeadingCenJetn90>3 && NoOfMuons==0 && TimingRightPeak>0.15 && TimingFracRightNextRight>0.1 && TimingFracRightNextRight<0.5 && TimingFracInLeader>0.4 && TimingFracInLeader<0.7 && TimingFracInCentralFour>0.90")
+    all = TCut("NCaloTowersInTopHPD<5 && LeadingCenJetEnergy>50. && LeadingCenJetn60<6 && LeadingCenJetn90>3 && NoOfMuons==0 && TimingRightPeak>0.15 && TimingFracRightNextRight>0.1 && TimingFracRightNextRight<0.5 && TimingFracInLeader>0.4 && TimingFracInLeader<0.7 && TimingFracInCentralFour>0.90")
 

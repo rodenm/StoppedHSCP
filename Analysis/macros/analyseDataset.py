@@ -1,8 +1,7 @@
 #! /usr/bin/env python
 
-# analyse a dataset
-#  - produce histograms
-#  - make plots
+# analyse a dataset (ie. file containing multiple runs)
+#
 
 import sys
 import os
@@ -10,12 +9,66 @@ import getopt
 import subprocess
 import tarfile
 
+sys.argv.append('-b')
+
 from ROOT import *
 
-from style import *
-from histograms import *
-from plots import *
 from cuts import *
+from basicDistributions import *
+from efficiency import *
+from rates import *
+
+
+# write histo file
+def makeBasicHistos(tree, filebase, cutObj, run):
+
+    if (run!=0):
+        filename=filebase+"-"+str(run)
+        c1 = TCut("run=="+str(run))
+    else:
+        filename=filebase
+        c1 = TCut("")
+
+    print "Storing histograms in "+filename+".root"
+    hfile = TFile(filename+".root","recreate")
+
+    c2 = TCut(cutObj.jetMu)
+    c2 += c1
+    c3 = TCut(cutObj.allCuts())
+    c3 += c1
+
+    rateHistos(tree, hfile, cutObj, 1.)
+    basicHistos(tree, hfile, "NoCuts",  c1, 1.)
+    basicHistos(tree, hfile, "JetMuCuts", c2, 1.)
+    basicHistos(tree, hfile, "AllCuts", c3, 1.)
+    effHistos(tree, hfile, cutObj, 1.)
+
+    hfile.Close()
+
+
+def makeBasicPlots(filebase, run):
+
+    if (run!=0):
+        filename=filebase+"-"+str(run)
+    else:
+        filename=filebase
+
+    hfile = TFile(filename+".root","read")
+
+    # make plot file
+    ps = TPostScript(filename+".ps")
+    canvas = TCanvas("canvas")
+
+    ratePlots(hfile)
+    basicPlots(hfile, "NoCuts", 1.)
+    basicPlots(hfile, "JetMuCuts", 1.)
+    basicPlots(hfile, "AllCuts", 1.)
+    effPlots(hfile)
+
+    ps.Close()
+    subprocess.call(["ps2pdf", filename+".ps", filename+".pdf"])
+    subprocess.call(["rm", filename+".ps"])
+
 
 
 # arguments : file location and local dir for results
@@ -37,11 +90,11 @@ if len(args) < 3 :
     sys.exit(1)
 
 filename=args[0]
-dir=args[1]
+label=args[1]
 rfilename=args[2]
 
 # make dir to store results if not present
-odir = os.getcwd()+"/"+dir
+odir = os.getcwd()+"/"+label
 print "Putting results in "+odir
 if not os.path.exists(odir):
     os.makedirs(odir)
@@ -64,25 +117,26 @@ tree.AddFriend(oldtree)
 rfile = TFile(rfilename)
 runtree = rfile.Get("StoppedHSCPRunTree")
 
+cutObj=oldcuts
+
 # print info
-printInfo(tree, runtree, oldcuts)
+printInfo(tree, runtree, cutObj)
 
 # make histograms for dataset
-datasetHistos(tree, odir+"/"+dir, oldcuts, runtree)
-makePlots(odir+"/"+dir, true)
+filebase=odir+"/"+label
+
+makeBasicHistos(tree, filebase, cutObj, 0)
+makeBasicPlots(filebase, 0)
 
 # make run histos
 for run in getRuns(runtree):
     print "Making histograms for run "+str(run)
-    runHistos(tree, odir+"/"+dir, oldcuts, runtree, run)
-    makePlots(odir+"/"+dir+"-"+str(run), false)
+    makeBasicHistos(tree, filebase, cutObj, run)
+    makeBasicPlots(filebase, run)
 
-
-# clean up
-#subprocess.call(["rm", odir+"/"+"*.ps"])
 
 tar = tarfile.open(name = odir+".tgz", mode = 'w:gz')
-tar.add(dir)
+tar.add(label)
 
 #for file in os.listdir(odir):
 #	t.add(file);

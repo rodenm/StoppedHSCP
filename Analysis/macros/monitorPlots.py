@@ -33,15 +33,15 @@ def monitorPlots(tree, runtree):
         hltrate.Fill(str(run), nhlt)
         hltrate.SetBinError(i+1,sqrt(nhlt))
 
-        njm = nEvents(tree, oldcuts.jetMu, run)
+        njm = nEvents(tree, newcuts.jetMu, run)
         jmrate.Fill(str(run), njm)
         jmrate.SetBinError(i+1, sqrt(njm))
 
-        nfinal = nEvents(tree, oldcuts.allCuts(), run)
+        nfinal = nEvents(tree, newcuts.allCuts(), run)
         allrate.Fill(str(run), nfinal)
         allrate.SetBinError(i+1, sqrt(nfinal))
         
-        jmgr.SetPoint(i, run, getRate(tree, runtree, oldcuts.jetMu, run))
+        jmgr.SetPoint(i, run, getRate(tree, runtree, newcuts.jetMu, run))
         i=i+1
 
     hltrate.Scale(1./getLivetime(runtree, run))
