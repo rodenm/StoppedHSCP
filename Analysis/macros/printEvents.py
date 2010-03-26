@@ -13,7 +13,7 @@ def Dump(evt):
     print "Event        ", evt.id
     print "LS           ", evt.lb
     print "nTowSameiPhi ", evt.nTowerSameiPhi
-    print "Jet energy   ", evt.jets.e[0]
+#    print "Jet energy   ", evt.jets.e[0]
 #    print "Jet eta      ", evt.jets[0].eta
 #    print "Jet n90      ", evt.jets[0].n90
 #    print "Jet n60      ", evt.jets[0].n60
@@ -29,7 +29,7 @@ run=sys.argv[2]
 # trees
 tree = ifile.Get("stoppedHSCPTree/StoppedHSCPTree")
 otree = ifile.Get("globalRunAnalyser/EventTree")
-tree.AddFriend(otree)
+#tree.AddFriend(otree)
 
 # selection
 c = CutsOld()
@@ -56,21 +56,18 @@ oldTree=EventTree()
 oldTree.Init(otree)
 
 branch = tree.GetBranch("events")
-branch.SetAddress(AddressOf(newEvt))
+#branch.SetAddress(AddressOf(newEvt))
 
 for i in range(elist.GetN()):
+    
     a = elist.GetEntry(i)
-
-    # new tree info
-#    branch.GetEntry(i)
-#    Dump(newEvt)
-
+    
+#    tree.GetEntry(i)
+    tree.GetEntry(elist.GetEntry(i))
+    print newEvt.id
+    
     # old tree info
-    oldTree.GetEntry(a)
-    oldTree.Dump()
+#    oldTree.GetEntry(a)
+#    oldTree.Dump()
     
-    
-#    tree.GetEntry(a)
-#    tree.GetEntry(elist.GetEntry(i))
-#    print myobj.id
     
