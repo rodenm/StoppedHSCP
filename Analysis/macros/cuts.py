@@ -72,7 +72,7 @@ oldcuts = CutCollection(["nTowerSameiPhi<5", \
                          "LeadingCenJetEnergy>50.", \
                          "LeadingCenJetn60<6", \
                          "LeadingCenJetn90>3", \
-                         "NoOfMuons==0", \
+                         "nMuon==0", \
                          "TimingRightPeak>0.15", \
                          "TimingFracRightNextRight>0.1 && TimingFracRightNextRight<0.5", \
                          "TimingFracInLeader>0.4 && TimingFracInLeader<0.7", \
@@ -91,7 +91,7 @@ oldjmcuts = CutCollection(["nTowerSameiPhi<5", \
                            "LeadingCenJetEnergy>50.", \
                            "LeadingCenJetn60<6", \
                            "LeadingCenJetn90>3", \
-                           "NoOfMuons==0"])
+                           "nMuon==0"])
 
 timingcuts = CutCollection(["TimingRightPeak>0.15", \
                             "TimingFracRightNextRight>0.1 && TimingFracRightNextRight<0.5", \

@@ -60,11 +60,11 @@ def tdrStyle() :
   tdrStyle.SetMarkerStyle(12)
 
 #For the fit/function:
-  tdrStyle.SetOptFit(1)
+  tdrStyle.SetOptFit(1111)
   tdrStyle.SetFitFormat("5.4g")
   tdrStyle.SetFuncColor(2)
   tdrStyle.SetFuncStyle(1)
-  tdrStyle.SetFuncWidth(1)
+  tdrStyle.SetFuncWidth(2)
 
 #For the date:
   tdrStyle.SetOptDate(0)

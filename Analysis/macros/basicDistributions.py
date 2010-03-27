@@ -8,49 +8,47 @@ from plots import *
 
 
 # plot histograms
-def basicPlots(file, dir, scale):
-
-    canvas = TCanvas("canvas")
+def basicPlots(file, dir, scale, ofile):
     
     # reminder of method arguments
-    # histPlot(hist, file, canvas, norm=False, log=False, title="histogram", xtitle="", ytitle="", opt="HIST")
-    # hist2DPlot(hist, file, canvas, norm=False, log=False, title="histogram", xtitle="", ytitle="", ztitle="", opt="")
+    # histPlot(hist, file, norm=False, log=False, title="histogram", xtitle="", ytitle="", opt="HIST")
+    # hist2DPlot(hist, file, norm=False, log=False, title="histogram", xtitle="", ytitle="", ztitle="", opt="")
 
     # L1 trigger
-    histPlot(dir+"/hl1et", file, canvas, scale, True, "", "E_{L1} (GeV)", "")
-    histPlot(dir+"/hl1eta", file, canvas, scale, True, "", "#eta", "")
-    histPlot(dir+"/hl1phi", file, canvas, scale, True, "", "#phi", "")
+    histPlot(dir+"/hl1et", file, ofile, scale, True, "", "E_{L1} (GeV)", "")
+    histPlot(dir+"/hl1eta", file, ofile, scale, True, "", "#eta", "")
+    histPlot(dir+"/hl1phi", file, ofile, scale, True, "", "#phi", "")
     
     # HLT
-    histPlot(dir+"/hhlte", file, canvas, scale, True, "", "E_{HLT} (GeV)", "")
-    histPlot(dir+"/hhlteta", file, canvas, scale, True, "", "#eta", "")
-    histPlot(dir+"/hhltphi", file, canvas, scale, True, "", "#phi", "")
+    histPlot(dir+"/hhlte", file, ofile, scale, True, "", "E_{HLT} (GeV)", "")
+    histPlot(dir+"/hhlteta", file, ofile, scale, True, "", "#eta", "")
+    histPlot(dir+"/hhltphi", file, ofile, scale, True, "", "#phi", "")
 
     # misc
-    histPlot(dir+"/hntowsamephi", file, canvas, scale, True, "", "N_{towers}", "")
+    histPlot(dir+"/hntowsamephi", file, ofile, scale, True, "", "N_{towers}", "")
 
     # jet variables
-    histPlot(dir+"/hjete2", file, canvas, scale, True, "", "E (GeV)", "E")
-    histPlot(dir+"/hjeteta", file, canvas, scale, True, "", "#eta", "E")
-    histPlot(dir+"/hjetphi", file, canvas, scale, True, "", "#phi", "E")
-    histPlot(dir+"/hjetem", file, canvas, scale, True, "", "E_{ECAL}", "E")
-    histPlot(dir+"/hjethad", file, canvas, scale, True, "", "E_{HCAL}", "E")
-    histPlot(dir+"/hjetn60", file, canvas, scale, True, "", "n60", "E")
-    histPlot(dir+"/hjetn90", file, canvas, scale, True, "", "n90", "E")
+    histPlot(dir+"/hjete2", file, ofile, scale, True, "", "E (GeV)", "E")
+    histPlot(dir+"/hjeteta", file, ofile, scale, True, "", "#eta", "E")
+    histPlot(dir+"/hjetphi", file, ofile, scale, True, "", "#phi", "E")
+    histPlot(dir+"/hjetem", file, ofile, scale, True, "", "E_{ECAL}", "E")
+    histPlot(dir+"/hjethad", file, ofile, scale, True, "", "E_{HCAL}", "E")
+    histPlot(dir+"/hjetn60", file, ofile, scale, True, "", "n60", "E")
+    histPlot(dir+"/hjetn90", file, ofile, scale, True, "", "n90", "E")
 
     # muon variables
-    histPlot(dir+"/hnmu", file, canvas, scale, True, "", "N_{#mu}", "")
+    histPlot(dir+"/hnmu", file, ofile, scale, True, "", "N_{#mu}", "")
 
 
     # pulse shape variables
-    histPlot(dir+"/hr1", file, canvas, scale, False, "", "R1", "")
-    histPlot(dir+"/hr2", file, canvas, scale, False, "", "R2", "")
-    histPlot(dir+"/hpk", file, canvas, scale, False, "", "R_{peak}", "")
-    histPlot(dir+"/hout", file, canvas, scale, False, "", "R_{outer}", "")
+    histPlot(dir+"/hr1", file, ofile, scale, False, "", "R1", "")
+    histPlot(dir+"/hr2", file, ofile, scale, False, "", "R2", "")
+    histPlot(dir+"/hpk", file, ofile, scale, False, "", "R_{peak}", "")
+    histPlot(dir+"/hout", file, ofile, scale, False, "", "R_{outer}", "")
 
     # 2D timing plots
-    hist2DPlot(dir+"/hr1r2", file, canvas, scale, True, "", "R_{2}", "R_{1}", "", "CONT")
-    hist2DPlot(dir+"/hpkout", file, canvas, scale, True, "", "R_{out}", "R_{peak}", "", "CONT")
+    hist2DPlot(dir+"/hr1r2", file, ofile, scale, True, "", "R_{2}", "R_{1}", "", "CONT")
+    hist2DPlot(dir+"/hpkout", file, ofile, scale, True, "", "R_{out}", "R_{peak}", "", "CONT")
 
 
 
@@ -60,6 +58,11 @@ def basicHistos(tree, file, dir, cuts, scale) :
     if (dir!=""):
         file.mkdir(dir)
         file.cd(dir)
+
+    histogram1D(tree, "hbx", "bx>>hbx", cuts, 1., "BX number (new)", 3564, 0., 3564.)
+    histogram1D(tree, "horb", "orbit>>horb", cuts, 1., "Orbit number (new)", 100, 0., 10000.)    
+    hlb=histogram1D(tree, "hlb", "lb>>hlb", cuts, 1., "Lumi block", 2000, 0., 2000.)  
+    histogram1D(tree, "htime", "time>>htime", cuts, 1., "Event time", 100, 0., 1.E8)
 
     # trigger
     histogram1D(tree, "hl1et", "l1Jets[0].et>>hl1et", cuts, scale, "Leading L1 jet E_{t} (new)", 100, 0., 200.)  

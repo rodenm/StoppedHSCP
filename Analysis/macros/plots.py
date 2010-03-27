@@ -11,7 +11,10 @@ from math import pi
 
 
 # just plot one quantity
-def histPlot(hist, file, canvas, scale=0., log=False, title="histogram", xtitle="", ytitle="", opt="HIST") :
+def histPlot(hist, file, ofilename, scale=0, log=False, title="histogram", xtitle="", ytitle="", opt="HIST") :
+    
+    canvas=TCanvas("canvas")
+
     h = file.Get(hist)
 
     if (scale>0.) :
@@ -36,14 +39,18 @@ def histPlot(hist, file, canvas, scale=0., log=False, title="histogram", xtitle=
 
     h.Draw(opt)
 
-    canvas.Update()
+#    canvas.Update()
+    canvas.Print(ofilename)
 
 
 
 # make a 2D plot
 # scale=0. -> do not scale
 # scale=-1 -> normalise to unit area
-def hist2DPlot(hist, file, canvas, scale=0., log=False, title="histogram", xtitle="", ytitle="", ztitle="", opt="") :
+def hist2DPlot(hist, file, ofilename, scale=0., log=False, title="histogram", xtitle="", ytitle="", ztitle="", opt="") :
+
+    canvas=TCanvas("canvas")
+
     h = file.Get(hist)
 
     if (scale>0.) :
@@ -71,7 +78,8 @@ def hist2DPlot(hist, file, canvas, scale=0., log=False, title="histogram", xtitl
 
     h.Draw(opt)
 
-    canvas.Update()
+#    canvas.Update()
+    canvas.Print(ofilename)
 
 
 # superimpose multiple histograms

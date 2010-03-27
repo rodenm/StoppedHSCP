@@ -37,11 +37,11 @@ def makeBasicHistos(tree, filebase, cutObj, run):
     c3 = TCut(cutObj.allCuts())
     c3 += c1
 
-    rateHistos(tree, hfile, cutObj, 1.)
+    rateHistos(tree, hfile, oldcuts, run, 1.)
     basicHistos(tree, hfile, "NoCuts",  c1, 1.)
     basicHistos(tree, hfile, "JetMuCuts", c2, 1.)
     basicHistos(tree, hfile, "AllCuts", c3, 1.)
-    effHistos(tree, hfile, cutObj, 1.)
+    effHistos(tree, hfile, oldjmcuts, 1.)
 
     hfile.Close()
 
@@ -56,16 +56,22 @@ def makeBasicPlots(filebase, run):
     hfile = TFile(filename+".root","read")
 
     # make plot file
-    ps = TPostScript(filename+".ps")
     canvas = TCanvas("canvas")
+#    ps = TPostScript(filename+".ps", 111)
+    canvas.Print(filename+".ps[", "Portrait")
 
-    ratePlots(hfile)
-    basicPlots(hfile, "NoCuts", 1.)
-    basicPlots(hfile, "JetMuCuts", 1.)
-    basicPlots(hfile, "AllCuts", 1.)
-    effPlots(hfile)
+    if (run!=0):
+        ratePlots(hfile, filename+".ps")
 
-    ps.Close()
+    basicPlots(hfile, "NoCuts", 1., filename+".ps")
+    basicPlots(hfile, "JetMuCuts", 1., filename+".ps")
+    basicPlots(hfile, "AllCuts", 1., filename+".ps")
+    effPlots(hfile, filename+".ps")
+
+    canvas = TCanvas("canvas")
+    canvas.Print(filename+".ps]")
+
+#    ps.Close()
     subprocess.call(["ps2pdf", filename+".ps", filename+".pdf"])
     subprocess.call(["rm", filename+".ps"])
 
@@ -118,9 +124,6 @@ rfile = TFile(rfilename)
 runtree = rfile.Get("StoppedHSCPRunTree")
 
 cutObj=oldcuts
-
-# print info
-printInfo(tree, runtree, cutObj)
 
 # make histograms for dataset
 filebase=odir+"/"+label

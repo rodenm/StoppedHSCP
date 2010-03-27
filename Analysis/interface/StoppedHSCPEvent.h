@@ -15,14 +15,14 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.13 2009/12/23 22:34:57 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.14 2010/03/22 12:51:15 jbrooke Exp $
 //
 //
 
 
 #include <vector>
 #include "TObject.h"
-#include "boost/cstdint.hpp"
+//#include "boost/cstdint.hpp"
 
 namespace shscp {
     
