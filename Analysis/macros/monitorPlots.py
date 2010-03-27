@@ -1,4 +1,7 @@
 
+# this macro reads 'per run' histogram files
+# and produces history plots of interesting quantities
+
 from ROOT import *
 
 from style import *
@@ -8,7 +11,7 @@ from cuts import *
 from math import sqrt
 
 
-def monitorPlots(tree, runtree):
+def monitorPlots(tree, runs):
 
     # make plots of rate by run
     allruns=getRuns(runtree)
