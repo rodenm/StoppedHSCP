@@ -4,7 +4,7 @@ pwd=$PWD
 
 # prompt analysis directory
 export CAFDIR=/afs/cern.ch/cms/CAF/CMSCOMM/COMM_TRIGGER/jbrooke/gluinos
-export CMSVER=CMSSW_3_5_4
+export CMSVER=CMSSW_3_5_5
 
 # GRID UI
 source /afs/cern.ch/cms/LCG/LCG-2/UI/cms_ui_env.sh
