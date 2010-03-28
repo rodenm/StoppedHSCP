@@ -1,5 +1,7 @@
 #include "StoppedHSCP/Analysis/interface/StoppedHSCPEvent.h"
 
+#include <iostream>
+
 using namespace shscp;
 
 StoppedHSCPEvent::StoppedHSCPEvent() :
@@ -146,6 +148,22 @@ shscp::HcalDigi StoppedHSCPEvent::getDigi(unsigned i) {
   else return shscp::HcalDigi();
 }
 
+void StoppedHSCPEvent::Dump() {
+
+  using namespace std;
+
+  cout << "New tree info :" << endl;
+  cout << "Run          " << run << endl;
+  cout << "Event        " << id << endl;
+  cout << "LS           " << lb << endl;
+  cout << "nTowSameiPhi " << nTowerSameiPhi << endl;
+  cout << "Jet energy   " << jets[0].e << endl;
+  cout << "Jet eta      " << jets[0].eta << endl;
+  cout << "Jet n90      " << jets[0].n90 << endl;
+  cout << "Jet n60      " << jets[0].n60 << endl;
+  cout << "nMuon        " << nMuon << endl;
+
+}
 
 #if !defined(__CINT__)
   ClassImp(StoppedHSCPEvent)

@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.14 2010/03/22 12:51:15 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.15 2010/03/27 00:36:11 jbrooke Exp $
 //
 //
 
@@ -172,6 +172,9 @@ class StoppedHSCPEvent : public TObject {
   shscp::Tower getTower(unsigned i);
   shscp::HPD getHPD(unsigned i);
   shscp::HcalDigi getDigi(unsigned i);
+
+  // utils
+  void Dump();
 
  public:  // data
 
