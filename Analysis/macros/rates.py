@@ -4,6 +4,7 @@ from ROOT import *
 
 from histograms import *
 from plots import *
+from cuts import *
 
 
 lumiBlockLength = 25. * 1e-9 * 3564 * pow(2., 20)
@@ -22,8 +23,10 @@ def ratePlots(file, ofilename):
 
     histPlot(dir+"/hlbtim", file, ofilename, 0., True, "", "LS", "Rate")
     histPlot(dir+"/hlbtimdist", file, ofilename,  0., True, "", "Rate", "N LS")
-    histPlot(dir+"/hlbtimdist", file, ofilename, 0., True, "", "Rate", "N LS")
 
+    histPlot(dir+"/hlbfin", file, ofilename, 0., True, "", "LS", "Rate")
+    histPlot(dir+"/hlbfindist", file, ofilename,  0., True, "", "Rate", "N LS")
+    histPlot(dir+"/hlbfindist", file, ofilename,  0., True, "", "Rate", "N LS")
 
 def rateHistos(tree, file, cutObj, run, scale):
 
@@ -56,6 +59,10 @@ def rateHistos(tree, file, cutObj, run, scale):
     hlbtim=histogram1D(tree, "hlbtim", "lb>>hlbtim", c3, 1./lumiBlockLength, "Lumi block", 2000, 0., 2000.)  
     rateDist(hlbtim, 100)
 
+    # rate after all cuts
+    hlbfin=histogram1D(tree, "hlbfin", "lb>>hlbfin", cutObj.allCuts(), 1./lumiBlockLength, "Lumi block", 2000, 0., 2000.)  
+    rateDist(hlbfin, 100)
+
     file.cd()
 
 
@@ -71,8 +78,8 @@ def rateDist(rateByTime, nbins):
         if (r>0.):
             h.Fill(r)
     
-    f = TF1(name+"fit", "gaus")
-    h.Fit(name+"fit", "")       
+    f = TF1("fit", "gaus")
+    h.Fit("fit", "")       
 
     h.Write()
 
