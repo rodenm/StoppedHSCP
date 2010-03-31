@@ -13,12 +13,12 @@ from math import *
 
 def getHistMeanAndErr(file, hname):
     ratedist = file.Get(hname)
-    return ratedist.GetMean(), ratedist.GetRMS()
+    return ratedist.GetMean(), ratedist.GetMeanError()
 
 def getFitMeanAndErr(file, hname):
     ratedist = file.Get(hname)
     fit = ratedist.GetFunction("fit")
-    return fit.GetParameter(1), fit.GetParameter(2)
+    return fit.GetParameter(1), fit.GetParError(1)
 
 # runs argument is list of runs (eg. getRuns(runtree))
 def monitorPlots(tree, runs, dir, runtree):
