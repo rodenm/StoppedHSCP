@@ -17,6 +17,7 @@ from cuts import *
 from basicDistributions import *
 from efficiency import *
 from rates import *
+from monitorPlots import *
 
 
 # write histo file
@@ -137,6 +138,11 @@ for run in getRuns(runtree):
     makeBasicHistos(tree, filebase, cutObj, run)
     makeBasicPlots(filebase, run)
 
+# make "by run" plots
+#runs=getRuns(runtree)
+#runs=[110958, 110972, 110987, 111009, 111039]
+runs = [124022, 124023, 124025, 124027, 124115, 124228, 124230]
+monitorPlots(tree, runs, label, runtree)
 
 tar = tarfile.open(name = odir+".tgz", mode = 'w:gz')
 tar.add(label)
