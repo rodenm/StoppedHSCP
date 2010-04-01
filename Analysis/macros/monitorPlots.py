@@ -98,7 +98,7 @@ def monitorPlots(tree, runs, dir, runtree):
     hltfitrate.SetLineColor(4)
     hltfitrate.Draw("P E1 SAME")
     canvas.Update()
-    canvas.Print(dir+"/"+dir+"hltRate.png")
+    canvas.Print(dir+"/"+dir+"_hltRate.png")
 
     murate.SetMarkerStyle(22)
     murate.SetMarkerColor(2)
@@ -109,7 +109,7 @@ def monitorPlots(tree, runs, dir, runtree):
     mufitrate.SetLineColor(4)
     mufitrate.Draw("P E1 SAME")
     canvas.Update()
-    canvas.Print(dir+"/"+dir+"muRate.png")
+    canvas.Print(dir+"/"+dir+"_muRate.png")
 
     timrate.SetMarkerStyle(22)
     timrate.SetMarkerColor(2)
@@ -120,7 +120,7 @@ def monitorPlots(tree, runs, dir, runtree):
     timfitrate.SetLineColor(4)
     timfitrate.Draw("P E1 SAME")
     canvas.Update()
-    canvas.Print(dir+"/"+dir+"timRate.png")
+    canvas.Print(dir+"/"+dir+"_timRate.png")
 
 #    finrate.SetMarkerStyle(22)
 #    finrate.SetMarkerColor(2)
