@@ -8,7 +8,7 @@ process.load('FWCore/MessageService/MessageLogger_cfi')
 process.MessageLogger.cerr.INFO.limit = cms.untracked.int32(10)
 
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
-process.GlobalTag.globaltag = "GR09_31X_V5P::All"
+process.GlobalTag.globaltag = "GR10_P_V4::All"
 
 process.options = cms.untracked.PSet(
     Rethrow = cms.untracked.vstring('ProductNotFound')

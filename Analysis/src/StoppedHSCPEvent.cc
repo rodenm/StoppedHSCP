@@ -31,6 +31,11 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   rHadPt(0.),
   nTowerSameiPhi(0),
   nL1Jet(0),
+//   l1jetType(0),
+//   l1jetE(0),
+//   l1jetEt(0),
+//   l1jetEta(0),
+//   l1jetPhi(0),
   nHltJet(0),
   nMCDecay(0),
   nJet(0),
@@ -38,10 +43,24 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   nTower(0),
   nHpd(0),
   nDigi(0),
+  leadingDigiIEta(-999),
+  leadingDigiIPhi(-999),
   leadingDigiTimeSamples(10),
-  top5DigiTimeSamples(10)
+  leadingDigiPeakSample(0),
+  leadingDigiTotal(-999.),
+  leadingDigiR1(-999.),
+  leadingDigiR2(-999.),
+  leadingDigiRPeak(-999.),
+  leadingDigiROuter(-999.),
+  top5DigiTimeSamples(10),
+  top5DigiPeakSample(0),
+  top5DigiTotal(-999.),
+  top5DigiR1(-999.),
+  top5DigiR2(-999.),
+  top5DigiRPeak(-999.),
+  top5DigiROuter(-999.) 
 {
-
+  
   for (int k=0; k<10; ++k) { 
     leadingDigiTimeSamples.at(k)=0.;
     top5DigiTimeSamples.at(k)=0.; 
@@ -63,6 +82,11 @@ void StoppedHSCPEvent::addMCDecay(MCDecay d) {
 void StoppedHSCPEvent::addL1Jet(TrigJet j) {
   if (nL1Jet < MAX_N_TRIGJETS) {
     l1Jets[nL1Jet] = j;
+//     l1jetType.push_back(j.type);
+//     l1jetE.push_back(j.e);
+//     l1jetEt.push_back(j.et);
+//     l1jetEta.push_back(j.eta);
+//     l1jetPhi.push_back(j.phi);
     ++nL1Jet;
   }
 }

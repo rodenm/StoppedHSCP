@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.25 2010/03/23 17:24:08 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.26 2010/04/12 19:35:52 jbrooke Exp $
 //
 //
 
@@ -278,9 +278,8 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
 }
 
 
-StoppedHSCPTreeProducer::~StoppedHSCPTreeProducer()
-{
- 
+StoppedHSCPTreeProducer::~StoppedHSCPTreeProducer() {
+
    // do anything here that needs to be done at desctruction time
    // (e.g. close files, deallocate resources etc.)
 
@@ -930,52 +929,69 @@ void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent) {
     }
 
     // find peaks in time samples and totals
-    event_->leadingDigiPeakSample=0;
-    event_->leadingDigiTotal=0.;
-    event_->top5DigiPeakSample=0;
-    event_->top5DigiTotal=0.;
-
     for (int i=0; i<10; ++i) {
-      if (event_->leadingDigiTimeSamples.at(i) >= event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample)) {
+
+      if (event_->leadingDigiTimeSamples.at(i) > event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample)) {
 	event_->leadingDigiPeakSample = i;
       }
       event_->leadingDigiTotal += event_->leadingDigiTimeSamples.at(i);
-      if (event_->top5DigiTimeSamples.at(i) >= event_->top5DigiTimeSamples.at(event_->top5DigiPeakSample)) {
+
+      if (event_->top5DigiTimeSamples.at(i) > event_->top5DigiTimeSamples.at(event_->top5DigiPeakSample)) {
 	event_->top5DigiPeakSample = i;
       }
       event_->top5DigiTotal += event_->top5DigiTimeSamples.at(i);
+
     }
 
-    // compute ratios - R1
-    event_->leadingDigiR1 = 0.;
+    // compute ratios - R1 leading digi
     if (event_->leadingDigiPeakSample < 9) {
-      if (event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample+1) > 0.) {
-	event_->leadingDigiR1 = event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample) / 
-	  event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample+1);
-      }
-      else event_->leadingDigiR1 = 1.;
+      event_->leadingDigiR1 = event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample+1) / 
+	event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample);
     }
     else {
-      event_->leadingDigiR1 = 0.;
+      event_->leadingDigiR1 = -999.;
     }
 
-    // R2
-    event_->leadingDigiR2 = 0.;
+    // R1 top 5
+    if (event_->top5DigiPeakSample < 9) {
+      event_->top5DigiR1 = event_->top5DigiTimeSamples.at(event_->top5DigiPeakSample+1) / 
+	event_->top5DigiTimeSamples.at(event_->top5DigiPeakSample);
+    }
+    else {
+      event_->top5DigiR1 = -999.;
+    }
+
+    // R2 leading digi
     if (event_->leadingDigiPeakSample < 8) {
-      if (event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample+2) > 0.) {
-	event_->leadingDigiR2 = event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample+1) / 
-	  event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample+2);
+      if (event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample+1) > 0.) {
+	event_->leadingDigiR2 = event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample+2) / 
+	  event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample+1);
       }
       else event_->leadingDigiR2 = 1.;
     }
     else {
-      event_->leadingDigiR2 = 0.;
+      event_->leadingDigiR2 = -999.;
+    }
+
+    // R2 top 5
+    if (event_->top5DigiPeakSample < 8) {
+      if (event_->top5DigiTimeSamples.at(event_->top5DigiPeakSample+1) > 0.) {
+	event_->top5DigiR2 = event_->top5DigiTimeSamples.at(event_->top5DigiPeakSample+2) / 
+	  event_->top5DigiTimeSamples.at(event_->top5DigiPeakSample+1);
+      }
+      else event_->top5DigiR2 = 1.;
+    }
+    else {
+      event_->top5DigiR2 = -999.;
     }
     
-    // Rpeak
+    // Rpeak - leading digi
     event_->leadingDigiRPeak = event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample) / event_->leadingDigiTotal;
 
-    // Router
+    // Rpeak - top 5
+    event_->top5DigiRPeak = event_->top5DigiTimeSamples.at(event_->top5DigiPeakSample) / event_->top5DigiTotal;
+
+    // Router leading digi
     if (event_->leadingDigiPeakSample < 8 && event_->leadingDigiPeakSample > 0) {
       event_->leadingDigiROuter = 1 - ((event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample-1) +
 				event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample) +
@@ -985,6 +1001,18 @@ void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent) {
     }
     else {
       event_->leadingDigiROuter = 0.;
+    }
+
+    // Router top 5
+    if (event_->top5DigiPeakSample < 8 && event_->top5DigiPeakSample > 0) {
+      event_->top5DigiROuter = 1 - ((event_->top5DigiTimeSamples.at(event_->top5DigiPeakSample-1) +
+				event_->top5DigiTimeSamples.at(event_->top5DigiPeakSample) +
+				event_->top5DigiTimeSamples.at(event_->top5DigiPeakSample+1) +
+				event_->top5DigiTimeSamples.at(event_->top5DigiPeakSample+2)) /
+			       event_->top5DigiTotal);
+    }
+    else {
+      event_->top5DigiROuter = 0.;
     }
 
   }

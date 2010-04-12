@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.16 2010/03/28 20:04:17 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.17 2010/04/12 19:35:52 jbrooke Exp $
 //
 //
 
@@ -233,6 +233,11 @@ class StoppedHSCPEvent : public TObject {
 
   // arrays
   unsigned nL1Jet;
+/*   std::vector<unsigned> l1jetType; */
+/*   std::vector<double> l1jetE; */
+/*   std::vector<double> l1jetEt; */
+/*   std::vector<double> l1jetEta; */
+/*   std::vector<double> l1jetPhi; */
   shscp::TrigJet l1Jets[MAX_N_TRIGJETS];
 
   unsigned nHltJet;
@@ -256,7 +261,7 @@ class StoppedHSCPEvent : public TObject {
   unsigned nDigi;
   shscp::HcalDigi digis[MAX_N_DIGIS];
 
-  ClassDef(StoppedHSCPEvent,3);
+  ClassDef(StoppedHSCPEvent,4);
 
 };
 
