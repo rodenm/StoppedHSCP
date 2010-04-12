@@ -65,8 +65,10 @@ secFiles = cms.untracked.vstring()
 process.source = cms.Source ("PoolSource",fileNames = readFiles, secondaryFileNames = secFiles)
 
 readFiles.extend( [
-        '/store/data/CRAFT09/Calo/RAW-RECO/StoppedHSCP-CRAFT09_R_V4_CosmicsSeq_v1/0044/0A369A8B-0EBF-DE11-B9A9-001A92971BB8.root',
-        '/store/data/CRAFT09/Calo/RAW-RECO/StoppedHSCP-CRAFT09_R_V4_CosmicsSeq_v1/0041/F6D84B79-82BD-DE11-9D3C-002618943973.root'
+        '/store/data/Commissioning10/MinimumBias/RAW-RECO/v8/000/132/918/FED85076-BA43-DF11-9ED1-00E08178C025.root',
+        '/store/data/Commissioning10/MinimumBias/RAW-RECO/v8/000/132/918/64DC6C15-B443-DF11-8C1A-0025B3E05CAA.root',
+        '/store/data/Commissioning10/MinimumBias/RAW-RECO/v8/000/132/918/0A189C19-B843-DF11-9F3D-00E08178C025.root',
+        '/store/data/Commissioning10/MinimumBias/RAW-RECO/v8/000/132/918/08408058-B543-DF11-B5E0-003048D46034.root'
 ] );
 
 

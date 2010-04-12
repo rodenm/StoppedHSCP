@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.24 2010/03/22 12:50:48 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.25 2010/03/23 17:24:08 jbrooke Exp $
 //
 //
 
@@ -117,6 +117,7 @@ private:
   void doHcalNoise(const edm::Event&);
   void doDigisAboveThreshold(const edm::Event&);
   void doDigisInJets(const edm::Event&);
+  void doTimingFromDigis(const edm::Event&);
 
 public:
   
@@ -328,6 +329,7 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
     doJets(iEvent);
     doMuons(iEvent);
     doHcalNoise(iEvent);
+    doTimingFromDigis(iEvent);
   }
   
   tree_->Fill();
@@ -886,3 +888,106 @@ void StoppedHSCPTreeProducer::doDigisAboveThreshold(const edm::Event& iEvent) {
   }
 
 }
+
+
+
+void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent) {
+
+  edm::Handle<HBHEDigiCollection > hcalDigis;
+  iEvent.getByLabel(hcalDigiTag_,hcalDigis);
+    
+  if (hcalDigis.isValid()) {
+
+    int count=0;
+
+    // copy and sort digis
+    std::vector<HBHEDataFrame> digis;
+    digis.insert(digis.end(), hcalDigis->begin(), hcalDigis->end());
+    sort(digis.begin(), digis.end(), digi_gt());
+
+    // loop over digis
+    for(HBHEDigiCollection::const_iterator it=digis.begin();
+	it!=digis.end();
+	it++, count++) {
+      
+      // store ieta, iphi and time samples of leading digi
+      if (count==0) {
+	event_->leadingDigiIEta=it->id().ieta();
+	event_->leadingDigiIPhi=it->id().iphi();
+
+	for (int i=0; i<10; ++i) {
+	  event_->leadingDigiTimeSamples.at(i) = it->sample(i).nominal_fC();
+	}
+      }
+
+      // store time samples of leading five digis
+      if (count < 5) {
+	for (int i=0; i<10; ++i) {
+	  event_->top5DigiTimeSamples.at(i) += it->sample(i).nominal_fC();
+	}
+      }
+      
+    }
+
+    // find peaks in time samples and totals
+    event_->leadingDigiPeakSample=0;
+    event_->leadingDigiTotal=0.;
+    event_->top5DigiPeakSample=0;
+    event_->top5DigiTotal=0.;
+
+    for (int i=0; i<10; ++i) {
+      if (event_->leadingDigiTimeSamples.at(i) >= event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample)) {
+	event_->leadingDigiPeakSample = i;
+      }
+      event_->leadingDigiTotal += event_->leadingDigiTimeSamples.at(i);
+      if (event_->top5DigiTimeSamples.at(i) >= event_->top5DigiTimeSamples.at(event_->top5DigiPeakSample)) {
+	event_->top5DigiPeakSample = i;
+      }
+      event_->top5DigiTotal += event_->top5DigiTimeSamples.at(i);
+    }
+
+    // compute ratios - R1
+    event_->leadingDigiR1 = 0.;
+    if (event_->leadingDigiPeakSample < 9) {
+      if (event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample+1) > 0.) {
+	event_->leadingDigiR1 = event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample) / 
+	  event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample+1);
+      }
+      else event_->leadingDigiR1 = 1.;
+    }
+    else {
+      event_->leadingDigiR1 = 0.;
+    }
+
+    // R2
+    event_->leadingDigiR2 = 0.;
+    if (event_->leadingDigiPeakSample < 8) {
+      if (event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample+2) > 0.) {
+	event_->leadingDigiR2 = event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample+1) / 
+	  event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample+2);
+      }
+      else event_->leadingDigiR2 = 1.;
+    }
+    else {
+      event_->leadingDigiR2 = 0.;
+    }
+    
+    // Rpeak
+    event_->leadingDigiRPeak = event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample) / event_->leadingDigiTotal;
+
+    // Router
+    if (event_->leadingDigiPeakSample < 8 && event_->leadingDigiPeakSample > 0) {
+      event_->leadingDigiROuter = 1 - ((event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample-1) +
+				event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample) +
+				event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample+1) +
+				event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample+2)) /
+			       event_->leadingDigiTotal);
+    }
+    else {
+      event_->leadingDigiROuter = 0.;
+    }
+
+  }
+
+}
+

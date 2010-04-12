@@ -37,8 +37,16 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   nMuon(0),
   nTower(0),
   nHpd(0),
-  nDigi(0)
+  nDigi(0),
+  leadingDigiTimeSamples(10),
+  top5DigiTimeSamples(10)
 {
+
+  for (int k=0; k<10; ++k) { 
+    leadingDigiTimeSamples.at(k)=0.;
+    top5DigiTimeSamples.at(k)=0.; 
+  }
+
 }
 
 StoppedHSCPEvent::~StoppedHSCPEvent() { }
