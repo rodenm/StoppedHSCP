@@ -4,12 +4,18 @@
 # plots currently in png format, since this is designed for prompt monitoring
 
 from ROOT import *
+from math import *
+
 
 from style import *
 from utils import *
 from cuts import *
 
-from math import *
+
+def histByRun(name, title, nruns):
+    h = TH1D(name, title, nruns, 0, 0)
+    h.Sumw2()
+    return h
 
 def getHistMeanAndErr(file, hname):
     ratedist = file.Get(hname)
@@ -20,136 +26,144 @@ def getFitMeanAndErr(file, hname):
     fit = ratedist.GetFunction("fit")
     return fit.GetParameter(1), fit.GetParError(1)
 
+def plotMulti(histos, file, log, min=0, max=0):
+    canvas=TCanvas()
+    if (log):
+        canvas.SetLogy(1)
+    if (max>0.):
+        histos[0].SetMaximum(max)
+        histos[0].SetMinimum(min)
+    markers = [ 22, 25, 27, 28, 29 ]
+    colours = [ 2, 4, 5, 6, 7 ]
+    first=True
+    for hist, marker, colour in zip(histos, markers, colours):
+        hist.SetMarkerStyle(marker)
+        hist.SetMarkerColor(colour)
+        hist.SetLineColor(colour)
+        if (first):
+            hist.Draw("P E1")
+            first=False
+        else:
+            hist.Draw("P E1 SAME")
+    canvas.Update()
+    canvas.Print(file)
+
+
 # runs argument is list of runs (eg. getRuns(runtree))
-def monitorPlots(tree, runs, dir, runtree):
+def monitorPlots(tree, cutObj, runs, dir):
 
     # make plots of rate by run
-#    allruns=getRuns(runtree)
     nruns=len(runs)
-    
-    # declare histos
-    hltrate=TH1D("hltrate", "HLT rate", nruns, 0, 0)
-    hltrate.Sumw2()
-    hltfitrate=TH1D("hltfitrate", "HLT rate", nruns, 0, 0)
-    hltfitrate.Sumw2()
 
-    murate=TH1D("murate", "Muon rate", nruns, 0, 0)
-    murate.Sumw2()
-    mufitrate=TH1D("mufitrate", "Muon rate", nruns, 0, 0)
-    mufitrate.Sumw2()
+    # histos
+    hratehlt    = histByRun("hratehlt", "HLT rate", nruns)
+    hratehltfit = histByRun("hratehltfit", "HLT rate (fit)", nruns)
+    hratemu     = histByRun("hratemu", "Muon rate", nruns)
+    hratemufit  = histByRun("hratemufit", "Muon rate (fit)", nruns)
+    hratetim    = histByRun("hratetim", "Rate failing timing cuts", nruns)
+    hratetimfit = histByRun("hratetimfit", "Rate failing timing cuts (fit)", nruns)
+    hratefin    = histByRun("hratefin", "Final rate", nruns)
+    hnhlt       = histByRun("hnhlt", "HLT counts", nruns)
+    hnfin       = histByRun("hnfin", "Final counts", nruns)
+    hefftime    = histByRun("hefftime", "EFfective live time", nruns)
+    hlivetime   = histByRun("hlivetime", "Live time", nruns)
 
-    timrate=TH1D("timrate", "Rate failing timing cuts", nruns, 0, 0)
-    timrate.Sumw2()
-    timfitrate=TH1D("timfitrate", "Rate failing timing cuts", nruns, 0, 0)
-    timfitrate.Sumw2()
+    hratecuts = []
+    for c in range(0,10):
+        hratecuts.append(histByRun("hratecut"+str(c), "Rate cut "+str(c), nruns))
+        
 
-     # fill histograms from "rate per LS" fits
+    # fill histograms from "rate per LS" fits
     i=0
     for run in runs:
 
         file = TFile(dir+"/"+dir+"-"+str(run)+".root")
 
+        # HLT counts
+        hlb=file.Get("NoCuts/hlb")
+        nhlt=hlb.GetEntries()
+        hnhlt.Fill(str(run), nhlt)
+        hnhlt.SetBinError(i+1, sqrt(nhlt))
+                     
         # HLT rate
-        rate = getHistMeanAndErr(file, "Rates/hlbdist")        
-        hltrate.Fill(str(run), rate[0])
-        hltrate.SetBinError(i+1, rate[1])
+        hltrate = getHistMeanAndErr(file, "Rates/hlbdist")        
+        hratehlt.Fill(str(run), hltrate[0])
+        hratehlt.SetBinError(i+1, hltrate[1])
 
-        fitrate = getFitMeanAndErr(file, "Rates/hlbdist")        
-        hltfitrate.Fill(str(run), fitrate[0])
-        hltfitrate.SetBinError(i+1, fitrate[1])
+        hltfitrate = getFitMeanAndErr(file, "Rates/hlbdist")        
+        hratehltfit.Fill(str(run), hltfitrate[0])
+        hratehltfit.SetBinError(i+1, hltfitrate[1])
         
-        # muon rate
-        rate2 = getHistMeanAndErr(file, "Rates/hlbmudist")        
-        murate.Fill(str(run), rate2[0])
-        murate.SetBinError(i+1, rate2[1])
+        # effective time (HLT rate / nevents)
+        efftime=0.
+        if (hltrate[0] > 0.):
+            efftime = nhlt / hltrate[0]
+        hefftime.Fill(str(run), efftime)
+        hefftime.SetBinError(i+1, 10.)
 
-        fitrate2 = getFitMeanAndErr(file, "Rates/hlbmudist")        
-        mufitrate.Fill(str(run), fitrate2[0])
-        mufitrate.SetBinError(i+1, fitrate2[1])
+        # live time (N non-zero LS after HLT)
+        livetime = getLivetime2(hlb)
+        hlivetime.Fill(str(run), livetime)
+        hlivetime.SetBinError(i+1, 10.)
 
-        # timing cut failure rate
-        rate3 = getHistMeanAndErr(file, "Rates/hlbtimdist")        
-        timrate.Fill(str(run), rate3[0])
-        timrate.SetBinError(i+1, rate3[1])
+        # final counts
+        nevtFinal = nEvents(tree, cutObj.allCuts(), run)
+        hnfin.Fill(str(run), nevtFinal)
+        hnfin.SetBinError(i+1, sqrt(nevtFinal))
 
-        fitrate3 = getFitMeanAndErr(file, "Rates/hlbtimdist")        
-        timfitrate.Fill(str(run), fitrate3[0])
-        timfitrate.SetBinError(i+1, fitrate3[1])
+        # final rate
+        finrate=0.
+        efinrate=0.
+        if (livetime>0.):
+            finrate=nevtFinal / livetime
+            efinrate=sqrt(nevtFinal)/livetime
+        hratefin.Fill(str(run), finrate)
+        hratefin.SetBinError(i+1, efinrate)
+
+        # rate after N cuts
+        cut = TCut("")
+        
+        for c in range(0, 10):
+            cut += cutObj[c]
+            n=nEvents(tree, cut, run)
+            rate=0.
+            erate=0.
+            if (livetime>0.):
+                rate=n/livetime
+                erate=sqrt(n)/livetime
+            hratecuts[c].Fill(str(run), rate)
+            hratecuts[c].SetBinError(i+1, erate)
+
 
         i=i+1
 
-#    hltrate.Scale(1./getLivetime(runtree, run))
-#    jmrate.Scale(1./getLivetime(runtree, run))
-#    allrate.Scale(1./getLivetime(runtree, run))
+
+    # write ROOT file
+    ofile = TFile(dir+"/"+dir+"_Rates.root", "recreate")
+    hratehlt.Write()
+    hratehltfit.Write()
+    hnhlt.Write()
+    hnfin.Write()
+    hefftime.Write()
+    hlivetime.Write()
+    hratefin.Write()
+    hratemu.Write()
+    hratemufit.Write()
+    hratetim.Write()
+    hratetimfit.Write()
+    for i in range(0,10):
+        hratecuts[i].Write()
+    ofile.Close()
                       
     # draw plots
     tdrStyle()
     gROOT.SetStyle("tdrStyle")
     gROOT.ForceStyle()
     
-    canvas=TCanvas()
-
-    hltrate.SetMarkerStyle(22)
-    hltrate.SetMarkerColor(2)
-    hltrate.SetLineColor(2)
-    hltrate.Draw("P E1")
-    hltfitrate.SetMarkerStyle(25)
-    hltfitrate.SetMarkerColor(4)
-    hltfitrate.SetLineColor(4)
-    hltfitrate.Draw("P E1 SAME")
-    canvas.Update()
-    canvas.Print(dir+"/"+dir+"_hltRate.png")
-
-    murate.SetMarkerStyle(22)
-    murate.SetMarkerColor(2)
-    murate.SetLineColor(2)
-    murate.Draw("P E1")
-    mufitrate.SetMarkerStyle(25)
-    mufitrate.SetMarkerColor(4)
-    mufitrate.SetLineColor(4)
-    mufitrate.Draw("P E1 SAME")
-    canvas.Update()
-    canvas.Print(dir+"/"+dir+"_muRate.png")
-
-    timrate.SetMarkerStyle(22)
-    timrate.SetMarkerColor(2)
-    timrate.SetLineColor(2)
-    timrate.Draw("P E1")
-    timfitrate.SetMarkerStyle(25)
-    timfitrate.SetMarkerColor(4)
-    timfitrate.SetLineColor(4)
-    timfitrate.Draw("P E1 SAME")
-    canvas.Update()
-    canvas.Print(dir+"/"+dir+"_timRate.png")
-
-#    finrate.SetMarkerStyle(22)
-#    finrate.SetMarkerColor(2)
-#    finrate.SetLineColor(2)
-#    finrate.Draw("P E1")
-#    finfitrate.SetMarkerStyle(25)
-#    finfitrate.SetMarkerColor(4)
-#    finfitrate.SetLineColor(4)
-#    finfitrate.Draw("P E1 SAME")
-#    canvas.Update()
-#    canvas.Print(dir+"/finRate.png")
-
-
-#    canvas.Update()
-#    canvas.Print(dir+"/hltFitRate.png")
-
-
-#    canvas.Clear()
-#    jmrate.SetMarkerStyle(8)
-#    jmrate.SetMarkerColor(2)
-#    jmrate.Draw("P E")
-#    canvas.Update()
-#    canvas.Print(dir+"jetmuRate.png")
-
-#    canvas.Clear()
-#    allrate.SetMarkerStyle(8)
-#    allrate.SetMarkerColor(2)
-#    allrate.Draw("P E")
-#    canvas.Update()
-#    canvas.Print(dir+"finalRate.png")
-
+    plotMulti([ hratehlt ], dir+"/"+dir+"_hltRate.png", False)
+    plotMulti([ hlivetime, hefftime ], dir+"/"+dir+"_time.png", False)
+    plotMulti([ hnhlt ], dir+"/"+dir+"_hltCounts.png", False)
+    plotMulti([ hnfin ], dir+"/"+dir+"_finalCounts.png", False)
+    plotMulti([ hratefin ], dir+"/"+dir+"_finalRate.png", False)
+    plotMulti([ hratehlt, hratefin ], dir+"/"+dir+"_rates.png", True, 1.e-5, 10.)
 

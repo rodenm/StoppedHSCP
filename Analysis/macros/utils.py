@@ -1,13 +1,17 @@
 
-from math import sqrt
 from ROOT import *
+from math import sqrt
+import os
 
 # useful methods for getting info from the data and run trees
+
+#lumiBlockLength = 25.e-9 * 3564. * pow(2., 20)
+lumiBlockLength = 25.e-9 * 3564. * pow(2., 18)
 
 errTime = 10
 
 def getLivetime(runtree, run):
-    time=0
+    time=0.
     # loop over runs in run TTree
     nruns=runtree.GetEntriesFast()
     for i in range(0,nruns):
@@ -20,6 +24,14 @@ def getLivetime(runtree, run):
         time+=runtree.livetime
         if (runtree.run==run):
             return runtree.livetime
+    return time
+
+
+def getLivetime2(hist) :
+    time=0.
+    for i in range(0,hist.GetNbinsX()):
+        if (hist.GetBinContent(i) > 0.):
+            time += lumiBlockLength
     return time
 
 
@@ -68,6 +80,16 @@ def getRateErr(tree, runtree, cuts, run):
         return 0.
     
 
+def getHistMeanAndErr(file, hname):
+    ratedist = file.Get(hname)
+    return ratedist.GetMean(), ratedist.GetMeanError()
+
+def getFitMeanAndErr(file, hname):
+    ratedist = file.Get(hname)
+    fit = ratedist.GetFunction("fit")
+    return fit.GetParameter(1), fit.GetParError(1)
+
+
 def printInfo(tree, runtree, cutobj):
 
     print "Total events  : ", nEvents(tree, "", 0)
@@ -86,4 +108,10 @@ def printInfo(tree, runtree, cutobj):
         print
 
 
-    
+def makeOutputDir(label):
+    odir = os.getcwd()+"/"+label
+    print "Putting results in "+odir
+    if not os.path.exists(odir):
+        os.makedirs(odir)
+    return odir
+

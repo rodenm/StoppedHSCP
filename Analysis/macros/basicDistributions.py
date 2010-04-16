@@ -39,7 +39,6 @@ def basicPlots(file, dir, scale, ofile):
     # muon variables
     histPlot(dir+"/hnmu", file, ofile, scale, True, "", "N_{#mu}", "")
 
-
     # pulse shape variables
     histPlot(dir+"/hr1", file, ofile, scale, False, "", "R1", "")
     histPlot(dir+"/hr2", file, ofile, scale, False, "", "R2", "")
@@ -51,6 +50,15 @@ def basicPlots(file, dir, scale, ofile):
     hist2DPlot(dir+"/hpkout", file, ofile, scale, True, "", "R_{out}", "R_{peak}", "", "CONT")
 
 
+def timePlots(file, ofilename):
+
+    dir = "NoCuts"
+
+    histPlot(dir+"/hbx", file, ofilename, 0., True, "", "BX", "N events")
+    histPlot(dir+"/hlb", file, ofilename, 0., True, "", "LS", "Rate")
+    histPlot(dir+"/hlbdist", file, ofilename, 0., True, "", "Rate", "N LS")
+
+
 
 # plot some basic distributions
 def basicHistos(tree, file, dir, cuts, scale) :
@@ -59,10 +67,14 @@ def basicHistos(tree, file, dir, cuts, scale) :
         file.mkdir(dir)
         file.cd(dir)
 
-    histogram1D(tree, "hbx", "bx>>hbx", cuts, 1., "BX number (new)", 3564, 0., 3564.)
-    histogram1D(tree, "horb", "orbit>>horb", cuts, 1., "Orbit number (new)", 100, 0., 10000.)    
-    hlb=histogram1D(tree, "hlb", "lb>>hlb", cuts, 1., "Lumi block", 2000, 0., 2000.)  
-    histogram1D(tree, "htime", "time>>htime", cuts, 1., "Event time", 100, 0., 1.E8)
+    histogram1D(tree, "hbx", "bx>>hbx", cuts, scale, "BX number (new)", 3564, 0., 3564.)
+    histogram1D(tree, "horb", "orbit>>horb", cuts, scale, "Orbit number (new)", 100, 0., 10000.)    
+    hlb=histogram1D(tree, "hlb", "lb>>hlb", cuts, scale, "Lumi block", 2000, 0., 2000.)  
+    histogram1D(tree, "htime", "time>>htime", cuts, scale, "Event time", 100, 0., 1.E8)
+
+    # HLT rate per LS
+    hlb.Scale(1./lumiBlockLength)  
+    rateDist(hlb, 100)
 
     # trigger
     histogram1D(tree, "hl1et", "l1Jets[0].et>>hl1et", cuts, scale, "Leading L1 jet E_{t} (new)", 100, 0., 200.)  

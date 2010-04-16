@@ -83,7 +83,9 @@ def hist2DPlot(hist, file, ofilename, scale=0., log=False, title="histogram", xt
 
 
 # superimpose multiple histograms
-def multiPlot(hists, canvas, norm=False, log=False, title="histogram", xtitle="", ytitle="", opt="HIST") :
+def multiPlot(hists, file, ofilename, norm=False, log=False, title="histogram", xtitle="", ytitle="", opt="HIST", port=False) :
+
+    canvas=TCanvas("canvas")
 
     # set log scale, or not
     if (log) :
@@ -92,44 +94,55 @@ def multiPlot(hists, canvas, norm=False, log=False, title="histogram", xtitle=""
         canvas.SetLogy(0)
 
     # set y axis maximum
-    ymax = 1.1
+    ymax=0.
     if (not norm) :
         for hist in hists:
-            if hist.GetMaximum() > ymax:
-                ymax=1.1*hist.GetMaximum()
-    hists[0].SetMaximum(ymax)
+            h = file.Get(hist)
+            if h.GetMaximum() > ymax:
+                ymax=1.1*h.GetMaximum()
+    else:
+        ymax = 1.1
 
     # set titles
-    if (not (title == "")) :
-        hists[0].SetTitle(title)
-    if (not (ytitle == "")) :
-        hists[0].SetYTitle(ytitle)
-    if (not (xtitle == "")) :
-        hists[0].SetXTitle(xtitle)
 
     # set list of colours
-    colours = [0,1,2,4,5,6,7,8,9]
+    colours = [2, 4, 5, 6, 7, 8, 9, 1]
+    markers = [22, 25, 27, 28, 29, 22, 25, 27, 28]
 
     # iterate over histograms
     first=True
-    for hist,col in zip(hists,colours):
+    for hist,col,mark in zip(hists,colours,markers):
+
+        h = file.Get(hist)
 
         # set colour
-        hist.SetLineColor(col)
-        hist.SetMarkerColor(col)
+        h.SetLineColor(col)
+        h.SetMarkerColor(col)
+        h.SetMarkerStyle(mark)
 
         # normalise if required
-        if (norm and hist.Integral() > 0.):
-            hist.Scale(1./hist.Integral())
+        if (norm and h.Integral() > 0.):
+            h.Scale(1./h.Integral())
 
         # plot histogram
         if first:
-            hist.Draw(opt)
+            if (not (title == "")) :
+                h.SetTitle(title)
+            if (not (ytitle == "")) :
+                h.SetYTitle(ytitle)
+            if (not (xtitle == "")) :
+                h.SetXTitle(xtitle)
+            h.SetMaximum(ymax)
+            h.Draw(opt)
             first=False
         else:
-            hist.Draw(opt+" SAME")
+            h.Draw(opt+" SAME")
 
     canvas.Update()
+    if (port):
+        canvas.Print(ofilename, "Portrait")
+    else:
+        canvas.Print(ofilename)
 
 
 # superimpose 3 plots
@@ -176,3 +189,26 @@ def compPlot(hist, fdata, fcraft, fmc, canvas, norm=False, log=False, title="his
     hmc.Draw("HIST SAME")
 
     canvas.Update()
+
+
+def plotMulti(histos, file, log, min=0, max=0):
+    canvas=TCanvas()
+    if (log):
+        canvas.SetLogy(1)
+    if (max>0.):
+        histos[0].SetMaximum(max)
+        histos[0].SetMinimum(min)
+    markers = [ 22, 25, 27, 28, 29 ]
+    colours = [ 2, 4, 5, 6, 7 ]
+    first=True
+    for hist, marker, colour in zip(histos, markers, colours):
+        hist.SetMarkerStyle(marker)
+        hist.SetMarkerColor(colour)
+        hist.SetLineColor(colour)
+        if (first):
+            hist.Draw("P E1")
+            first=False
+        else:
+            hist.Draw("P E1 SAME")
+    canvas.Update()
+    canvas.Print(file)

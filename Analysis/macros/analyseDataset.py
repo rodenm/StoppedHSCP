@@ -20,63 +20,6 @@ from rates import *
 from monitorPlots import *
 
 
-# write histo file
-def makeBasicHistos(tree, filebase, cutObj, run):
-
-    if (run!=0):
-        filename=filebase+"-"+str(run)
-        c1 = TCut("run=="+str(run))
-    else:
-        filename=filebase
-        c1 = TCut("")
-
-    print "Storing histograms in "+filename+".root"
-    hfile = TFile(filename+".root","recreate")
-
-    c2 = TCut(cutObj.jetMu)
-    c2 += c1
-    c3 = TCut(cutObj.allCuts())
-    c3 += c1
-
-    rateHistos(tree, hfile, oldcuts, run, 1.)
-    basicHistos(tree, hfile, "NoCuts",  c1, 1.)
-    basicHistos(tree, hfile, "JetMuCuts", c2, 1.)
-    basicHistos(tree, hfile, "AllCuts", c3, 1.)
-    effHistos(tree, hfile, oldjmcuts, 1.)
-
-    hfile.Close()
-
-
-def makeBasicPlots(filebase, run):
-
-    if (run!=0):
-        filename=filebase+"-"+str(run)
-    else:
-        filename=filebase
-
-    hfile = TFile(filename+".root","read")
-
-    # make plot file
-    canvas = TCanvas("canvas")
-#    ps = TPostScript(filename+".ps", 111)
-    canvas.Print(filename+".ps[", "Portrait")
-
-    if (run!=0):
-        ratePlots(hfile, filename+".ps")
-
-    basicPlots(hfile, "NoCuts", 1., filename+".ps")
-    basicPlots(hfile, "JetMuCuts", 1., filename+".ps")
-    basicPlots(hfile, "AllCuts", 1., filename+".ps")
-    effPlots(hfile, filename+".ps")
-
-    canvas = TCanvas("canvas")
-    canvas.Print(filename+".ps]")
-
-#    ps.Close()
-    subprocess.call(["ps2pdf", filename+".ps", filename+".pdf"])
-    subprocess.call(["rm", filename+".ps"])
-
-
 
 # arguments : file location and local dir for results
 try:
@@ -93,18 +36,21 @@ for opt, arg in opts:
 
 if len(args) < 3 :
     print "Wrong number of arguments"
-    print "Usage : python analyseDataset.py <input file> <output dir> <run file>"
+    print "Usage : python analyseDataset.py <input file> <output dir> <run list>"
     sys.exit(1)
 
 filename=args[0]
 label=args[1]
-rfilename=args[2]
+#rfilename=args[2]
+
+# get list of runs
+runlist=args[2].split(',')
+runs=[]
+for i in range(0, len(runlist)):
+    runs.append(int(runlist[i]))
 
 # make dir to store results if not present
-odir = os.getcwd()+"/"+label
-print "Putting results in "+odir
-if not os.path.exists(odir):
-    os.makedirs(odir)
+odir = makeOutputDir(label)
 
 # open input file
 ifile = TFile(filename)
@@ -114,41 +60,56 @@ tdrStyle()
 gROOT.SetStyle("tdrStyle")
 gROOT.ForceStyle()
 
-
 # get tree & add old tree as friend
 tree = ifile.Get("stoppedHSCPTree/StoppedHSCPTree")
 oldtree = ifile.Get("globalRunAnalyser/EventTree")
 tree.AddFriend(oldtree)
 
-# get run list
-rfile = TFile(rfilename)
-runtree = rfile.Get("StoppedHSCPRunTree")
+# get run info
+#rfile = TFile(rfilename)
+#runtree = rfile.Get("StoppedHSCPRunTree")
 
+# output files
+filename=odir+"/"+label
+
+# cuts
 cutObj=oldcuts
+c1 = TCut("")
+for run in runs:
+    c = TCut("run=="+str(run))
+    c1 += c
+
+c2 = TCut(cutObj.jetMu)
+c2 += c1
+c3 = TCut(cutObj.allCuts())
+c3 += c1
 
 # make histograms for dataset
-filebase=odir+"/"+label
+print "Storing histograms in "+filename+".root"
+hfile = TFile(filename+".root","recreate")
+basicHistos(tree, hfile, "NoCuts",  c1, 1.)
+basicHistos(tree, hfile, "JetMuCuts", c2, 1.)
+basicHistos(tree, hfile, "AllCuts", c3, 1.)
+effHistos(tree, hfile, oldjmcuts, 1.)
+hfile.Close()
 
-makeBasicHistos(tree, filebase, cutObj, 0)
-makeBasicPlots(filebase, 0)
+# make plots
+hfile = TFile(filename+".root","read")
+canvas = TCanvas("canvas")
+canvas.Print(filename+".ps[", "Portrait")
+basicPlots(hfile, "NoCuts", 1., filename+".ps")
+basicPlots(hfile, "JetMuCuts", 1., filename+".ps")
+basicPlots(hfile, "AllCuts", 1., filename+".ps")
+effPlots(hfile, filename+".ps")
+canvas = TCanvas("canvas")
+canvas.Print(filename+".ps]")
 
-#runs=getRuns(runtree)
-#runs=[110958, 110972, 110987, 111009, 111039]
-runs = [124022, 124023, 124025, 124027, 124115, 124228, 124230]
+# cconvert to PDF and delete original
+subprocess.call(["ps2pdf", filename+".ps", filename+".pdf"])
+subprocess.call(["rm", filename+".ps"])
 
-# make run histos
-for run in runs:
-    print "Making histograms for run "+str(run)
-    makeBasicHistos(tree, filebase, cutObj, run)
-    makeBasicPlots(filebase, run)
-
-# make "by run" plots
-monitorPlots(tree, runs, label, runtree)
-
+# make tar ball
 tar = tarfile.open(name = odir+".tgz", mode = 'w:gz')
 tar.add(label)
-
-#for file in os.listdir(odir):
-#	t.add(file);
 tar.close()
 

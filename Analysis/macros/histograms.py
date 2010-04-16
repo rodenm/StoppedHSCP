@@ -25,3 +25,23 @@ def histogram2D(tree, name, treecommand, cuts, scale, title, nbins, xlo, xhi, yl
     h.Scale(scale)
     h.Write()
     return h
+
+
+# make a histogram of 'rate distribution' from histogram of eg. rate-per-LS
+# and fit a Gaussian to it
+def rateDist(rateByTime, nbins):
+
+    name=rateByTime.GetName()+"dist"
+    h = TH1D(name, "Rate", nbins, rateByTime.GetMinimum()*0.8, rateByTime.GetMaximum()*1.25)
+
+    for i in range(rateByTime.GetNbinsX()):
+        r=rateByTime.GetBinContent(i)
+        if (r>0.):
+            h.Fill(r)
+    
+    f = TF1("fit", "gaus")
+    h.Fit("fit", "")       
+
+    h.Write()
+
+    return h
