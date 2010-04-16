@@ -42,15 +42,15 @@ class CutCollection:
     
 
 newcuts = CutCollection(["nTowerSameiPhi<5", \
-                         "jets[0].e>30.", \
-                         "jets[0].e>50.", \
-                         "jets[0].n60<6", \
-                         "jets[0].n90>3", \
-                         "nMuon==0", \
-                         "TimingRightPeak>0.15", \
-                         "TimingFracRightNextRight>0.1 && TimingFracRightNextRight<0.5", \
-                         "TimingFracInLeader>0.4 && TimingFracInLeader<0.7", \
-                         "TimingFracInCentralFour>0.90"])
+                             "jetE[0]>30. && jetEta[0]<1.3", \
+                             "jetE[0]>50.. && jetEta[0]<1.3", \
+                             "jetN60[0]<6", \
+                             "jetN90[0]>3", \
+                             "mu_N==0", \
+                             "top5DigiR1>0.15", \
+                             "top5DigiR2>0.1 && top5DigiR2<0.5", \
+                             "top5DigiRPeak>0.4 && top5DigiRPeak<0.7", \
+                             "top5DigiROuter<0.10"])
 
 newcuts.jetMu = newcuts[0]
 newcuts.jetMu += newcuts[1]
@@ -61,11 +61,11 @@ newcuts.jetMu += newcuts[5]
 
 
 newjmcuts = CutCollection(["nTowerSameiPhi<5", \
-                           "jets[0].e>30.", \
-                           "jets[0].e>50.", \
-                           "jets[0].n60<6", \
-                           "jets[0].n90>3", \
-                           "nMuon==0"])
+                             "jetE[0]>30. && jetEta[0]<1.3", \
+                             "jetE[0]>50.. && jetEta[0]<1.3", \
+                             "jetN60[0]<6", \
+                             "jetN90[0]>3", \
+                             "mu_N==0"])
 
 oldcuts = CutCollection(["nTowerSameiPhi<5", \
                          "LeadingCenJetEnergy>30.", \

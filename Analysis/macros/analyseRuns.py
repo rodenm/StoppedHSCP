@@ -99,23 +99,23 @@ gROOT.ForceStyle()
 
 # get tree & add old tree as friend
 tree = ifile.Get("stoppedHSCPTree/StoppedHSCPTree")
-oldtree = ifile.Get("globalRunAnalyser/EventTree")
-tree.AddFriend(oldtree)
+#oldtree = ifile.Get("globalRunAnalyser/EventTree")
+#tree.AddFriend(oldtree)
 
 # get run tree
 #rfile = TFile(rfilename)
 #runtree = rfile.Get("StoppedHSCPRunTree")
 
 # cuts
-cutObj = CutCollection(["LeadingCenJetEnergy>30.", \
-                            "LeadingCenJetEnergy>50.", \
-                            "LeadingCenJetn60<6", \
-                            "LeadingCenJetn90>3", \
-                            "nMuon==0", \
-                            "TimingRightPeak>0.15", \
-                            "TimingFracRightNextRight>0.1 && TimingFracRightNextRight<0.5", \
-                            "TimingFracInLeader>0.4 && TimingFracInLeader<0.7", \
-                            "TimingFracInCentralFour>0.90", \
+cutObj = CutCollection(["jetE[0]>30.", \
+                            "jetE[0]>50.", \
+                            "jetnN60[0]<6", \
+                            "jetnN90[0]>3", \
+                            "mu_N==0", \
+                            "top5DigiR1>0.15", \
+                            "top5DigiR2>0.1 && top5DigiR2<0.5", \
+                            "top5DigiRPeak>0.4 && top5DigiRPeak<0.7", \
+                            "top5DigiROuter<0.10", \
                             "nTowerSameiPhi<5"])
 
 
