@@ -6,16 +6,23 @@ import sys
 import getopt
 
 def usage():
-    print "makeTreeJob.py [-h] <era> <label> <dataset> <global tag> <runs>"
+    print "makeTreeJob.py [-h] [-l] <era> <label> <dataset> <global tag> <runs>"
+    print " Options   :"
+    print "   -h      : print this message"
+    print "   -l      : use local DBS"
     print
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "h")
+    opts, args = getopt.getopt(sys.argv[1:], "hl")
 except getopt.GetoptError:
     usage()
     sys.exit(2)
 
+useLocalDBS = False;
+
 for opt, arg in opts:
+    if opt=='-l':
+        useLocalDBS=True
     if opt=='-h':
         usage()
         sys.exit()
@@ -40,7 +47,7 @@ dirStr = "stoppedHSCP_tree_"+name
 evtPerJob = "100000"
 
 dbsStr = ""
-if (era=="CRAFT09"):
+if (useLocalDBS):
     dbsStr = "dbs_url=http://cmsdbsprod.cern.ch/cms_dbs_ph_analysis_02/servlet/DBSServlet"
 
 runStr = ""
@@ -49,7 +56,8 @@ if (runs!="0"):
 
 string = "[CRAB]\n\
 jobtype = cmssw\n\
-scheduler = glitecoll\n\
+scheduler = glite\n\
+use_server = 1\n\
 [CMSSW]\n\
 datasetpath="+dataset+"\n\
 "+runStr+"\n\
@@ -57,11 +65,11 @@ datasetpath="+dataset+"\n\
 pset="+jobStr+"\n\
 total_number_of_events=-1\n\
 events_per_job="+evtPerJob+"\n\
-output_file = stoppedHSCP_tree.root\n\
+output_file = stoppedHSCPTree.root\n\
 [USER]\n\
 return_data = 0\n\
 copy_data = 1\n\
-storage_element = T2_UK_SGrid_Bristol\n\
+storage_element = T2_UK_SGrid_RALPP\n\
 user_remote_dir = "+dirStr+"\n\
 ui_working_dir  = "+dirStr+"\n\
 [GRID]\n\
