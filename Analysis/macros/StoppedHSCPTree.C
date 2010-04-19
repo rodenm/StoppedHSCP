@@ -1,14 +1,14 @@
-#define tree_cxx
-#include "tree.h"
+#define StoppedHSCPTree_cxx
+#include "StoppedHSCPTree.h"
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
 
-void tree::Loop()
+void StoppedHSCPTree::Loop()
 {
 //   In a ROOT session, you can do:
-//      Root > .L tree.C
-//      Root > tree t
+//      Root > .L StoppedHSCPTree.C
+//      Root > StoppedHSCPTree t
 //      Root > t.GetEntry(12); // Fill t data members with entry number 12
 //      Root > t.Show();       // Show values of entry 12
 //      Root > t.Show(16);     // Read and show values of entry 16
@@ -31,7 +31,6 @@ void tree::Loop()
 //by  b_branchname->GetEntry(ientry); //read only this branch
    if (fChain == 0) return;
 
-
    Long64_t nentries = fChain->GetEntriesFast();
 
    Long64_t nbytes = 0, nb = 0;
@@ -39,9 +38,6 @@ void tree::Loop()
       Long64_t ientry = LoadTree(jentry);
       if (ientry < 0) break;
       nb = fChain->GetEntry(jentry);   nbytes += nb;
-      
-      if (Cut(ientry) > 0) Show();
-
+      // if (Cut(ientry) < 0) continue;
    }
-
 }
