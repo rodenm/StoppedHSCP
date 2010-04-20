@@ -8,9 +8,11 @@
 #ifndef StoppedHSCPTree_h
 #define StoppedHSCPTree_h
 
-#include <TROOT.h>
-#include <TChain.h>
+//#include <TROOT.h>
+#include <TTree.h>
 #include <TFile.h>
+
+#include <vector>
 
 class StoppedHSCPTree {
 public :
@@ -33,17 +35,17 @@ public :
    ULong64_t       gtTechWord;
    Bool_t          hltBit;
    UInt_t          l1Jet_N;
-   vector<UInt_t>  l1JetType;
-   vector<Double_t> l1JetE;
-   vector<Double_t> l1JetEt;
-   vector<Double_t> l1JetEta;
-   vector<Double_t> l1JetPhi;
+   std::vector<UInt_t>  l1JetType;
+   std::vector<Double_t> l1JetE;
+   std::vector<Double_t> l1JetEt;
+   std::vector<Double_t> l1JetEta;
+   std::vector<Double_t> l1JetPhi;
    UInt_t          hltJet_N;
-   vector<UInt_t>  hltJetType;
-   vector<Double_t> hltJetE;
-   vector<Double_t> hltJetEt;
-   vector<Double_t> hltJetEta;
-   vector<Double_t> hltJetPhi;
+   std::vector<UInt_t>  hltJetType;
+   std::vector<Double_t> hltJetE;
+   std::vector<Double_t> hltJetEt;
+   std::vector<Double_t> hltJetEta;
+   std::vector<Double_t> hltJetPhi;
    UInt_t          rHadPdgId;
    Double_t        rHadVtxX;
    Double_t        rHadVtxY;
@@ -56,28 +58,28 @@ public :
    Double_t        rHadPz;
    Double_t        rHadPt;
    UInt_t          mc_N;
-   vector<UInt_t>  mcPDGid;
-   vector<Double_t> mcVtxX;
-   vector<Double_t> mcVtxY;
-   vector<Double_t> mcVtxZ;
-   vector<Double_t> mcVtxR;
-   vector<Double_t> mcVtxT;
-   vector<Double_t> mcE;
-   vector<Double_t> mcPx;
-   vector<Double_t> mcPy;
-   vector<Double_t> mcPz;
-   vector<Double_t> mcPt;
+   std::vector<UInt_t>  mcPDGid;
+   std::vector<Double_t> mcVtxX;
+   std::vector<Double_t> mcVtxY;
+   std::vector<Double_t> mcVtxZ;
+   std::vector<Double_t> mcVtxR;
+   std::vector<Double_t> mcVtxT;
+   std::vector<Double_t> mcE;
+   std::vector<Double_t> mcPx;
+   std::vector<Double_t> mcPy;
+   std::vector<Double_t> mcPz;
+   std::vector<Double_t> mcPt;
    UInt_t          nTowerSameiPhi;
    UInt_t          leadingDigiIEta;
    UInt_t          leadingDigiIPhi;
-   vector<double>  leadingDigiTimeSamples;
+   std::vector<double>  leadingDigiTimeSamples;
    UInt_t          leadingDigiPeakSample;
    Double_t        leadingDigiTotal;
    Double_t        leadingDigiR1;
    Double_t        leadingDigiR2;
    Double_t        leadingDigiRPeak;
    Double_t        leadingDigiROuter;
-   vector<double>  top5DigiTimeSamples;
+   std::vector<double>  top5DigiTimeSamples;
    UInt_t          top5DigiPeakSample;
    Double_t        top5DigiTotal;
    Double_t        top5DigiR1;
@@ -85,64 +87,64 @@ public :
    Double_t        top5DigiRPeak;
    Double_t        top5DigiROuter;
    UInt_t          jet_N;
-   vector<Double_t> jetE;
-   vector<Double_t> jetEt;
-   vector<Double_t> jetEta;
-   vector<Double_t> jetPhi;
-   vector<Double_t> jetEHad;
-   vector<Double_t> jetEEm;
-   vector<Double_t> jetEMaxEcalTow;
-   vector<Double_t> jetEMaxHcalTow;
-   vector<UInt_t>  jetN60;
-   vector<UInt_t>  jetN90;
-   vector<Double_t> jetFHPD;
-   vector<UInt_t>  jetN90Hits;
+   std::vector<Double_t> jetE;
+   std::vector<Double_t> jetEt;
+   std::vector<Double_t> jetEta;
+   std::vector<Double_t> jetPhi;
+   std::vector<Double_t> jetEHad;
+   std::vector<Double_t> jetEEm;
+   std::vector<Double_t> jetEMaxEcalTow;
+   std::vector<Double_t> jetEMaxHcalTow;
+   std::vector<UInt_t>  jetN60;
+   std::vector<UInt_t>  jetN90;
+   std::vector<Double_t> jetFHPD;
+   std::vector<UInt_t>  jetN90Hits;
    UInt_t          mu_N;
-   vector<UInt_t>  muType;
-   vector<Double_t> muPt;
-   vector<Double_t> muEta;
-   vector<Double_t> muPhi;
-   vector<Double_t> muHcalEta;
-   vector<Double_t> muHcalPhi;
+   std::vector<UInt_t>  muType;
+   std::vector<Double_t> muPt;
+   std::vector<Double_t> muEta;
+   std::vector<Double_t> muPhi;
+   std::vector<Double_t> muHcalEta;
+   std::vector<Double_t> muHcalPhi;
    UInt_t          tower_N;
-   vector<Double_t> towerE;
-   vector<Double_t> towerEt;
-   vector<Double_t> towerEta;
-   vector<Double_t> towerPhi;
-   vector<UInt_t>  towerIEta;
-   vector<UInt_t>  towerIPhi;
-   vector<UInt_t>  towerNJet;
-   vector<Double_t> towerEHad;
-   vector<Double_t> towerEtHad;
-   vector<Double_t> towerEEm;
-   vector<Double_t> towerEtEm;
+   std::vector<Double_t> towerE;
+   std::vector<Double_t> towerEt;
+   std::vector<Double_t> towerEta;
+   std::vector<Double_t> towerPhi;
+   std::vector<UInt_t>  towerIEta;
+   std::vector<UInt_t>  towerIPhi;
+   std::vector<UInt_t>  towerNJet;
+   std::vector<Double_t> towerEHad;
+   std::vector<Double_t> towerEtHad;
+   std::vector<Double_t> towerEEm;
+   std::vector<Double_t> towerEtEm;
    UInt_t          hpd_N;
-   vector<UInt_t>  hpdId;
-   vector<Double_t> hpdEta;
-   vector<Double_t> hpdPhi;
-   vector<UInt_t>  hpdTotalZeros;
-   vector<UInt_t>  hpdMaxZeros;
-   vector<UInt_t>  hpdNJet;
-   vector<Double_t> hpdFc0;
-   vector<Double_t> hpdFc1;
-   vector<Double_t> hpdFc2;
-   vector<Double_t> hpdFc3;
-   vector<Double_t> hpdFc4;
-   vector<Double_t> hpdFc5;
-   vector<Double_t> hpdFc6;
-   vector<Double_t> hpdFc7;
-   vector<Double_t> hpdFc8;
-   vector<Double_t> hpdFc9;
-   vector<Double_t> hpdFc5_0;
-   vector<Double_t> hpdFc5_1;
-   vector<Double_t> hpdFc5_2;
-   vector<Double_t> hpdFc5_3;
-   vector<Double_t> hpdFc5_4;
-   vector<Double_t> hpdFc5_5;
-   vector<Double_t> hpdFc5_6;
-   vector<Double_t> hpdFc5_7;
-   vector<Double_t> hpdFc5_8;
-   vector<Double_t> hpdFc5_9;
+   std::vector<UInt_t>  hpdId;
+   std::vector<Double_t> hpdEta;
+   std::vector<Double_t> hpdPhi;
+   std::vector<UInt_t>  hpdTotalZeros;
+   std::vector<UInt_t>  hpdMaxZeros;
+   std::vector<UInt_t>  hpdNJet;
+   std::vector<Double_t> hpdFc0;
+   std::vector<Double_t> hpdFc1;
+   std::vector<Double_t> hpdFc2;
+   std::vector<Double_t> hpdFc3;
+   std::vector<Double_t> hpdFc4;
+   std::vector<Double_t> hpdFc5;
+   std::vector<Double_t> hpdFc6;
+   std::vector<Double_t> hpdFc7;
+   std::vector<Double_t> hpdFc8;
+   std::vector<Double_t> hpdFc9;
+   std::vector<Double_t> hpdFc5_0;
+   std::vector<Double_t> hpdFc5_1;
+   std::vector<Double_t> hpdFc5_2;
+   std::vector<Double_t> hpdFc5_3;
+   std::vector<Double_t> hpdFc5_4;
+   std::vector<Double_t> hpdFc5_5;
+   std::vector<Double_t> hpdFc5_6;
+   std::vector<Double_t> hpdFc5_7;
+   std::vector<Double_t> hpdFc5_8;
+   std::vector<Double_t> hpdFc5_9;
 
    // List of branches
    TBranch        *b_events_id;   //!
