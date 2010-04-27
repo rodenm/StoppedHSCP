@@ -1,21 +1,22 @@
 
-CXX       = gcc
+CXX       = g++
 CXXFLAGS  = -pipe -g -Wall
-INCPATH   = -I/usr/local/include/root -I/usr/include/c++/4.0.0/
-LINK      = gcc
-LIBS      = -L/usr/local/lib/root -lCore -lMathCore -lGraf -lHist -lGpad -lTree
+INCPATH   = -I$(ROOTSYS)include
+LINK      = g++
+LIBS      = -ldl -L$(ROOTSYS)/lib -lCore -lMathCore -lHist -lTree
 
-OBJECTS = BasicHistograms.o
-SOURCES = $(OBJECT,.o=.cc) StoppedHSCPTree.h
+SRCS = $(wildcard *.cc)
+OBJS = $(patsubst %.cc, %.o,$(SRCS))
+HDRS = $(wildcard *.h)
 
-all: MyLib
+all: BasicHistograms
 
-MyLib: $(OBJECTS)
-	$(LINK) -o $(OBJECTS) $(LIBS)
-
-$(OBJECTS): $(SOURCES)
-	$(CXX) $(CXXFLAGS) -c $(SOURCES) $(INCPATH)
+BasicHistograms: BasicHistograms.cpp StoppedHSCPTree.h
+	$(LINK) $(CXXFLAGS) $(INCPATH) -o BasicHistograms $< $(LIBS)
 
 clean:
-	rm *.o MyLib
+	rm BasicHistograms
+
+print:
+	echo $(OBJS) $(SRCS) $(HDRS)
 
