@@ -1,3 +1,11 @@
+//
+//  Extended version of MakeClass output
+//  Jim Brooke 21/4/2010
+//
+//  Added ctor from filename
+//  Added nCut method - return true/false if currently loaded event passes n-th cut
+//
+
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
 // Mon Apr 19 14:26:43 2010 by ROOT version 5.22/00
@@ -8,7 +16,8 @@
 #ifndef StoppedHSCPTree_h
 #define StoppedHSCPTree_h
 
-//#include <TROOT.h>
+#include <TROOT.h>
+#include <TChain.h>
 #include <TTree.h>
 #include <TFile.h>
 
@@ -272,20 +281,28 @@ public :
    TBranch        *b_events_hpdFc5_8;   //!
    TBranch        *b_events_hpdFc5_9;   //!
 
+   StoppedHSCPTree(char* filename);
    StoppedHSCPTree(TTree *tree=0);
    virtual ~StoppedHSCPTree();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
    virtual void     Init(TTree *tree);
-   virtual void     Loop();
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
+   virtual bool     CutN(unsigned n);
 };
 
-#endif
+StoppedHSCPTree::StoppedHSCPTree(char* filename) {
 
-#ifdef StoppedHSCPTree_cxx
+  // open file and get tree
+  TFile file(filename);
+  TTree* tree = (TTree*) file.Get("stoppedHSCPTree/StoppedHSCPTree");
+
+  Init(tree);
+
+}
+
 StoppedHSCPTree::StoppedHSCPTree(TTree *tree)
 {
 // if parameter tree is not specified (or zero), connect the file
@@ -313,6 +330,7 @@ Int_t StoppedHSCPTree::GetEntry(Long64_t entry)
    if (!fChain) return 0;
    return fChain->GetEntry(entry);
 }
+
 Long64_t StoppedHSCPTree::LoadTree(Long64_t entry)
 {
 // Set the environment to read one entry
@@ -489,11 +507,69 @@ void StoppedHSCPTree::Show(Long64_t entry)
    if (!fChain) return;
    fChain->Show(entry);
 }
-Int_t StoppedHSCPTree::Cut(Long64_t entry)
+
+Int_t StoppedHSCPTree::Cut(Long64_t entry=0)
 {
-// This function may be called from Loop.
-// returns  1 if entry is accepted.
-// returns -1 otherwise.
-   return 1;
+  // This function may be called from Loop.
+  // returns  1 if entry is accepted.
+  // returns -1 otherwise.
+  bool pass=false;
+
+  for (unsigned i=0; i<11; ++i) {
+    pass &= CutN(i);
+  }
+  
+  if (pass) return 1;
+  else return -1;
+
 }
-#endif // #ifdef StoppedHSCPTree_cxx
+
+bool StoppedHSCPTree::CutN(unsigned n)
+{
+  bool passed=true;
+  
+  switch (n) {
+  case 0:
+    return true;
+    break;
+  case 1:
+    return nTowerSameiPhi<5;
+    break;
+  case 2:
+    return jetE[0]>30. && jetEta[0]<1.3;
+    break;
+  case 3:
+    return jetE[0]>50. && jetEta[0]<1.3;
+    break;
+  case 4:
+    return jetN60[0]<6;
+    break;
+  case 5:
+    return jetN90[0]>3;
+    break;
+  case 6:
+    return mu_N==0;
+    break;
+  case 7:
+    return top5DigiR1 > 0.15;
+    break;
+  case 8:
+    return top5DigiR2 > 0.1 && top5DigiR2 < 0.5;
+    break;
+  case 9:
+    return top5DigiRPeak > 0.4 && top5DigiRPeak < 0.7;
+    break;
+  case 10:
+    return top5DigiROuter < 0.1;
+    break;
+  case 11:
+    return jetEEm[0] / jetEHad[0] > 0.05;
+  default:
+    return false;
+    
+  }
+
+}
+
+#endif
+
