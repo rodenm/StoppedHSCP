@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.27 2010/04/12 21:55:38 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.28 2010/04/28 11:05:43 jbrooke Exp $
 //
 //
 
@@ -235,7 +235,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   muonTag_(iConfig.getUntrackedParameter<edm::InputTag>("muonTag",edm::InputTag("muons"))),
   cosmicMuonTag_(iConfig.getUntrackedParameter<edm::InputTag>("muonTag",edm::InputTag("muonsFromCosmics"))),
   caloTowerTag_(iConfig.getUntrackedParameter<edm::InputTag>("caloTowerTag",edm::InputTag("towerMaker"))),
-  hcalNoiseTag_(iConfig.getUntrackedParameter<edm::InputTag>("rbxTag",edm::InputTag("hcalnoise"))),
+  hcalNoiseTag_(iConfig.getUntrackedParameter<edm::InputTag>("hcalNoiseTag",edm::InputTag("hcalnoise"))),
   rbxTag_(iConfig.getUntrackedParameter<edm::InputTag>("rbxTag",edm::InputTag("hcalnoise"))),
   hpdTag_(iConfig.getUntrackedParameter<edm::InputTag>("hpdTag",edm::InputTag("hcalnoise"))),
   hcalDigiTag_(iConfig.getUntrackedParameter<edm::InputTag>("hcalDigiTag",edm::InputTag(""))),
@@ -743,6 +743,28 @@ void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent) {
 
 void StoppedHSCPTreeProducer::doHcalNoise(const edm::Event& iEvent) {
   
+  // get noise summary
+  edm::Handle<HcalNoiseSummary> summary;
+  iEvent.getByLabel(hcalNoiseTag_,summary);
+
+  if (summary.isValid()) {
+    event_->noiseMinE2Over10TS = summary->minE2Over10TS();
+    event_->noiseMaxE2Over10TS = summary->maxE2Over10TS();
+    event_->noiseMaxHPDHits = summary->maxHPDHits();
+    event_->noiseMaxRBXHits = summary->maxRBXHits();
+    event_->noiseMaxHPDNoOtherHits = summary->maxHPDNoOtherHits();
+    event_->noiseMaxZeros = summary->maxZeros();
+    event_->noiseMin25GeVHitTime = summary->min25GeVHitTime();
+    event_->noiseMax25GeVHitTime = summary->max25GeVHitTime();
+    event_->noiseMinRBXEMF = summary->minRBXEMF();
+  }
+  else {
+    if (!noiseSumMissing_) edm::LogWarning("MissingProduct") << "HCALNoiseSummary not found.  Branch will not be filled" << std::endl;
+    noiseSumMissing_ = true;
+  }
+
+
+  // get RBX/HPD collection
   edm::Handle<HcalNoiseRBXCollection> rbxs;
   iEvent.getByLabel(rbxTag_,rbxs);
   

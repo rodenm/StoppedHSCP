@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.18 2010/04/12 21:55:14 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.19 2010/04/28 11:05:42 jbrooke Exp $
 //
 //
 
@@ -154,22 +154,7 @@ class StoppedHSCPEvent : public TObject {
   void addMCDecay(shscp::MCDecay d);
 
   // getters
-  unsigned nL1Jets() { return l1Jet_N; }
-  unsigned nHltJets() { return hltJet_N; }
-  unsigned nJets() { return jet_N; }
-  unsigned nMuons() { return mu_N; }
-  unsigned nTows() { return tower_N; }
-  unsigned nHpds() { return hpd_N; }
-  //  unsigned nDigis() { return nDigi; }
 
-/*   shscp::TrigJet getL1Jet(unsigned i); */
-/*   shscp::TrigJet getHltJet(unsigned i); */
-/*   shscp::MCDecay getMCDecay(unsigned i); */
-/*   shscp::Jet getJet(unsigned i); */
-/*   shscp::Muon getMuon(unsigned i); */
-/*   shscp::Tower getTower(unsigned i); */
-/*   shscp::HPD getHPD(unsigned i); */
-/*   shscp::HcalDigi getDigi(unsigned i); */
 
   // utils
   void Dump();
@@ -293,6 +278,17 @@ class StoppedHSCPEvent : public TObject {
   std::vector<Double_t> towerEtEm;
 
   // noise summary data
+  double noiseMinE2Over10TS;
+  double noiseMaxE2Over10TS;
+  int noiseMaxHPDHits;
+  int noiseMaxRBXHits;
+  int noiseMaxHPDNoOtherHits;
+  int noiseMaxZeros;
+  double noiseMin25GeVHitTime;
+  double noiseMax25GeVHitTime;
+  double noiseMinRBXEMF;
+
+  // HPDs identified by noise summary algos
   unsigned hpd_N;
   std::vector<UInt_t> hpdId;
   std::vector<Double_t> hpdEta;
@@ -304,8 +300,7 @@ class StoppedHSCPEvent : public TObject {
   std::vector<Double_t> hpdFc5_0, hpdFc5_1, hpdFc5_2, hpdFc5_3, hpdFc5_4, hpdFc5_5, hpdFc5_6, hpdFc5_7, hpdFc5_8, hpdFc5_9;
 
   // digis
-/*   unsigned nDigi; */
-/*   shscp::HcalDigi digis[MAX_N_DIGIS]; */
+
 
   ClassDef(StoppedHSCPEvent,4);
 
