@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.26 2010/04/12 19:35:52 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.27 2010/04/12 21:55:38 jbrooke Exp $
 //
 //
 
@@ -165,7 +165,8 @@ private:
   
   // tree
   TTree * tree_;
- 
+  StoppedHSCPEvent* event_;
+
   // EDM input tags
   std::string l1JetsTag_;
   edm::InputTag l1BitsTag_;
@@ -212,14 +213,13 @@ private:
   bool hpdsMissing_;
   bool digisMissing_;
 
-  // the current event
-  StoppedHSCPEvent* event_;
 
   std::vector<CaloTowerPtr> jetTowers_;
   std::vector<unsigned> towerJets_;
 
   std::vector<HcalDetId> hcalDetIds_;
   std::vector<unsigned> hcalDetJets_;
+
 };
 
 
@@ -466,7 +466,7 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
       //      edm::LogInfo("StoppedHSCP") << "Found  " << keys.size() << " HLT jets" << std::endl;
 
       for ( unsigned hlto = 0; 
-	    hlto < keys.size() && event_->nHltJets() < StoppedHSCPEvent::MAX_N_TRIGJETS; 
+	    hlto < keys.size();
 	    hlto++ ) {
 	trigger::size_type hltf = keys[hlto];
 	const trigger::TriggerObject& L3obj(TOC[hltf]);
@@ -510,10 +510,10 @@ void StoppedHSCPTreeProducer::doMC(const edm::Event& iEvent) {
       
       if((*pitr)->barcode()==-1)  {
 
-	event_->vtxX = (*pitr)->point3d().x();
-	event_->vtxY = (*pitr)->point3d().y();
-	event_->vtxZ = (*pitr)->point3d().z();
-	event_->vtxT = (*pitr)->position().t();
+	event_->rHadVtxX = (*pitr)->point3d().x();
+	event_->rHadVtxY = (*pitr)->point3d().y();
+	event_->rHadVtxZ = (*pitr)->point3d().z();
+	event_->rHadVtxT = (*pitr)->position().t();
 	
 	for(HepMC::GenVertex::particles_out_const_iterator part = (*pitr)->particles_out_const_begin();
 	    part!=(*pitr)->particles_out_const_end(); 
@@ -568,7 +568,7 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
      std::sort(jets.begin(), jets.end(), jete_gt() );
 
      for(CaloJetCollection::const_iterator it=jets.begin(); 
-	 it!=jets.end() && event_->nJets() < StoppedHSCPEvent::MAX_N_JETS;
+	 it!=jets.end();
 	 ++it, ++njet) {
        if (it->energy() > jetMinEnergy_ &&
 	   fabs(it->eta()) < jetMaxEta_) {
@@ -612,37 +612,37 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
 	     event_->addTower(tow);
 
 	     // get digis
-	     if (doDigis_) {
-	       for (unsigned i=0; i<tower->constituentsSize(); ++i) {
-		 DetId id = tower->constituent(i);
+// 	     if (doDigis_) {
+// 	       for (unsigned i=0; i<tower->constituentsSize(); ++i) {
+// 		 DetId id = tower->constituent(i);
 		 
-		 // check digi in HCAL and HB/HE
-		 if (id.det()==DetId::Hcal && 
-		     (HcalSubdetector(id.subdetId())==HcalBarrel || 
-		      HcalSubdetector(id.subdetId())==HcalEndcap) ) {
+// 		 // check digi in HCAL and HB/HE
+// 		 if (id.det()==DetId::Hcal && 
+// 		     (HcalSubdetector(id.subdetId())==HcalBarrel || 
+// 		      HcalSubdetector(id.subdetId())==HcalEndcap) ) {
 		   
-		   // get digi
-		   HBHEDigiCollection::const_iterator digi = find_if(hcalDigis->begin(), hcalDigis->end(), std::bind2nd(digiDetId_eq(), id) );
+// 		   // get digi
+// 		   HBHEDigiCollection::const_iterator digi = find_if(hcalDigis->begin(), hcalDigis->end(), std::bind2nd(digiDetId_eq(), id) );
 		   
-		   // write digi
-		   shscp::HcalDigi d;
-		   d.id = digi->id();
-		   d.nJet = njet;
-		   d.fc0 = digi->sample(0).nominal_fC();
-		   d.fc1 = digi->sample(1).nominal_fC();
-		   d.fc2 = digi->sample(2).nominal_fC();
-		   d.fc3 = digi->sample(3).nominal_fC();
-		   d.fc4 = digi->sample(4).nominal_fC();
-		   d.fc5 = digi->sample(5).nominal_fC();
-		   d.fc6 = digi->sample(6).nominal_fC();
-		   d.fc7 = digi->sample(7).nominal_fC();
-		   d.fc8 = digi->sample(8).nominal_fC();
-		   d.fc9 = digi->sample(9).nominal_fC();
-		   event_->addDigi(d);
-		 }
+// 		   // write digi
+// 		   shscp::HcalDigi d;
+// 		   d.id = digi->id();
+// 		   d.nJet = njet;
+// 		   d.fc0 = digi->sample(0).nominal_fC();
+// 		   d.fc1 = digi->sample(1).nominal_fC();
+// 		   d.fc2 = digi->sample(2).nominal_fC();
+// 		   d.fc3 = digi->sample(3).nominal_fC();
+// 		   d.fc4 = digi->sample(4).nominal_fC();
+// 		   d.fc5 = digi->sample(5).nominal_fC();
+// 		   d.fc6 = digi->sample(6).nominal_fC();
+// 		   d.fc7 = digi->sample(7).nominal_fC();
+// 		   d.fc8 = digi->sample(8).nominal_fC();
+// 		   d.fc9 = digi->sample(9).nominal_fC();
+// 		   event_->addDigi(d);
+// 		 }
 		 
-	       }
-	     }
+// 	       }
+// 	     }
 	     
 	   }
 	   
@@ -698,7 +698,7 @@ void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent) {
 
   if (muons.isValid()) {
     for(reco::MuonCollection::const_iterator it =muons->begin();
-	it!=muons->end() && event_->nMuons() < StoppedHSCPEvent::MAX_N_MUONS;
+	it!=muons->end();
 	it++) {
       shscp::Muon mu;
       mu.pt = it->pt();
@@ -721,7 +721,7 @@ void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent) {
  
   if (cosmicMuons.isValid()) {
     for(reco::MuonCollection::const_iterator it =cosmicMuons->begin();
-	it!=muons->end() && event_->nMuons() < StoppedHSCPEvent::MAX_N_MUONS;
+	it!=muons->end();
 	it++) {
       shscp::Muon mu;
       mu.pt = it->pt();
@@ -753,7 +753,7 @@ void StoppedHSCPTreeProducer::doHcalNoise(const edm::Event& iEvent) {
       
       std::vector<HcalNoiseHPD> hpds = it->HPDs();
       for (std::vector<HcalNoiseHPD>::const_iterator hpd = hpds.begin();
-	   hpd!=hpds.end() && event_->nHpds() < StoppedHSCPEvent::MAX_N_HPDS;
+	   hpd!=hpds.end();
 	   ++hpd) {
 	
 	shscp::HPD h;
@@ -800,93 +800,93 @@ DEFINE_FWK_MODULE(StoppedHSCPTreeProducer);
 
 
 // this method obsolete
-void StoppedHSCPTreeProducer::doTowersAboveThreshold(const edm::Event& iEvent) {
+// void StoppedHSCPTreeProducer::doTowersAboveThreshold(const edm::Event& iEvent) {
    
-  edm::Handle<CaloTowerCollection> caloTowers;
-  iEvent.getByLabel(caloTowerTag_,caloTowers);
+//   edm::Handle<CaloTowerCollection> caloTowers;
+//   iEvent.getByLabel(caloTowerTag_,caloTowers);
   
-  if (caloTowers.isValid()) {
+//   if (caloTowers.isValid()) {
     
-    std::vector<CaloTower> towers;
-    towers.insert(towers.end(), caloTowers->begin(), caloTowers->end());     
-    sort(towers.begin(), towers.end(), calotower_gt());
+//     std::vector<CaloTower> towers;
+//     towers.insert(towers.end(), caloTowers->begin(), caloTowers->end());     
+//     sort(towers.begin(), towers.end(), calotower_gt());
     
-    for(std::vector<CaloTower>::const_iterator it = towers.begin(); 
-	it!=towers.end() && event_->nTows() < StoppedHSCPEvent::MAX_N_TOWERS;
-	++it) {
-      if (it->energy() > towerMinEnergy_ &&
-	  fabs(it->eta()) < towerMaxEta_) {
-	shscp::Tower tow;
-	tow.e = it->energy();
-	tow.et = it->et();
-	tow.eta = it->eta();
-	tow.phi = it->phi();
-	tow.ieta = it->ieta();
-	tow.iphi = it->iphi();
-	tow.nJet = 999;
-	tow.eHad = it->hadEnergy();
-	tow.etHad = it->hadEt();
-	tow.eEm = it->emEnergy();
-	tow.etEm = it->emEt();
-	event_->addTower(tow);
-      }
-    }
-  }
-  else {
-    if (!towersMissing_) edm::LogWarning("MissingProduct") << "CaloTowers not found.  Branch will not be filled" << std::endl;
-    towersMissing_ = true;
-  }
+//     for(std::vector<CaloTower>::const_iterator it = towers.begin(); 
+// 	it!=towers.end();
+// 	++it) {
+//       if (it->energy() > towerMinEnergy_ &&
+// 	  fabs(it->eta()) < towerMaxEta_) {
+// 	shscp::Tower tow;
+// 	tow.e = it->energy();
+// 	tow.et = it->et();
+// 	tow.eta = it->eta();
+// 	tow.phi = it->phi();
+// 	tow.ieta = it->ieta();
+// 	tow.iphi = it->iphi();
+// 	tow.nJet = 999;
+// 	tow.eHad = it->hadEnergy();
+// 	tow.etHad = it->hadEt();
+// 	tow.eEm = it->emEnergy();
+// 	tow.etEm = it->emEt();
+// 	event_->addTower(tow);
+//       }
+//     }
+//   }
+//   else {
+//     if (!towersMissing_) edm::LogWarning("MissingProduct") << "CaloTowers not found.  Branch will not be filled" << std::endl;
+//     towersMissing_ = true;
+//   }
   
-}
+// }
 
 // this method obsolete
-void StoppedHSCPTreeProducer::doDigisAboveThreshold(const edm::Event& iEvent) {
+// void StoppedHSCPTreeProducer::doDigisAboveThreshold(const edm::Event& iEvent) {
 
-  // TODO - include threshold!
+//   // TODO - include threshold!
 
-  edm::Handle<HBHEDigiCollection > hcalDigis;
-  iEvent.getByLabel(hcalDigiTag_,hcalDigis);
+//   edm::Handle<HBHEDigiCollection > hcalDigis;
+//   iEvent.getByLabel(hcalDigiTag_,hcalDigis);
     
-  if (hcalDigis.isValid()) {
+//   if (hcalDigis.isValid()) {
   
-    std::vector<HBHEDataFrame> digis;
-    digis.insert(digis.end(), hcalDigis->begin(), hcalDigis->end());
-    sort(digis.begin(), digis.end(), digi_gt());
+//     std::vector<HBHEDataFrame> digis;
+//     digis.insert(digis.end(), hcalDigis->begin(), hcalDigis->end());
+//     sort(digis.begin(), digis.end(), digi_gt());
 
-    for(HBHEDigiCollection::const_iterator it=digis.begin();
-	it!=digis.end() && event_->nDigis() < StoppedHSCPEvent::MAX_N_DIGIS;
-	it++) {
+//     for(HBHEDigiCollection::const_iterator it=digis.begin();
+// 	it!=digis.end() && event_->nDigis() < StoppedHSCPEvent::MAX_N_DIGIS;
+// 	it++) {
 
-      double totFc=0.;
-      for(int i=0; i<10; i++) totFc += it->sample(i).nominal_fC();
+//       double totFc=0.;
+//       for(int i=0; i<10; i++) totFc += it->sample(i).nominal_fC();
 
-      if (totFc > digiMinFc_) {
+//       if (totFc > digiMinFc_) {
 
-	shscp::HcalDigi d;
-	d.id = it->id();
-	d.nJet = 999;
-	d.fc0 = it->sample(0).nominal_fC();
-	d.fc1 = it->sample(1).nominal_fC();
-	d.fc2 = it->sample(2).nominal_fC();
-	d.fc3 = it->sample(3).nominal_fC();
-	d.fc4 = it->sample(4).nominal_fC();
-	d.fc5 = it->sample(5).nominal_fC();
-	d.fc6 = it->sample(6).nominal_fC();
-	d.fc7 = it->sample(7).nominal_fC();
-	d.fc8 = it->sample(8).nominal_fC();
-	d.fc9 = it->sample(9).nominal_fC();
-	event_->addDigi(d);
+// 	shscp::HcalDigi d;
+// 	d.id = it->id();
+// 	d.nJet = 999;
+// 	d.fc0 = it->sample(0).nominal_fC();
+// 	d.fc1 = it->sample(1).nominal_fC();
+// 	d.fc2 = it->sample(2).nominal_fC();
+// 	d.fc3 = it->sample(3).nominal_fC();
+// 	d.fc4 = it->sample(4).nominal_fC();
+// 	d.fc5 = it->sample(5).nominal_fC();
+// 	d.fc6 = it->sample(6).nominal_fC();
+// 	d.fc7 = it->sample(7).nominal_fC();
+// 	d.fc8 = it->sample(8).nominal_fC();
+// 	d.fc9 = it->sample(9).nominal_fC();
+// 	event_->addDigi(d);
 	
-      }
+//       }
       
-    }
-  }
-  else {
-    if (!digisMissing_) edm::LogWarning("MissingProduct") << "HBHEDigiCollection not found.  Branch will not be filled" << std::endl;
-    digisMissing_ = true;
-  }
+//     }
+//   }
+//   else {
+//     if (!digisMissing_) edm::LogWarning("MissingProduct") << "HBHEDigiCollection not found.  Branch will not be filled" << std::endl;
+//     digisMissing_ = true;
+//   }
 
-}
+// }
 
 
 

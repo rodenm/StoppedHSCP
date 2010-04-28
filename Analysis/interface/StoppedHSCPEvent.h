@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.17 2010/04/12 19:35:52 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.18 2010/04/12 21:55:14 jbrooke Exp $
 //
 //
 
@@ -95,7 +95,7 @@ namespace shscp {
   };
 
   struct Jet {
-  Jet() : e(0.),et(0.),eta(0.),phi(0.),eHad(0.),eEm(0.),eMaxEcalTow(0.),eMaxHcalTow(0.),n60(0),n90(0),
+    Jet() : e(0.),et(0.),eta(0.),phi(0.),eHad(0.),eEm(0.),eMaxEcalTow(0.),eMaxHcalTow(0.),n60(0),n90(0),n90Hits(0),fHPD(0.),
       r1(0.),r2(0.),rp(0.),ro(0.),r1_top5(0.),r2_top5(0.),rp_top5(0.),ro_top5(0.) { }
     double e;
     double et;
@@ -107,6 +107,8 @@ namespace shscp {
     double eMaxHcalTow;
     unsigned n60;
     unsigned n90;
+    unsigned n90Hits;
+    double fHPD;
     double r1;
     double r2;
     double rp;
@@ -134,10 +136,6 @@ namespace shscp {
 class StoppedHSCPEvent : public TObject {
  public:
   
-  enum { MAX_N_TRIGJETS=10 };
-  enum { MAX_N_MCDECAYS=10 };
-  enum { MAX_N_JETS=20 };
-  enum { MAX_N_MUONS=4 };
   enum { MAX_N_TOWERS=100 };
   enum { MAX_N_HPDS=10 };
   enum { MAX_N_DIGIS=100 };
@@ -152,26 +150,26 @@ class StoppedHSCPEvent : public TObject {
   void addMuon(shscp::Muon m);
   void addTower(shscp::Tower t);
   void addHPD(shscp::HPD h);
-  void addDigi(shscp::HcalDigi d);
+  //  void addDigi(shscp::HcalDigi d);
   void addMCDecay(shscp::MCDecay d);
 
   // getters
-  unsigned nL1Jets() { return nL1Jet; }
-  unsigned nHltJets() { return nHltJet; }
-  unsigned nJets() { return nJet; }
-  unsigned nMuons() { return nMuon; }
-  unsigned nTows() { return nTower; }
-  unsigned nHpds() { return nHpd; }
-  unsigned nDigis() { return nDigi; }
+  unsigned nL1Jets() { return l1Jet_N; }
+  unsigned nHltJets() { return hltJet_N; }
+  unsigned nJets() { return jet_N; }
+  unsigned nMuons() { return mu_N; }
+  unsigned nTows() { return tower_N; }
+  unsigned nHpds() { return hpd_N; }
+  //  unsigned nDigis() { return nDigi; }
 
-  shscp::TrigJet getL1Jet(unsigned i);
-  shscp::TrigJet getHltJet(unsigned i);
-  shscp::MCDecay getMCDecay(unsigned i);
-  shscp::Jet getJet(unsigned i);
-  shscp::Muon getMuon(unsigned i);
-  shscp::Tower getTower(unsigned i);
-  shscp::HPD getHPD(unsigned i);
-  shscp::HcalDigi getDigi(unsigned i);
+/*   shscp::TrigJet getL1Jet(unsigned i); */
+/*   shscp::TrigJet getHltJet(unsigned i); */
+/*   shscp::MCDecay getMCDecay(unsigned i); */
+/*   shscp::Jet getJet(unsigned i); */
+/*   shscp::Muon getMuon(unsigned i); */
+/*   shscp::Tower getTower(unsigned i); */
+/*   shscp::HPD getHPD(unsigned i); */
+/*   shscp::HcalDigi getDigi(unsigned i); */
 
   // utils
   void Dump();
@@ -195,23 +193,50 @@ class StoppedHSCPEvent : public TObject {
   ULong64_t gtTechWord;
   bool hltBit;
 
+  // trigger jets
+  unsigned l1Jet_N;
+  std::vector<UInt_t> l1JetType;
+  std::vector<Double_t> l1JetE;
+  std::vector<Double_t> l1JetEt;
+  std::vector<Double_t> l1JetEta;
+  std::vector<Double_t> l1JetPhi;
+
+  unsigned hltJet_N;
+  std::vector<UInt_t> hltJetType;
+  std::vector<Double_t> hltJetE;
+  std::vector<Double_t> hltJetEt;
+  std::vector<Double_t> hltJetEta;
+  std::vector<Double_t> hltJetPhi;
+
   //MC
-  double vtxX;
-  double vtxY;
-  double vtxZ;
-  double vtxR;
-  double vtxT;
   unsigned rHadPdgId;
+  double rHadVtxX;
+  double rHadVtxY;
+  double rHadVtxZ;
+  double rHadVtxR;
+  double rHadVtxT;
   double rHadE;
   double rHadPx;
   double rHadPy;
   double rHadPz;
   double rHadPt;
 
+  // MC decay products
+  unsigned mc_N;
+  std::vector<UInt_t> mcPDGid;
+  std::vector<Double_t> mcVtxX;
+  std::vector<Double_t> mcVtxY;
+  std::vector<Double_t> mcVtxZ;
+  std::vector<Double_t> mcVtxR;
+  std::vector<Double_t> mcVtxT;
+  std::vector<Double_t> mcE;
+  std::vector<Double_t> mcPx;
+  std::vector<Double_t> mcPy;
+  std::vector<Double_t> mcPz;
+  std::vector<Double_t> mcPt;
+
   // global calo quantities
   unsigned nTowerSameiPhi;
-
-  // leading Digi 
   unsigned leadingDigiIEta;
   unsigned leadingDigiIPhi;
   std::vector<double> leadingDigiTimeSamples;
@@ -221,8 +246,6 @@ class StoppedHSCPEvent : public TObject {
   double leadingDigiR2;
   double leadingDigiRPeak;
   double leadingDigiROuter;
-
-  // top 5 digis
   std::vector<double> top5DigiTimeSamples;
   unsigned top5DigiPeakSample;
   double top5DigiTotal;
@@ -231,35 +254,58 @@ class StoppedHSCPEvent : public TObject {
   double top5DigiRPeak;
   double top5DigiROuter;
 
-  // arrays
-  unsigned nL1Jet;
-/*   std::vector<unsigned> l1jetType; */
-/*   std::vector<double> l1jetE; */
-/*   std::vector<double> l1jetEt; */
-/*   std::vector<double> l1jetEta; */
-/*   std::vector<double> l1jetPhi; */
-  shscp::TrigJet l1Jets[MAX_N_TRIGJETS];
+  // jets
+  unsigned jet_N;
+  std::vector<Double_t> jetE;
+  std::vector<Double_t> jetEt;
+  std::vector<Double_t> jetEta;
+  std::vector<Double_t> jetPhi;
+  std::vector<Double_t> jetEHad;
+  std::vector<Double_t> jetEEm;
+  std::vector<Double_t> jetEMaxEcalTow;
+  std::vector<Double_t> jetEMaxHcalTow;
+  std::vector<UInt_t> jetN60;
+  std::vector<UInt_t> jetN90;
+  std::vector<Double_t> jetFHPD;
+  std::vector<UInt_t> jetN90Hits;
 
-  unsigned nHltJet;
-  shscp::TrigJet hltJets[MAX_N_TRIGJETS];
+  // muons
+  unsigned mu_N;
+  std::vector<UInt_t> muType;        // type of muon (standalone/global/cosmic/regular)
+  std::vector<Double_t> muPt;
+  std::vector<Double_t> muEta;
+  std::vector<Double_t> muPhi;
+  std::vector<Double_t> muHcalEta;     // track intersection with HCAL front-face (?)
+  std::vector<Double_t> muHcalPhi;
 
-  unsigned nMCDecay;
-  shscp::MCDecay mcDecays[MAX_N_MCDECAYS];
+  // towers
+  unsigned tower_N;
+  std::vector<Double_t> towerE;
+  std::vector<Double_t> towerEt;
+  std::vector<Double_t> towerEta;
+  std::vector<Double_t> towerPhi;
+  std::vector<UInt_t> towerIEta;
+  std::vector<UInt_t> towerIPhi;
+  std::vector<UInt_t> towerNJet;
+  std::vector<Double_t> towerEHad;
+  std::vector<Double_t> towerEtHad;
+  std::vector<Double_t> towerEEm;
+  std::vector<Double_t> towerEtEm;
 
-  unsigned nJet;
-  shscp::Jet jets[MAX_N_JETS];
+  // noise summary data
+  unsigned hpd_N;
+  std::vector<UInt_t> hpdId;
+  std::vector<Double_t> hpdEta;
+  std::vector<Double_t> hpdPhi;
+  std::vector<UInt_t> hpdTotalZeros;
+  std::vector<UInt_t> hpdMaxZeros;
+  std::vector<UInt_t> hpdNJet;
+  std::vector<Double_t> hpdFc0, hpdFc1, hpdFc2, hpdFc3, hpdFc4, hpdFc5, hpdFc6, hpdFc7, hpdFc8, hpdFc9;
+  std::vector<Double_t> hpdFc5_0, hpdFc5_1, hpdFc5_2, hpdFc5_3, hpdFc5_4, hpdFc5_5, hpdFc5_6, hpdFc5_7, hpdFc5_8, hpdFc5_9;
 
-  unsigned nMuon;
-  shscp::Muon muons[MAX_N_MUONS];
-
-  unsigned nTower;
-  shscp::Tower towers[MAX_N_TOWERS];
-
-  unsigned nHpd;
-  shscp::HPD hpds[MAX_N_HPDS];
-
-  unsigned nDigi;
-  shscp::HcalDigi digis[MAX_N_DIGIS];
+  // digis
+/*   unsigned nDigi; */
+/*   shscp::HcalDigi digis[MAX_N_DIGIS]; */
 
   ClassDef(StoppedHSCPEvent,4);
 

@@ -25,6 +25,7 @@ process.load('L1Trigger.Configuration.L1Extra_cff')
 
 # Ntuple producer
 process.load('StoppedHSCP/Analysis/stoppedHSCPTree_cfi')
+process.load('StoppedHSCP/Analysis/stoppedHSCPRunTree_cfi')
 
 process.TFileService = cms.Service("TFileService",
     fileName = cms.string('stoppedHSCPTree.root')
@@ -42,7 +43,9 @@ process.myPath = cms.Path(
     +process.gtDigis
     +process.gctDigis
     +process.l1extraParticles
+    +process.scalersRawToDigi
     +process.stoppedHSCPTree
+    +process.stoppedHSCPRunTree
 )
 
 process.TFileService = cms.Service("TFileService",
