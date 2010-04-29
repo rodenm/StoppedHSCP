@@ -290,7 +290,9 @@ public :
    virtual void     Init(TTree *tree);
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
+   virtual unsigned NCuts();
    virtual bool     CutN(unsigned n);
+   virtual bool     CutNMinusOne(unsigned n);
 };
 
 StoppedHSCPTree::StoppedHSCPTree(char* filename) {
@@ -508,6 +510,7 @@ void StoppedHSCPTree::Show(Long64_t entry)
    fChain->Show(entry);
 }
 
+// return result of all cuts
 Int_t StoppedHSCPTree::Cut(Long64_t entry=0)
 {
   // This function may be called from Loop.
@@ -515,7 +518,7 @@ Int_t StoppedHSCPTree::Cut(Long64_t entry=0)
   // returns -1 otherwise.
   bool pass=false;
 
-  for (unsigned i=0; i<11; ++i) {
+  for (unsigned i=0; i<NCuts(); ++i) {
     pass &= CutN(i);
   }
   
@@ -524,6 +527,12 @@ Int_t StoppedHSCPTree::Cut(Long64_t entry=0)
 
 }
 
+unsigned StoppedHSCPTree::NCuts() {
+  return 12;
+}
+
+
+// return result of a particular cut
 bool StoppedHSCPTree::CutN(unsigned n)
 {
   bool passed=true;
@@ -570,6 +579,20 @@ bool StoppedHSCPTree::CutN(unsigned n)
   }
 
 }
+
+
+// return result of all cuts APART FROM the one specified
+bool StoppedHSCPTree::CutNMinusOne(unsigned n) {
+
+  bool passed=true;
+  for (unsigned i=0; i<NCuts(); ++i) {
+    if (i!=n) passed &= CutN(i);
+  }
+  return passed;
+
+}
+
+
 
 #endif
 

@@ -1,5 +1,7 @@
-
-// some methods to make basic distributions
+//
+// Program to make some histograms from a StoppedHSCP TTree
+// Jim Brooke, April 2010
+// 
 
 #include "StoppedHSCPTree.h"
 #include "TFile.h"
@@ -49,12 +51,14 @@ TH2D* hr1r2_;
 TH2D* hpkout_;
 TH1D* hncutind_;
 TH1D* hncutcum_;
+TH1D* hnminus1cut_;
 
 // histograms after each cut
 std::vector<TH1D*> hjete_cuts_;
 std::vector<TH2D*> hjetetaphi_cuts_;
 std::vector<TH2D*> hmuetaphi_cuts_;
 std::vector<TH1D*> hbx_cuts_;
+std::vector<TH1D*> hjetemf_cuts_;
 
 
 StoppedHSCPTree* tree_;
@@ -93,7 +97,7 @@ void bookHistos() {
   hjetetaphi_ = new TH2D("hjetetaphi", "Leading jet pos", 70, -3.5, 3.5, 72, -1 * TMath::Pi(),  TMath::Pi());
   hjeteem_ = new TH1D("hjeteem", "Leading jet ECAL energy", 100, 0., 200.);
   hjetehad_ = new TH1D("hjetehad", "Leading jet HCAL energy", 100, 0., 200.);
-  hjetemf_ =  new TH1D("hjetemf", "Leading jet EM fractiob=n", 100, 0., 1.);
+  hjetemf_ =  new TH1D("hjetemf", "Leading jet EM fraction", 100, 0., 1.);
   hjetn60_ = new TH1D("hjetn60", "Leading jet N60", 50, 0., 50.);
   hjetn90_ = new TH1D("hjetn90", "Leading jet N90", 50, 0., 50.);
   hjetn90hits_ = new TH1D("hjetn90hits", "Leading jet N90 hits", 50, 0., 50.);
@@ -114,6 +118,7 @@ void bookHistos() {
   // cut counts
   hncutind_ = new TH1D("hncutind", "Cut counts", 20, 0., 20.);
   hncutcum_ = new TH1D("hncutcum", "Cumulative cut counts", 20, 0., 20.);
+  hnminus1cut_ = new TH1D("hnminus1cut", "N-1 cut counts", 20, 0., 20.);
 
   // histograms per cut
   for (unsigned i=0; i<nCuts_; ++i) {
@@ -123,6 +128,7 @@ void bookHistos() {
     hjetetaphi_cuts_.push_back(new TH2D((std::string("hjetetaphi")+istr.str()).c_str(), "Leading jet pos", 70, -3.5, 3.5, 72, -1 * TMath::Pi(),  TMath::Pi()));
     hmuetaphi_cuts_.push_back(new TH2D((std::string("hmuetaphi")+istr.str()).c_str(), "Muon pos", 70, -3.5, 3.5, 72, -1 * TMath::Pi(),  TMath::Pi()));
     hbx_cuts_.push_back(new TH1D((std::string("hbx")+istr.str()).c_str(), "BX number", 3564, 0., 3564.));
+    hjetemf_cuts_.push_back(new TH1D((std::string("hjetemf")+istr.str()).c_str(), "Leading jet EM fraction", 100, 0., 1.));
   }
 
 }
@@ -166,17 +172,20 @@ void deleteHistos() {
     delete hpkout_;
     delete hncutind_;
     delete hncutcum_;
+    delete hnminus1cut_;
 
     for (unsigned i=0; i< hjete_cuts_.size(); ++i) {
       delete hjete_cuts_.at(i);
       delete hjetetaphi_cuts_.at(i);
       delete hmuetaphi_cuts_.at(i);
       delete hbx_cuts_.at(i);
+      delete hjetemf_cuts_.at(i);
     }
     hjete_cuts_.clear();
     hjetetaphi_cuts_.clear();
     hmuetaphi_cuts_.clear();
     hbx_cuts_.clear();
+    hjetemf_cuts_.clear();
   }
   
 }
@@ -207,6 +216,7 @@ void fillHistos(StoppedHSCPTree& tree) {
     hjetetaphi_->Fill(tree.jetEta.at(0), tree.jetPhi.at(0));
     hjeteem_->Fill(tree.jetEEm.at(0));
     hjetehad_->Fill(tree.jetEHad.at(0));
+    hjetemf_->Fill(tree.jetEEm.at(0)/tree.jetE.at(0));
     hjetn60_->Fill(tree.jetN60.at(0));
     hjetn90_->Fill(tree.jetN90.at(0));
     hjetn90hits_->Fill(0.);
@@ -231,12 +241,14 @@ void fillHistos(StoppedHSCPTree& tree) {
   bool fail=false;
   for (unsigned c=0; c<nCuts_; c++) {
     if (tree.CutN(c)) hncutind_->Fill(c);
+    if (tree.CutNMinusOne(c)) hnminus1cut_->Fill(c);
     else fail |= true;
     if (!fail) {
       hncutcum_->Fill(c);
       if (tree.jet_N>0) {
 	hjete_cuts_.at(c)->Fill(tree.jetE.at(0));
 	hjetetaphi_cuts_.at(c)->Fill(tree.jetEta.at(0), tree.jetPhi.at(0));
+	hjetemf_cuts_.at(c)->Fill(tree.jetEEm.at(0)/tree.jetE.at(0));
       }
       if (tree.mu_N>0) {
 	hmuetaphi_cuts_.at(c)->Fill(tree.muEta.at(0), tree.muPhi.at(0));
@@ -246,6 +258,29 @@ void fillHistos(StoppedHSCPTree& tree) {
   }
 
 }
+
+// make a histogram of means of bins of existing histogram
+TH1D rateDist(TH1D& hist, unsigned nbins) {
+
+  std::string name=std::string(hist.GetName())+"dist";
+  TH1D h(name.c_str(), "Rate", nbins, hist.GetMinimum()*0.8, hist.GetMaximum()*1.25);
+
+  // fill histogram
+  for (unsigned i=0; i<hist.GetNbinsX(); ++i) {
+    unsigned r=hist.GetBinContent(i);
+    if (r>0.) h.Fill(r);
+  }
+	
+  // do fit
+  //  TF1 f("fit", "gaus");
+  //  h.Fit("fit", "");    
+	
+  h.Write();
+
+  return h;
+
+}
+
 
 // write a file of histograms
 void writeHistos(unsigned run) {
@@ -260,9 +295,15 @@ void writeHistos(unsigned run) {
 
   TFile ofile(filename.c_str(), "recreate");
 
+  ofile.mkdir("NoCuts");
+  ofile.cd("NoCuts");
+
   hbx_->Write();
   horb_->Write();
   hlb_->Write();
+
+  rateDist(*hlb_, 100);
+
   htime_->Write();
   hl1et_->Write();
   hl1eta_->Write();
@@ -294,12 +335,17 @@ void writeHistos(unsigned run) {
   hpkout_->Write();
   hncutind_->Write();
   hncutcum_->Write();
+  hnminus1cut_->Write();
+
+  ofile.mkdir("Cuts");
+  ofile.cd("Cuts");
 
   for (unsigned i=0; i< hjete_cuts_.size(); ++i) {
     hjete_cuts_.at(i)->Write();
     hjetetaphi_cuts_.at(i)->Write();
     hmuetaphi_cuts_.at(i)->Write();
     hbx_cuts_.at(i)->Write();
+    hjetemf_cuts_.at(i)->Write();
   }
  
   ofile.Close();
