@@ -1,5 +1,7 @@
+#! /usr/bin/env python
 
 # get output from a given job and hadd it
+
 import getopt
 import sys
 import os
