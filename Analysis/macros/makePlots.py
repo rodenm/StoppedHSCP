@@ -9,8 +9,43 @@
 import sys
 import getopt
 import string
+import os
 
-#sys.argv.append('-b')
+# help message
+def usage():
+    print "Usage : makePlots.py [-hr] <input file> [runs]"    
+
+
+# the main program
+try:
+    opts, args = getopt.getopt(sys.argv[1:], "hrb")
+except getopt.GetoptError:
+    usage();
+    sys.exit(2)
+
+if len(args) < 1 :
+    print "Wrong number of arguments"
+    usage();
+    sys.exit(1)
+
+# options
+doRuns=False;
+for opt, arg in opts:
+    if opt=='-h':
+        usage()
+        exit.sys()
+    if opt=='-r':
+        doRuns=True;
+
+# arguments
+filename=args[0]
+runs=[]
+if (len(args)>1):
+    runlist=args[1].split(',')
+    for i in range(0, len(runlist)):
+        runs.append(int(runlist[i]))
+        
+sys.argv.append('-b')
 
 from ROOT import *
 from math import *
@@ -48,7 +83,7 @@ def plotsFromHistos(filename):
     histPlot(dir+"/hhltphi", file, fileroot+".ps", 1., True, "", "#phi", "")
 
     # global variables
-    histPlot(dir+"/hntowsamephi", file, fileroot+".ps", 1., True, "", "N_{towers}", "")
+    histPlot(dir+"/hntowsameiphi", file, fileroot+".ps", 1., True, "", "N_{towers}", "")
 
     # jet variables
     histPlot(dir+"/hjete", file, fileroot+".ps", 1., True, "", "E (GeV)", "E")
@@ -79,40 +114,8 @@ def plotsFromHistos(filename):
     subprocess.call(["ps2pdf", fileroot+".ps", fileroot+".pdf"])
     subprocess.call(["rm", fileroot+".ps"])
 
-# help message
-def usage():
-    print "Usage : makePlots.py [-hr] <input file> [runs]"    
 
-
-# the main program
-try:
-    opts, args = getopt.getopt(sys.argv[1:], "hr")
-except getopt.GetoptError:
-    usage();
-    sys.exit(2)
-
-if len(args) < 1 :
-    print "Wrong number of arguments"
-    usage();
-    sys.exit(1)
-
-# options
-doRuns=False;
-for opt, arg in opts:
-    if opt=='-h':
-        usage()
-        exit.sys()
-    if opt=='-r':
-        doRuns=True;
-
-# arguments
-filename=args[0]
-runs=[]
-if (len(args)>1):
-    runlist=args[1].split(',')
-    for i in range(0, len(runlist)):
-        runs.append(int(runlist[i]))
-
+# main program starts here
 
 # set style
 tdrStyle()

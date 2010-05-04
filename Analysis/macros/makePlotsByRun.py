@@ -6,25 +6,8 @@ import getopt
 import subprocess
 import os
 
-sys.argv.append('-b')
-
-from ROOT import *
-from math import *
-
-from utils import *
-from style import *
-from plots import *
-
-
-def histByRun(name, title, nruns):
-    h = TH1D(name, title, nruns, 0, 0)
-    h.Sumw2()
-    return h
-
 def usage():
     print "Usage : python makePlotsByRun.py [-h] <input dir> <run list>"
-   
-
 
 # arguments : file location and local dir for results
 try:
@@ -51,6 +34,24 @@ runs=[]
 for i in range(0, len(runlist)):
     runs.append(int(runlist[i]))
 
+
+sys.argv.append('-b')
+
+from ROOT import *
+from math import *
+
+from utils import *
+from style import *
+from plots import *
+
+
+def histByRun(name, title, nruns):
+    h = TH1D(name, title, nruns, 0, 0)
+    h.Sumw2()
+    return h
+
+
+# main program starts here
 
 # make plots of rate by run
 nruns=len(runs)

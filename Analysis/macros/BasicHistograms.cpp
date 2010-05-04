@@ -16,58 +16,90 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
-
-TH1D* hbx_;
-TH1D* horb_;
-TH1D* hlb_;
-TH1D* htime_;
-TH1D* hl1et_;
-TH1D* hl1eta_;
-TH1D* hl1phi_;
-TH1D* hl1type_;
-TH1D* hhlte_;
-TH1D* hhlteta_;
-TH1D* hhltphi_;
-TH1D* hjete_;
-TH1D* hjeteta_;
-TH1D* hjetphi_;
-TH2D* hjetetaphi_;
-TH1D* hjeteem_;
-TH1D* hjetehad_;
-TH1D* hjetemf_;
-TH1D* hjetn60_;
-TH1D* hjetn90_;
-TH1D* hjetn90hits_;
-TH1D* hjetfhpd_;
-TH1D* hnmu_;
-TH2D* hmuetaphi_;
-TH1D* hntowsameiphi_;
-TH2D* htowietaiphi_;
-TH1D* hr1_;
-TH1D* hr2_;
-TH1D* hrpk_;
-TH1D* hrout_;
-TH2D* hr1r2_;
-TH2D* hpkout_;
-TH1D* hncutind_;
-TH1D* hncutcum_;
-TH1D* hnminus1cut_;
-
-// histograms after each cut
-std::vector<TH1D*> hjete_cuts_;
-std::vector<TH2D*> hjetetaphi_cuts_;
-std::vector<TH2D*> hmuetaphi_cuts_;
-std::vector<TH1D*> hbx_cuts_;
-std::vector<TH1D*> hjetemf_cuts_;
+#include <sys/stat.h>
+#include <stdlib.h>
 
 
-StoppedHSCPTree* tree_;
-std::string outdir_;
-unsigned nlimit_;
-bool dumpEvents_;
-unsigned nCuts_=12;
+class Analysis {
 
-void bookHistos() {
+public:
+  Analysis(const char* filename, const char* outdir, unsigned nlimit=999999999, bool dump=false);
+  ~Analysis();
+
+  void bookHistos();
+  void writeHistos();
+  void deleteHistos();
+  void getHistos();
+  void fillHistos(StoppedHSCPTree& tree);
+
+  TH1D rateDist(TH1D& hist, unsigned nbins);
+ 
+  void newHistos(unsigned run);
+  void saveHistos();
+  void loopAll();
+  void loopByRun();
+
+private:
+
+  TFile file_;            // input file
+  TTree* ttree_;          // input TTree (stupid ROOT)
+  StoppedHSCPTree* tree_; // tree (makeClass output)
+  std::string outdir_;    // output directory
+  TFile* ofile_;          // current output file
+  unsigned nlimit_;       // limited number of events per run
+  bool dumpEvents_;       // dump events passing all cuts if true
+  unsigned nCuts_;     // number of cuts
+  unsigned currentRun_;   // current run #
+
+  // the histograms
+  TH1D* hbx_;
+  TH1D* horb_;
+  TH1D* hlb_;
+  TH1D* htime_;
+  TH1D* hl1et_;
+  TH1D* hl1eta_;
+  TH1D* hl1phi_;
+  TH1D* hl1type_;
+  TH1D* hhlte_;
+  TH1D* hhlteta_;
+  TH1D* hhltphi_;
+  TH1D* hjete_;
+  TH1D* hjeteta_;
+  TH1D* hjetphi_;
+  TH2D* hjetetaphi_;
+  TH1D* hjeteem_;
+  TH1D* hjetehad_;
+  TH1D* hjetemf_;
+  TH1D* hjetn60_;
+  TH1D* hjetn90_;
+  TH1D* hjetn90hits_;
+  TH1D* hjetfhpd_;
+  TH1D* hnmu_;
+  TH2D* hmuetaphi_;
+  TH1D* hntowsameiphi_;
+  TH2D* htowietaiphi_;
+  TH1D* hr1_;
+  TH1D* hr2_;
+  TH1D* hrpk_;
+  TH1D* hrout_;
+  TH2D* hr1r2_;
+  TH2D* hpkout_;
+  TH1D* hncutind_;
+  TH1D* hncutcum_;
+  TH1D* hnminus1cut_;
+
+  // histograms after each cut
+  std::vector<TH1D*> hjete_cuts_;
+  std::vector<TH2D*> hjetetaphi_cuts_;
+  std::vector<TH2D*> hmuetaphi_cuts_;
+  std::vector<TH1D*> hbx_cuts_;
+  std::vector<TH1D*> hjetemf_cuts_;
+  
+};
+
+
+
+void Analysis::bookHistos() {
   
   // time
   hbx_ = new TH1D("hbx", "BX number", 3564, 0., 3564.);
@@ -80,16 +112,16 @@ void bookHistos() {
   hl1eta_ = new TH1D("hl1eta", "Leading L1 jet #eta", 70, -3.5, 3.5);
   hl1phi_ = new TH1D("hl1phi", "Leading L1 jet #phi", 72, -1 * TMath::Pi(),  TMath::Pi());
   hl1type_ = new TH1D("hl1type",  "Leading L1 jet type", 3, 0., 3.);
-
+  
   // HLT
   hhlte_ = new TH1D("hhlte",  "Leading HLT jet E", 100, 0., 200.);
   hhlteta_ = new TH1D("hhlteta", "Leading HLT jet #eta", 70, -3.5, 3.5);
   hhltphi_ = new TH1D("hhltphi", "Leading HLT jet #phi", 72, -1 * TMath::Pi(),  TMath::Pi());
-	
+  
   // calo towers
-  hntowsameiphi_ = new TH1D("hntowsamephi", "N leading towers at same iphi", 20, -0.5, 19.5);
+  hntowsameiphi_ = new TH1D("hntowsameiphi", "N leading towers at same iphi", 20, -0.5, 19.5);
   htowietaiphi_ = new TH2D("htowietaiphi", "Leading tower position", 100, -50., 50., 75, 0., 75.);
-
+  
   // jets
   hjete_ = new TH1D("hjete", "Leading jet energy", 50, 0., 200.);
   hjeteta_ = new TH1D("hjeteta", "Leading jet #eta", 70, -3.5, 3.5);
@@ -102,11 +134,11 @@ void bookHistos() {
   hjetn90_ = new TH1D("hjetn90", "Leading jet N90", 50, 0., 50.);
   hjetn90hits_ = new TH1D("hjetn90hits", "Leading jet N90 hits", 50, 0., 50.);
   hjetfhpd_ = new TH1D("hjetfhpd", "Leading jet fHPD", 50, 0., 1.);
-
+  
   // muons
   hnmu_ = new TH1D("hnmu", "N muons", 4, -0.5, 3.5);
   hmuetaphi_ = new TH2D("hmuetaphi", "Muon pos", 70, -3.5, 3.5, 72, -1 * TMath::Pi(),  TMath::Pi());
-
+  
   // pulse shape
   hr1_ = new TH1D("hr1", "R_{1}", 50, 0., 1.);
   hr2_ = new TH1D("hr2", "R_{2}", 50, 0., 1.);
@@ -114,12 +146,12 @@ void bookHistos() {
   hrout_ = new TH1D("hrout", "R_{outer}", 30, 0., 1.);    
   hr1r2_ = new TH2D("hr1r2", "R_{1} vs R_{2}", 50, 0., 1., 50, 0., 1.);
   hpkout_ = new TH2D("hpkout", "R_{peak} vs R_{outer}", 50, 0., 1., 50, 0., 1.);
-
+  
   // cut counts
   hncutind_ = new TH1D("hncutind", "Cut counts", 20, 0., 20.);
   hncutcum_ = new TH1D("hncutcum", "Cumulative cut counts", 20, 0., 20.);
   hnminus1cut_ = new TH1D("hnminus1cut", "N-1 cut counts", 20, 0., 20.);
-
+  
   // histograms per cut
   for (unsigned i=0; i<nCuts_; ++i) {
     std::stringstream istr;
@@ -130,14 +162,130 @@ void bookHistos() {
     hbx_cuts_.push_back(new TH1D((std::string("hbx")+istr.str()).c_str(), "BX number", 3564, 0., 3564.));
     hjetemf_cuts_.push_back(new TH1D((std::string("hjetemf")+istr.str()).c_str(), "Leading jet EM fraction", 100, 0., 1.));
   }
+  
+}
+
+
+// write histos
+void Analysis::writeHistos() {
+
+  // check if dir exists, create if not
+  if (  ofile_->cd("NoCuts") != kTRUE ) {
+    ofile_->mkdir("NoCuts");
+    ofile_->cd("NoCuts");
+  }
+
+  hbx_->Write("",TObject::kOverwrite);
+  horb_->Write("",TObject::kOverwrite);
+  hlb_->Write("",TObject::kOverwrite);
+
+  rateDist(*hlb_, 100);
+
+  htime_->Write("",TObject::kOverwrite);
+  hl1et_->Write("",TObject::kOverwrite);
+  hl1eta_->Write("",TObject::kOverwrite);
+  hl1phi_->Write("",TObject::kOverwrite);
+  hl1type_->Write("",TObject::kOverwrite);
+  hhlte_->Write("",TObject::kOverwrite);
+  hhlteta_->Write("",TObject::kOverwrite);
+  hhltphi_->Write("",TObject::kOverwrite);
+  hntowsameiphi_->Write("",TObject::kOverwrite);
+  htowietaiphi_->Write("",TObject::kOverwrite);
+  hjete_->Write("",TObject::kOverwrite);
+  hjeteta_->Write("",TObject::kOverwrite);
+  hjetphi_->Write("",TObject::kOverwrite);
+  hjetetaphi_->Write("",TObject::kOverwrite);
+  hjeteem_->Write("",TObject::kOverwrite);
+  hjetehad_->Write("",TObject::kOverwrite);
+  hjetemf_->Write("",TObject::kOverwrite);
+  hjetn60_->Write("",TObject::kOverwrite);
+  hjetn90_->Write("",TObject::kOverwrite);
+  hjetn90hits_->Write("",TObject::kOverwrite);
+  hjetfhpd_->Write("",TObject::kOverwrite);
+  hnmu_->Write("",TObject::kOverwrite);
+  hmuetaphi_->Write("",TObject::kOverwrite);
+  hr1_->Write("",TObject::kOverwrite);
+  hr2_->Write("",TObject::kOverwrite);
+  hrpk_->Write("",TObject::kOverwrite);
+  hrout_->Write("",TObject::kOverwrite);
+  hr1r2_->Write("",TObject::kOverwrite);
+  hpkout_->Write("",TObject::kOverwrite);
+  hncutind_->Write("",TObject::kOverwrite);
+  hncutcum_->Write("",TObject::kOverwrite);
+  hnminus1cut_->Write("",TObject::kOverwrite);
+  
+  if ( ofile_->cd("Cuts") != kTRUE ){
+    ofile_->mkdir("Cuts");
+    ofile_->cd("Cuts");
+  }
+
+  for (unsigned i=0; i< nCuts_; ++i) {
+    hjete_cuts_.at(i)->Write("",TObject::kOverwrite);
+    hjetetaphi_cuts_.at(i)->Write("",TObject::kOverwrite);
+    hmuetaphi_cuts_.at(i)->Write("",TObject::kOverwrite);
+    hbx_cuts_.at(i)->Write("",TObject::kOverwrite);
+    hjetemf_cuts_.at(i)->Write("",TObject::kOverwrite);
+  }
 
 }
 
 
-// delete all histogram objects
-void deleteHistos() {
+// get histograms from file
+void Analysis::getHistos() {
 
-  if (hbx_ != 0){
+  hbx_ = (TH1D*) ofile_->Get("NoCuts/hbx");
+  horb_ = (TH1D*) ofile_->Get("NoCuts/horb");
+  hlb_ = (TH1D*) ofile_->Get("NoCuts/hlb");
+  htime_ = (TH1D*) ofile_->Get("NoCuts/htime");
+  hl1et_ = (TH1D*) ofile_->Get("NoCuts/hl1et");
+  hl1eta_ = (TH1D*) ofile_->Get("NoCuts/hl1eta");
+  hl1phi_ = (TH1D*) ofile_->Get("NoCuts/hl1phi");
+  hl1type_ = (TH1D*) ofile_->Get("NoCuts/hl1type");
+  hhlte_ = (TH1D*) ofile_->Get("NoCuts/hhlte");
+  hhlteta_ = (TH1D*) ofile_->Get("NoCuts/hhlteta");
+  hhltphi_ = (TH1D*) ofile_->Get("NoCuts/hhltphi");
+  hjete_ = (TH1D*) ofile_->Get("NoCuts/hjete");
+  hjeteta_ = (TH1D*) ofile_->Get("NoCuts/hjeteta");
+  hjetphi_ = (TH1D*) ofile_->Get("NoCuts/hjetphi");
+  hjetetaphi_ = (TH2D*) ofile_->Get("NoCuts/hjetetaphi");
+  hjeteem_ = (TH1D*) ofile_->Get("NoCuts/hjeteem");
+  hjetehad_ = (TH1D*) ofile_->Get("NoCuts/hjetehad");
+  hjetemf_ = (TH1D*) ofile_->Get("NoCuts/hjetemf");
+  hjetn60_ = (TH1D*) ofile_->Get("NoCuts/hjetn60");
+  hjetn90_ = (TH1D*) ofile_->Get("NoCuts/hjetn90");
+  hjetn90hits_ = (TH1D*) ofile_->Get("NoCuts/hjetn90hits");
+  hjetfhpd_ = (TH1D*) ofile_->Get("NoCuts/hjetfhpd");
+  hnmu_ = (TH1D*) ofile_->Get("NoCuts/hnmu");
+  hmuetaphi_ = (TH2D*) ofile_->Get("NoCuts/hmuetaphi");
+  hntowsameiphi_ = (TH1D*) ofile_->Get("NoCuts/hntowsameiphi");
+  htowietaiphi_ = (TH2D*) ofile_->Get("NoCuts/htowietaiphi");
+  hr1_ = (TH1D*) ofile_->Get("NoCuts/hr1");
+  hr2_ = (TH1D*) ofile_->Get("NoCuts/hr2");
+  hrpk_ = (TH1D*) ofile_->Get("NoCuts/hrpk");
+  hrout_ = (TH1D*) ofile_->Get("NoCuts/hrout");
+  hr1r2_ = (TH2D*) ofile_->Get("NoCuts/hr1r2");
+  hpkout_ = (TH2D*) ofile_->Get("NoCuts/hpkout");
+  hncutind_ = (TH1D*) ofile_->Get("NoCuts/hncutind");
+  hncutcum_ = (TH1D*) ofile_->Get("NoCuts/hncutcum");
+  hnminus1cut_ = (TH1D*) ofile_->Get("NoCuts/hnminus1cut");
+    
+  for (unsigned i=0; i< nCuts_; ++i) {
+    std::stringstream istr;
+    istr << i;
+    hjete_cuts_.push_back( (TH1D*) ofile_->Get((std::string("Cuts/hjete")+istr.str()).c_str()));
+    hjetetaphi_cuts_.push_back( (TH2D*) ofile_->Get((std::string("Cuts/hjetetaphi")+istr.str()).c_str()) );
+    hmuetaphi_cuts_.push_back( (TH2D*) ofile_->Get((std::string("Cuts/hmuetaphi")+istr.str()).c_str()) );
+    hbx_cuts_.push_back( (TH1D*) ofile_->Get((std::string("Cuts/hbx")+istr.str()).c_str()) );
+    hjetemf_cuts_.push_back( (TH1D*) ofile_->Get((std::string("Cuts/hjetemf")+istr.str()).c_str()) );
+  }
+
+}
+
+
+// save and delete all histogram objects
+void Analysis::deleteHistos() {
+
+  if (hbx_ != 0) {
     delete hbx_;
     delete horb_;
     delete hlb_;
@@ -173,7 +321,7 @@ void deleteHistos() {
     delete hncutind_;
     delete hncutcum_;
     delete hnminus1cut_;
-
+    
     for (unsigned i=0; i< hjete_cuts_.size(); ++i) {
       delete hjete_cuts_.at(i);
       delete hjetetaphi_cuts_.at(i);
@@ -187,12 +335,12 @@ void deleteHistos() {
     hbx_cuts_.clear();
     hjetemf_cuts_.clear();
   }
-  
+
 }
 
 
 // fill all histograms for current event
-void fillHistos(StoppedHSCPTree& tree) {
+void Analysis::fillHistos(StoppedHSCPTree& tree) {
 
   hbx_->Fill(tree.bx);
   horb_->Fill(tree.orbit);
@@ -213,7 +361,7 @@ void fillHistos(StoppedHSCPTree& tree) {
     hjete_->Fill(tree.jetE.at(0));
     hjeteta_->Fill(tree.jetEta.at(0));
     hjetphi_->Fill(tree.jetPhi.at(0));
-    hjetetaphi_->Fill(tree.jetEta.at(0), tree.jetPhi.at(0));
+    //    hjetetaphi_->Fill(tree.jetEta.at(0), tree.jetPhi.at(0));
     hjeteem_->Fill(tree.jetEEm.at(0));
     hjetehad_->Fill(tree.jetEHad.at(0));
     hjetemf_->Fill(tree.jetEEm.at(0)/tree.jetE.at(0));
@@ -240,8 +388,8 @@ void fillHistos(StoppedHSCPTree& tree) {
   // loop over cuts
   bool fail=false;
   for (unsigned c=0; c<nCuts_; c++) {
-    if (tree.CutN(c)) hncutind_->Fill(c);
     if (tree.CutNMinusOne(c)) hnminus1cut_->Fill(c);
+    if (tree.CutN(c)) hncutind_->Fill(c);
     else fail |= true;
     if (!fail) {
       hncutcum_->Fill(c);
@@ -260,13 +408,13 @@ void fillHistos(StoppedHSCPTree& tree) {
 }
 
 // make a histogram of means of bins of existing histogram
-TH1D rateDist(TH1D& hist, unsigned nbins) {
+TH1D Analysis::rateDist(TH1D& hist, unsigned nbins) {
 
   std::string name=std::string(hist.GetName())+"dist";
   TH1D h(name.c_str(), "Rate", nbins, hist.GetMinimum()*0.8, hist.GetMaximum()*1.25);
 
   // fill histogram
-  for (unsigned i=0; i<hist.GetNbinsX(); ++i) {
+  for (int i=0; i<hist.GetNbinsX(); ++i) {
     unsigned r=hist.GetBinContent(i);
     if (r>0.) h.Fill(r);
   }
@@ -282,82 +430,53 @@ TH1D rateDist(TH1D& hist, unsigned nbins) {
 }
 
 
-// write a file of histograms
-void writeHistos(unsigned run) {
+void Analysis::newHistos(unsigned run) {
 
+  // histograms filename
   std::string filename=outdir_ + "/histograms";
-  if (run>0) {
+  if (run > 0) {
     char runstr[10];
     sprintf(runstr, "%d", run);
     filename += runstr;
   }
   filename += ".root";
 
-  TFile ofile(filename.c_str(), "recreate");
+  std::cout << "Putting histograms in " << filename << std::endl;
 
-  ofile.mkdir("NoCuts");
-  ofile.cd("NoCuts");
-
-  hbx_->Write();
-  horb_->Write();
-  hlb_->Write();
-
-  rateDist(*hlb_, 100);
-
-  htime_->Write();
-  hl1et_->Write();
-  hl1eta_->Write();
-  hl1phi_->Write();
-  hl1type_->Write();
-  hhlte_->Write();
-  hhlteta_->Write();
-  hhltphi_->Write();
-  hntowsameiphi_->Write();
-  htowietaiphi_->Write();
-  hjete_->Write();
-  hjeteta_->Write();
-  hjetphi_->Write();
-  hjetetaphi_->Write();
-  hjeteem_->Write();
-  hjetehad_->Write();
-  hjetemf_->Write();
-  hjetn60_->Write();
-  hjetn90_->Write();
-  hjetn90hits_->Write();
-  hjetfhpd_->Write();
-  hnmu_->Write();
-  hmuetaphi_->Write();
-  hr1_->Write();
-  hr2_->Write();
-  hrpk_->Write();
-  hrout_->Write();
-  hr1r2_->Write();
-  hpkout_->Write();
-  hncutind_->Write();
-  hncutcum_->Write();
-  hnminus1cut_->Write();
-
-  ofile.mkdir("Cuts");
-  ofile.cd("Cuts");
-
-  for (unsigned i=0; i< hjete_cuts_.size(); ++i) {
-    hjete_cuts_.at(i)->Write();
-    hjetetaphi_cuts_.at(i)->Write();
-    hmuetaphi_cuts_.at(i)->Write();
-    hbx_cuts_.at(i)->Write();
-    hjetemf_cuts_.at(i)->Write();
+  // check if histo file exists and open it if so
+  struct stat fileInfo;
+  if (stat(filename.c_str(),&fileInfo)==0) {
+    ofile_ = new TFile(filename.c_str(), "update");
+    getHistos();
   }
- 
-  ofile.Close();
+  else {
+    // if run histo file doesn't exist, create it, and new histograms   
+    ofile_ = new TFile(filename.c_str(), "recreate");
+    bookHistos();
+  }
+
+}
+
+
+void Analysis::saveHistos() {
+
+  writeHistos();
+  deleteHistos();
+
+  ofile_->Close();
+  delete ofile_;
 
 }
 
 
 // loop over all events, filling histograms
-void loopAll() {
+void Analysis::loopAll() {
 
-  deleteHistos();
-  bookHistos();
+  std::cout << "Making histograms for entire file" << std::endl;
+
+  currentRun_ = 0;
+
+  newHistos(0);
 
   // set up loop
   if (tree_->fChain == 0) return;
@@ -385,20 +504,20 @@ void loopAll() {
     
   }
 
-  writeHistos(0);
+  saveHistos();
 
 }
 
 
 // loop over all events, clear histograms and write file for each run
-void loopByRun() {
+void Analysis::loopByRun() {
 
   // set up loop
   if (tree_->fChain == 0) return;
   Long64_t nentries = tree_->fChain->GetEntriesFast();
   Long64_t nbytes = 0, nb = 0;
 
-  unsigned currentRun=0;
+  unsigned currentRun_=0;
   unsigned nevts=0;
 
   // run loop
@@ -414,36 +533,65 @@ void loopByRun() {
     nb = tree_->fChain->GetEntry(jentry);
     nbytes += nb;
 
-    // check if the run changed
-    if (tree_->run != currentRun) {
+    unsigned thisRun = tree_->run;
 
-      // write file
-      if (currentRun != 0) {
-	writeHistos(currentRun);
-	std::cout << "Found " << nevts << " events in run " << currentRun << std::endl;
-	nevts=0;
-      }
+    // if first event, get new histos
+    if (currentRun_==0) {
+      std::cout << "First run " << thisRun << std::endl;
+      currentRun_ = thisRun;
+      newHistos(thisRun);
+    }
+
+    // or if the run changed
+    if (currentRun_!=0 && thisRun != currentRun_) {
+
+      std::cout << "Found " << nevts << " events in run " << currentRun_ << std::endl;
+      std::cout << "New run " << thisRun << std::endl;
+
+      // save histos
+      saveHistos();
       
       // and reset histograms etc
-      deleteHistos();
-      bookHistos();
-      currentRun = tree_->run;
+      nevts=0;
+      currentRun_ = thisRun;
+      newHistos(thisRun);
 
     }
+
     // otherwise just fill the histograms
-    else {
-      
-      fillHistos(*tree_);
-      nevts++;
-
-    }
+    fillHistos(*tree_);
+    nevts++;
     
   }
 
 }
 
 
+Analysis::Analysis(const char* filename, const char* outdir, unsigned nlimit, bool dump) :
+  file_(filename),
+  outdir_(outdir),
+  ofile_(0),
+  nlimit_(nlimit),
+  dumpEvents_(dump),
+  currentRun_(0)
+{
 
+  // open file and get tree
+  ttree_ = (TTree*) file_.Get("stoppedHSCPTree/StoppedHSCPTree");
+  tree_ = new StoppedHSCPTree(ttree_);
+
+  nCuts_ = tree_->NCuts();
+}
+
+
+Analysis::~Analysis() {
+
+  if (ttree_ != 0) delete ttree_;
+  if (tree_ != 0) delete tree_;
+
+  file_.Close();
+
+}
 
 int main(int argc, char* argv[]) {
 
@@ -454,39 +602,41 @@ int main(int argc, char* argv[]) {
   }
 
   // options
-  nlimit_=999999999;
+  unsigned nlimit=999999999;
   for (int i=1; i<argc; ++i) {
     // check option flags
     std::string opt = argv[i];
     if (opt=="-d") {
-      nlimit_=1000;
+      nlimit=1000;
     }
   }
 
-  if (nlimit_<999999999) std::cout << "Running on " << nlimit_ << " events per run" << std::endl;
+  if (nlimit<999999999) std::cout << "Running on " << nlimit << " events per run" << std::endl;
 
-  // filename
-  char* filename = argv[argc-2];
+  // arguments
+  std::string filename = std::string(argv[argc-2]);
   std::cout << "Going to run on " << filename << std::endl;
 
-  // open file and get tree
-  TFile file(filename);
-  TTree* ttree = (TTree*) file.Get("stoppedHSCPTree/StoppedHSCPTree");
-  tree_ = new StoppedHSCPTree(ttree);
+  std::string outdir=std::string(argv[argc-1]);
+  std::cout << "Putting output in " << outdir << std::endl;
 
-  // label/directory
-  outdir_ = argv[argc-1];
-  std::cout << "Putting results in directory " << outdir_ << std::endl;
+  // clean output directory
+  std::string command("rm ");
+  command += outdir;
+  command += std::string("/*");
+  system(command.c_str());
+  command = std::string("ls ");
+  command += outdir;
+  system(command.c_str());
 
+  // create analysis
+  Analysis analysis(filename.c_str(), outdir.c_str(), nlimit);
 
   // make histograms for all events
-  loopAll();
+  analysis.loopAll();
 
   // make histograms for each run
-  loopByRun();
-
-  // clean up
-  file.Close();
+  analysis.loopByRun();
 
 }
   // make histograms for each run

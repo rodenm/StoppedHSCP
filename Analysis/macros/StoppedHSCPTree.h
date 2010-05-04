@@ -154,6 +154,15 @@ public :
    std::vector<Double_t> hpdFc5_7;
    std::vector<Double_t> hpdFc5_8;
    std::vector<Double_t> hpdFc5_9;
+   double noiseMinE2Over10TS;
+   double noiseMaxE2Over10TS;
+   int noiseMaxHPDHits;
+   int noiseMaxRBXHits;
+   int noiseMaxHPDNoOtherHits;
+   int noiseMaxZeros;
+   double noiseMin25GeVHitTime;
+   double noiseMax25GeVHitTime;
+   double noiseMinRBXEMF;
 
    // List of branches
    TBranch        *b_events_id;   //!
@@ -280,6 +289,15 @@ public :
    TBranch        *b_events_hpdFc5_7;   //!
    TBranch        *b_events_hpdFc5_8;   //!
    TBranch        *b_events_hpdFc5_9;   //!
+   TBranch        *b_events_noiseMinE2Over10TS;   //!
+   TBranch        *b_events_noiseMaxE2Over10TS;   //!
+   TBranch        *b_events_noiseMaxHPDHits;   //!
+   TBranch        *b_events_noiseMaxRBXHits;   //!
+   TBranch        *b_events_noiseMaxHPDNoOtherHits;   //!
+   TBranch        *b_events_noiseMaxZeros;   //!
+   TBranch        *b_events_noiseMin25GeVHitTime;   //!
+   TBranch        *b_events_noiseMax25GeVHitTime;   //!
+   TBranch        *b_events_noiseMinRBXEMF;   //!
 
    StoppedHSCPTree(char* filename);
    StoppedHSCPTree(TTree *tree=0);
@@ -293,6 +311,7 @@ public :
    virtual unsigned NCuts();
    virtual bool     CutN(unsigned n);
    virtual bool     CutNMinusOne(unsigned n);
+   virtual bool     StdHcalCutN(unsigned n);
 };
 
 StoppedHSCPTree::StoppedHSCPTree(char* filename) {
@@ -488,6 +507,16 @@ void StoppedHSCPTree::Init(TTree *tree)
    fChain->SetBranchAddress("hpdFc5_7", &hpdFc5_7, &b_events_hpdFc5_7);
    fChain->SetBranchAddress("hpdFc5_8", &hpdFc5_8, &b_events_hpdFc5_8);
    fChain->SetBranchAddress("hpdFc5_9", &hpdFc5_9, &b_events_hpdFc5_9);
+/*    double fChain->SetBranchAddress("noiseMinE2Over10TS", &noiseMinE2Over10TS */
+/*    double fChain->SetBranchAddress("noiseMaxE2Over10TS" */
+/*    int fChain->SetBranchAddress("noiseMaxHPDHits" */
+/*    int fChain->SetBranchAddress("noiseMaxRBXHits" */
+/*    int fChain->SetBranchAddress("noiseMaxHPDNoOtherHits" */
+/*    int fChain->SetBranchAddress("noiseMaxZeros" */
+/*    double fChain->SetBranchAddress("noiseMin25GeVHitTime" */
+/*    double fChain->SetBranchAddress("noiseMax25GeVHitTime" */
+/*    double fChain->SetBranchAddress("noiseMinRBXEMF" */
+
    Notify();
 }
 
@@ -585,13 +614,28 @@ bool StoppedHSCPTree::CutN(unsigned n)
 bool StoppedHSCPTree::CutNMinusOne(unsigned n) {
 
   bool passed=true;
-  for (unsigned i=0; i<NCuts(); ++i) {
+  for (unsigned i=0; i<10; ++i) {
     if (i!=n) passed &= CutN(i);
   }
   return passed;
 
 }
 
+
+// return result of a particular cut
+bool StoppedHSCPTree::StdHcalCutN(unsigned n)
+{
+  bool passed=true;
+  
+/*   switch (n) { */
+/*   case 0: */
+/*     return true; */
+/*     break; */
+/*   case 1: */
+/*     return ; */
+
+  return passed;
+}
 
 
 #endif
