@@ -10,6 +10,7 @@ def usage():
     print " Options   :"
     print "   -h      : print this message"
     print "   -l      : use local DBS"
+    print "   -j      : use JSON file of good LS"
     print
 
 try:
@@ -19,10 +20,13 @@ except getopt.GetoptError:
     sys.exit(2)
 
 useLocalDBS = False;
+useJSON = False;
 
 for opt, arg in opts:
     if opt=='-l':
         useLocalDBS=True
+    if opt=='-j':
+        useJSON = True;
     if opt=='-h':
         usage()
         sys.exit()
@@ -44,7 +48,6 @@ name = era + "_" + label
 cfgname = "crab_tree_"+name+".cfg"
 jobStr = "stoppedHSCP_tree_"+name+".py"
 dirStr = "stoppedHSCP_tree_"+name
-evtPerJob = "100000"
 
 dbsStr = ""
 if (useLocalDBS):
@@ -54,18 +57,26 @@ runStr = ""
 if (runs!="0"):
     runStr = "runselection="+runs
 
+evtStr = ""
+if (useJSON):
+    evtStr = "lumi_mask=jsonls.txt\n\
+    total_number_of_lumis = 100000\n\
+    lumis_per_job = 500\n"
+else :
+    evtStr = "total_number_of_events=-1\n\
+    events_per_job=100000"\n"
+
 string = "[CRAB]\n\
 jobtype = cmssw\n\
 scheduler = glite\n\
 use_server = 1\n\
 [CMSSW]\n\
+pset="+jobStr+"\n\
+output_file = stoppedHSCPTree.root\n\
 datasetpath="+dataset+"\n\
 "+runStr+"\n\
 "+dbsStr+"\n\
-pset="+jobStr+"\n\
-total_number_of_events=-1\n\
-events_per_job="+evtPerJob+"\n\
-output_file = stoppedHSCPTree.root\n\
+"+evtStr+"\n\
 [USER]\n\
 return_data = 0\n\
 copy_data = 1\n\
