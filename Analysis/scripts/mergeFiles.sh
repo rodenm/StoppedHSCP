@@ -1,31 +1,24 @@
 #!/bin/bash
 
+# hadd a bunch of files together
+# and copy output somewhere
+
 label=$1
 
-source=/gpfs_phys/storm/cms/user/jbrooke/
-local=/storage/phjjb/stoppedHSCP
-file=stoppedHSCPTree
-dest=~/stoppedHSCP/ntuples/
+idir=/storage/phjjb/stoppedHSCP
+odir=~/stoppedHSCP/ntuples/
+filebase=stoppedHSCPTree
 
-# create local storage
-if [ ! -e $local/$label ]
-    then mkdir $local/$label
+# merge them with hadd (remove old output first to avoid duplicating events!)
+if [ -e $idir/$label/$label.root ]
+    then rm $idir/$label/$label.root
 fi
 
-# copy files
-echo "cp $source/$label/stoppedHSCPTree*.root $local/$label/."
-cp $source/$label/stoppedHSCPTree*.root $local/$label/.
+ls -l $idir/$label
 
-# merge them with hadd (remove output first to avoid duplicating events!)
-if [ -e $local/$label/$label.root ]
-    then rm $local/$label/$label.root
-fi
-
-ls -l $local/$label
-
-echo "hadd $local/$label/$label.root $local/$label/*.root"
-hadd $local/$label/$label.root $local/$label/*.root
+echo "hadd $idir/$label/$label.root $idir/$label/*.root"
+hadd -f $idir/$label/$label.root $idir/$label/*.root
 
 # copy merged file to ntuples dir
-echo "cp $local/$label/$label.root $dest/$label.root"
-cp $local/$label/$label.root $dest/$label.root
+echo "cp $idir/$label/$label.root $dest/$label.root"
+cp $idir/$label/$label.root $dest/$label.root
