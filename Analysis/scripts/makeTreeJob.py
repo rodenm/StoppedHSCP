@@ -65,7 +65,7 @@ if (useJSON):
     lumis_per_job = 500\n"
 else :
     evtStr = "total_number_of_events=-1\n\
-    events_per_job=100000"\n"
+    events_per_job=100000\n"
 
 string = "[CRAB]\n\
 jobtype = cmssw\n\
