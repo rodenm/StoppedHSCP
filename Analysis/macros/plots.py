@@ -83,7 +83,7 @@ def hist2DPlot(hist, file, ofilename, scale=0., log=False, title="histogram", xt
 
 
 # superimpose multiple histograms
-def multiPlot(hists, file, ofilename, norm=False, log=False, title="histogram", xtitle="", ytitle="", opt="HIST", port=False) :
+def multiPlot(hists, file, ofilename, norm=False, log=False, ymin=0., ymax=0., title="histogram", xtitle="", ytitle="", opt="HIST", port=False) :
 
     canvas=TCanvas("canvas")
 
@@ -94,7 +94,7 @@ def multiPlot(hists, file, ofilename, norm=False, log=False, title="histogram", 
         canvas.SetLogy(0)
 
     # set y axis maximum
-    ymax=0.
+    setMaxMin = false
     if (not norm) :
         for hist in hists:
             h = file.Get(hist)
@@ -136,6 +136,8 @@ def multiPlot(hists, file, ofilename, norm=False, log=False, title="histogram", 
             h.Draw(opt)
             first=False
         else:
+#            h.SetMaximum(ymax)
+#            h.SetMinimum(ymin)
             h.Draw(opt+" SAME")
 
     canvas.Update()

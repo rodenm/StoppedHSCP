@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.28 2010/04/28 11:05:43 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.29 2010/04/28 11:20:16 jbrooke Exp $
 //
 //
 
@@ -937,14 +937,18 @@ void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent) {
 	event_->leadingDigiIPhi=it->id().iphi();
 
 	for (int i=0; i<10; ++i) {
-	  event_->leadingDigiTimeSamples.at(i) = it->sample(i).nominal_fC();
+	  if (it->sample(i).nominal_fC() > 5) {
+	    event_->leadingDigiTimeSamples.at(i) = it->sample(i).nominal_fC();
+	  }
 	}
       }
 
       // store time samples of leading five digis
       if (count < 5) {
 	for (int i=0; i<10; ++i) {
-	  event_->top5DigiTimeSamples.at(i) += it->sample(i).nominal_fC();
+	  if (it->sample(i).nominal_fC() > 5) {
+	    event_->top5DigiTimeSamples.at(i) += it->sample(i).nominal_fC();
+	  }
 	}
       }
       

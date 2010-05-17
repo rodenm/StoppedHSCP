@@ -111,8 +111,8 @@ for run in runs:
     hlivetime.SetBinError(i+1, 10.)
     
     # final counts
-    hcutcount = file.Get("NoCuts/hncutcum")
-    nevtFinal = hcutcount.GetBinContent(11)
+    hcutcount = file.Get("Cuts/hncutcum")
+    nevtFinal = hcutcount.GetBinContent(10)
     hnfin.Fill(str(run), nevtFinal)
     hnfin.SetBinError(i+1, sqrt(nevtFinal))
     
@@ -181,19 +181,23 @@ file=TFile(dir+"/"+dir+"_byRun.root", "read")
 
 filebase=dir+"/"+dir
 
-multiPlot([ "hratehlt" ],file, filebase+"_hltRate.png", False, False, "HLT rate", "run", "Hz", "E P1")
-multiPlot([ "hlivetime", "hefftime" ],file, filebase+"_time.png", False, False, "time", "run", "s", "E P1")
-multiPlot([ "hnhlt" ],file, filebase+"_hltCounts.png", False, True, "HLT counts", "run", "events", "E P1")
-multiPlot([ "hnfin" ],file, filebase+"_finalCounts.png", False, True, "Final counts", "run", "events", "E P1")
-multiPlot([ "hratefin" ],file, filebase+"_finalRate.png", False, False, "Final rate", "run", "Hz", "E P1")
-multiPlot([ "hratejetem" ],file, filebase+"_jetEMRate.png", False, False, "Rate after jet EM cut", "run", "Hz", "E P1")
-multiPlot([ "hratehlt", "hratefin" ],file, filebase+"_rate.png", False, True, "Rate", "run", "Hz", "E P1")
+multiPlot([ "hratehlt" ],file, filebase+"_hltRate.png", False, False, 0., 0., "HLT rate", "run", "Hz", "E P1")
+multiPlot([ "hlivetime" ],file, filebase+"_time.png", False, False, 0., 0., "time", "run", "s", "E P1")
+multiPlot([ "hnhlt" ],file, filebase+"_hltCounts.png", False, True, 0., 0., "HLT counts", "run", "events", "E P1")
+multiPlot([ "hnfin" ],file, filebase+"_finalCounts.png", False, True, 0., 0., "Final counts", "run", "events", "E P1")
+multiPlot([ "hratefin" ],file, filebase+"_finalRate.png", False, False, 0., 0., "Final rate", "run", "Hz", "E P1")
+multiPlot([ "hratejetem" ],file, filebase+"_jetEMRate.png", False, False, 0., 0., "Rate after jet EM cut", "run", "Hz", "E P1")
+multiPlot([ "hratehlt", "hratefin" ],file, filebase+"_rate.png", False, True, 0., 0., "Rate", "run", "Hz", "E P1")
 
 canvas = TCanvas("canvas")
 canvas.Print(filebase+"_rateCuts.ps[", "Portrait")
 
+ymax = [0.0, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0. ]
+ymin = [0.0, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0. ]
+
+gStyle.SetOptTitle(0)
 for i in range(0,12):
-    multiPlot([ "hratecut"+str(i) ],file, filebase+"_rateCuts.ps", False, False, "Rate after cuts "+str(i), "run", "Hz", "E P1", True)
+    multiPlot([ "hratecut"+str(i) ],file, filebase+"_rateCuts.ps", False, False, ymin[i], ymax[i], "Rate after cuts "+str(i), "run", "Hz", "E P1", True)
 
 canvas = TCanvas("canvas")
 canvas.Print(filebase+"_rateCuts.ps]")

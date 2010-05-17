@@ -4,21 +4,29 @@
 # and copy output somewhere
 
 label=$1
+nfiles=$2
+first=$3
 
 idir=/storage/phjjb/stoppedHSCP
-odir=~/stoppedHSCP/ntuples/
+odir=~/stoppedHSCP/ntuples
 filebase=stoppedHSCPTree
 
-# merge them with hadd (remove old output first to avoid duplicating events!)
+# remove old output
 if [ -e $idir/$label/$label.root ]
     then rm $idir/$label/$label.root
 fi
 
-ls -l $idir/$label
+# make list of files
+files=""
+for ((i=first;i<=nfiles;i+=1)); do
+  file="$idir/${filebase}_$i.root"
+  files="${files} $file"
+done
 
-echo "hadd $idir/$label/$label.root $idir/$label/*.root"
+# merge them
+echo "hadd $idir/$label/$label.root $files"
 hadd -f $idir/$label/$label.root $idir/$label/*.root
 
 # copy merged file to ntuples dir
-echo "cp $idir/$label/$label.root $dest/$label.root"
-cp $idir/$label/$label.root $dest/$label.root
+echo "cp $idir/$label/$label.root $odir/$label.root"
+cp $idir/$label/$label.root $odir/$label.root

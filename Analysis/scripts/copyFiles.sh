@@ -13,6 +13,10 @@ filebase=stoppedHSCPTree
 
 echo "Copying files from $griddir to $odir"
 
+if [ ! -d $odir ]; then
+    mkdir $odir
+fi
+
 for i in $(seq $first 1 $nfiles)
 do
   echo "lcg-cp $griddir/$label/${filebase}_${i}_${crab}.root $odir/$label/${filebase}_$i.root"

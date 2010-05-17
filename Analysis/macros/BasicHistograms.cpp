@@ -50,6 +50,7 @@ private:
   bool dumpEvents_;       // dump events passing all cuts if true
   unsigned nCuts_;     // number of cuts
   unsigned currentRun_;   // current run #
+  unsigned nHcalCuts_;     // number of cuts
 
   // the histograms
   TH1D* hbx_;
@@ -87,6 +88,10 @@ private:
   TH1D* hncutind_;
   TH1D* hncutcum_;
   TH1D* hnminus1cut_;
+
+  TH1D* hhcalcutind_;
+  TH1D* hhcalcutcum_;
+
 
   // histograms after each cut
   std::vector<TH1D*> hjete_cuts_;
@@ -151,6 +156,11 @@ void Analysis::bookHistos() {
   hncutind_ = new TH1D("hncutind", "Cut counts", 20, 0., 20.);
   hncutcum_ = new TH1D("hncutcum", "Cumulative cut counts", 20, 0., 20.);
   hnminus1cut_ = new TH1D("hnminus1cut", "N-1 cut counts", 20, 0., 20.);
+
+  // HCAL noise cuts
+  hhcalcutind_ = new TH1D("hhcalcutind", "HCAL noise cut counts", 20, 0., 20.);
+  hhcalcutcum_ = new TH1D("hhcalcutcum", "HCAL noise cut cumulative counts", 20, 0., 20.);
+
   
   // histograms per cut
   for (unsigned i=0; i<nCuts_; ++i) {
@@ -210,15 +220,19 @@ void Analysis::writeHistos() {
   hrout_->Write("",TObject::kOverwrite);
   hr1r2_->Write("",TObject::kOverwrite);
   hpkout_->Write("",TObject::kOverwrite);
-  hncutind_->Write("",TObject::kOverwrite);
-  hncutcum_->Write("",TObject::kOverwrite);
-  hnminus1cut_->Write("",TObject::kOverwrite);
-  
+
   if ( ofile_->cd("Cuts") != kTRUE ){
     ofile_->mkdir("Cuts");
     ofile_->cd("Cuts");
   }
 
+  hncutind_->Write("",TObject::kOverwrite);
+  hncutcum_->Write("",TObject::kOverwrite);
+  hnminus1cut_->Write("",TObject::kOverwrite);
+
+  hhcalcutind_->Write("",TObject::kOverwrite);
+  hhcalcutcum_->Write("",TObject::kOverwrite);
+  
   for (unsigned i=0; i< nCuts_; ++i) {
     hjete_cuts_.at(i)->Write("",TObject::kOverwrite);
     hjetetaphi_cuts_.at(i)->Write("",TObject::kOverwrite);
@@ -265,9 +279,15 @@ void Analysis::getHistos() {
   hrout_ = (TH1D*) ofile_->Get("NoCuts/hrout");
   hr1r2_ = (TH2D*) ofile_->Get("NoCuts/hr1r2");
   hpkout_ = (TH2D*) ofile_->Get("NoCuts/hpkout");
-  hncutind_ = (TH1D*) ofile_->Get("NoCuts/hncutind");
-  hncutcum_ = (TH1D*) ofile_->Get("NoCuts/hncutcum");
-  hnminus1cut_ = (TH1D*) ofile_->Get("NoCuts/hnminus1cut");
+
+  // cuts histos
+  hncutind_ = (TH1D*) ofile_->Get("Cuts/hncutind");
+  hncutcum_ = (TH1D*) ofile_->Get("Cuts/hncutcum");
+  hnminus1cut_ = (TH1D*) ofile_->Get("Cuts/hnminus1cut");
+
+  hhcalcutind_ = (TH1D*) ofile_->Get("Cuts/hhcalcutind");
+  hhcalcutcum_ = (TH1D*) ofile_->Get("Cuts/hhcalcutcum");
+
     
   for (unsigned i=0; i< nCuts_; ++i) {
     std::stringstream istr;
@@ -321,6 +341,9 @@ void Analysis::deleteHistos() {
     delete hncutind_;
     delete hncutcum_;
     delete hnminus1cut_;
+
+    delete hhcalcutind_;
+    delete hhcalcutcum_;
     
     for (unsigned i=0; i< hjete_cuts_.size(); ++i) {
       delete hjete_cuts_.at(i);
@@ -403,6 +426,14 @@ void Analysis::fillHistos(StoppedHSCPTree& tree) {
       }
       hbx_cuts_.at(c)->Fill(tree.bx);
     }
+  }
+
+  // loop over HCAL noise cuts
+  bool hcalfail=false;
+  for (unsigned c=0; c<nHcalCuts_; c++) {
+    if (tree.StdHcalCutN(c)) hhcalcutind_->Fill(c);
+    else hcalfail |= true;
+    if (!hcalfail) hhcalcutcum_->Fill(c);  
   }
 
 }
@@ -500,7 +531,25 @@ void Analysis::loopAll() {
     fillHistos(*tree_);
     nevts++;
 
-    if (tree_->Cut() && dumpEvents_) tree_->Show();
+    if (dumpEvents_ &&
+	(tree_->Cut()>0. ||
+	tree_->id == 13200704 ||
+	tree_->id == 23338580 ||
+	tree_->id == 9871709 ||
+	tree_->id == 41317372 ||
+	tree_->id == 70303519 ||
+	tree_->id == 81147704 ||
+	tree_->id == 92716023 ||
+	tree_->id == 97106991 ||
+	tree_->id == 110183807 ||
+	tree_->id == 117516582 ||
+	tree_->id == 12685963 ||
+	tree_->id == 11537315 ||
+	tree_->id == 17661711 ||
+	tree_->id == 19381281 ||
+	 tree_->id == 36361101 )) {
+      tree_->PrintCutValues();
+    }
     
   }
 
@@ -581,6 +630,7 @@ Analysis::Analysis(const char* filename, const char* outdir, unsigned nlimit, bo
   tree_ = new StoppedHSCPTree(ttree_);
 
   nCuts_ = tree_->NCuts();
+  nHcalCuts_ = 12;
 }
 
 
@@ -603,11 +653,19 @@ int main(int argc, char* argv[]) {
 
   // options
   unsigned nlimit=999999999;
+  bool dump=false;
+  bool doByRun=true;
   for (int i=1; i<argc; ++i) {
     // check option flags
     std::string opt = argv[i];
     if (opt=="-d") {
       nlimit=1000;
+    }
+    if (opt=="-p") {
+      dump=true;
+    }
+    if (opt=="-q") {
+      doByRun = false;
     }
   }
 
@@ -621,7 +679,10 @@ int main(int argc, char* argv[]) {
   std::cout << "Putting output in " << outdir << std::endl;
 
   // clean output directory
-  std::string command("rm ");
+  std::string command("mkdir ");
+  command += outdir;
+  system(command.c_str());
+  command = std::string("rm ");
   command += outdir;
   command += std::string("/*");
   system(command.c_str());
@@ -630,13 +691,16 @@ int main(int argc, char* argv[]) {
   system(command.c_str());
 
   // create analysis
-  Analysis analysis(filename.c_str(), outdir.c_str(), nlimit);
+  Analysis analysis(filename.c_str(), outdir.c_str(), nlimit, dump);
 
   // make histograms for all events
   analysis.loopAll();
 
   // make histograms for each run
-  analysis.loopByRun();
+  if (doByRun) {
+    analysis.loopByRun();
+
+  }
 
 }
   // make histograms for each run

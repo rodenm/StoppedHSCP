@@ -22,6 +22,8 @@
 #include <TFile.h>
 
 #include <vector>
+#include <iostream>
+
 
 class StoppedHSCPTree {
 public :
@@ -312,6 +314,7 @@ public :
    virtual bool     CutN(unsigned n);
    virtual bool     CutNMinusOne(unsigned n);
    virtual bool     StdHcalCutN(unsigned n);
+   virtual void     PrintCutValues();
 };
 
 StoppedHSCPTree::StoppedHSCPTree(char* filename) {
@@ -507,15 +510,15 @@ void StoppedHSCPTree::Init(TTree *tree)
    fChain->SetBranchAddress("hpdFc5_7", &hpdFc5_7, &b_events_hpdFc5_7);
    fChain->SetBranchAddress("hpdFc5_8", &hpdFc5_8, &b_events_hpdFc5_8);
    fChain->SetBranchAddress("hpdFc5_9", &hpdFc5_9, &b_events_hpdFc5_9);
-/*    double fChain->SetBranchAddress("noiseMinE2Over10TS", &noiseMinE2Over10TS */
-/*    double fChain->SetBranchAddress("noiseMaxE2Over10TS" */
-/*    int fChain->SetBranchAddress("noiseMaxHPDHits" */
-/*    int fChain->SetBranchAddress("noiseMaxRBXHits" */
-/*    int fChain->SetBranchAddress("noiseMaxHPDNoOtherHits" */
-/*    int fChain->SetBranchAddress("noiseMaxZeros" */
-/*    double fChain->SetBranchAddress("noiseMin25GeVHitTime" */
-/*    double fChain->SetBranchAddress("noiseMax25GeVHitTime" */
-/*    double fChain->SetBranchAddress("noiseMinRBXEMF" */
+   fChain->SetBranchAddress("noiseMinE2Over10TS", &noiseMinE2Over10TS, &b_events_noiseMinE2Over10TS);
+   fChain->SetBranchAddress("noiseMaxE2Over10TS", &noiseMaxE2Over10TS, &b_events_noiseMaxE2Over10TS);
+   fChain->SetBranchAddress("noiseMaxHPDHits", &noiseMaxHPDHits, &b_events_noiseMaxHPDHits);
+   fChain->SetBranchAddress("noiseMaxRBXHits", &noiseMaxRBXHits, &b_events_noiseMaxRBXHits);
+   fChain->SetBranchAddress("noiseMaxHPDNoOtherHits", &noiseMaxHPDNoOtherHits, &b_events_noiseMaxHPDNoOtherHits);
+   fChain->SetBranchAddress("noiseMaxZeros", &noiseMaxZeros, &b_events_noiseMaxZeros);
+   fChain->SetBranchAddress("noiseMin25GeVHitTime", &noiseMin25GeVHitTime, &b_events_noiseMin25GeVHitTime);
+   fChain->SetBranchAddress("noiseMax25GeVHitTime", &noiseMax25GeVHitTime, &b_events_noiseMax25GeVHitTime);
+   fChain->SetBranchAddress("noiseMinRBXEMF", &noiseMinRBXEMF, &b_events_noiseMinRBXEMF);
 
    Notify();
 }
@@ -545,9 +548,10 @@ Int_t StoppedHSCPTree::Cut(Long64_t entry=0)
   // This function may be called from Loop.
   // returns  1 if entry is accepted.
   // returns -1 otherwise.
-  bool pass=false;
+  bool pass=true;
+  unsigned nc=9;
 
-  for (unsigned i=0; i<NCuts(); ++i) {
+  for (unsigned i=0; i<nc; ++i) {
     pass &= CutN(i);
   }
   
@@ -564,7 +568,6 @@ unsigned StoppedHSCPTree::NCuts() {
 // return result of a particular cut
 bool StoppedHSCPTree::CutN(unsigned n)
 {
-  bool passed=true;
   
   switch (n) {
   case 0:
@@ -618,25 +621,79 @@ bool StoppedHSCPTree::CutNMinusOne(unsigned n) {
     if (i!=n) passed &= CutN(i);
   }
   return passed;
-
+  
 }
 
 
 // return result of a particular cut
 bool StoppedHSCPTree::StdHcalCutN(unsigned n)
 {
-  bool passed=true;
   
-/*   switch (n) { */
-/*   case 0: */
-/*     return true; */
-/*     break; */
-/*   case 1: */
-/*     return ; */
+  switch (n) {
+  case 0:
+    return true;
+    break;
+  case 1:
+    return jetE[0]>50. && jetEta[0]<1.3;
+    break;
+  case 2:
+    return mu_N==0;
+    break;
+  case 3:
+    return !(noiseMinE2Over10TS < 0.70);
+    break;
+  case 4:
+    return !(noiseMaxE2Over10TS > 0.96);
+    break;
+  case 5:
+    return !(noiseMaxHPDHits >= 17);
+    break;
+  case 6:
+    return !(noiseMaxRBXHits >= 999);
+    break;
+  case 7:
+    return !(noiseMaxHPDNoOtherHits >= 10);
+    break;
+  case 8:
+    return !(noiseMaxZeros >= 10);
+    break;
+  case 9:
+    return !(noiseMin25GeVHitTime < -9999.0);
+    break;
+  case 10:
+    return !(noiseMax25GeVHitTime > 9999.0);
+    break;
+  case 11:
+    return !(noiseMinRBXEMF < 0.01);
+    break;
+  default:
+    return false;
+    break; 
+  }
 
-  return passed;
+}
+  
+
+void StoppedHSCPTree::PrintCutValues() {
+
+  std::cout << "Stopped HSCP Event" << std::endl;
+  std::cout << "  id             = " << id << std::endl;
+  std::cout << "  lb             = " << lb << std::endl;
+  std::cout << "  run            = " << run << std::endl;
+  std::cout << "  nTowerSameiPhi = " << nTowerSameiPhi << std::endl;
+  std::cout << "  jetE[0]        = " << jetE[0] << std::endl;
+  std::cout << "  jetEta[0]      = " << jetEta[0] << std::endl;
+  std::cout << "  jetN60[0]      = " << jetN60[0] << std::endl;
+  std::cout << "  jetN90[0]      = " << jetN90[0] << std::endl;
+  std::cout << "  mu_N           = " << mu_N << std::endl;
+  std::cout << "  top5DigiR1     = " << top5DigiR1 << std::endl;
+  std::cout << "  top5DigiR2     = " << top5DigiR2 << std::endl;
+  std::cout << "  top5DigiRPeak  = " << top5DigiRPeak << std::endl;
+  std::cout << "  top5DigiROuter = " << top5DigiROuter << std::endl;
+  std::cout << "  jetEMF[0]      = " << (jetEEm[0] / jetEHad[0]) << std::endl;
+  std::cout << std::endl;
 }
 
-
+  
 #endif
 
