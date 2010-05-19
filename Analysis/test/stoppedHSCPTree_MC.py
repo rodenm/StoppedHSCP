@@ -12,17 +12,18 @@ process.MessageLogger.cerr.threshold = ''
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 # change Global Tag
-process.GlobalTag.globaltag = "STARTUP3X_V8I::All" # MC
+process.GlobalTag.globaltag = "START3X_V27::All" # MC
 
 # change RawToDigi RAW data label
 process.gctDigis.inputLabel = 'rawDataCollector'
 process.gtDigis.DaqGtInputTag = 'rawDataCollector'
 process.hcalDigis.InputLabel = 'rawDataCollector'
 
-process.path.remove(process.hltHighLevel)
+process.myPath.remove(process.hltHighLevel)
 
 # input files
 readFiles.extend( [
-    'file:/storage/phjjb/StoppedHSCP_MC_312/stoppedGluino_300_100.1K.root'
+    'file:/gpfs_phys/storm/cms/user/fedor/hscp/336/7TeV/gluino1jet/gluino_1jet_336_150_100_2.root'
     ] )
 
+process.TFileService.fileName = cms.string('stoppedHSCPTree_gluino_1jet_336_150_100_2.root')

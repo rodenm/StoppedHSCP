@@ -592,7 +592,7 @@ bool StoppedHSCPTree::CutN(unsigned n)
     return mu_N==0;
     break;
   case 7:
-    return top5DigiR1 > 0.15;
+    return top5DigiR1 > 0.15 && top5DigiR1 < 1.0;  // upper/lower limits explicit to prevent non-physical values passing
     break;
   case 8:
     return top5DigiR2 > 0.1 && top5DigiR2 < 0.5;
@@ -601,10 +601,10 @@ bool StoppedHSCPTree::CutN(unsigned n)
     return top5DigiRPeak > 0.4 && top5DigiRPeak < 0.7;
     break;
   case 10:
-    return top5DigiROuter < 0.1;
+    return top5DigiROuter > 0.0 && top5DigiROuter < 0.1;
     break;
   case 11:
-    return jetEEm[0] / jetEHad[0] > 0.05;
+    return jetEEm[0] / jetE[0] > 0.05;
   default:
     return false;
     

@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.29 2010/04/28 11:20:16 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.30 2010/05/17 12:40:39 jbrooke Exp $
 //
 //
 
@@ -118,6 +118,13 @@ private:
   void doDigisAboveThreshold(const edm::Event&);
   void doDigisInJets(const edm::Event&);
   void doTimingFromDigis(const edm::Event&);
+  void pulseShapeVariables(const std::vector<double>& samples,
+			   unsigned& ipeak,
+			   double& total,
+			   double& r1,
+			   double& r2,
+			   double& rpeak,
+			   double& router);
 
 public:
   
@@ -143,10 +150,12 @@ public:
     bool operator()(const HBHEDataFrame& x, const HBHEDataFrame& y) {
       float TotalX=0;
       float TotalY=0;
-      for(int i=0; i<10; i++)
+      for(int i=0; i<HBHEDataFrame::MAXSAMPLES; i++)
 	{
-	  TotalX += x.sample(i).nominal_fC();
-	  TotalY += y.sample(i).nominal_fC();
+	  double samplex = x.sample(i).nominal_fC();
+	  if (samplex > 5) TotalX += samplex;
+	  double sampley = y.sample(i).nominal_fC();
+	  if (sampley > 5) TotalY += sampley;
 	}
       return ( TotalX > TotalY ) ;
     }
@@ -936,112 +945,96 @@ void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent) {
 	event_->leadingDigiIEta=it->id().ieta();
 	event_->leadingDigiIPhi=it->id().iphi();
 
-	for (int i=0; i<10; ++i) {
-	  if (it->sample(i).nominal_fC() > 5) {
-	    event_->leadingDigiTimeSamples.at(i) = it->sample(i).nominal_fC();
-	  }
+	for (int i=0; i<HBHEDataFrame::MAXSAMPLES; ++i) {
+	  double sample = it->sample(i).nominal_fC();
+	  if (sample > 5) event_->leadingDigiTimeSamples.at(i) = sample;
 	}
       }
 
       // store time samples of leading five digis
       if (count < 5) {
-	for (int i=0; i<10; ++i) {
-	  if (it->sample(i).nominal_fC() > 5) {
-	    event_->top5DigiTimeSamples.at(i) += it->sample(i).nominal_fC();
-	  }
+	for (int i=0; i<HBHEDataFrame::MAXSAMPLES; ++i) {
+	  double sample = it->sample(i).nominal_fC();
+	  if (sample > 5 ) event_->top5DigiTimeSamples.at(i) += it->sample(i).nominal_fC();
 	}
       }
       
     }
 
     // find peaks in time samples and totals
-    for (int i=0; i<10; ++i) {
+    pulseShapeVariables(event_->leadingDigiTimeSamples,
+			event_->leadingDigiPeakSample,
+			event_->leadingDigiTotal,
+			event_->leadingDigiR1,
+			event_->leadingDigiR2,
+			event_->leadingDigiRPeak,
+			event_->leadingDigiROuter);
 
-      if (event_->leadingDigiTimeSamples.at(i) > event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample)) {
-	event_->leadingDigiPeakSample = i;
-      }
-      event_->leadingDigiTotal += event_->leadingDigiTimeSamples.at(i);
+    pulseShapeVariables(event_->top5DigiTimeSamples,
+			event_->top5DigiPeakSample,
+			event_->top5DigiTotal,
+			event_->top5DigiR1,
+			event_->top5DigiR2,
+			event_->top5DigiRPeak,
+			event_->top5DigiROuter);
 
-      if (event_->top5DigiTimeSamples.at(i) > event_->top5DigiTimeSamples.at(event_->top5DigiPeakSample)) {
-	event_->top5DigiPeakSample = i;
-      }
-      event_->top5DigiTotal += event_->top5DigiTimeSamples.at(i);
-
-    }
-
-    // compute ratios - R1 leading digi
-    if (event_->leadingDigiPeakSample < 9) {
-      event_->leadingDigiR1 = event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample+1) / 
-	event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample);
-    }
-    else {
-      event_->leadingDigiR1 = -999.;
-    }
-
-    // R1 top 5
-    if (event_->top5DigiPeakSample < 9) {
-      event_->top5DigiR1 = event_->top5DigiTimeSamples.at(event_->top5DigiPeakSample+1) / 
-	event_->top5DigiTimeSamples.at(event_->top5DigiPeakSample);
-    }
-    else {
-      event_->top5DigiR1 = -999.;
-    }
-
-    // R2 leading digi
-    if (event_->leadingDigiPeakSample < 8) {
-      if (event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample+1) > 0.) {
-	event_->leadingDigiR2 = event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample+2) / 
-	  event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample+1);
-      }
-      else event_->leadingDigiR2 = 1.;
-    }
-    else {
-      event_->leadingDigiR2 = -999.;
-    }
-
-    // R2 top 5
-    if (event_->top5DigiPeakSample < 8) {
-      if (event_->top5DigiTimeSamples.at(event_->top5DigiPeakSample+1) > 0.) {
-	event_->top5DigiR2 = event_->top5DigiTimeSamples.at(event_->top5DigiPeakSample+2) / 
-	  event_->top5DigiTimeSamples.at(event_->top5DigiPeakSample+1);
-      }
-      else event_->top5DigiR2 = 1.;
-    }
-    else {
-      event_->top5DigiR2 = -999.;
-    }
-    
-    // Rpeak - leading digi
-    event_->leadingDigiRPeak = event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample) / event_->leadingDigiTotal;
-
-    // Rpeak - top 5
-    event_->top5DigiRPeak = event_->top5DigiTimeSamples.at(event_->top5DigiPeakSample) / event_->top5DigiTotal;
-
-    // Router leading digi
-    if (event_->leadingDigiPeakSample < 8 && event_->leadingDigiPeakSample > 0) {
-      event_->leadingDigiROuter = 1 - ((event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample-1) +
-				event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample) +
-				event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample+1) +
-				event_->leadingDigiTimeSamples.at(event_->leadingDigiPeakSample+2)) /
-			       event_->leadingDigiTotal);
-    }
-    else {
-      event_->leadingDigiROuter = 0.;
-    }
-
-    // Router top 5
-    if (event_->top5DigiPeakSample < 8 && event_->top5DigiPeakSample > 0) {
-      event_->top5DigiROuter = 1 - ((event_->top5DigiTimeSamples.at(event_->top5DigiPeakSample-1) +
-				event_->top5DigiTimeSamples.at(event_->top5DigiPeakSample) +
-				event_->top5DigiTimeSamples.at(event_->top5DigiPeakSample+1) +
-				event_->top5DigiTimeSamples.at(event_->top5DigiPeakSample+2)) /
-			       event_->top5DigiTotal);
-    }
-    else {
-      event_->top5DigiROuter = 0.;
-    }
 
   }
 
 }
+
+
+void StoppedHSCPTreeProducer::pulseShapeVariables(const std::vector<double>& samples,
+						  unsigned& ipeak,
+						  double& total,
+						  double& r1,
+						  double& r2,
+						  double& rpeak,
+						  double& router) {
+
+  ipeak = 0.;
+  total = 0.;
+  r1 = 0.;
+  r2 = 0.;
+  rpeak = 0.;
+  router = 0.;
+
+  for (int i=0; i<HBHEDataFrame::MAXSAMPLES; ++i) {
+    if (samples.at(i) > samples.at(ipeak)) {
+      ipeak = i;
+    }
+    total += samples.at(i);
+  }
+  
+  // R1
+  if (ipeak < HBHEDataFrame::MAXSAMPLES-1) {
+    r1 = samples.at(ipeak+1) / samples.at(ipeak);
+  }
+  else r1 = 0.;
+  
+  // R2
+  if (ipeak < HBHEDataFrame::MAXSAMPLES-2) {
+    if (samples.at(ipeak+1) > 0. &&
+	samples.at(ipeak+1) > 
+	samples.at(ipeak+2)) {
+      r2 = samples.at(ipeak+2) / samples.at(ipeak+1);
+    }
+    else r2 = 1.;
+  }
+  else r2 = 0.;
+
+  // Rpeak - leading digi
+  rpeak = samples.at(ipeak) / total;
+  
+  // Router - leading digi
+  double foursample=0.;
+  for (unsigned i=ipeak-1; i<ipeak+3 && i<HBHEDataFrame::MAXSAMPLES-2; ++i) {
+    if (i>0 && i<HBHEDataFrame::MAXSAMPLES) {
+      foursample += samples.at(i);
+    }
+  }
+  router = 1. - (foursample / total);
+  
+}
+
 

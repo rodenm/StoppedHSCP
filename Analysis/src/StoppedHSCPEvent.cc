@@ -1,4 +1,5 @@
 #include "StoppedHSCP/Analysis/interface/StoppedHSCPEvent.h"
+#include "DataFormats/HcalDigi/interface/HBHEDataFrame.h"
 
 #include <iostream>
 
@@ -56,14 +57,14 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   nTowerSameiPhi(0),
   leadingDigiIEta(-999),
   leadingDigiIPhi(-999),
-  leadingDigiTimeSamples(10),
+  leadingDigiTimeSamples(HBHEDataFrame::MAXSAMPLES),
   leadingDigiPeakSample(0),
   leadingDigiTotal(-999.),
   leadingDigiR1(-999.),
   leadingDigiR2(-999.),
   leadingDigiRPeak(-999.),
   leadingDigiROuter(-999.),
-  top5DigiTimeSamples(10),
+  top5DigiTimeSamples(HBHEDataFrame::MAXSAMPLES),
   top5DigiPeakSample(0),
   top5DigiTotal(-999.),
   top5DigiR1(-999.),
