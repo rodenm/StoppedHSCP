@@ -7,7 +7,7 @@ import sys
 import getopt
 
 def usage():
-    print "makeTreeJob.py [-h] [-l] <era> <label> <dataset> <global tag> <runs>"
+    print "makeTreeJob.py [-hjl] <era> <label> <dataset> <global tag> <runs>"
     print " Options   :"
     print "   -h      : print this message"
     print "   -l      : use local DBS"
@@ -15,7 +15,7 @@ def usage():
     print
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "hl")
+    opts, args = getopt.getopt(sys.argv[1:], "hjl")
 except getopt.GetoptError:
     usage()
     sys.exit(2)
@@ -61,11 +61,11 @@ if (runs!="0"):
 evtStr = ""
 if (useJSON):
     evtStr = "lumi_mask=jsonls.txt\n\
-    total_number_of_lumis = 100000\n\
-    lumis_per_job = 500\n"
+total_number_of_lumis = 100000\n\
+lumis_per_job = 500\n"
 else :
     evtStr = "total_number_of_events=-1\n\
-    events_per_job=100000\n"
+events_per_job=100000\n"
 
 string = "[CRAB]\n\
 jobtype = cmssw\n\

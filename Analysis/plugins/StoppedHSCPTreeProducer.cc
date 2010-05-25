@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.30 2010/05/17 12:40:39 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.31 2010/05/19 15:11:40 jbrooke Exp $
 //
 //
 
@@ -153,9 +153,11 @@ public:
       for(int i=0; i<HBHEDataFrame::MAXSAMPLES; i++)
 	{
 	  double samplex = x.sample(i).nominal_fC();
-	  if (samplex > 5) TotalX += samplex;
+	  if (samplex > 5) 
+	  TotalX += samplex;
 	  double sampley = y.sample(i).nominal_fC();
-	  if (sampley > 5) TotalY += sampley;
+	  if (sampley > 5) 
+	  TotalY += sampley;
 	}
       return ( TotalX > TotalY ) ;
     }
