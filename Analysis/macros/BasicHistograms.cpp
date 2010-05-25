@@ -39,6 +39,8 @@ public:
   void loopAll();
   void loopByRun();
 
+  void cutAxisLabels(TH1D* h);
+
 private:
 
   TFile file_;            // input file
@@ -57,6 +59,7 @@ private:
   TH1D* horb_;
   TH1D* hlb_;
   TH1D* htime_;
+  TH1D* hl1bits_;
   TH1D* hl1et_;
   TH1D* hl1eta_;
   TH1D* hl1phi_;
@@ -79,16 +82,24 @@ private:
   TH2D* hmuetaphi_;
   TH1D* hntowsameiphi_;
   TH2D* htowietaiphi_;
+  TH1D* hpksample_;
   TH1D* hr1_;
   TH1D* hr2_;
   TH1D* hrpk_;
   TH1D* hrout_;
   TH2D* hr1r2_;
   TH2D* hpkout_;
+  TH1D* hr1_old_;
+  TH1D* hr2_old_;
+  TH1D* hrpk_old_;
+  TH1D* hrout_old_;
+  TH1D* hbxup_;
+
   TH1D* hncutind_;
   TH1D* hncutcum_;
   TH1D* hnminus1cut_;
-
+  TH1D* holdcutind_;
+  TH1D* holdcutcum_;
   TH1D* hhcalcutind_;
   TH1D* hhcalcutcum_;
 
@@ -113,6 +124,7 @@ void Analysis::bookHistos() {
   htime_ = new TH1D("htime", "Event time", 100, 0., 1.E8);
   
   // L1
+  hl1bits_ = new TH1D("hl1bits", "L1 trigger bits", 10, 0., 20.);
   hl1et_ = new TH1D("hl1et",  "Leading L1 jet E_{t}", 100, 0., 200.);
   hl1eta_ = new TH1D("hl1eta", "Leading L1 jet #eta", 70, -3.5, 3.5);
   hl1phi_ = new TH1D("hl1phi", "Leading L1 jet #phi", 72, -1 * TMath::Pi(),  TMath::Pi());
@@ -145,22 +157,38 @@ void Analysis::bookHistos() {
   hmuetaphi_ = new TH2D("hmuetaphi", "Muon pos", 70, -3.5, 3.5, 72, -1 * TMath::Pi(),  TMath::Pi());
   
   // pulse shape
+  hpksample_ = new TH1D("hpksample", "Peak sample", 10, 0., 10.);
   hr1_ = new TH1D("hr1", "R_{1}", 50, 0., 1.);
   hr2_ = new TH1D("hr2", "R_{2}", 50, 0., 1.);
   hrpk_ = new TH1D("hrpk", "R_{peak}", 50, 0., 1.);
   hrout_ = new TH1D("hrout", "R_{outer}", 30, 0., 1.);    
   hr1r2_ = new TH2D("hr1r2", "R_{1} vs R_{2}", 50, 0., 1., 50, 0., 1.);
   hpkout_ = new TH2D("hpkout", "R_{peak} vs R_{outer}", 50, 0., 1., 50, 0., 1.);
+  hr1_old_ = new TH1D("hr1old", "R_{1} old", 50, 0., 1.);
+  hr2_old_ = new TH1D("hr2old", "R_{2} old", 50, 0., 1.);
+  hrpk_old_ = new TH1D("hrpkold", "R_{peak} old", 50, 0., 1.);
+  hrout_old_ = new TH1D("hroutold", "R_{outer} old", 30, 0., 1.);    
   
+  // special
+  hbxup_ = new TH1D("hbxup", "BX (unpaired bunches)", 3564, 0., 3564.);
+
   // cut counts
   hncutind_ = new TH1D("hncutind", "Cut counts", 20, 0., 20.);
+  cutAxisLabels(hncutind_);
   hncutcum_ = new TH1D("hncutcum", "Cumulative cut counts", 20, 0., 20.);
+  cutAxisLabels(hncutcum_);  
   hnminus1cut_ = new TH1D("hnminus1cut", "N-1 cut counts", 20, 0., 20.);
+  cutAxisLabels(hnminus1cut_);
+
+  // old cuts
+  holdcutind_ = new TH1D("holdcutind", "Old cut counts", 20, 0., 20.);
+  cutAxisLabels(holdcutind_);
+  holdcutcum_ = new TH1D("holdcutcum", "Old cut cumulative counts", 20, 0., 20.);
+  cutAxisLabels(holdcutcum_);
 
   // HCAL noise cuts
   hhcalcutind_ = new TH1D("hhcalcutind", "HCAL noise cut counts", 20, 0., 20.);
   hhcalcutcum_ = new TH1D("hhcalcutcum", "HCAL noise cut cumulative counts", 20, 0., 20.);
-
   
   // histograms per cut
   for (unsigned i=0; i<nCuts_; ++i) {
@@ -192,6 +220,7 @@ void Analysis::writeHistos() {
   rateDist(*hlb_, 100);
 
   htime_->Write("",TObject::kOverwrite);
+  hl1bits_->Write("",TObject::kOverwrite);
   hl1et_->Write("",TObject::kOverwrite);
   hl1eta_->Write("",TObject::kOverwrite);
   hl1phi_->Write("",TObject::kOverwrite);
@@ -214,12 +243,18 @@ void Analysis::writeHistos() {
   hjetfhpd_->Write("",TObject::kOverwrite);
   hnmu_->Write("",TObject::kOverwrite);
   hmuetaphi_->Write("",TObject::kOverwrite);
+  hpksample_->Write("",TObject::kOverwrite);
   hr1_->Write("",TObject::kOverwrite);
   hr2_->Write("",TObject::kOverwrite);
   hrpk_->Write("",TObject::kOverwrite);
   hrout_->Write("",TObject::kOverwrite);
   hr1r2_->Write("",TObject::kOverwrite);
   hpkout_->Write("",TObject::kOverwrite);
+  hr1_old_->Write("",TObject::kOverwrite);
+  hr2_old_->Write("",TObject::kOverwrite);
+  hrpk_old_->Write("",TObject::kOverwrite);
+  hrout_old_->Write("",TObject::kOverwrite);
+  hbxup_->Write("",TObject::kOverwrite);
 
   if ( ofile_->cd("Cuts") != kTRUE ){
     ofile_->mkdir("Cuts");
@@ -229,6 +264,9 @@ void Analysis::writeHistos() {
   hncutind_->Write("",TObject::kOverwrite);
   hncutcum_->Write("",TObject::kOverwrite);
   hnminus1cut_->Write("",TObject::kOverwrite);
+
+  holdcutind_->Write("",TObject::kOverwrite);
+  holdcutcum_->Write("",TObject::kOverwrite);
 
   hhcalcutind_->Write("",TObject::kOverwrite);
   hhcalcutcum_->Write("",TObject::kOverwrite);
@@ -251,6 +289,7 @@ void Analysis::getHistos() {
   horb_ = (TH1D*) ofile_->Get("NoCuts/horb");
   hlb_ = (TH1D*) ofile_->Get("NoCuts/hlb");
   htime_ = (TH1D*) ofile_->Get("NoCuts/htime");
+  hl1bits_ = (TH1D*) ofile_->Get("NoCuts/hl1bits");
   hl1et_ = (TH1D*) ofile_->Get("NoCuts/hl1et");
   hl1eta_ = (TH1D*) ofile_->Get("NoCuts/hl1eta");
   hl1phi_ = (TH1D*) ofile_->Get("NoCuts/hl1phi");
@@ -273,17 +312,26 @@ void Analysis::getHistos() {
   hmuetaphi_ = (TH2D*) ofile_->Get("NoCuts/hmuetaphi");
   hntowsameiphi_ = (TH1D*) ofile_->Get("NoCuts/hntowsameiphi");
   htowietaiphi_ = (TH2D*) ofile_->Get("NoCuts/htowietaiphi");
+  hpksample_ = (TH1D*) ofile_->Get("NoCuts/hpksample");
   hr1_ = (TH1D*) ofile_->Get("NoCuts/hr1");
   hr2_ = (TH1D*) ofile_->Get("NoCuts/hr2");
   hrpk_ = (TH1D*) ofile_->Get("NoCuts/hrpk");
   hrout_ = (TH1D*) ofile_->Get("NoCuts/hrout");
   hr1r2_ = (TH2D*) ofile_->Get("NoCuts/hr1r2");
   hpkout_ = (TH2D*) ofile_->Get("NoCuts/hpkout");
-
+  hr1_old_ = (TH1D*) ofile_->Get("NoCuts/hr1old");
+  hr2_old_ = (TH1D*) ofile_->Get("NoCuts/hr2old");
+  hrpk_old_ = (TH1D*) ofile_->Get("NoCuts/hrpkold");
+  hrout_old_ = (TH1D*) ofile_->Get("NoCuts/hroutold");
+  hbxup_ = (TH1D*) ofile_->Get("NoCuts/hbxup");
+  
   // cuts histos
   hncutind_ = (TH1D*) ofile_->Get("Cuts/hncutind");
   hncutcum_ = (TH1D*) ofile_->Get("Cuts/hncutcum");
   hnminus1cut_ = (TH1D*) ofile_->Get("Cuts/hnminus1cut");
+
+  holdcutind_ = (TH1D*) ofile_->Get("Cuts/holdcutind");
+  holdcutcum_ = (TH1D*) ofile_->Get("Cuts/holdcutcum");
 
   hhcalcutind_ = (TH1D*) ofile_->Get("Cuts/hhcalcutind");
   hhcalcutcum_ = (TH1D*) ofile_->Get("Cuts/hhcalcutcum");
@@ -310,6 +358,7 @@ void Analysis::deleteHistos() {
     delete horb_;
     delete hlb_;
     delete htime_;
+    delete hl1bits_;
     delete hl1et_;
     delete hl1eta_;
     delete hl1phi_;
@@ -332,16 +381,24 @@ void Analysis::deleteHistos() {
     delete hmuetaphi_;
     delete hntowsameiphi_;
     delete htowietaiphi_;
+    delete hpksample_;
     delete hr1_;
     delete hr2_;
     delete hrpk_;
     delete hrout_;
     delete hr1r2_;
     delete hpkout_;
+    delete hr1_old_;
+    delete hr2_old_;
+    delete hrpk_old_;
+    delete hrout_old_;
+    delete hbxup_;
+
     delete hncutind_;
     delete hncutcum_;
     delete hnminus1cut_;
-
+    delete holdcutind_;
+    delete holdcutcum_;
     delete hhcalcutind_;
     delete hhcalcutcum_;
     
@@ -369,6 +426,13 @@ void Analysis::fillHistos(StoppedHSCPTree& tree) {
   horb_->Fill(tree.orbit);
   hlb_->Fill(tree.lb);
   htime_->Fill(tree.time);
+  hl1bits_->Fill("L1_SingleJet10_NotBptxC", (tree.gtAlgoWord1>>(88-64))&0x1);
+  hl1bits_->Fill("L1Tech_BPTX_plus_AND_minus", (tree.gtTechWord)&0x1);
+  hl1bits_->Fill("L1_BptxMinus", (tree.gtAlgoWord1>>(81-64))&0x1);
+  hl1bits_->Fill("L1_BptxPlus", (tree.gtAlgoWord1>>(80-64))&0x1);
+  hl1bits_->Fill("L1_SingleJet10U", (tree.gtAlgoWord0>>16)&0x1);
+  hl1bits_->Fill("L1_SingleMuOpen", (tree.gtAlgoWord0>>55)&0x1);
+  hl1bits_->Fill("L1Tech_BSC_minBias_thresh1", (tree.gtTechWord>>40)&0x1);
   if (tree.l1Jet_N > 0) {
     hl1et_->Fill(tree.l1JetE.at(0));
     hl1eta_->Fill(tree.l1JetEta.at(0));
@@ -384,7 +448,7 @@ void Analysis::fillHistos(StoppedHSCPTree& tree) {
     hjete_->Fill(tree.jetE.at(0));
     hjeteta_->Fill(tree.jetEta.at(0));
     hjetphi_->Fill(tree.jetPhi.at(0));
-    //    hjetetaphi_->Fill(tree.jetEta.at(0), tree.jetPhi.at(0));
+    hjetetaphi_->Fill(tree.jetEta.at(0), tree.jetPhi.at(0));
     hjeteem_->Fill(tree.jetEEm.at(0));
     hjetehad_->Fill(tree.jetEHad.at(0));
     hjetemf_->Fill(tree.jetEEm.at(0)/tree.jetE.at(0));
@@ -401,12 +465,21 @@ void Analysis::fillHistos(StoppedHSCPTree& tree) {
   if (tree.tower_N>0) {
     htowietaiphi_->Fill(tree.towerIEta.at(0), tree.towerIPhi.at(0));
   }
+  hr1_->Fill(tree.top5DigiPeakSample);
   hr1_->Fill(tree.top5DigiR1);
   hr2_->Fill(tree.top5DigiR2);
   hrpk_->Fill(tree.top5DigiRPeak);
   hrout_->Fill(tree.top5DigiROuter);
   hr1r2_->Fill(tree.top5DigiR1, tree.top5DigiR2);
   hpkout_->Fill(tree.top5DigiRPeak, tree.top5DigiROuter);
+  hr1_old_->Fill(tree.TimingRightPeak);
+  hr2_old_->Fill(tree.TimingFracRightNextRight);
+  hrpk_old_->Fill(tree.TimingFracInLeader);
+  hrout_old_->Fill(1.-tree.TimingFracInCentralFour);
+
+  if ( ((tree.gtAlgoWord1>>(80-64))&0x1)>0 || ((tree.gtAlgoWord1>>(81-64))&0x1)>0) {
+    hbxup_->Fill(tree.bx);
+  }
 
   // loop over cuts
   bool fail=false;
@@ -427,6 +500,15 @@ void Analysis::fillHistos(StoppedHSCPTree& tree) {
       hbx_cuts_.at(c)->Fill(tree.bx);
     }
   }
+
+  // old cuts
+  fail=false;
+  for (unsigned c=0; c<12; c++) {
+    if (tree.OldCutN(c)) holdcutind_->Fill(c);
+    else fail |= true;
+    if (!fail) holdcutcum_->Fill(c);
+  }
+
 
   // loop over HCAL noise cuts
   bool hcalfail=false;
@@ -616,8 +698,19 @@ void Analysis::loopByRun() {
 }
 
 
+void Analysis::cutAxisLabels(TH1D* h) {
+
+  for (unsigned i=0; i<nCuts_; ++i) {
+    h->GetXaxis()->SetBinLabel(i+1, tree_->CutName(i));
+  }
+
+}
+
+
 Analysis::Analysis(const char* filename, const char* outdir, unsigned nlimit, bool dump) :
-  file_(filename),
+  file_(filename), 
+  ttree_(0),
+  tree_(0),
   outdir_(outdir),
   ofile_(0),
   nlimit_(nlimit),
@@ -626,8 +719,8 @@ Analysis::Analysis(const char* filename, const char* outdir, unsigned nlimit, bo
 {
 
   // open file and get tree
-  ttree_ = (TTree*) file_.Get("stoppedHSCPTree/StoppedHSCPTree");
-  tree_ = new StoppedHSCPTree(ttree_);
+  //  ttree_ = (TTree*) file_.Get("stoppedHSCPTree/StoppedHSCPTree");
+  tree_ = new StoppedHSCPTree(&file_);
 
   nCuts_ = tree_->NCuts();
   nHcalCuts_ = 12;
@@ -638,6 +731,7 @@ Analysis::~Analysis() {
 
   if (ttree_ != 0) delete ttree_;
   if (tree_ != 0) delete tree_;
+  if (ofile_ != 0) delete ofile_;
 
   file_.Close();
 

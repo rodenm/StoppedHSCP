@@ -47,6 +47,7 @@ if (len(args)>1):
         
 sys.argv.append('-b')
 
+
 from ROOT import *
 from math import *
 from style import *
@@ -73,6 +74,7 @@ def plotsFromHistos(filename):
 #    histPlot(dir+"/hlbdist", file, fileroot+".ps", 0., True, "", "Rate", "N LS")
     
     # L1 trigger
+    histPlot(dir+"/hl1bits", file, fileroot+".ps", 1., True, "", "L1 bit", "")
     histPlot(dir+"/hl1et", file, fileroot+".ps", 1., True, "", "E_{L1} (GeV)", "")
     histPlot(dir+"/hl1eta", file, fileroot+".ps", 1., True, "", "#eta", "")
     histPlot(dir+"/hl1phi", file, fileroot+".ps", 1., True, "", "#phi", "")
@@ -99,6 +101,7 @@ def plotsFromHistos(filename):
     histPlot(dir+"/hnmu", file, fileroot+".ps", 1., True, "", "N_{#mu}", "")
 
     # pulse shape variables
+    histPlot(dir+"/hpksample", file, fileroot+".ps", 1., False, "", "Peak sample", "")
     histPlot(dir+"/hr1", file, fileroot+".ps", 1., False, "", "R1", "")
     histPlot(dir+"/hr2", file, fileroot+".ps", 1., False, "", "R2", "")
     histPlot(dir+"/hrpk", file, fileroot+".ps", 1., False, "", "R_{peak}", "")
@@ -107,6 +110,13 @@ def plotsFromHistos(filename):
     # 2D timing plots
     hist2DPlot(dir+"/hr1r2", file, fileroot+".ps", 1., True, "", "R_{2}", "R_{1}", "", "CONT")
     hist2DPlot(dir+"/hpkout", file, fileroot+".ps", 1., True, "", "R_{out}", "R_{peak}", "", "CONT")
+
+    # cut plots
+    dir = "Cuts"
+    histPlot(dir+"/hncutcum", file, fileroot+".ps", 1., True, "", "Cut", "N_{events}")
+    histPlot(dir+"/hncutind", file, fileroot+".ps", 1., True, "", "Cut", "N_{events}")
+    histPlot(dir+"/holdcutcum", file, fileroot+".ps", 1., True, "", "Cut", "N_{events}")
+    histPlot(dir+"/holdcutind", file, fileroot+".ps", 1., True, "", "Cut", "N_{events}")
 
     canvas = TCanvas("canvas")
     canvas.Print(fileroot+".ps]")

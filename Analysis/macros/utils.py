@@ -5,34 +5,10 @@ import os
 
 # useful methods for getting info from the data and run trees
 
-#lumiBlockLength = 25.e-9 * 3564. * pow(2., 20)
-lumiBlockLength = 25.e-9 * 3564. * pow(2., 18)
-
 errTime = 10
 
-def getLivetime(runtree, run):
-    time=0.
-    # loop over runs in run TTree
-    nruns=runtree.GetEntriesFast()
-    for i in range(0,nruns):
-        entry = runtree.LoadTree(i)
-        if entry < 0:
-            break
-        nb = runtree.GetEntry(i)
-        if nb <= 0:
-            continue
-        time+=runtree.livetime
-        if (runtree.run==run):
-            return runtree.livetime
-    return time
 
 
-def getLivetime2(hist) :
-    time=0.
-    for i in range(0,hist.GetNbinsX()):
-        if (hist.GetBinContent(i) > 0.):
-            time += lumiBlockLength
-    return time
 
 
 # return array of run number/livetime pairs
