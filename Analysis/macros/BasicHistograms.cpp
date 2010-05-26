@@ -142,7 +142,7 @@ void Analysis::bookHistos() {
   // jets
   hjete_ = new TH1D("hjete", "Leading jet energy", 50, 0., 200.);
   hjeteta_ = new TH1D("hjeteta", "Leading jet #eta", 70, -3.5, 3.5);
-  hjetphi_ = new TH1D("hjetphi", "Leading jet #phi", 60, -1 * TMath::Pi(),  TMath::Pi());
+  hjetphi_ = new TH1D("hjetphi", "Leading jet #phi", 72, -1 * TMath::Pi(),  TMath::Pi());
   hjetetaphi_ = new TH2D("hjetetaphi", "Leading jet pos", 70, -3.5, 3.5, 72, -1 * TMath::Pi(),  TMath::Pi());
   hjeteem_ = new TH1D("hjeteem", "Leading jet ECAL energy", 100, 0., 200.);
   hjetehad_ = new TH1D("hjetehad", "Leading jet HCAL energy", 100, 0., 200.);

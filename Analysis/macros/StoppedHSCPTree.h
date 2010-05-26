@@ -856,9 +856,9 @@ bool StoppedHSCPTree::CutN(unsigned n)
   case 9:
     return (top5DigiR2 > 0.1) && (top5DigiR2 < 0.5);
   case 10:
-    return (top5DigiRPeak > 0.4) && (top5DigiRPeak < 0.7) && (top5DigiPeakSample > 2) && (top5DigiPeakSample < 7);
+    return (top5DigiRPeak > 0.4) && (top5DigiRPeak < 0.7) && (top5DigiPeakSample > 0) && (top5DigiPeakSample < 7);
   case 11:
-    return (top5DigiROuter < 0.1) && (top5DigiROuter >= 0.0) && (top5DigiPeakSample > 2) && (top5DigiPeakSample < 7);
+    return (top5DigiROuter < 0.1) && (top5DigiROuter >= 0.0) && (top5DigiPeakSample > 0) && (top5DigiPeakSample < 7);
   case 12:
     return jet_N>0 && (jetEEm[0] / jetE[0]) > 0.05;
 /*   case 13: */

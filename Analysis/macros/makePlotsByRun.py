@@ -11,7 +11,7 @@ def usage():
 
 # arguments : file location and local dir for results
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "ph")
+    opts, args = getopt.getopt(sys.argv[1:], "ch")
 except getopt.GetoptError:
     usage()
     sys.exit(2)
@@ -54,7 +54,7 @@ def histByRun(name, title, nruns):
     return h
 
 def hist2DByRun(name, title, nruns, ylabel, ny, ymin, ymax):
-    h = TH2D(name, title, nruns, 0, 0, ny, ymin, ymax)
+    h = TH2D(name, title, nruns, 0, nruns, ny, ymin, ymax)
     h.Sumw2()
     return h
 
@@ -74,7 +74,7 @@ def getLivetime(runtree, run):
             return runtree.livetime
     return time
 
-def getLivetime2(hist, lumiBlockLength) :
+def getLivetime2(hist) :
     time=0.
     for i in range(0,hist.GetNbinsX()):
         if (hist.GetBinContent(i) > 0.):
@@ -100,9 +100,13 @@ for c in range(0,13):
     hratecuts.append(histByRun("hratecut"+str(c), "Rate cut "+str(c), nruns))
 
 # 2D vs run plots
-hbxrun    = hist2DByRun("hbxrun", "BX vs Run", nruns, "BX", 3564, 0., 3564.)
-hetarun    = hist2DByRun("hetarun", "#eta vs Run", nruns, "#eta", 70, -3.0, 3.0)
-hphirun    = hist2DByRun("hphirun", "#phi vs Run", nruns, "#phi", 72, -1 * pi, pi)
+hbx      = hist2DByRun("hbx", "BX vs Run", nruns, "BX", 3564, 0., 3564.)
+heta     = hist2DByRun("heta", "#eta vs Run", nruns, "#eta", 70, -3.5, 3.5)
+hphi     = hist2DByRun("hphi", "#phi vs Run", nruns, "#phi", 72, -1. * pi, 1. * pi)
+
+hbxfin   = hist2DByRun("hbxfin", "BX vs Run", nruns, "BX", 3564, 0., 3564.)
+hetafin  = hist2DByRun("hetafin", "#eta vs Run", nruns, "#eta", 70, -3.5, 3.5)
+hphifin  = hist2DByRun("hphifin", "#phi vs Run", nruns, "#phi", 72, -1. * pi, 1. * pi)
 
     
 # fill histograms from "rate per LS" fits
@@ -160,8 +164,36 @@ for run in runs:
         hratecuts[c].SetBinError(i+1, erate)
 
     # BX vs run
-    
+    hbx0=file.Get("Cuts/hbx0")
+    for j in range(0,3564):
+        hbx.Fill(str(run), j, hbx0.GetBinContent(j+1))
 
+    # eta/phi vs run
+    hetaphi0=file.Get("Cuts/hjetetaphi0")
+    print heta0.GetNbinsX()
+    for j in range(1,heta0.GetNbinsX()):
+        heta.Fill(str(run), heta0.GetBinCenter(j), heta0.GetBinContent(j))
+
+    hphi0=hetaphi0.ProjectionY()
+    for j in range(0,hphi0.GetNbinsX()):
+        hphi.Fill(str(run), hphi0.GetBinCenter(j), hphi0.GetBinContent(j))
+
+    # BX vs run (after all cuts)
+    hbx11=file.Get("Cuts/hbx11")
+    for j in range(0,3564):
+        hbxfin.Fill(str(run), j, hbx11.GetBinContent(j+1))
+
+    # eta/phi vs run (after all cuts)
+    hetaphi11=file.Get("Cuts/hjetetaphi11")
+    heta11=hetaphi11.ProjectionX()
+    for j in range(1,heta11.GetNbinsX()):
+        hetafin.Fill(str(run), heta11.GetBinCenter(j), heta11.GetBinContent(j))
+
+    hphi11=hetaphi11.ProjectionY()
+    for j in range(0,hphi11.GetNbinsX()):
+        hphifin.Fill(str(run), hphi11.GetBinCenter(j), hphi11.GetBinContent(j))
+
+    
     i=i+1
 
 
@@ -173,6 +205,12 @@ hlivetime.Write()
 hnfin.Write()
 for i in range(0,13):
     hratecuts[i].Write()
+hbx.Write()
+hbxfin.Write()
+heta.Write()
+hetafin.Write()
+hphi.Write()
+hphifin.Write()
 ofile.Close()
     
 
@@ -203,6 +241,14 @@ ymin = [0.0, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0. ]
 gStyle.SetOptTitle(0)
 for i in range(0,13):
     multiPlot([ "hratecut"+str(i) ],file, filebase+"_byRun.ps", False, False, ymin[i], ymax[i], "Rate after cuts "+str(i), "run", "Hz", "E P1", True)
+
+hist2DPlot("hbx", file,  filebase+"_byRun.ps", 0., False, "HLT", "Run", "BX", "events", "COLZ")
+hist2DPlot("heta", file,  filebase+"_byRun.ps", 0., False, "HLT", "Run", "jet #eta", "events", "COLZ")
+hist2DPlot("hphi", file,  filebase+"_byRun.ps", 0., False, "HLT", "Run", "jet #phi", "events", "COLZ")
+
+hist2DPlot("hbxfin", file,  filebase+"_byRun.ps", 0., False, "After all cuts", "Run", "BX", "events", "COLZ")
+hist2DPlot("hetafin", file,  filebase+"_byRun.ps", 0., False, "After all cuts", "Run", "jet #eta", "events", "COLZ")
+hist2DPlot("hphifin", file,  filebase+"_byRun.ps", 0., False, "After all cuts", "Run", "jet #phi", "events", "COLZ")
 
 canvas = TCanvas("canvas")
 canvas.Print(filebase+"_byRun.ps]")
