@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.31 2010/05/19 15:11:40 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.32 2010/05/25 17:59:27 jbrooke Exp $
 //
 //
 
@@ -153,10 +153,8 @@ public:
       for(int i=0; i<HBHEDataFrame::MAXSAMPLES; i++)
 	{
 	  double samplex = x.sample(i).nominal_fC();
-	  if (samplex > 5) 
 	  TotalX += samplex;
 	  double sampley = y.sample(i).nominal_fC();
-	  if (sampley > 5) 
 	  TotalY += sampley;
 	}
       return ( TotalX > TotalY ) ;
@@ -236,6 +234,8 @@ private:
 
 
 StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfig):
+  tree_(0),
+  event_(0),
   l1JetsTag_(iConfig.getUntrackedParameter<std::string>("l1JetsTag",std::string("l1extraParticles"))),
   l1BitsTag_(iConfig.getUntrackedParameter<edm::InputTag>("l1BitsTag",edm::InputTag("gtDigis"))),
   hltResultsTag_(iConfig.getUntrackedParameter<edm::InputTag>("hltResultsTag",edm::InputTag("TriggerResults","","HLT"))),
@@ -269,7 +269,6 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   noiseSumMissing_(false),
   rbxsMissing_(false),
   hpdsMissing_(false),
-  event_(0),
   hcalDetIds_(0),
   hcalDetJets_(0)
 {
@@ -930,37 +929,19 @@ void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent) {
     
   if (hcalDigis.isValid()) {
 
-    int count=0;
-
     // copy and sort digis
     std::vector<HBHEDataFrame> digis;
     digis.insert(digis.end(), hcalDigis->begin(), hcalDigis->end());
     sort(digis.begin(), digis.end(), digi_gt());
 
-    // loop over digis
-    for(HBHEDigiCollection::const_iterator it=digis.begin();
-	it!=digis.end();
-	it++, count++) {
-      
-      // store ieta, iphi and time samples of leading digi
-      if (count==0) {
-	event_->leadingDigiIEta=it->id().ieta();
-	event_->leadingDigiIPhi=it->id().iphi();
-
-	for (int i=0; i<HBHEDataFrame::MAXSAMPLES; ++i) {
-	  double sample = it->sample(i).nominal_fC();
-	  if (sample > 5) event_->leadingDigiTimeSamples.at(i) = sample;
-	}
-      }
-
-      // store time samples of leading five digis
-      if (count < 5) {
-	for (int i=0; i<HBHEDataFrame::MAXSAMPLES; ++i) {
-	  double sample = it->sample(i).nominal_fC();
-	  if (sample > 5 ) event_->top5DigiTimeSamples.at(i) += it->sample(i).nominal_fC();
-	}
-      }
-      
+    // leading digi variables
+    event_->leadingDigiIEta=digis.at(0).id().ieta();
+    event_->leadingDigiIPhi=digis.at(0).id().iphi();
+    
+    // leading digi timing
+    for (int i=0; i<HBHEDataFrame::MAXSAMPLES; ++i) {
+      double sample = digis.at(0).sample(i).nominal_fC();
+      if (sample > 5) event_->leadingDigiTimeSamples.at(i) = sample;
     }
 
     // find peaks in time samples and totals
@@ -971,6 +952,17 @@ void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent) {
 			event_->leadingDigiR2,
 			event_->leadingDigiRPeak,
 			event_->leadingDigiROuter);
+
+    // store time samples of leading five digis
+    for (int i=0; i<HBHEDataFrame::MAXSAMPLES; ++i) {
+      event_->top5DigiTimeSamples.at(i) = 0.;
+    }
+    for(unsigned i=0; i<5; ++i) {
+      for (int i=0; i<HBHEDataFrame::MAXSAMPLES; ++i) {
+	double sample = digis.at(0).sample(i).nominal_fC();
+	if (sample > 5 ) event_->top5DigiTimeSamples.at(i) += sample;
+      }
+    }
 
     pulseShapeVariables(event_->top5DigiTimeSamples,
 			event_->top5DigiPeakSample,
@@ -1007,12 +999,16 @@ void StoppedHSCPTreeProducer::pulseShapeVariables(const std::vector<double>& sam
     }
     total += samples.at(i);
   }
+
+  if (total==0.) return;
   
   // R1
   if (ipeak < HBHEDataFrame::MAXSAMPLES-1) {
-    r1 = samples.at(ipeak+1) / samples.at(ipeak);
+    if (samples.at(ipeak) > 0.) {
+      r1 = samples.at(ipeak+1) / samples.at(ipeak);
+    }
+    else r1 = 1.;
   }
-  else r1 = 0.;
   
   // R2
   if (ipeak < HBHEDataFrame::MAXSAMPLES-2) {
@@ -1023,20 +1019,21 @@ void StoppedHSCPTreeProducer::pulseShapeVariables(const std::vector<double>& sam
     }
     else r2 = 1.;
   }
-  else r2 = 0.;
 
   // Rpeak - leading digi
   rpeak = samples.at(ipeak) / total;
   
   // Router - leading digi
   double foursample=0.;
-  for (unsigned i=ipeak-1; i<ipeak+3 && i<HBHEDataFrame::MAXSAMPLES-2; ++i) {
-    if (i>0 && i<HBHEDataFrame::MAXSAMPLES) {
-      foursample += samples.at(i);
-    }
+  if (ipeak > 0 && 
+      ipeak < HBHEDataFrame::MAXSAMPLES-2) {
+    foursample = samples.at(ipeak-1) +
+      samples.at(ipeak) +
+      samples.at(ipeak+1) +
+      samples.at(ipeak+2);
   }
   router = 1. - (foursample / total);
-  
+
 }
 
 

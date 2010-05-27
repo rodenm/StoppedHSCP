@@ -1,4 +1,4 @@
-#!/ /usr/bin/env python
+#!/usr/bin/env python
 
 # create CRAB config file for an ntuple job
 
