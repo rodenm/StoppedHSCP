@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.19 2010/04/28 11:05:42 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.20 2010/04/28 11:20:16 jbrooke Exp $
 //
 //
 
@@ -222,6 +222,10 @@ class StoppedHSCPEvent : public TObject {
 
   // global calo quantities
   unsigned nTowerSameiPhi;
+  unsigned nTowerLeadingIPhi;
+  double eHadLeadingIPhi;
+
+  // digi quantities
   unsigned leadingDigiIEta;
   unsigned leadingDigiIPhi;
   std::vector<double> leadingDigiTimeSamples;

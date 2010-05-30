@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.32 2010/05/25 17:59:27 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.33 2010/05/27 12:58:17 jbrooke Exp $
 //
 //
 
@@ -110,7 +110,7 @@ private:
   void doMC(const edm::Event&);
   void doTrigger(const edm::Event&, const edm::EventSetup&);
   void doJets(const edm::Event&);
-  void doGlobalCalo(const edm::Event&);
+  void doCaloTowers(const edm::Event&);
   void doMuons(const edm::Event&);
   void doTowersAboveThreshold(const edm::Event&);
   void doTowersInJets(const edm::Event&);
@@ -142,7 +142,7 @@ public:
   
   struct calotower_gt : public std::binary_function<CaloTower, CaloTower, bool> {
     bool operator()(const CaloTower& x, const CaloTower& y) {
-      return ( x.energy() > y.energy() ) ;
+      return ( x.hadEnergy() > y.hadEnergy() ) ;
     }
   };
   
@@ -244,14 +244,14 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   mcTag_(iConfig.getUntrackedParameter<edm::InputTag>("mcTag",edm::InputTag("generator"))),
   jetTag_(iConfig.getUntrackedParameter<edm::InputTag>("jetTag",edm::InputTag("sisCone5CaloJets"))),
   muonTag_(iConfig.getUntrackedParameter<edm::InputTag>("muonTag",edm::InputTag("muons"))),
-  cosmicMuonTag_(iConfig.getUntrackedParameter<edm::InputTag>("muonTag",edm::InputTag("muonsFromCosmics"))),
+  cosmicMuonTag_(iConfig.getUntrackedParameter<edm::InputTag>("cosmicMuonTag",edm::InputTag("muonsFromCosmics"))),
   caloTowerTag_(iConfig.getUntrackedParameter<edm::InputTag>("caloTowerTag",edm::InputTag("towerMaker"))),
   hcalNoiseTag_(iConfig.getUntrackedParameter<edm::InputTag>("hcalNoiseTag",edm::InputTag("hcalnoise"))),
   rbxTag_(iConfig.getUntrackedParameter<edm::InputTag>("rbxTag",edm::InputTag("hcalnoise"))),
   hpdTag_(iConfig.getUntrackedParameter<edm::InputTag>("hpdTag",edm::InputTag("hcalnoise"))),
   hcalDigiTag_(iConfig.getUntrackedParameter<edm::InputTag>("hcalDigiTag",edm::InputTag(""))),
   towerMinEnergy_(iConfig.getUntrackedParameter<double>("towerMinEnergy", 1.)),
-  towerMaxEta_(iConfig.getUntrackedParameter<double>("towerMaxEta", 3.)),
+  towerMaxEta_(iConfig.getUntrackedParameter<double>("towerMaxEta", 1.3)),
   jetMinEnergy_(iConfig.getUntrackedParameter<double>("jetMinEnergy", 1.)),
   jetMaxEta_(iConfig.getUntrackedParameter<double>("jetMaxEta", 3.)),
   digiMinFc_(iConfig.getUntrackedParameter<double>("digiMinFc", 30)),
@@ -334,7 +334,7 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
   if (doMC_) doMC(iEvent);
   
   if (doReco_) {
-    doGlobalCalo(iEvent);
+    doCaloTowers(iEvent);
     doJets(iEvent);
     doMuons(iEvent);
     doHcalNoise(iEvent);
@@ -668,9 +668,9 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
 }
 
 // global calo based quantities
-void StoppedHSCPTreeProducer::doGlobalCalo(const edm::Event& iEvent) {
+void StoppedHSCPTreeProducer::doCaloTowers(const edm::Event& iEvent) {
 
-  unsigned nTowerSameiPhi(0);
+  event_->nTowerSameiPhi=0;
 
   // get calo towers
   edm::Handle<CaloTowerCollection> caloTowers;
@@ -683,15 +683,25 @@ void StoppedHSCPTreeProducer::doGlobalCalo(const edm::Event& iEvent) {
     sort(caloTowersTmp.begin(), caloTowersTmp.end(), calotower_gt());
     
     int iphiFirst=caloTowersTmp.begin()->iphi();
+    bool keepgoing=true;
     for(std::vector<CaloTower>::const_iterator twr = caloTowersTmp.begin();
-	twr!=caloTowersTmp.end();
+	twr!=caloTowersTmp.end() && keepgoing;
 	++twr) {
       
-      // number of leading calo towers in eta range at same iphi
-      if (fabs(twr->eta()) < towerMaxEta_ && twr->iphi()==iphiFirst) nTowerSameiPhi++;
-    }
-    
-    event_->nTowerSameiPhi = nTowerSameiPhi;
+      if (fabs(twr->eta()) < towerMaxEta_) {	
+
+	// tower same iphi as leading tower
+	if (twr->iphi()==iphiFirst) {
+	  event_->nTowerSameiPhi++;
+	  event_->nTowerLeadingIPhi++;
+	  event_->eHadLeadingIPhi += twr->hadEnergy();
+	}
+	else {
+	  keepgoing=false;
+	}
+      }  
+    } 
+
   }
   else {
     if (!towersMissing_) edm::LogWarning("MissingProduct") << "CaloTowers not found.  Branches will not be filled" << std::endl;
@@ -731,7 +741,7 @@ void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent) {
  
   if (cosmicMuons.isValid()) {
     for(reco::MuonCollection::const_iterator it =cosmicMuons->begin();
-	it!=muons->end();
+	it!=cosmicMuons->end();
 	it++) {
       shscp::Muon mu;
       mu.pt = it->pt();
@@ -744,7 +754,7 @@ void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent) {
     }
   }
   else {
-    if (!muonsMissing_) edm::LogWarning("MissingProduct") << "Muons not found.  Branch will not be filled" << std::endl;
+    if (!muonsMissing_) edm::LogWarning("MissingProduct") << "Cosmic muons not found.  Branch will not be filled" << std::endl;
     muonsMissing_ = true;
   }
 
@@ -958,9 +968,9 @@ void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent) {
       event_->top5DigiTimeSamples.at(i) = 0.;
     }
     for(unsigned i=0; i<5; ++i) {
-      for (int i=0; i<HBHEDataFrame::MAXSAMPLES; ++i) {
-	double sample = digis.at(0).sample(i).nominal_fC();
-	if (sample > 5 ) event_->top5DigiTimeSamples.at(i) += sample;
+      for (int j=0; j<HBHEDataFrame::MAXSAMPLES; ++j) {
+	double sample = digis.at(i).sample(j).nominal_fC();
+	if (sample > 5) event_->top5DigiTimeSamples.at(j) += sample;
       }
     }
 

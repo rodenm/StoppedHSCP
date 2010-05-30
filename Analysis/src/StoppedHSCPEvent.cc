@@ -55,6 +55,8 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   mcPz(0),
   mcPt(0),
   nTowerSameiPhi(0),
+  nTowerLeadingIPhi(0),
+  eHadLeadingIPhi(0.),
   leadingDigiIEta(-999),
   leadingDigiIPhi(-999),
   leadingDigiTimeSamples(HBHEDataFrame::MAXSAMPLES),
