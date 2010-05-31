@@ -13,7 +13,7 @@
 //
 // Original Author:  Benjamin JONES
 //         Created:  Thu Dec  4 11:44:26 CET 2008
-// $Id: GlobalRunAnalyser.cc,v 1.3 2010/02/26 15:56:34 jbrooke Exp $
+// $Id: GlobalRunAnalyser.cc,v 1.4 2010/03/18 13:06:10 jbrooke Exp $
 //
 //
 
@@ -946,7 +946,7 @@ GlobalRunAnalyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
        for(HBHEDigiCollection::const_iterator itDigi=pDigi->begin();itDigi!=pDigi->end(); itDigi++)
 	 {
 	   
-	   for(int i=0; i!=HBDigisInLeadingCenJet.size(); i++)
+	   for(unsigned i=0; i!=HBDigisInLeadingCenJet.size(); i++)
 	     {
 	       if(itDigi->id()==HBDigisInLeadingCenJet.at(i))
 		 {
@@ -1099,7 +1099,7 @@ GlobalRunAnalyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
        sort(MyDataFrameVector.begin(),MyDataFrameVector.end(),compare_df());
 
        double ThisEnergy=0;
-       int topcount=std::max(DigiCount_,(int)MyDataFrameVector.size());
+       //       int topcount=std::max(DigiCount_,(int)MyDataFrameVector.size());
        int count=0;
 
        for(int k=0; k<10; k++)
@@ -1183,10 +1183,10 @@ GlobalRunAnalyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
        TimingExpChiSq_=Fit->GetChisquare();
        
 
-       if(WriteHistos_)
-	 {
-	   TH1D* FileHist= fs->make<TH1D>(*hist1);
-	 }
+//        if(WriteHistos_)
+// 	 {
+// 	   TH1D* FileHist= fs->make<TH1D>(*hist1);
+// 	 }
 
        delete hist1;
        
