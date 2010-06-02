@@ -478,11 +478,12 @@ public :
    TBranch        *b_LumiNumber;   //!
    TBranch        *b_TimeStamp;   //!
 
+   bool           isMC_;
 
-   StoppedHSCPTree(TFile* file);
-   StoppedHSCPTree(TTree *tree=0);
+   StoppedHSCPTree(TFile* file, bool isMC=false);
+   StoppedHSCPTree(TTree *tree=0, bool isMC=false);
    virtual ~StoppedHSCPTree();
-   virtual Int_t    Cut(Long64_t entry);
+   virtual bool     Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
    virtual void     Init(TTree *tree);
@@ -494,11 +495,12 @@ public :
    virtual bool     CutNMinusOne(unsigned n);
    virtual bool     OldCutN(unsigned n);
    virtual bool     StdHcalCutN(unsigned n);
-   virtual void     PrintCutValues();
+   virtual void     PrintCutValues(ostream& o);
 };
 
-StoppedHSCPTree::StoppedHSCPTree(TFile* file) :
-  oldTreePresent(false)
+StoppedHSCPTree::StoppedHSCPTree(TFile* file, bool isMC) :
+  oldTreePresent(false),
+  isMC_(isMC)
 {
 
   // open file and get tree
@@ -512,9 +514,12 @@ StoppedHSCPTree::StoppedHSCPTree(TFile* file) :
   }
   Init(tree);
 
+  if (isMC_) std::cout << "StoppedHSCPTree is for MC" << std::endl;
+
 }
 
-StoppedHSCPTree::StoppedHSCPTree(TTree *tree)
+StoppedHSCPTree::StoppedHSCPTree(TTree *tree, bool isMC) :
+  isMC_(isMC)
 {
    Init(tree);
 }
@@ -808,25 +813,17 @@ void StoppedHSCPTree::Show(Long64_t entry)
 }
 
 // return result of all cuts
-Int_t StoppedHSCPTree::Cut(Long64_t entry=0)
+bool StoppedHSCPTree::Cut(Long64_t entry=0)
 {
-  // This function may be called from Loop.
-  // returns  1 if entry is accepted.
-  // returns -1 otherwise.
   bool pass=true;
-  unsigned nc=9;
-
-  for (unsigned i=0; i<nc; ++i) {
+  for (unsigned i=0; i<NCuts(); ++i) {
     pass &= CutN(i);
   }
-  
-  if (pass) return 1;
-  else return -1;
-
+  return pass;
 }
 
 unsigned StoppedHSCPTree::NCuts() {
-  return 13;
+  return 12;
 }
 
 
@@ -838,7 +835,7 @@ bool StoppedHSCPTree::CutN(unsigned n)
   case 0:
     return true;
   case 1:
-    return (gtAlgoWord1>>(81-64)&1) == 0 && (gtAlgoWord1>>(80-64)&1) == 0;
+    return isMC_ || ((gtAlgoWord1>>(81-64)&1) == 0 && (gtAlgoWord1>>(80-64)&1) == 0);
   case 2:
     return nTowerSameiPhi<5;
   case 3:
@@ -861,14 +858,6 @@ bool StoppedHSCPTree::CutN(unsigned n)
     return (top5DigiROuter < 0.1) && (top5DigiROuter >= 0.0) && (top5DigiPeakSample > 0) && (top5DigiPeakSample < 7);
   case 12:
     return jet_N>0 && (jetEEm[0] / jetE[0]) > 0.05;
-/*   case 13: */
-/*     return TimingRightPeak > 0.15; */
-/*   case 14: */
-/*     return TimingFracRightNextRight > 0.1 && TimingFracRightNextRight < 0.5; */
-/*   case 15: */
-/*     return TimingFracInLeader > 0.4 && TimingFracInLeader < 0.7; */
-/*   case 16: */
-/*     return (1-TimingFracInCentralFour) < 0.1; */
   default:
     return true;
 
@@ -907,14 +896,6 @@ char* StoppedHSCPTree::CutName(unsigned n) {
     return "Router";
   case 12:
     return "jet EMF";
-/*   case 13: */
-/*     return "old R1"; */
-/*   case 14: */
-/*     return "oldR2"; */
-/*   case 15: */
-/*     return "old Rpeak"; */
-/*   case 16: */
-/*     return "old Router"; */
   default:
     return "unknown";
   }
@@ -925,12 +906,12 @@ char* StoppedHSCPTree::CutName(unsigned n) {
 // return result of all cuts APART FROM the one specified
 bool StoppedHSCPTree::CutNMinusOne(unsigned n) {
 
-  bool passed=true;
-  for (unsigned i=0; i<10; ++i) {
-    if (i!=n) passed &= CutN(i);
+  bool pass=true;
+  for (unsigned i=0; i<NCuts(); ++i) {
+    if (i!=n) pass = pass && CutN(i);
   }
-  return passed;
-  
+  return pass;
+
 }
 
 
@@ -1019,24 +1000,27 @@ bool StoppedHSCPTree::StdHcalCutN(unsigned n)
 }
   
 
-void StoppedHSCPTree::PrintCutValues() {
+void StoppedHSCPTree::PrintCutValues(ostream& o) {
 
-  std::cout << "Stopped HSCP Event" << std::endl;
-  std::cout << "  id             = " << id << std::endl;
-  std::cout << "  lb             = " << lb << std::endl;
-  std::cout << "  run            = " << run << std::endl;
-  std::cout << "  nTowerSameiPhi = " << nTowerSameiPhi << std::endl;
-  std::cout << "  jetE[0]        = " << jetE[0] << std::endl;
-  std::cout << "  jetEta[0]      = " << jetEta[0] << std::endl;
-  std::cout << "  jetN60[0]      = " << jetN60[0] << std::endl;
-  std::cout << "  jetN90[0]      = " << jetN90[0] << std::endl;
-  std::cout << "  mu_N           = " << mu_N << std::endl;
-  std::cout << "  top5DigiR1     = " << top5DigiR1 << std::endl;
-  std::cout << "  top5DigiR2     = " << top5DigiR2 << std::endl;
-  std::cout << "  top5DigiRPeak  = " << top5DigiRPeak << std::endl;
-  std::cout << "  top5DigiROuter = " << top5DigiROuter << std::endl;
-  std::cout << "  jetEMF[0]      = " << (jetEEm[0] / jetEHad[0]) << std::endl;
-  std::cout << std::endl;
+  o << "Stopped HSCP Event" << std::endl;
+  o << "  id             = " << id << std::endl;
+  o << "  lb             = " << lb << std::endl;
+  o << "  run            = " << run << std::endl;
+  o << "  nTowerSameiPhi = " << nTowerSameiPhi << std::endl;
+  o << "  jetE[0]        = " << jetE[0] << std::endl;
+  o << "  jetEta[0]      = " << jetEta[0] << std::endl;
+  o << "  jetN60[0]      = " << jetN60[0] << std::endl;
+  o << "  jetN90[0]      = " << jetN90[0] << std::endl;
+  o << "  mu_N           = " << mu_N << std::endl;
+  o << "  top5DigiR1     = " << top5DigiR1 << std::endl;
+  o << "  top5DigiR2     = " << top5DigiR2 << std::endl;
+  o << "  top5DigiRPeak  = " << top5DigiRPeak << std::endl;
+  o << "  top5DigiROuter = " << top5DigiROuter << std::endl;
+  o << "  jetEMF[0]      = " << (jetEEm[0] / jetEHad[0]) << std::endl;
+  o << "  time sample    = ";
+  for (unsigned i=0; i<10; ++i) o << top5DigiTimeSamples.at(i) << " ";
+  o << std::endl;
+  o << std::endl;
 }
 
   

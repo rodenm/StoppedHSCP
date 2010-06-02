@@ -115,8 +115,20 @@ def plotsFromHistos(filename):
     dir = "Cuts"
     histPlot(dir+"/hncutcum", file, fileroot+".ps", 1., True, "", "Cut", "N_{events}")
     histPlot(dir+"/hncutind", file, fileroot+".ps", 1., True, "", "Cut", "N_{events}")
+    histPlot(dir+"/hnminus1cut", file, fileroot+".ps", 1., True, "", "Cut", "N_{events}")
     histPlot(dir+"/holdcutcum", file, fileroot+".ps", 1., True, "", "Cut", "N_{events}")
     histPlot(dir+"/holdcutind", file, fileroot+".ps", 1., True, "", "Cut", "N_{events}")
+
+    histPlot(dir+"/hjete_nmo", file, fileroot+".ps", 1., True, "", "E (GeV)", "E")
+    histPlot(dir+"/hjetn60_nmo", file, fileroot+".ps", 1., True, "", "n60", "E")
+    histPlot(dir+"/hjetn90_nmo", file, fileroot+".ps", 1., True, "", "n90", "E")
+    histPlot(dir+"/hnmu_nmo", file, fileroot+".ps", 1., True, "", "N_{#mu}", "")
+    histPlot(dir+"/hr1_nmo", file, fileroot+".ps", 1., True, "", "R1", "")
+    histPlot(dir+"/hr2_nmo", file, fileroot+".ps", 1., True, "", "R2", "")
+    histPlot(dir+"/hrpk_nmo", file, fileroot+".ps", 1., True, "", "R_{peak}", "")
+    histPlot(dir+"/hrout_nmo", file, fileroot+".ps", 1., True, "", "R_{outer}", "")
+    histPlot(dir+"/hjetemf_nmo", file, fileroot+".ps", 1., True, "", "EM fraction", "E")
+
 
     canvas = TCanvas("canvas")
     canvas.Print(fileroot+".ps]")

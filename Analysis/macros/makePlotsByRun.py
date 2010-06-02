@@ -112,6 +112,8 @@ hphifin  = hist2DByRun("hphifin", "#phi vs Run", nruns, "#phi", 72, -1. * pi, 1.
 # fill histograms from "rate per LS" fits
 i=0
 for run in runs:
+
+    print run
     
     file = TFile(dir+"/histograms"+str(run)+".root")
     
@@ -170,7 +172,7 @@ for run in runs:
 
     # eta/phi vs run
     hetaphi0=file.Get("Cuts/hjetetaphi0")
-    print heta0.GetNbinsX()
+    heta0=hetaphi0.ProjectionX()
     for j in range(1,heta0.GetNbinsX()):
         heta.Fill(str(run), heta0.GetBinCenter(j), heta0.GetBinContent(j))
 

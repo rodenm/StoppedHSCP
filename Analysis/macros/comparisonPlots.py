@@ -2,26 +2,47 @@
 
 import sys
 import os
+import getopt
 import subprocess
+
+def usage():
+    print "Usage : comparisonPlots.py [-h] <background> <mc> <data>"    
+
+try:
+    opts, args = getopt.getopt(sys.argv[1:], "hrb")
+except getopt.GetoptError:
+    usage();
+    sys.exit(2)
+
+if len(args) < 1 :
+    print "Wrong number of arguments"
+    usage();
+    sys.exit(1)
+
+# options
+doRuns=False;
+for opt, arg in opts:
+    if opt=='-h':
+        usage()
+        exit.sys()
+
+# arguments
+bg='Coll10_Promptv9_v7'
+mc='May6th_gluino_1jet_336_300_100_2'
+data=''
+
+bg=args[0]
+if (len(args)>1):
+    mc=args[1]
+if (len(args)>2):
+    data=args[2]
+
+sys.argv.append('-b')
 
 from ROOT import *
 
 from style import *
-
 from plots import *
-
-# argumentw
-# comparisonPlots.py [data] [CRAFT09] [MC]
-if len(sys.argv)!=5 :
-    print "Wrong number of arguments"
-    print "Usage : comparisonPlots.py <data dir> <craft dir> <mc dir> <out file>"
-    sys.exit(1)
-
-data=sys.argv[1]
-craft=sys.argv[2]
-mc=sys.argv[3]
-outfile=sys.argv[4]
-
 
 # set the style
 tdrStyle()
@@ -29,53 +50,60 @@ gROOT.SetStyle("tdrStyle")
 gROOT.ForceStyle()
 
 # style options for this macro
-gStyle.SetHistFillStyle(0)
+#gStyle.SetHistFillStyle(0)
 
 # open files
-fdata = TFile(data+"/"+data+"_Histos.root")
-fcraft = TFile(craft+"/"+craft+"_Histos.root")
-fmc = TFile(mc+"/"+mc+"_Histos.root")
-
+fdata=0
+if (data != ''):
+    fdata = TFile(data+"/histograms.root")
+fbg=0
+if (bg != ''):
+    fbg   = TFile(bg+"/histograms.root")
+fmc=0
+if (mc != ''):
+    fmc = TFile(mc+"/histograms.root")
 
 # output file
-ps = TPostScript(outfile+".ps")
-
-# make plots
+ofilename="comparison_"+bg+"_"+mc+"_"+data
 canvas = TCanvas("canvas")
-canvas.SetLogy()
+canvas.Print(ofilename+".ps[")
 
 # offline jets
-compPlot("NoCuts/hjete2", fdata, fcraft, fmc, canvas, True, True, "", "E (GeV)", "")
-compPlot("NoCuts/hjeteta", fdata, fcraft, fmc, canvas, True, True, "", "#eta", "")
-compPlot("NoCuts/hjetphi", fdata, fcraft, fmc, canvas, True, True, "", "#phi", "")
-compPlot("NoCuts/hjetem", fdata, fcraft, fmc, canvas, True, True, "", "E_{ECAL} / GeV", "")
-compPlot("NoCuts/hjethad", fdata, fcraft, fmc, canvas, True, True, "", "E_{HCAL} / GeV", "")
-compPlot("NoCuts/hjetn60", fdata, fcraft, fmc, canvas, True, True, "", "n60", "")
-compPlot("NoCuts/hjetn90", fdata, fcraft, fmc, canvas, True, True, "", "n90", "")
-compPlot("NoCuts/hnmu", fdata, fcraft, fmc, canvas, True, True, "", "N_{#mu}", "")
+compPlot("NoCuts/hjete", fdata, fbg, fmc, ofilename+".ps", True, True, "", "E (GeV)", "")
+compPlot("NoCuts/hjeteta", fdata, fbg, fmc, ofilename+".ps", True, True, "", "#eta", "")
+compPlot("NoCuts/hjetphi", fdata, fbg, fmc, ofilename+".ps", True, True, "", "#phi", "")
+compPlot("NoCuts/hjeteem", fdata, fbg, fmc, ofilename+".ps", True, True, "", "E_{ECAL} / GeV", "")
+compPlot("NoCuts/hjetehad", fdata, fbg, fmc, ofilename+".ps", True, True, "", "E_{HCAL} / GeV", "")
+compPlot("NoCuts/hjetn60", fdata, fbg, fmc, ofilename+".ps", True, True, "", "n60", "")
+compPlot("NoCuts/hjetn90", fdata, fbg, fmc, ofilename+".ps", True, True, "", "n90", "")
+compPlot("NoCuts/hnmu", fdata, fbg, fmc, ofilename+".ps", True, True, "", "N_{#mu}", "")
+compPlot("NoCuts/hntowsameiphi", fdata, fbg, fmc, ofilename+".ps", True, True, "", "N_{#mu}", "")
+compPlot("NoCuts/hr1", fdata, fbg, fmc, ofilename+".ps", True, True, "", "R1", "")
+compPlot("NoCuts/hr2", fdata, fbg, fmc, ofilename+".ps", True, True, "", "R2", "")
+compPlot("NoCuts/hrpk", fdata, fbg, fmc, ofilename+".ps", True, True, "", "R_{peak}", "")
+compPlot("NoCuts/hrout", fdata, fbg, fmc, ofilename+".ps", True, True, "", "R_{outer}", "")
+compPlot("NoCuts/hjetemf", fdata, fbg, fmc, ofilename+".ps", True, True, "", "EM fraction", "")
 
-compPlot("NoCuts/hntowsamephi", fdata, fcraft, fmc, canvas, True, True, "", "N_{#mu}", "")
+compPlot("Cuts/hncutcum", fdata, fbg, fmc, ofilename+".ps", True, True, "", "Cut", "Counts")
 
-compPlot("EffPlots/heffjete", fdata, fcraft, fmc, canvas, True, True, "", "E (GeV)", "")
-compPlot("EffPlots/heffjetn60", fdata, fcraft, fmc, canvas, True, True, "", "n60", "")
-compPlot("EffPlots/heffjetn90", fdata, fcraft, fmc, canvas, True, True, "", "n90", "")
-compPlot("EffPlots/heffnmu", fdata, fcraft, fmc, canvas, True, False, "", "N_{#mu}", "")
+compPlot("Cuts/hjete_nmo", fdata, fbg, fmc, ofilename+".ps", True, True, "", "E (GeV)", "")
+compPlot("Cuts/hjetn60_nmo", fdata, fbg, fmc, ofilename+".ps", True, True, "", "n60", "")
+compPlot("Cuts/hjetn90_nmo", fdata, fbg, fmc, ofilename+".ps", True, True, "", "n90", "")
+compPlot("Cuts/hnmu_nmo", fdata, fbg, fmc, ofilename+".ps", True, True, "", "N_{#mu}", "")
+compPlot("Cuts/hntowsameiphi_nmo", fdata, fbg, fmc, ofilename+".ps", True, True, "", "N_{#mu}", "")
+compPlot("Cuts/hr1_nmo", fdata, fbg, fmc, ofilename+".ps", True, True, "", "R1", "")
+compPlot("Cuts/hr2_nmo", fdata, fbg, fmc, ofilename+".ps", True, True, "", "R2", "")
+compPlot("Cuts/hrpk_nmo", fdata, fbg, fmc, ofilename+".ps", True, True, "", "R_{peak}", "")
+compPlot("Cuts/hrout_nmo", fdata, fbg, fmc, ofilename+".ps", True, True, "", "R_{outer}", "")
+compPlot("Cuts/hjetemf_nmo", fdata, fbg, fmc, ofilename+".ps", True, True, "", "E (GeV)", "", 1.E-4)
 
-
-compPlot("NoCuts/hr1", fdata, fcraft, fmc, canvas, True, True, "", "R1", "")
-compPlot("NoCuts/hr2", fdata, fcraft, fmc, canvas, True, True, "", "R2", "")
-compPlot("NoCuts/hpk", fdata, fcraft, fmc, canvas, True, True, "", "R_{peak}", "")
-compPlot("NoCuts/hout", fdata, fcraft, fmc, canvas, True, True, "", "R_{outer}", "")
-
-compPlot("AllCuts/hjete", fdata, fcraft, fmc, canvas, True, True, "", "E (GeV)", "")
-compPlot("AllCuts/hjete2", fdata, fcraft, fmc, canvas, True, True, "", "E (GeV)", "")
-
-ps.Close()
+canvas = TCanvas("canvas")
+canvas.Print(ofilename+".ps]")
 
 # convert to PDF
-subprocess.call(["ps2pdf", outfile+".ps", outfile+".pdf"])
+subprocess.call(["ps2pdf", ofilename+".ps", ofilename+".pdf"])
+subprocess.call(["rm", ofilename+".ps"])
 
-exit(1)
 
 
 

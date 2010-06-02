@@ -13,6 +13,7 @@
 #include <string>
 #include <stdlib.h>
 #include <iostream>
+#include <fstream>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -23,7 +24,7 @@
 class Analysis {
 
 public:
-  Analysis(const char* filename, const char* outdir, unsigned nlimit=999999999, bool dump=false);
+  Analysis(const char* filename, const char* outdir, unsigned nlimit=999999999, bool dump=false, bool isMC=false);
   ~Analysis();
 
   void bookHistos();
@@ -42,6 +43,10 @@ public:
   void cutAxisLabels(TH1D* h);
 
 private:
+
+  ofstream fullDumpFile_;
+  ofstream eventInfoFile_;
+  ofstream summaryFile_;
 
   TFile file_;            // input file
   TTree* ttree_;          // input TTree (stupid ROOT)
@@ -103,6 +108,16 @@ private:
   TH1D* hhcalcutind_;
   TH1D* hhcalcutcum_;
 
+  TH1D* hnmu_nmo_;
+  TH1D* hjete_nmo_;
+  TH1D* hjetn60_nmo_;
+  TH1D* hjetn90_nmo_;
+  TH1D* hntowiphi_nmo_;
+  TH1D* hr1_nmo_;
+  TH1D* hr2_nmo_;
+  TH1D* hrpk_nmo_;
+  TH1D* hrout_nmo_;
+  TH1D* hjetemf_nmo_;
 
   // histograms after each cut
   std::vector<TH1D*> hjete_cuts_;
@@ -190,6 +205,19 @@ void Analysis::bookHistos() {
   hhcalcutind_ = new TH1D("hhcalcutind", "HCAL noise cut counts", 20, 0., 20.);
   hhcalcutcum_ = new TH1D("hhcalcutcum", "HCAL noise cut cumulative counts", 20, 0., 20.);
   
+  // N-1 histograms
+  hnmu_nmo_ = new TH1D("hnmu_nmo", "N muons (N-1)", 4, -0.5, 3.5);;
+  hjete_nmo_ = new TH1D("hjete_nmo", "Leading jet energy (N-1)", 50, 0., 200.);
+  hjetn60_nmo_ = new TH1D("hjetn60_nmo", "Leading jet N60 (N-1)", 50, 0., 50.);
+  hjetn90_nmo_ = new TH1D("hjetn90_nmo", "Leading jet N90 (N-1)", 50, 0., 50.);
+  hntowiphi_nmo_ = new TH1D("hntowsameiphi_nmo", "N leading towers at same iphi (N-1)", 20, -0.5, 19.5);
+  hr1_nmo_ = new TH1D("hr1_nmo", "R_{1} (N-1)", 50, 0., 1.);
+  hr2_nmo_ = new TH1D("hr2_nmo", "R_{2} (N-1)", 50, 0., 1.);
+  hrpk_nmo_ = new TH1D("hrpk_nmo", "R_{peak} (N-1)", 50, 0., 1.);
+  hrout_nmo_ = new TH1D("hrout_nmo", "R_{outer} (N-1)", 30, 0., 1.);
+  hjetemf_nmo_ = new TH1D("hjetemf_nmo", "Leading jet EM fraction (N-1)", 100, 0., 1.);
+  
+
   // histograms per cut
   for (unsigned i=0; i<nCuts_; ++i) {
     std::stringstream istr;
@@ -270,6 +298,17 @@ void Analysis::writeHistos() {
 
   hhcalcutind_->Write("",TObject::kOverwrite);
   hhcalcutcum_->Write("",TObject::kOverwrite);
+
+  hnmu_nmo_->Write("",TObject::kOverwrite);
+  hjete_nmo_->Write("",TObject::kOverwrite);
+  hjetn60_nmo_->Write("",TObject::kOverwrite);
+  hjetn90_nmo_->Write("",TObject::kOverwrite);
+  hntowiphi_nmo_->Write("",TObject::kOverwrite);
+  hr1_nmo_->Write("",TObject::kOverwrite);
+  hr2_nmo_->Write("",TObject::kOverwrite);
+  hrpk_nmo_->Write("",TObject::kOverwrite);
+  hrout_nmo_->Write("",TObject::kOverwrite);
+  hjetemf_nmo_->Write("",TObject::kOverwrite);
   
   for (unsigned i=0; i< nCuts_; ++i) {
     hjete_cuts_.at(i)->Write("",TObject::kOverwrite);
@@ -336,6 +375,16 @@ void Analysis::getHistos() {
   hhcalcutind_ = (TH1D*) ofile_->Get("Cuts/hhcalcutind");
   hhcalcutcum_ = (TH1D*) ofile_->Get("Cuts/hhcalcutcum");
 
+  hnmu_nmo_ = (TH1D*) ofile_->Get("Cuts/hnmu_nmo");
+  hjete_nmo_ = (TH1D*) ofile_->Get("Cuts/hjete_nmo");
+  hjetn60_nmo_ = (TH1D*) ofile_->Get("Cuts/hjetn60_nmo");
+  hjetn90_nmo_ = (TH1D*) ofile_->Get("Cuts/hjetn90_nmo");
+  hntowiphi_nmo_ = (TH1D*) ofile_->Get("Cuts/hntowsameiphi_nmo");
+  hr1_nmo_ = (TH1D*) ofile_->Get("Cuts/hr1_nmo");
+  hr2_nmo_ = (TH1D*) ofile_->Get("Cuts/hr2_nmo");
+  hrpk_nmo_ = (TH1D*) ofile_->Get("Cuts/hrpk_nmo");
+  hrout_nmo_ = (TH1D*) ofile_->Get("Cuts/hrout_nmo");
+  hjetemf_nmo_ = (TH1D*) ofile_->Get("Cuts/hjetemf_nmo");
     
   for (unsigned i=0; i< nCuts_; ++i) {
     std::stringstream istr;
@@ -402,6 +451,17 @@ void Analysis::deleteHistos() {
     delete hhcalcutind_;
     delete hhcalcutcum_;
     
+    delete hnmu_nmo_;
+    delete hjete_nmo_;
+    delete hjetn60_nmo_;
+    delete hjetn90_nmo_;
+    delete hntowiphi_nmo_;
+    delete hr1_nmo_;
+    delete hr2_nmo_;
+    delete hrpk_nmo_;
+    delete hrout_nmo_;
+    delete hjetemf_nmo_;
+
     for (unsigned i=0; i< hjete_cuts_.size(); ++i) {
       delete hjete_cuts_.at(i);
       delete hjetetaphi_cuts_.at(i);
@@ -518,6 +578,19 @@ void Analysis::fillHistos(StoppedHSCPTree& tree) {
     if (!hcalfail) hhcalcutcum_->Fill(c);  
   }
 
+  if (tree.CutNMinusOne(2)) hntowiphi_nmo_->Fill(tree.nTowerSameiPhi);
+  if (tree.CutNMinusOne(7)) hnmu_nmo_->Fill(tree.mu_N);
+  if (tree.CutNMinusOne(8)) hr1_nmo_->Fill(tree.top5DigiR1);
+  if (tree.CutNMinusOne(9)) hr2_nmo_->Fill(tree.top5DigiR2);
+  if (tree.CutNMinusOne(10)) hrpk_nmo_->Fill(tree.top5DigiRPeak);
+  if (tree.CutNMinusOne(11)) hrout_nmo_->Fill(tree.top5DigiROuter);
+  if (tree.jet_N > 0) {
+    if (tree.CutNMinusOne(4)) hjete_nmo_->Fill(tree.jetE.at(0));
+    if (tree.CutNMinusOne(5)) hjetn60_nmo_->Fill(tree.jetN60.at(0));
+    if (tree.CutNMinusOne(6)) hjetn90_nmo_->Fill(tree.jetN90.at(0));
+    if (tree.Cut()) hjetemf_nmo_->Fill(tree.jetEEm.at(0)/tree.jetE.at(0));
+  }
+
 }
 
 // make a histogram of means of bins of existing histogram
@@ -613,24 +686,60 @@ void Analysis::loopAll() {
     fillHistos(*tree_);
     nevts++;
 
-    if (dumpEvents_ &&
-	(tree_->Cut()>0. ||
-	tree_->id == 13200704 ||
-	tree_->id == 23338580 ||
-	tree_->id == 9871709 ||
-	tree_->id == 41317372 ||
-	tree_->id == 70303519 ||
-	tree_->id == 81147704 ||
-	tree_->id == 92716023 ||
-	tree_->id == 97106991 ||
-	tree_->id == 110183807 ||
-	tree_->id == 117516582 ||
-	tree_->id == 12685963 ||
-	tree_->id == 11537315 ||
-	tree_->id == 17661711 ||
-	tree_->id == 19381281 ||
-	 tree_->id == 36361101 )) {
-      tree_->PrintCutValues();
+    if (dumpEvents_ && (tree_->Cut() ||
+			tree_->id == 1491361 ||
+			tree_->id == 81147704 ||
+			tree_->id == 17661711)) {
+// ||
+// 			tree_->id == 50099203 ||
+// 			tree_->id == 58190201 ||
+// 			tree_->id == 699930 ||
+// 			tree_->id == 22043584 ||
+// 			tree_->id == 24878010 ||
+// 			tree_->id == 24682395 ||
+// 			tree_->id == 53328093 ||
+// 			tree_->id == 28061379 ||
+// 			tree_->id == 4266773 ||
+// 			tree_->id == 4543706 ||
+// 			tree_->id == 39184047 ||
+// 			tree_->id == 26758647 ||
+// 			tree_->id == 44609254 ||
+// 			tree_->id == 13200704 ||
+// 			tree_->id == 32705112 ||
+// 			tree_->id == 23338580 ||
+// 			tree_->id == 42419681 ||
+// 			tree_->id == 6282500 ||
+// 			tree_->id == 9114136 ||
+// 			tree_->id == 93232497 ||
+// 			tree_->id == 97106991 ||
+// 			tree_->id == 53460739 ||
+// 			tree_->id == 61413497 ||
+// 			tree_->id == 88527654 ||
+// 			tree_->id == 89047300 ||
+// 			tree_->id == 18590145 ||
+// 			tree_->id == 35133941 ||
+// 			tree_->id == 27674619 ||
+// 			tree_->id == 75776242 ||
+// 			tree_->id == 92930198 ||
+// 			tree_->id == 93054547 ||
+// 			tree_->id == 95365089 ||
+// 			tree_->id == 95505093 ||
+// 			tree_->id == 130801536 ||
+// 			tree_->id == 110183807 ||
+// 			tree_->id == 134272122 ||
+// 			tree_->id == 122996925 ||
+// 			tree_->id == 92453750 ||
+// 			tree_->id == 117516582 ||
+// 			tree_->id == 134507604 ||
+// 			tree_->id == 10593951 ||
+// 			tree_->id == 62873575 ||
+// 			tree_->id == 71610674 ||
+// 			tree_->id == 92716023 ||
+// 			tree_->id == 7609326 ||
+// 			tree_->id == 9871709 ||
+// 			tree_->id == 45398149)) {
+      eventInfoFile_ << tree_->run << ", " << tree_->lb << ", " << tree_->orbit << ", " << tree_->bx << ", " << tree_->id << std::endl;
+      tree_->PrintCutValues(fullDumpFile_);
     }
     
   }
@@ -707,7 +816,7 @@ void Analysis::cutAxisLabels(TH1D* h) {
 }
 
 
-Analysis::Analysis(const char* filename, const char* outdir, unsigned nlimit, bool dump) :
+Analysis::Analysis(const char* filename, const char* outdir, unsigned nlimit, bool dump, bool isMC) :
   file_(filename), 
   ttree_(0),
   tree_(0),
@@ -720,9 +829,24 @@ Analysis::Analysis(const char* filename, const char* outdir, unsigned nlimit, bo
 
   // open file and get tree
   //  ttree_ = (TTree*) file_.Get("stoppedHSCPTree/StoppedHSCPTree");
-  tree_ = new StoppedHSCPTree(&file_);
+  tree_ = new StoppedHSCPTree(&file_, isMC);
 
-  nCuts_ = tree_->NCuts();
+  // log files
+  std::string fd(outdir);
+  fd+="/fullDump.log";
+  fullDumpFile_.open(fd.c_str());
+  fullDumpFile_ << "Cut variables for events passing all cuts" << std::endl << std::endl;
+  
+  std::string ei(outdir);
+  ei+="/eventInfo.log";
+  eventInfoFile_.open(ei.c_str());
+  eventInfoFile_ << "Events passing all cuts : run, lumi, orbit, bx, event" << std::endl << std::endl;
+  
+  std::string sum(outdir);
+  sum+="/summary.log";
+  summaryFile_.open(sum.c_str());
+
+  nCuts_ = 13;
   nHcalCuts_ = 12;
 }
 
@@ -734,6 +858,10 @@ Analysis::~Analysis() {
   if (ofile_ != 0) delete ofile_;
 
   file_.Close();
+
+  fullDumpFile_.close();
+  eventInfoFile_.close();
+  summaryFile_.close();
 
 }
 
@@ -749,6 +877,7 @@ int main(int argc, char* argv[]) {
   unsigned nlimit=999999999;
   bool dump=false;
   bool doByRun=true;
+  bool isMC=false;
   for (int i=1; i<argc; ++i) {
     // check option flags
     std::string opt = argv[i];
@@ -760,6 +889,10 @@ int main(int argc, char* argv[]) {
     }
     if (opt=="-q") {
       doByRun = false;
+    }
+    if (opt=="-m") {
+      isMC=true;
+      std::cout << "Running for MC" << std::endl;
     }
   }
 
@@ -785,7 +918,7 @@ int main(int argc, char* argv[]) {
   system(command.c_str());
 
   // create analysis
-  Analysis analysis(filename.c_str(), outdir.c_str(), nlimit, dump);
+  Analysis analysis(filename.c_str(), outdir.c_str(), nlimit, dump, isMC);
 
   // make histograms for all events
   analysis.loopAll();

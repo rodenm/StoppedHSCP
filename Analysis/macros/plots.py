@@ -148,49 +148,74 @@ def multiPlot(hists, file, ofilename, norm=False, log=False, ymin=0., ymax=0., t
 
 
 # superimpose 3 plots
-def compPlot(hist, fdata, fcraft, fmc, canvas, norm=False, log=False, title="histogram", xtitle="", ytitle="") :
-    hdata = fdata.Get(hist)
-    hcraft = fcraft.Get(hist)
-    hmc = fmc.Get(hist)
+def compPlot(hist, fdata, fbg, fmc, ofile, norm=False, log=False, title="histogram", xtitle="", ytitle="", ymin=0., ymax=0.) :
 
-    if (norm and (hdata.Integral() > 0) and (hcraft.Integral() > 0) and (hmc.Integral() > 0) ) :
-        hdata.Scale(1./hdata.Integral())
-        hcraft.Scale(1./hcraft.Integral())
-        hmc.Scale(1./hmc.Integral())
+    canvas=TCanvas("canvas")
 
+    hbg=TH1D()
+    hmc=TH1D()
+    hdata=TH1D()
+    
+    if (fbg != 0):
+        hbg = fbg.Get(hist)
+    if (fmc != 0):
+        hmc = fmc.Get(hist)
+    if (fdata != 0):
+        hdata = fdata.Get(hist)
+
+    if (norm):
+        if (hdata.Integral() > 0):
+            hdata.Scale(1./hdata.Integral())
+        if (hmc.Integral() > 0):
+            hmc.Scale(1./hmc.Integral())
+        if (hbg.Integral() > 0):
+            hbg.Scale(1./hbg.Integral())
+    
     if (log) :
         canvas.SetLogy(1)
     else :
         canvas.SetLogy(0)
 
-    hdata.SetLineColor(1)
-    hcraft.SetLineColor(2)
+    hbg.SetLineColor(17)
+    hbg.SetFillColor(17)
+    #hbg.SetMarkerColor(1)
     hmc.SetLineColor(4)
+    hmc.SetFillStyle(0)
+    hdata.SetLineStyle(0)
+    hdata.SetFillStyle(0)
+    hdata.SetMarkerColor(2)
+    hdata.SetMarkerStyle(22)
 
     # set y axis maximum
-    ymax = 1.1
-    if (not norm) :
-        ymax = hdata.GetMaximum()
-        if (hcraft.GetMaximum() > ymax) :
-            ymax = hcraft.GetMaximum()
+    if (ymax > 0.):
+        hbg.SetMaximum(ymax)
+    else:
+        ymax = hbg.GetMaximum()
         if (hmc.GetMaximum() > ymax) :
             ymax = hmc.GetMaximum()
-    hdata.SetMaximum(ymax)
+        if (hdata.GetMaximum() > ymax) :
+            ymax = hdata.GetMaximum()
+        if (log):
+            hbg.SetMaximum(ymax * 2.)
+        else:
+            hbg.SetMaximum(ymax * 1.2)
+
+    if (ymin > 0.):
+        hbg.SetMinimum(ymin)
 
     if (not (title == "")) :
-        hdata.SetTitle(title)
+        hbg.SetTitle(title)
     if (not (ytitle == "")) :
-        hdata.SetYTitle(ytitle)
+        hbg.SetYTitle(ytitle)
     if (not (xtitle == "")) :
-        hdata.SetXTitle(xtitle)
+        hbg.SetXTitle(xtitle)
 
-    hdata.Draw("HIST")
-    hdata.SetMarkerColor(1)
-    hcraft.Draw("HIST SAME")
-    hcraft.SetMarkerColor(2)
+    hbg.Draw("HIST")
     hmc.Draw("HIST SAME")
+    hdata.Draw("HIST SAME P")
 
     canvas.Update()
+    canvas.Print(ofile)
 
 
 def plotMulti(histos, file, log, min=0, max=0):

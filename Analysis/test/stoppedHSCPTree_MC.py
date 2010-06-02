@@ -23,7 +23,8 @@ process.myPath.remove(process.hltHighLevel)
 
 # input files
 readFiles.extend( [
-    'file:/gpfs_phys/storm/cms/user/fedor/hscp/336/7TeV/gluino1jet/gluino_1jet_336_150_100_2.root'
+    'file:/data/sdd1/phjjb/stoppedHSCP/stoppedHSCP_tree_MC_test/Stopped_HSCP_stage2_gluino300_100_RECO.root'
+#    'file:/gpfs_phys/storm/cms/user/fedor/hscp/336/7TeV/gluino1jet/gluino_1jet_336_150_100_2.root'
     ] )
 
 process.TFileService.fileName = cms.string('stoppedHSCPTree_gluino_1jet_336_150_100_2.root')

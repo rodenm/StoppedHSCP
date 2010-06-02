@@ -8,7 +8,7 @@ first=$3
 crab=$4
 
 griddir=srm://heplnx204.pp.rl.ac.uk:8443/srm/managerv2?SFN=/pnfs/pp.rl.ac.uk/data/cms/store/user/jbrooke/$label
-odir=/storage/phjjb/stoppedHSCP/$label
+odir=/data/sdd1/phjjb/stoppedHSCP/$label
 filebase=stoppedHSCPTree
 
 echo "Copying files from $griddir to $odir"
@@ -19,6 +19,7 @@ fi
 
 for i in $(seq $first 1 $nfiles)
 do
-  echo "lcg-cp $griddir/${filebase}_${i}_${crab}.root $odir/$label/${filebase}_$i.root"
+  echo "lcg-cp $griddir/${filebase}_${i}_${crab}.root $odir/${filebase}_$i.root"
   lcg-cp $griddir/$filebase\_$i\_$crab.root $odir/$filebase\_$i.root
 done
+

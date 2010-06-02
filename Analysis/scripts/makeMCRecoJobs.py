@@ -3,7 +3,7 @@
 import sys
 
 ifilepath='/gpfs_phys/storm/cms/user/fedor/hscp/336/7TeV/gluino1jet/'
-ofilepath='/storage/phjjb/stoppedHSCP/rereco_MC_May6th/rereco_MC_May6th_'
+ofilepath='/data/sdd1/phjjb/stoppedHSCP/rereco_MC_May6th/rereco_MC_May6th_'
 
 files=['gluino_1jet_336_150_100_2', \
        'gluino_1jet_336_150_100_2',  \

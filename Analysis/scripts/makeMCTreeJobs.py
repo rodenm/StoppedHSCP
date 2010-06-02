@@ -2,8 +2,8 @@
 
 import sys
 
-ifilepath='/storage/phjjb/stoppedHSCP/rereco_MC_May6th/rereco_MC_May6th_'
-ofilepath='/storage/phjjb/stoppedHSCP/stoppedHSCP_tree_MC_May6th/'
+ifilepath='/data/sdd1/phjjb/stoppedHSCP/rereco_MC_May6th/rereco_MC_May6th_'
+ofilepath='/data/sdd1/phjjb/stoppedHSCP/stoppedHSCP_tree_MC_May6th/'
 
 files=['gluino_1jet_336_150_100_2', \
        'gluino_1jet_336_150_100_2',  \

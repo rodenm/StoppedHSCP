@@ -7,7 +7,7 @@ label=$1
 nfiles=$2
 first=$3
 
-idir=/storage/phjjb/stoppedHSCP
+idir=/data/sdd1/phjjb/stoppedHSCP
 odir=~/stoppedHSCP/ntuples
 filebase=stoppedHSCPTree
 
