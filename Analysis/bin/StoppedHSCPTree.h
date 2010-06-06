@@ -492,7 +492,7 @@ public :
    virtual void     Show(Long64_t entry = -1);
    virtual unsigned NCuts();
    virtual bool     CutN(unsigned n);
-   virtual char*    CutName(unsigned n);
+   virtual const char*    CutName(unsigned n);
    virtual bool     CutNMinusOne(unsigned n);
    virtual bool     OldCutN(unsigned n);
    virtual bool     StdHcalCutN(unsigned n);
@@ -872,7 +872,7 @@ bool StoppedHSCPTree::CutN(unsigned n)
 }
 
 
-char* StoppedHSCPTree::CutName(unsigned n) {
+const char* StoppedHSCPTree::CutName(unsigned n) {
   
   switch (n) {
   case 0:
