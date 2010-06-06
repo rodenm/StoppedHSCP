@@ -147,95 +147,76 @@ def multiPlot(hists, file, ofilename, norm=False, log=False, ymin=0., ymax=0., t
         canvas.Print(ofilename)
 
 
-# superimpose 3 plots
-def compPlot(hist, fdata, fbg, fmc, ofile, norm=False, log=False, title="histogram", xtitle="", ytitle="", ymin=0., ymax=0.) :
+def multiPlot2(hists, ofilename, norm=False, log=False, title="histogram", xtitle="", ytitle="", opt="HIST", port=False, ymin=0., ymax=0.) :
 
     canvas=TCanvas("canvas")
 
-    hbg=TH1D()
-    hmc=TH1D()
-    hdata=TH1D()
-    
-    if (fbg != 0):
-        hbg = fbg.Get(hist)
-    if (fmc != 0):
-        hmc = fmc.Get(hist)
-    if (fdata != 0):
-        hdata = fdata.Get(hist)
-
-    if (norm):
-        if (hdata.Integral() > 0):
-            hdata.Scale(1./hdata.Integral())
-        if (hmc.Integral() > 0):
-            hmc.Scale(1./hmc.Integral())
-        if (hbg.Integral() > 0):
-            hbg.Scale(1./hbg.Integral())
-    
+    # set log scale, or not
     if (log) :
         canvas.SetLogy(1)
     else :
         canvas.SetLogy(0)
 
-    hbg.SetLineColor(17)
-    hbg.SetFillColor(17)
-    #hbg.SetMarkerColor(1)
-    hmc.SetLineColor(4)
-    hmc.SetFillStyle(0)
-    hdata.SetLineStyle(0)
-    hdata.SetFillStyle(0)
-    hdata.SetMarkerColor(2)
-    hdata.SetMarkerStyle(22)
+    # get max/min y values
+    hmin=1.E-999
+    hmax=1.
+    for hist in hists:
+        if hist.GetMaximum() > hmax:
+            hmax = hist.GetMaximum()
+        if hist.GetMinimum() < hmin:
+            hmin = hist.GetMinimum()
+            
+    # set list of colours
+    fills   = [17, 0, 0, 0, 0, 0]
+    colours = [17, 2, 4, 5, 6, 7]
+    markers = [0, 22, 0, 0, 0, 0]
 
-    # set y axis maximum
-    if (ymax > 0.):
-        hbg.SetMaximum(ymax)
-    else:
-        ymax = hbg.GetMaximum()
-        if (hmc.GetMaximum() > ymax) :
-            ymax = hmc.GetMaximum()
-        if (hdata.GetMaximum() > ymax) :
-            ymax = hdata.GetMaximum()
-        if (log):
-            hbg.SetMaximum(ymax * 2.)
-        else:
-            hbg.SetMaximum(ymax * 1.2)
-
-    if (ymin > 0.):
-        hbg.SetMinimum(ymin)
-
-    if (not (title == "")) :
-        hbg.SetTitle(title)
-    if (not (ytitle == "")) :
-        hbg.SetYTitle(ytitle)
-    if (not (xtitle == "")) :
-        hbg.SetXTitle(xtitle)
-
-    hbg.Draw("HIST")
-    hmc.Draw("HIST SAME")
-    hdata.Draw("HIST SAME P")
-
-    canvas.Update()
-    canvas.Print(ofile)
-
-
-def plotMulti(histos, file, log, min=0, max=0):
-    canvas=TCanvas()
-    if (log):
-        canvas.SetLogy(1)
-    if (max>0.):
-        histos[0].SetMaximum(max)
-        histos[0].SetMinimum(min)
-    markers = [ 22, 25, 27, 28, 29 ]
-    colours = [ 2, 4, 5, 6, 7 ]
+    # iterate over histograms
     first=True
-    for hist, marker, colour in zip(histos, markers, colours):
-        hist.SetMarkerStyle(marker)
-        hist.SetMarkerColor(colour)
-        hist.SetLineColor(colour)
-        if (first):
-            hist.Draw("P E1")
+    for hist,fill,col,mark in zip(hists,fills,colours,markers):
+
+        if (hist==0):
+            continue
+
+        hopt=opt
+        
+        # set colour
+        hist.SetLineColor(col)
+        if (fill!=0):
+            hist.SetFillColor(fill)
+        else:
+            hist.SetFillStyle(0)
+        hist.SetMarkerColor(col)
+        if (mark!=0):
+            hist.SetMarkerStyle(mark)
+            hopt+="PE"
+
+        # normalise if required
+        if (norm and hist.Integral() > 0.):
+            hist.Scale(1./hist.Integral())
+
+        # set limits
+        if (ymax != 0.):
+            hist.SetMaximum(ymax)
+        if (ymin != 0.):
+            hist.SetMinimum(ymin)
+
+        # plot histogram
+        if first:
+            if (not (title == "")) :
+                hist.SetTitle(title)
+            if (not (ytitle == "")) :
+                hist.SetYTitle(ytitle)
+            if (not (xtitle == "")) :
+                hist.SetXTitle(xtitle)
+            hist.Draw(hopt)
             first=False
         else:
-            hist.Draw("P E1 SAME")
+            hist.Draw(hopt+" SAME")
+
     canvas.Update()
-    canvas.Print(file)
+    if (port):
+        canvas.Print(ofilename, "Portrait")
+    else:
+        canvas.Print(ofilename)
+

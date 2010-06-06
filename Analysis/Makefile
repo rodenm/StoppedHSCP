@@ -12,10 +12,13 @@ else
   INCPATH   = $(ROOTINC)
 endif
 
-all: makeHistograms
+all: makeHistograms statistics
 
 makeHistograms: macros/BasicHistograms.cpp macros/StoppedHSCPTree.h
 	$(LINK) $(CXXFLAGS) $(INCPATH) -o makeHistograms $< $(LIBS)
+
+statistics: macros/Statistics.cpp
+	$(LINK) $(CXXFLAGS) $(INCPATH) -o statistics $< $(LIBS)
 
 clean:
 	rm makeHistograms

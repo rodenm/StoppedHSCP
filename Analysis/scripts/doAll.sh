@@ -25,6 +25,22 @@ then
 fi
 
 # dataset dependent variables
+if [[ "$dataset" =~ Coll10\_Run2010A\_* ]]
+then
+    runs=136294,136297
+fi
+
+if [[ "$dataset" =~ Coll10\_Run2010A\_May27th\_* ]]
+then
+    runs=136087,136088
+fi
+
+if [[ "$dataset" =~ Coll10\_May6th\_* ]]
+then
+    runs=133320,133321,133446,133448,133450,133474,133483,133874,133875,133877,133881,133885,133927,133928
+#133324,133336,133463,133472,133509,133510,133511,133876
+fi
+
 if [[ "$dataset" =~ Coll10\_Promptv9\_* ]]
 then
     runs=133874,133875,133876,133877,133881,133885
@@ -68,7 +84,7 @@ echo "Log file : $dataset.log"
 if [[ $flag != *q* ]]
 then
     echo "Making histograms from ntuples/stoppedHSCP_tree_$dataset.root"
-    ./makeHistograms $doPrint $ntuple $dataset >& $dataset/log
+    ./makeHistograms $doPrint $ntuple $dataset
 fi
 
 # make plots

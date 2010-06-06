@@ -479,9 +479,10 @@ public :
    TBranch        *b_TimeStamp;   //!
 
    bool           isMC_;
+   std::vector<unsigned> disallowedBXs_;
 
-   StoppedHSCPTree(TFile* file, bool isMC=false);
-   StoppedHSCPTree(TTree *tree=0, bool isMC=false);
+   StoppedHSCPTree(TFile* file, bool isMC, std::vector<unsigned> disallowedBXs_);
+   StoppedHSCPTree(TTree *tree, bool isMC, std::vector<unsigned> disallowedBXs_);
    virtual ~StoppedHSCPTree();
    virtual bool     Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
@@ -496,11 +497,13 @@ public :
    virtual bool     OldCutN(unsigned n);
    virtual bool     StdHcalCutN(unsigned n);
    virtual void     PrintCutValues(ostream& o);
+   virtual bool     InDisallowedBX();
 };
 
-StoppedHSCPTree::StoppedHSCPTree(TFile* file, bool isMC) :
+StoppedHSCPTree::StoppedHSCPTree(TFile* file, bool isMC, std::vector<unsigned> disallowedBX) :
   oldTreePresent(false),
-  isMC_(isMC)
+  isMC_(isMC),
+  disallowedBXs_(disallowedBX)
 {
 
   // open file and get tree
@@ -518,8 +521,9 @@ StoppedHSCPTree::StoppedHSCPTree(TFile* file, bool isMC) :
 
 }
 
-StoppedHSCPTree::StoppedHSCPTree(TTree *tree, bool isMC) :
-  isMC_(isMC)
+StoppedHSCPTree::StoppedHSCPTree(TTree *tree, bool isMC, std::vector<unsigned> disallowedBX) :
+  isMC_(isMC),
+  disallowedBXs_(disallowedBX)
 {
    Init(tree);
 }
@@ -823,7 +827,7 @@ bool StoppedHSCPTree::Cut(Long64_t entry=0)
 }
 
 unsigned StoppedHSCPTree::NCuts() {
-  return 12;
+  return 13;
 }
 
 
@@ -835,32 +839,33 @@ bool StoppedHSCPTree::CutN(unsigned n)
   case 0:
     return true;
   case 1:
-    return isMC_ || ((gtAlgoWord1>>(81-64)&1) == 0 && (gtAlgoWord1>>(80-64)&1) == 0);
+    return ! InDisallowedBX();
   case 2:
-    return nTowerSameiPhi<5;
+    return isMC_ || ((gtAlgoWord1>>(81-64)&1) == 0 && (gtAlgoWord1>>(80-64)&1) == 0);
   case 3:
-    return jet_N>0 && jetE[0]>30. && jetEta[0]<1.3;
-  case 4:
-    return jet_N>0 && jetE[0]>50. && jetEta[0]<1.3;
-  case 5:
-    return jet_N>0 && jetN60[0]<6;
-  case 6:
-    return jet_N>0 && jetN90[0]>3;
-  case 7:
     return mu_N==0;
+  case 4:
+    return jet_N>0 && jetE[0]>30. && jetEta[0]<1.3;
+  case 5:
+    return jet_N>0 && jetE[0]>50. && jetEta[0]<1.3;
+  case 6:
+    return jet_N>0 && jetN60[0]<6;
+  case 7:
+    return jet_N>0 && jetN90[0]>3;
   case 8:
-    return (top5DigiR1 > 0.15) && (top5DigiR1 <= 1.0);
+    return nTowerSameiPhi<5;
   case 9:
-    return (top5DigiR2 > 0.1) && (top5DigiR2 < 0.5);
+    return (top5DigiR1 > 0.15) && (top5DigiR1 <= 1.0);
   case 10:
-    return (top5DigiRPeak > 0.4) && (top5DigiRPeak < 0.7) && (top5DigiPeakSample > 0) && (top5DigiPeakSample < 7);
+    return (top5DigiR2 > 0.1) && (top5DigiR2 < 0.5);
   case 11:
-    return (top5DigiROuter < 0.1) && (top5DigiROuter >= 0.0) && (top5DigiPeakSample > 0) && (top5DigiPeakSample < 7);
+    return (top5DigiRPeak > 0.4) && (top5DigiRPeak < 0.7) && (top5DigiPeakSample > 0) && (top5DigiPeakSample < 7);
   case 12:
+    return (top5DigiROuter < 0.1) && (top5DigiROuter >= 0.0) && (top5DigiPeakSample > 0) && (top5DigiPeakSample < 7);
+  case 13:
     return jet_N>0 && (jetEEm[0] / jetE[0]) > 0.05;
   default:
     return true;
-
     
   }
 
@@ -873,28 +878,30 @@ char* StoppedHSCPTree::CutName(unsigned n) {
   case 0:
     return "No cut";
   case 1:
-    return "BPTX cut";
+    return "BX cut";
   case 2:
-    return "Calo towers";
+    return "BPTX cut";
   case 3:
-    return "jet30";
-  case 4:
-    return "jet50";
-  case 5:
-    return "n60";
-  case 6:
-    return "n90";
-  case 7:
     return "mu veto";
+  case 4:
+    return "jet30";
+  case 5:
+    return "jet50";
+  case 6:
+    return "n60";
+  case 7:
+    return "n90";
   case 8:
-    return "R1";
+    return "Calo towers";
   case 9:
-    return "R2";
+    return "R1";
   case 10:
-    return "Rpeak";
+    return "R2";
   case 11:
-    return "Router";
+    return "Rpeak";
   case 12:
+    return "Router";
+  case 13:
     return "jet EMF";
   default:
     return "unknown";
@@ -1024,5 +1031,14 @@ void StoppedHSCPTree::PrintCutValues(ostream& o) {
 }
 
   
+bool StoppedHSCPTree::InDisallowedBX() {
+
+  bool passed=true;
+  for (unsigned i=0; i<disallowedBXs_.size(); ++i) {
+    passed &= !(bx==disallowedBXs_.at(i));
+  }
+  return passed;
+}
+
 #endif
 

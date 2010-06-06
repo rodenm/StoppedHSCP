@@ -14,6 +14,11 @@
 #include <stdlib.h>
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include <string>
+#include <algorithm>
+#include <iterator>
+
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -578,8 +583,8 @@ void Analysis::fillHistos(StoppedHSCPTree& tree) {
     if (!hcalfail) hhcalcutcum_->Fill(c);  
   }
 
-  if (tree.CutNMinusOne(2)) hntowiphi_nmo_->Fill(tree.nTowerSameiPhi);
-  if (tree.CutNMinusOne(7)) hnmu_nmo_->Fill(tree.mu_N);
+  if (tree.CutNMinusOne(7)) hntowiphi_nmo_->Fill(tree.nTowerSameiPhi);
+  if (tree.CutNMinusOne(2)) hnmu_nmo_->Fill(tree.mu_N);
   if (tree.CutNMinusOne(8)) hr1_nmo_->Fill(tree.top5DigiR1);
   if (tree.CutNMinusOne(9)) hr2_nmo_->Fill(tree.top5DigiR2);
   if (tree.CutNMinusOne(10)) hrpk_nmo_->Fill(tree.top5DigiRPeak);
@@ -604,7 +609,7 @@ TH1D Analysis::rateDist(TH1D& hist, unsigned nbins) {
     unsigned r=hist.GetBinContent(i);
     if (r>0.) h.Fill(r);
   }
-	
+  
   // do fit
   //  TF1 f("fit", "gaus");
   //  h.Fit("fit", "");    
@@ -686,58 +691,7 @@ void Analysis::loopAll() {
     fillHistos(*tree_);
     nevts++;
 
-    if (dumpEvents_ && (tree_->Cut() ||
-			tree_->id == 1491361 ||
-			tree_->id == 81147704 ||
-			tree_->id == 17661711)) {
-// ||
-// 			tree_->id == 50099203 ||
-// 			tree_->id == 58190201 ||
-// 			tree_->id == 699930 ||
-// 			tree_->id == 22043584 ||
-// 			tree_->id == 24878010 ||
-// 			tree_->id == 24682395 ||
-// 			tree_->id == 53328093 ||
-// 			tree_->id == 28061379 ||
-// 			tree_->id == 4266773 ||
-// 			tree_->id == 4543706 ||
-// 			tree_->id == 39184047 ||
-// 			tree_->id == 26758647 ||
-// 			tree_->id == 44609254 ||
-// 			tree_->id == 13200704 ||
-// 			tree_->id == 32705112 ||
-// 			tree_->id == 23338580 ||
-// 			tree_->id == 42419681 ||
-// 			tree_->id == 6282500 ||
-// 			tree_->id == 9114136 ||
-// 			tree_->id == 93232497 ||
-// 			tree_->id == 97106991 ||
-// 			tree_->id == 53460739 ||
-// 			tree_->id == 61413497 ||
-// 			tree_->id == 88527654 ||
-// 			tree_->id == 89047300 ||
-// 			tree_->id == 18590145 ||
-// 			tree_->id == 35133941 ||
-// 			tree_->id == 27674619 ||
-// 			tree_->id == 75776242 ||
-// 			tree_->id == 92930198 ||
-// 			tree_->id == 93054547 ||
-// 			tree_->id == 95365089 ||
-// 			tree_->id == 95505093 ||
-// 			tree_->id == 130801536 ||
-// 			tree_->id == 110183807 ||
-// 			tree_->id == 134272122 ||
-// 			tree_->id == 122996925 ||
-// 			tree_->id == 92453750 ||
-// 			tree_->id == 117516582 ||
-// 			tree_->id == 134507604 ||
-// 			tree_->id == 10593951 ||
-// 			tree_->id == 62873575 ||
-// 			tree_->id == 71610674 ||
-// 			tree_->id == 92716023 ||
-// 			tree_->id == 7609326 ||
-// 			tree_->id == 9871709 ||
-// 			tree_->id == 45398149)) {
+    if (dumpEvents_ && tree_->Cut()) {
       eventInfoFile_ << tree_->run << ", " << tree_->lb << ", " << tree_->orbit << ", " << tree_->bx << ", " << tree_->id << std::endl;
       tree_->PrintCutValues(fullDumpFile_);
     }
@@ -804,6 +758,7 @@ void Analysis::loopByRun() {
     
   }
 
+  saveHistos();
 }
 
 
@@ -827,10 +782,6 @@ Analysis::Analysis(const char* filename, const char* outdir, unsigned nlimit, bo
   currentRun_(0)
 {
 
-  // open file and get tree
-  //  ttree_ = (TTree*) file_.Get("stoppedHSCPTree/StoppedHSCPTree");
-  tree_ = new StoppedHSCPTree(&file_, isMC);
-
   // log files
   std::string fd(outdir);
   fd+="/fullDump.log";
@@ -848,14 +799,34 @@ Analysis::Analysis(const char* filename, const char* outdir, unsigned nlimit, bo
 
   nCuts_ = 13;
   nHcalCuts_ = 12;
+
+  // read in list of unallowed BXs
+  std::vector<unsigned> bxs;
+  std::ifstream bxfile("bxfile.csv");
+  std::string line;
+  getline(bxfile, line);
+  std::vector<std::string> strs;
+  boost::split(strs, line, boost::is_any_of(","));
+
+  std::cout << "Ignoring BX : ";
+  for (unsigned i=0; i<strs.size(); ++i) {
+    bxs.push_back(atoi(strs.at(i).c_str()));
+    std::cout << strs.at(i) << " ";
+  }
+  std::cout << std::endl;
+
+  // open file and get tree
+  //  ttree_ = (TTree*) file_.Get("stoppedHSCPTree/StoppedHSCPTree");
+  tree_ = new StoppedHSCPTree(&file_, isMC, bxs);
+
 }
 
 
 Analysis::~Analysis() {
 
-  if (ttree_ != 0) delete ttree_;
-  if (tree_ != 0) delete tree_;
-  if (ofile_ != 0) delete ofile_;
+//   if (ttree_ != 0) delete ttree_;
+//   if (tree_ != 0) delete tree_;
+//   if (ofile_ != 0) delete ofile_;
 
   file_.Close();
 
@@ -916,6 +887,9 @@ int main(int argc, char* argv[]) {
   command = std::string("ls ");
   command += outdir;
   system(command.c_str());
+
+  // sum of squares error info for histograms
+  TH1D::SetDefaultSumw2();
 
   // create analysis
   Analysis analysis(filename.c_str(), outdir.c_str(), nlimit, dump, isMC);

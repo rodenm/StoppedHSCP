@@ -26,17 +26,7 @@ for opt, arg in opts:
         usage()
         exit.sys()
 
-# arguments
-bg='Coll10_Promptv9_v7'
-mc='May6th_gluino_1jet_336_300_100_2'
-data=''
-
-bg=args[0]
-if (len(args)>1):
-    mc=args[1]
-if (len(args)>2):
-    data=args[2]
-
+# ROOT
 sys.argv.append('-b')
 
 from ROOT import *
@@ -44,58 +34,56 @@ from ROOT import *
 from style import *
 from plots import *
 
+# files
+files=[]
+for arg in args:
+    files.append(TFile(arg))
+
 # set the style
 tdrStyle()
 gROOT.SetStyle("tdrStyle")
 gROOT.ForceStyle()
 
-# style options for this macro
-#gStyle.SetHistFillStyle(0)
-
-# open files
-fdata=0
-if (data != ''):
-    fdata = TFile(data+"/histograms.root")
-fbg=0
-if (bg != ''):
-    fbg   = TFile(bg+"/histograms.root")
-fmc=0
-if (mc != ''):
-    fmc = TFile(mc+"/histograms.root")
-
 # output file
-ofilename="comparison_"+bg+"_"+mc+"_"+data
+ofilename="comparisonPlots"
 canvas = TCanvas("canvas")
 canvas.Print(ofilename+".ps[")
 
-# offline jets
-compPlot("NoCuts/hjete", fdata, fbg, fmc, ofilename+".ps", True, True, "", "E (GeV)", "")
-compPlot("NoCuts/hjeteta", fdata, fbg, fmc, ofilename+".ps", True, True, "", "#eta", "")
-compPlot("NoCuts/hjetphi", fdata, fbg, fmc, ofilename+".ps", True, True, "", "#phi", "")
-compPlot("NoCuts/hjeteem", fdata, fbg, fmc, ofilename+".ps", True, True, "", "E_{ECAL} / GeV", "")
-compPlot("NoCuts/hjetehad", fdata, fbg, fmc, ofilename+".ps", True, True, "", "E_{HCAL} / GeV", "")
-compPlot("NoCuts/hjetn60", fdata, fbg, fmc, ofilename+".ps", True, True, "", "n60", "")
-compPlot("NoCuts/hjetn90", fdata, fbg, fmc, ofilename+".ps", True, True, "", "n90", "")
-compPlot("NoCuts/hnmu", fdata, fbg, fmc, ofilename+".ps", True, True, "", "N_{#mu}", "")
-compPlot("NoCuts/hntowsameiphi", fdata, fbg, fmc, ofilename+".ps", True, True, "", "N_{#mu}", "")
-compPlot("NoCuts/hr1", fdata, fbg, fmc, ofilename+".ps", True, True, "", "R1", "")
-compPlot("NoCuts/hr2", fdata, fbg, fmc, ofilename+".ps", True, True, "", "R2", "")
-compPlot("NoCuts/hrpk", fdata, fbg, fmc, ofilename+".ps", True, True, "", "R_{peak}", "")
-compPlot("NoCuts/hrout", fdata, fbg, fmc, ofilename+".ps", True, True, "", "R_{outer}", "")
-compPlot("NoCuts/hjetemf", fdata, fbg, fmc, ofilename+".ps", True, True, "", "EM fraction", "")
+def getHistograms(histname):
+    hists=[]
+    for file in files:
+        hists.append(file.Get(histname))
+    return hists
 
-compPlot("Cuts/hncutcum", fdata, fbg, fmc, ofilename+".ps", True, True, "", "Cut", "Counts")
+# raw distributions
+multiPlot2(getHistograms("NoCuts/hjete"), ofilename+".ps", True, True, "", "E (GeV)", "", "HIST", True, 1.e-4, 0.2)
+multiPlot2(getHistograms("NoCuts/hjeteta"), ofilename+".ps", True, True, "", "#eta", "", "HIST", True, 5.e-3, 0.2)
+multiPlot2(getHistograms("NoCuts/hjetphi"), ofilename+".ps", True, True, "", "#phi", "", "HIST", True, 2.e-3, 0.1)
+multiPlot2(getHistograms("NoCuts/hjeteem"), ofilename+".ps", True, True, "", "E_{ECAL} (GeV)", "", "HIST", True, 1.e-4, 2.)
+multiPlot2(getHistograms("NoCuts/hjetehad"), ofilename+".ps", True, True, "", "E_{HCAL} (GeV)", "", "HIST", True, 1.e-4, 0.5)
+multiPlot2(getHistograms("NoCuts/hjetemf"), ofilename+".ps", True, True, "", "jet EMF", "", "HIST", True, 1.e-4, 2.)
+multiPlot2(getHistograms("NoCuts/hjetn60"), ofilename+".ps", True, True, "", "n_{60}", "", "HIST", True, 1.e-3, 2.)
+multiPlot2(getHistograms("NoCuts/hjetn90"), ofilename+".ps", True, True, "", "n_{90}", "", "HIST", True, 1.e-3, 2.)
+multiPlot2(getHistograms("NoCuts/hnmu"), ofilename+".ps", True, True, "", "n_{#mu}", "", "HIST", True, 1.e-3, 2.)
+multiPlot2(getHistograms("NoCuts/hntowsameiphi"), ofilename+".ps", True, True, "", "N", "", "HIST", True, 1.e-3, 2.)
+multiPlot2(getHistograms("NoCuts/hr1"), ofilename+".ps", True, True, "", "R_1", "", "HIST", True, 1.e-4, 2.)
+multiPlot2(getHistograms("NoCuts/hr2"), ofilename+".ps", True, True, "", "R_2", "", "HIST", True, 1.e-4, 2.)
+multiPlot2(getHistograms("NoCuts/hrpk"), ofilename+".ps", True, True, "", "R_{peak}", "", "HIST", True, 1.e-4, 2.)
+multiPlot2(getHistograms("NoCuts/hrout"), ofilename+".ps", True, True, "", "R_{outer}", "", "HIST", True, 1.e-4, 2.)
 
-compPlot("Cuts/hjete_nmo", fdata, fbg, fmc, ofilename+".ps", True, True, "", "E (GeV)", "")
-compPlot("Cuts/hjetn60_nmo", fdata, fbg, fmc, ofilename+".ps", True, True, "", "n60", "")
-compPlot("Cuts/hjetn90_nmo", fdata, fbg, fmc, ofilename+".ps", True, True, "", "n90", "")
-compPlot("Cuts/hnmu_nmo", fdata, fbg, fmc, ofilename+".ps", True, True, "", "N_{#mu}", "")
-compPlot("Cuts/hntowsameiphi_nmo", fdata, fbg, fmc, ofilename+".ps", True, True, "", "N_{#mu}", "")
-compPlot("Cuts/hr1_nmo", fdata, fbg, fmc, ofilename+".ps", True, True, "", "R1", "")
-compPlot("Cuts/hr2_nmo", fdata, fbg, fmc, ofilename+".ps", True, True, "", "R2", "")
-compPlot("Cuts/hrpk_nmo", fdata, fbg, fmc, ofilename+".ps", True, True, "", "R_{peak}", "")
-compPlot("Cuts/hrout_nmo", fdata, fbg, fmc, ofilename+".ps", True, True, "", "R_{outer}", "")
-compPlot("Cuts/hjetemf_nmo", fdata, fbg, fmc, ofilename+".ps", True, True, "", "E (GeV)", "", 1.E-4)
+# cuts
+multiPlot2(getHistograms("Cuts/hncutcum"), ofilename+".ps", True, True, "", "cut", "events", "HIST", True, 1.e-6, 0.5)
+
+multiPlot2(getHistograms("Cuts/hjete_nmo"), ofilename+".ps", True, True, "", "E (GeV)", "", "HIST", True, 1.e-4, 0.5)
+multiPlot2(getHistograms("Cuts/hjetn60_nmo"), ofilename+".ps", True, True, "", "n_{60}", "", "HIST", True, 1.e-4, 2.)
+multiPlot2(getHistograms("Cuts/hjetn90_nmo"), ofilename+".ps", True, True, "", "n_{90}", "", "HIST", True, 1.e-4, 2.)
+multiPlot2(getHistograms("Cuts/hnmu_nmo"), ofilename+".ps", True, True, "", "n_{#mu}", "", "HIST", True, 1.e-4, 2.)
+multiPlot2(getHistograms("Cuts/hntowsameiphi_nmo"), ofilename+".ps", True, True, "", "N", "", "HIST", True, 1.e-4, 2.)
+multiPlot2(getHistograms("Cuts/hr1_nmo"), ofilename+".ps", True, True, "", "R_1", "", "HIST", True, 1.e-4, 2.)
+multiPlot2(getHistograms("Cuts/hr2_nmo"), ofilename+".ps", True, True, "", "R_2", "", "HIST", True, 1.e-4, 2.)
+multiPlot2(getHistograms("Cuts/hrpk_nmo"), ofilename+".ps", True, True, "", "R_{peak}", "", "HIST", True, 1.e-4, 2.)
+multiPlot2(getHistograms("Cuts/hrout_nmo"), ofilename+".ps", True, True, "", "R_{outer}", "", "HIST", True, 1.e-4, 2.)
+multiPlot2(getHistograms("Cuts/hjetemf_nmo"), ofilename+".ps", True, True, "", "jet EMF", "", "HIST", True, 1.e-4, 2.)
 
 canvas = TCanvas("canvas")
 canvas.Print(ofilename+".ps]")
