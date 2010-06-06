@@ -2,6 +2,6 @@
 
 StoppedHSCP/Analysis/macros
 
-Intention of this directory is to house macros only (code not meant for compiling!).  Currently contains some code that is compiled under ACLIC.  To be fixed!
+This directory contains python macros for producing plots from histograms (which are themselves produced by executables in /bin).
 
 
