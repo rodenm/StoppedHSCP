@@ -1,0 +1,8 @@
+<use name="root"/>
+<use name="roofit"/>
+<use name="roostats"/>
+<use name="boost"/>
+
+<bin name="makeHistograms" file="MakeHistograms.cpp"/>
+
+<bin name="statistics" file="Statistics.cpp"/>
