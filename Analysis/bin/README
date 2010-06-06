@@ -1,0 +1,8 @@
+
+StoppedHSCP/Analysis/bin
+
+This directory contains code to produce executables for analysing Stopped HSCP ntuples.
+
+1. MakeHistograms.cpp - makes histograms from ntuples.  Uses
+2. StoppedHSCPTree.h/.cc - modified ROOT MakeClass output for use with StoppedHSCP Tree
+3. Statistics.cpp - do statistical analysis based on RooStats/Roofit

@@ -36,13 +36,13 @@ double CountingExperiment95CLUpperLimit (int nObserved, double bkgMean, double b
   RooDataSet* data =  modelPdf.generate(flatUnit, nObserved);
   
   HybridCalculator hc(*data, modelPdf, modelBkgPdf, &nuisPar, &priorBkgPdf);
-  hc.SetTestStatistic(2); // # of events
+  //  hc.SetTestStatistic(2); // # of events
   hc.SetNumberOfToys(nToys);
   hc.UseNuisance(true);                            
-  HypoTestInverter myInverter(hc,signal);
+  HypoTestInvertor myInverter(hc,signal);
   double targetP = 0.05; // 95% C.L.
   myInverter.RunAutoScan(0, signalMaxExpected, targetP, 0.1*targetP);  
-  HypoTestInverterResult* results = myInverter.GetInterval();
+  HypoTestInvertorResult* results = myInverter.GetInterval();
   results->SetConfidenceLevel (1-2.*targetP);
   double upperLimit = results->UpperLimit();
   delete data;
