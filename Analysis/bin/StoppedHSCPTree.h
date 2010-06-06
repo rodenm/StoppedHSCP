@@ -2,9 +2,16 @@
 //  Extended version of MakeClass output
 //  Jim Brooke 21/4/2010
 //
-//  Added ctor from filename
-//  Added nCut method - return true/false if currently loaded event passes n-th cut
-//
+// Mods :
+//  ctor from filename
+//  CutN()           - returns true/false if currently loaded event passes n-th cut
+//  CutNMinusOne()   - returns true/false if currently loaded event passes all other cuts
+//  CutName()        - return name of cut
+//  OldCutN()        - return true/false for cuts based on old variables for comparison
+//  StdHcalCutN()    - as CutN(), but apply standard HCAL cuts
+//  PrintCutValues() - dump cut variables for current event
+//  InDisallowedBX() - return true if event is in disallowed BX vector (loaded in ctor)
+
 
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
