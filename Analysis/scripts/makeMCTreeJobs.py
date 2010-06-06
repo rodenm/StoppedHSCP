@@ -5,17 +5,17 @@ import sys
 ifilepath='/data/sdd1/phjjb/stoppedHSCP_MC/'
 ofilepath='/data/sdd1/phjjb/stoppedHSCP/stoppedHSCP_tree_MC_361/'
 
-files=['StoppedGluino200-Neutralino100-v2_1.root', \
-       'StoppedGluino200-Neutralino150-v2_1.root', \
-       'StoppedGluino300-Neutralino100-v2_1.root', \
-       'StoppedGluino300-Neutralino200-v2_1.root', \
-       'StoppedGluino300-Neutralino250-v2_1.root', \
-       'StoppedGluino400-Neutralino100-v2_1.root', \
-       'StoppedGluino400-Neutralino300-v2_1.root', \
-       'StoppedGluino500-Neutralino300-v2_1.root', \
-       'StoppedGluino500-Neutralino400-v2_1.root', \
-       'StoppedGluino600-Neutralino300-v2_1.root', \
-       'StoppedGluino600-Neutralino500-v2_1.root' ]
+files=['StoppedGluino200-Neutralino100-v2_1', \
+       'StoppedGluino200-Neutralino150-v2_1', \
+       'StoppedGluino300-Neutralino100-v2_1', \
+       'StoppedGluino300-Neutralino200-v2_1', \
+       'StoppedGluino300-Neutralino250-v2_1', \
+       'StoppedGluino400-Neutralino100-v2_1', \
+       'StoppedGluino400-Neutralino300-v2_1', \
+       'StoppedGluino500-Neutralino300-v2_1', \
+       'StoppedGluino500-Neutralino400-v2_1', \
+       'StoppedGluino600-Neutralino300-v2_1', \
+       'StoppedGluino600-Neutralino500-v2_1' ]
 
 script = open("tree_mc_361.sh", "w")
 script.write("#!/bin/bash\n")
