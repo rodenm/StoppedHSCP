@@ -844,9 +844,9 @@ bool StoppedHSCPTree::CutN(unsigned n)
   
   switch (n) {
   case 0:
-    return true;
+    return (hltBit==1);
   case 1:
-    return ! InDisallowedBX();
+    return isMC_ || ! InDisallowedBX();
   case 2:
     return isMC_ || ((gtAlgoWord1>>(81-64)&1) == 0 && (gtAlgoWord1>>(80-64)&1) == 0);
   case 3:
@@ -883,7 +883,7 @@ const char* StoppedHSCPTree::CutName(unsigned n) {
   
   switch (n) {
   case 0:
-    return "No cut";
+    return "HLT";
   case 1:
     return "BX cut";
   case 2:
@@ -1040,9 +1040,9 @@ void StoppedHSCPTree::PrintCutValues(ostream& o) {
   
 bool StoppedHSCPTree::InDisallowedBX() {
 
-  bool passed=true;
+  bool passed=false;
   for (unsigned i=0; i<disallowedBXs_.size(); ++i) {
-    passed &= !(bx==disallowedBXs_.at(i));
+    passed |= (bx==disallowedBXs_.at(i));
   }
   return passed;
 }
