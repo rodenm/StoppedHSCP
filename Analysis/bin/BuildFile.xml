@@ -5,4 +5,4 @@
 
 <bin name="makeHistograms" file="MakeHistograms.cpp"/>
 
-<bin name="statistics" file="Statistics.cpp"/>
+<bin name="limits" file="Limits.cpp"/>

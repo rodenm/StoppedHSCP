@@ -13,9 +13,10 @@ files=['StoppedGluino200-Neutralino100-v2_1', \
        'StoppedGluino400-Neutralino100-v2_1', \
        'StoppedGluino400-Neutralino300-v2_1', \
        'StoppedGluino500-Neutralino300-v2_1', \
-       'StoppedGluino500-Neutralino400-v2_1', \
-       'StoppedGluino600-Neutralino300-v2_1', \
-       'StoppedGluino600-Neutralino500-v2_1' ]
+       'StoppedGluino500-Neutralino400-v2_1']
+
+#       'StoppedGluino600-Neutralino300-v2_1', \
+#       'StoppedGluino600-Neutralino500-v2_1' ]
 
 script = open("tree_mc_361.sh", "w")
 script.write("#!/bin/bash\n")
