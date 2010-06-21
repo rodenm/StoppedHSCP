@@ -5,4 +5,5 @@
 
 <bin name="makeHistograms" file="MakeHistograms.cpp"/>
 
-<bin name="limits" file="Limits.cpp"/>
+<bin name="dijets" file="dijets.cpp"/>
+
