@@ -90,7 +90,8 @@ proxy_server = myproxy.cern.ch\n\
 #se_black_list = \n\
 #se_white_list = \n\
 #ce_black_list = \n\
-ce_white_list = heplnx206.pp.rl.ac.uk,heplnx207.pp.rl.ac.uk\n\
+#ce_white_list = heplnx206.pp.rl.ac.uk,heplnx207.pp.rl.ac.uk\n\
+ce_white_list = ceprod02.hep.ph.ic.ac.uk\n\
 #ce_white_list = lcgce03.phy.bris.ac.uk, lcgce02.phy.bris.ac.uk, lcgce01.phy.bris.ac.uk\n"
 
 # create CRAB file
