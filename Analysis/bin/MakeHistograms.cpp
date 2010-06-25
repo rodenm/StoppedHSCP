@@ -45,6 +45,8 @@ public:
   void loopAll();
   void loopByRun();
 
+  void readDisallowedBXs(unsigned run);
+
   void cutAxisLabels(TH1D* h);
 
 private:
@@ -69,6 +71,7 @@ private:
   TH1D* horb_;
   TH1D* hlb_;
   TH1D* htime_;
+  TH1D* hlblive_;
   TH1D* hl1bits_;
   TH1D* hl1et_;
   TH1D* hl1eta_;
@@ -103,6 +106,12 @@ private:
   TH1D* hr2_old_;
   TH1D* hrpk_old_;
   TH1D* hrout_old_;
+  TH1D* hr1_jetmu_;
+  TH1D* hr2_jetmu_;
+  TH1D* hrpk_jetmu_;
+  TH1D* hrout_jetmu_;
+  TH2D* hr1r2_jetmu_;
+  TH2D* hpkout_jetmu_;
   TH1D* hbxup_;
 
   TH1D* hncutind_;
@@ -140,9 +149,10 @@ void Analysis::bookHistos() {
   // time
   hbx_ = new TH1D("hbx", "BX number", 3564, 0., 3564.);
   horb_ = new TH1D("horb", "Orbit number", 100, 0., 10000.);
-  hlb_ = new TH1D("hlb", "Lumi block", 2000, 0., 2000.);
+  hlb_ = new TH1D("hlb", "Lumi block", 5000, 0., 5000.);
   htime_ = new TH1D("htime", "Event time", 100, 0., 1.E8);
-  
+  hlblive_ = new TH1D("hlblive", "Live lumi blocks", 5000, 0., 5000.);
+ 
   // L1
   hl1bits_ = new TH1D("hl1bits", "L1 trigger bits", 10, 0., 20.);
   hl1et_ = new TH1D("hl1et",  "Leading L1 jet E_{t}", 100, 0., 200.);
@@ -167,8 +177,8 @@ void Analysis::bookHistos() {
   hjeteem_ = new TH1D("hjeteem", "Leading jet ECAL energy", 100, 0., 200.);
   hjetehad_ = new TH1D("hjetehad", "Leading jet HCAL energy", 100, 0., 200.);
   hjetemf_ =  new TH1D("hjetemf", "Leading jet EM fraction", 100, 0., 1.);
-  hjetn60_ = new TH1D("hjetn60", "Leading jet N60", 50, 0., 50.);
-  hjetn90_ = new TH1D("hjetn90", "Leading jet N90", 50, 0., 50.);
+  hjetn60_ = new TH1D("hjetn60", "Leading jet N60", 25, 0., 25.);
+  hjetn90_ = new TH1D("hjetn90", "Leading jet N90", 25, 0., 25.);
   hjetn90hits_ = new TH1D("hjetn90hits", "Leading jet N90 hits", 50, 0., 50.);
   hjetfhpd_ = new TH1D("hjetfhpd", "Leading jet fHPD", 50, 0., 1.);
   
@@ -188,6 +198,14 @@ void Analysis::bookHistos() {
   hr2_old_ = new TH1D("hr2old", "R_{2} old", 50, 0., 1.);
   hrpk_old_ = new TH1D("hrpkold", "R_{peak} old", 50, 0., 1.);
   hrout_old_ = new TH1D("hroutold", "R_{outer} old", 30, 0., 1.);    
+
+  // pulse shapes after jet/mu cuts
+  hr1_jetmu_ = new TH1D("hr1_jetmu", "R_{1}", 50, 0., 1.);
+  hr2_jetmu_ = new TH1D("hr2_jetmu", "R_{2}", 50, 0., 1.);
+  hrpk_jetmu_ = new TH1D("hrpk_jetmu", "R_{peak}", 50, 0., 1.);
+  hrout_jetmu_ = new TH1D("hrout_jetmu", "R_{outer}", 30, 0., 1.);    
+  hr1r2_jetmu_ = new TH2D("hr1r2_jetmu", "R_{1} vs R_{2}", 50, 0., 1., 50, 0., 1.);
+  hpkout_jetmu_ = new TH2D("hpkout_jetmu", "R_{peak} vs R_{outer}", 50, 0., 1., 50, 0., 1.);
   
   // special
   hbxup_ = new TH1D("hbxup", "BX (unpaired bunches)", 3564, 0., 3564.);
@@ -213,8 +231,8 @@ void Analysis::bookHistos() {
   // N-1 histograms
   hnmu_nmo_ = new TH1D("hnmu_nmo", "N muons (N-1)", 4, -0.5, 3.5);;
   hjete_nmo_ = new TH1D("hjete_nmo", "Leading jet energy (N-1)", 50, 0., 200.);
-  hjetn60_nmo_ = new TH1D("hjetn60_nmo", "Leading jet N60 (N-1)", 50, 0., 50.);
-  hjetn90_nmo_ = new TH1D("hjetn90_nmo", "Leading jet N90 (N-1)", 50, 0., 50.);
+  hjetn60_nmo_ = new TH1D("hjetn60_nmo", "Leading jet N60 (N-1)", 25, 0., 25.);
+  hjetn90_nmo_ = new TH1D("hjetn90_nmo", "Leading jet N90 (N-1)", 25, 0., 25.);
   hntowiphi_nmo_ = new TH1D("hntowsameiphi_nmo", "N leading towers at same iphi (N-1)", 20, -0.5, 19.5);
   hr1_nmo_ = new TH1D("hr1_nmo", "R_{1} (N-1)", 50, 0., 1.);
   hr2_nmo_ = new TH1D("hr2_nmo", "R_{2} (N-1)", 50, 0., 1.);
@@ -253,6 +271,7 @@ void Analysis::writeHistos() {
   rateDist(*hlb_, 100);
 
   htime_->Write("",TObject::kOverwrite);
+  hlblive_->Write("",TObject::kOverwrite);
   hl1bits_->Write("",TObject::kOverwrite);
   hl1et_->Write("",TObject::kOverwrite);
   hl1eta_->Write("",TObject::kOverwrite);
@@ -294,6 +313,13 @@ void Analysis::writeHistos() {
     ofile_->cd("Cuts");
   }
 
+  hr1_jetmu_->Write("",TObject::kOverwrite);
+  hr2_jetmu_->Write("",TObject::kOverwrite);
+  hrpk_jetmu_->Write("",TObject::kOverwrite);
+  hrout_jetmu_->Write("",TObject::kOverwrite);
+  hr1r2_jetmu_->Write("",TObject::kOverwrite);
+  hpkout_jetmu_->Write("",TObject::kOverwrite);
+
   hncutind_->Write("",TObject::kOverwrite);
   hncutcum_->Write("",TObject::kOverwrite);
   hnminus1cut_->Write("",TObject::kOverwrite);
@@ -333,6 +359,7 @@ void Analysis::getHistos() {
   horb_ = (TH1D*) ofile_->Get("NoCuts/horb");
   hlb_ = (TH1D*) ofile_->Get("NoCuts/hlb");
   htime_ = (TH1D*) ofile_->Get("NoCuts/htime");
+  hlblive_ = (TH1D*) ofile_->Get("NoCuts/hlblive");
   hl1bits_ = (TH1D*) ofile_->Get("NoCuts/hl1bits");
   hl1et_ = (TH1D*) ofile_->Get("NoCuts/hl1et");
   hl1eta_ = (TH1D*) ofile_->Get("NoCuts/hl1eta");
@@ -368,6 +395,13 @@ void Analysis::getHistos() {
   hrpk_old_ = (TH1D*) ofile_->Get("NoCuts/hrpkold");
   hrout_old_ = (TH1D*) ofile_->Get("NoCuts/hroutold");
   hbxup_ = (TH1D*) ofile_->Get("NoCuts/hbxup");
+
+  hr1_jetmu_ = (TH1D*) ofile_->Get("Cuts/hr1_jetmu");
+  hr2_jetmu_ = (TH1D*) ofile_->Get("Cuts/hr2_jetmu");
+  hrpk_jetmu_ = (TH1D*) ofile_->Get("Cuts/hrpk_jetmu");
+  hrout_jetmu_ = (TH1D*) ofile_->Get("Cuts/hrout_jetmu");
+  hr1r2_jetmu_ = (TH2D*) ofile_->Get("Cuts/hr1r2_jetmu");
+  hpkout_jetmu_ = (TH2D*) ofile_->Get("Cuts/hpkout_jetmu");
   
   // cuts histos
   hncutind_ = (TH1D*) ofile_->Get("Cuts/hncutind");
@@ -412,6 +446,7 @@ void Analysis::deleteHistos() {
     delete horb_;
     delete hlb_;
     delete htime_;
+    delete hlblive_;
     delete hl1bits_;
     delete hl1et_;
     delete hl1eta_;
@@ -447,6 +482,12 @@ void Analysis::deleteHistos() {
     delete hrpk_old_;
     delete hrout_old_;
     delete hbxup_;
+    delete hr1_jetmu_;
+    delete hr2_jetmu_;
+    delete hrpk_jetmu_;
+    delete hrout_jetmu_;
+    delete hr1r2_jetmu_;
+    delete hpkout_jetmu_;
 
     delete hncutind_;
     delete hncutcum_;
@@ -491,6 +532,7 @@ void Analysis::fillHistos(StoppedHSCPTree& tree) {
   horb_->Fill(tree.orbit);
   hlb_->Fill(tree.lb);
   htime_->Fill(tree.time);
+  hlblive_->SetBinContent(tree.lb, 1.);
   hl1bits_->Fill("L1_SingleJet10_NotBptxC", (tree.gtAlgoWord1>>(88-64))&0x1);
   hl1bits_->Fill("L1Tech_BPTX_plus_AND_minus", (tree.gtTechWord)&0x1);
   hl1bits_->Fill("L1_BptxMinus", (tree.gtAlgoWord1>>(81-64))&0x1);
@@ -542,6 +584,17 @@ void Analysis::fillHistos(StoppedHSCPTree& tree) {
   hrpk_old_->Fill(tree.TimingFracInLeader);
   hrout_old_->Fill(1.-tree.TimingFracInCentralFour);
 
+  // plots after jet and mu cuts
+  if (tree.AllCutN(8)) {
+    hr1_->Fill(tree.top5DigiPeakSample);
+    hr1_->Fill(tree.top5DigiR1);
+    hr2_->Fill(tree.top5DigiR2);
+    hrpk_->Fill(tree.top5DigiRPeak);
+    hrout_->Fill(tree.top5DigiROuter);
+    hr1r2_->Fill(tree.top5DigiR1, tree.top5DigiR2);
+    hpkout_->Fill(tree.top5DigiRPeak, tree.top5DigiROuter);
+  }
+  
   if ( ((tree.gtAlgoWord1>>(80-64))&0x1)>0 || ((tree.gtAlgoWord1>>(81-64))&0x1)>0) {
     hbxup_->Fill(tree.bx);
   }
@@ -583,16 +636,16 @@ void Analysis::fillHistos(StoppedHSCPTree& tree) {
     if (!hcalfail) hhcalcutcum_->Fill(c);  
   }
 
-  if (tree.CutNMinusOne(7)) hntowiphi_nmo_->Fill(tree.nTowerSameiPhi);
-  if (tree.CutNMinusOne(2)) hnmu_nmo_->Fill(tree.mu_N);
-  if (tree.CutNMinusOne(8)) hr1_nmo_->Fill(tree.top5DigiR1);
-  if (tree.CutNMinusOne(9)) hr2_nmo_->Fill(tree.top5DigiR2);
-  if (tree.CutNMinusOne(10)) hrpk_nmo_->Fill(tree.top5DigiRPeak);
-  if (tree.CutNMinusOne(11)) hrout_nmo_->Fill(tree.top5DigiROuter);
+  if (tree.CutNMinusOne(8)) hntowiphi_nmo_->Fill(tree.nTowerSameiPhi);
+  if (tree.CutNMinusOne(3)) hnmu_nmo_->Fill(tree.mu_N);
+  if (tree.CutNMinusOne(9)) hr1_nmo_->Fill(tree.top5DigiR1);
+  if (tree.CutNMinusOne(10)) hr2_nmo_->Fill(tree.top5DigiR2);
+  if (tree.CutNMinusOne(11)) hrpk_nmo_->Fill(tree.top5DigiRPeak);
+  if (tree.CutNMinusOne(12)) hrout_nmo_->Fill(tree.top5DigiROuter);
   if (tree.jet_N > 0) {
-    if (tree.CutNMinusOne(4)) hjete_nmo_->Fill(tree.jetE.at(0));
-    if (tree.CutNMinusOne(5)) hjetn60_nmo_->Fill(tree.jetN60.at(0));
-    if (tree.CutNMinusOne(6)) hjetn90_nmo_->Fill(tree.jetN90.at(0));
+    if (tree.CutNMinusOne(5)) hjete_nmo_->Fill(tree.jetE.at(0));
+    if (tree.CutNMinusOne(6)) hjetn60_nmo_->Fill(tree.jetN60.at(0));
+    if (tree.CutNMinusOne(7)) hjetn90_nmo_->Fill(tree.jetN90.at(0));
     if (tree.Cut()) hjetemf_nmo_->Fill(tree.jetEEm.at(0)/tree.jetE.at(0));
   }
 
@@ -691,11 +744,6 @@ void Analysis::loopAll() {
     fillHistos(*tree_);
     nevts++;
 
-    if (dumpEvents_ && tree_->Cut()) {
-      eventInfoFile_ << tree_->run << ", " << tree_->lb << ", " << tree_->orbit << ", " << tree_->bx << ", " << tree_->id << std::endl;
-      tree_->PrintCutValues(fullDumpFile_);
-    }
-    
   }
 
   saveHistos();
@@ -734,6 +782,7 @@ void Analysis::loopByRun() {
       std::cout << "First run " << thisRun << std::endl;
       currentRun_ = thisRun;
       newHistos(thisRun);
+      readDisallowedBXs(thisRun);
     }
 
     // or if the run changed
@@ -749,12 +798,18 @@ void Analysis::loopByRun() {
       nevts=0;
       currentRun_ = thisRun;
       newHistos(thisRun);
+      readDisallowedBXs(thisRun);
 
     }
 
     // otherwise just fill the histograms
     fillHistos(*tree_);
     nevts++;
+
+    if (dumpEvents_ && tree_->Cut()) {
+      eventInfoFile_ << tree_->run << ", " << tree_->lb << ", " << tree_->orbit << ", " << tree_->bx << ", " << tree_->id << std::endl;
+      tree_->PrintCutValues(fullDumpFile_);
+    }
     
   }
 
@@ -770,6 +825,40 @@ void Analysis::cutAxisLabels(TH1D* h) {
 
 }
 
+
+void Analysis::readDisallowedBXs(unsigned run) {
+
+  std::vector<unsigned> bxs;
+
+  // open file
+  std::string bxfname("bx_mask.csv");
+  std::ifstream bxfile(bxfname.c_str(), ifstream::in);
+
+  // read lines until we find the current run
+  std::string line;
+  if (!bxfile.fail()) {
+    while (!bxfile.eof()) {
+      getline(bxfile, line);
+      std::vector<std::string> strs;
+      boost::split(strs, line, boost::is_any_of(","));
+      
+      if (run==atoi(strs.at(0).c_str())) {
+	
+	// read BXs to mask from the rest of the line
+	std::cout << "Ignoring BX : ";
+	for (unsigned i=1; i<strs.size(); ++i) {
+	  bxs.push_back(atoi(strs.at(i).c_str()));
+	  std::cout << strs.at(i) << " ";
+	}
+	std::cout << std::endl;
+      }
+    }
+  }
+
+  // set mask in the tree
+  tree_->SetDisallowedBXs(bxs);
+
+}
 
 Analysis::Analysis(const char* filename, const char* outdir, unsigned nlimit, bool dump, bool isMC) :
   file_(filename), 
@@ -789,9 +878,8 @@ Analysis::Analysis(const char* filename, const char* outdir, unsigned nlimit, bo
   fullDumpFile_ << "Cut variables for events passing all cuts" << std::endl << std::endl;
   
   std::string ei(outdir);
-  ei+="/eventInfo.log";
+  ei+="/eventList.log";
   eventInfoFile_.open(ei.c_str());
-  eventInfoFile_ << "Events passing all cuts : run, lumi, orbit, bx, event" << std::endl << std::endl;
   
   std::string sum(outdir);
   sum+="/summary.log";
@@ -800,24 +888,9 @@ Analysis::Analysis(const char* filename, const char* outdir, unsigned nlimit, bo
   nCuts_ = 13;
   nHcalCuts_ = 12;
 
-  // read in list of unallowed BXs
-  std::vector<unsigned> bxs;
-  std::ifstream bxfile("bxfile.csv");
-  std::string line;
-  getline(bxfile, line);
-  std::vector<std::string> strs;
-  boost::split(strs, line, boost::is_any_of(","));
-
-  std::cout << "Ignoring BX : ";
-  for (unsigned i=0; i<strs.size(); ++i) {
-    bxs.push_back(atoi(strs.at(i).c_str()));
-    std::cout << strs.at(i) << " ";
-  }
-  std::cout << std::endl;
-
   // open file and get tree
   //  ttree_ = (TTree*) file_.Get("stoppedHSCPTree/StoppedHSCPTree");
-  tree_ = new StoppedHSCPTree(&file_, isMC, bxs);
+  tree_ = new StoppedHSCPTree(&file_, isMC);
 
 }
 

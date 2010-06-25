@@ -488,8 +488,8 @@ public :
    bool           isMC_;
    std::vector<unsigned> disallowedBXs_;
 
-   StoppedHSCPTree(TFile* file, bool isMC, std::vector<unsigned> disallowedBXs_);
-   StoppedHSCPTree(TTree *tree, bool isMC, std::vector<unsigned> disallowedBXs_);
+   StoppedHSCPTree(TFile* file, bool isMC);
+   StoppedHSCPTree(TTree *tree, bool isMC);
    virtual ~StoppedHSCPTree();
    virtual bool     Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
@@ -499,18 +499,20 @@ public :
    virtual void     Show(Long64_t entry = -1);
    virtual unsigned NCuts();
    virtual bool     CutN(unsigned n);
+   virtual bool     AllCutN(unsigned n);
    virtual const char*    CutName(unsigned n);
    virtual bool     CutNMinusOne(unsigned n);
    virtual bool     OldCutN(unsigned n);
    virtual bool     StdHcalCutN(unsigned n);
    virtual void     PrintCutValues(ostream& o);
+   virtual void     SetDisallowedBXs(std::vector<unsigned> bxs);
    virtual bool     InDisallowedBX();
 };
 
-StoppedHSCPTree::StoppedHSCPTree(TFile* file, bool isMC, std::vector<unsigned> disallowedBX) :
+StoppedHSCPTree::StoppedHSCPTree(TFile* file, bool isMC) :
   oldTreePresent(false),
   isMC_(isMC),
-  disallowedBXs_(disallowedBX)
+  disallowedBXs_(0)
 {
 
   // open file and get tree
@@ -528,9 +530,9 @@ StoppedHSCPTree::StoppedHSCPTree(TFile* file, bool isMC, std::vector<unsigned> d
 
 }
 
-StoppedHSCPTree::StoppedHSCPTree(TTree *tree, bool isMC, std::vector<unsigned> disallowedBX) :
+StoppedHSCPTree::StoppedHSCPTree(TTree *tree, bool isMC) :
   isMC_(isMC),
-  disallowedBXs_(disallowedBX)
+  disallowedBXs_(0)
 {
    Init(tree);
 }
@@ -844,7 +846,7 @@ bool StoppedHSCPTree::CutN(unsigned n)
   
   switch (n) {
   case 0:
-    return (hltBit==1);
+    return !isMC_ || (((gtAlgoWord0>>16)&1 == 1) && (hltJet_N>0) && (hltJetE[0]> 20.) && (hltJetEta[0]<1.3));
   case 1:
     return isMC_ || ! InDisallowedBX();
   case 2:
@@ -876,6 +878,16 @@ bool StoppedHSCPTree::CutN(unsigned n)
     
   }
 
+}
+
+
+bool StoppedHSCPTree::AllCutN(unsigned n)
+{
+  bool pass=true;
+  for (unsigned i=0; i<n; ++i) {
+    pass &= CutN(i);
+  }
+  return pass;
 }
 
 
@@ -1045,6 +1057,10 @@ bool StoppedHSCPTree::InDisallowedBX() {
     passed |= (bx==disallowedBXs_.at(i));
   }
   return passed;
+}
+
+void StoppedHSCPTree::SetDisallowedBXs(std::vector<unsigned> bxs) {
+  disallowedBXs_ = bxs;
 }
 
 #endif
