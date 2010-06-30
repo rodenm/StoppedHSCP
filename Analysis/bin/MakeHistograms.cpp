@@ -842,7 +842,7 @@ void Analysis::readDisallowedBXs(unsigned run) {
       std::vector<std::string> strs;
       boost::split(strs, line, boost::is_any_of(","));
       
-      if (run==atoi(strs.at(0).c_str())) {
+      if (run==(unsigned)atoi(strs.at(0).c_str())) {
 	
 	// read BXs to mask from the rest of the line
 	std::cout << "Ignoring BX : ";
