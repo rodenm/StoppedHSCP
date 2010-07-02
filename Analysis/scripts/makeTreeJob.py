@@ -7,27 +7,31 @@ import sys
 import getopt
 
 def usage():
-    print "makeTreeJob.py [-hjl] <era> <label> <dataset> <global tag> <runs>"
+    print "makeTreeJob.py [-hjlc] <era> <label> <dataset> <global tag> <runs>"
     print " Options   :"
     print "   -h      : print this message"
     print "   -l      : use local DBS"
     print "   -j      : use JSON file of good LS"
+    print "   -c      : use CAF"
     print
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "hjl")
+    opts, args = getopt.getopt(sys.argv[1:], "hjlc")
 except getopt.GetoptError:
     usage()
     sys.exit(2)
 
 useLocalDBS = False;
 useJSON = False;
+useCAF = False;
 
 for opt, arg in opts:
     if opt=='-l':
         useLocalDBS=True
     if opt=='-j':
         useJSON = True;
+    if opt=='-c':
+        useCAF = True;
     if opt=='-h':
         usage()
         sys.exit()
@@ -42,6 +46,7 @@ label = args[1]
 dataset = args[2]
 gtag = args[3]
 runs = args[4]
+jsonfile = args[4]
     
 
 # create CRAB variables
@@ -55,22 +60,28 @@ if (useLocalDBS):
     dbsStr = "dbs_url=http://cmsdbsprod.cern.ch/cms_dbs_ph_analysis_02/servlet/DBSServlet"
 
 runStr = ""
-if (runs!="0"):
+if (runs!="0" and not useJSON):
     runStr = "runselection="+runs
 
 evtStr = ""
 if (useJSON):
-    evtStr = "lumi_mask=jsonls.txt\n\
+    evtStr = "lumi_mask="+jsonfile+"\n\
 total_number_of_lumis = 100000\n\
 lumis_per_job = 500\n"
 else :
     evtStr = "total_number_of_events=-1\n\
 events_per_job=100000\n"
 
+scheduler = "glite"
+storage = "T2_UK_SGrid_RALPP"
+if (useCAF):
+    scheduler = "caf"
+    storage = "T2_CH_CAF"
+
 string = "[CRAB]\n\
 jobtype = cmssw\n\
-scheduler = glite\n\
-use_server = 1\n\
+scheduler = "+scheduler+"\n\
+#use_server = 1\n\
 [CMSSW]\n\
 pset="+jobStr+"\n\
 output_file = stoppedHSCPTree.root\n\
@@ -81,13 +92,17 @@ datasetpath="+dataset+"\n\
 [USER]\n\
 return_data = 0\n\
 copy_data = 1\n\
-storage_element = T2_UK_SGrid_RALPP\n\
+storage_element = "+storage+"\n\
 user_remote_dir = "+dirStr+"\n\
 ui_working_dir  = "+dirStr+"\n\
 [GRID]\n\
 rb = CERN\n\
-proxy_server = myproxy.cern.ch\n\
-#se_black_list = \n\
+proxy_server = myproxy.cern.ch"
+
+if (useCAF):
+    string += "queue = cmscaf1nd"
+else:
+    string += "#se_black_list = \n\
 #se_white_list = \n\
 #ce_black_list = \n\
 ce_white_list = heplnx206.pp.rl.ac.uk,heplnx207.pp.rl.ac.uk\n\
@@ -102,7 +117,7 @@ crab.close()
 # create CMSSW variables
 cmsswStr="import FWCore.ParameterSet.Config as cms\n\
 \n\
-from StoppedHSCP.Analysis.stoppedHSCPTree_cfg import *\n\
+from StoppedHSCP.Analysis.stoppedHSCPTree_cleaned_cfg import *\n\
 \n\
 process.MessageLogger.cerr.threshold = ''\n\
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000\n\
