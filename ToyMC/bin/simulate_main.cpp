@@ -18,12 +18,12 @@ int main() {
   // global parameters
   //  e->beamOffTime = 12*3600;
   //e->beamOnTime  = 12*3600;
-  e->bxStruct    = 3;
+  e->bxStruct    = 8;
   //e->lumi        = 1e32;
   e->runningTime = 7;
   //  e->lookwhere   = e->BOTH;
   e->lookwhere   = e->BEAMGAP;
-  e->bgRate      = 0.000114;
+  e->bgRate      = 0.000103;
   e->errBgRate   = 0.000025;
   e->scale       = 1e8;
   e->bgScale     = 1e6;
@@ -64,25 +64,44 @@ int main() {
       // 8
       */ 
       
-      5e-8,
-      1e-7,
-      2e-7,
+      5.e-8,
+      1.e-7,
+      2.e-7,
+      5.e-7,
+      7.e-7,
       1.e-6,
-      1e-5,
+      2.73e-6,
+      2.77e-6,
+      5.06e-6,
+      5.1e-6,
+      1.e-5,
+      1.152e-5,
+      1.156e-5,
+      1.761e-5,
+      1.765e-5,
+      2.e-5,
+      3.e-5,
+      4.e-5,
+      5.e-5,
+      7.e-5,
+      1.e-4,
+      2.e-4,
+      5.e-4,
+      7.e-4,
       1.e-3,
-      1,
-      5e2,
-      2e3,
+      5.e2,
+      1.e3,
+      2.e3,
       3600.,
-      6e3,
-      1e4,
-      2e4,
-      3e4,
-      5e4,
-      1e5,
-      3e5,
-      1e6,
-      1e7
+      6.e3,
+      1.e4,
+      2.e4,
+      3.e4,
+      5.e4,
+      1.e5,
+      3.e5,
+      1.e6,
+      1.e7
       //19
     };
 
@@ -103,7 +122,7 @@ int main() {
     //e->mass = mass[j];
     //e->signalEff = efficiencies[j];
     e->runningTime = runtimes[j];
-    for (int i = 0; i < 19; i++)
+    for (int i = 0; i < 38; i++)
       {
 	e->lifetime = lifetimes[i];
 	//	if (i == 5) e->sendToLifetimeFit = true;

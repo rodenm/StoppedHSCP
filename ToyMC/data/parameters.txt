@@ -1,0 +1,12 @@
+bxStruct	3
+runningTime	7
+lookwhere	BEAMGAP
+bgRate		0.000114
+errBgRate	0.000025
+scale		1e7
+bgScale		1e5
+optimizeTimeCut	true
+crossSection	.375e-33
+mass		200
+signalEff	0.033652
+lifetime	1
