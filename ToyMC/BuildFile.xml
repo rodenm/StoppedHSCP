@@ -1,0 +1,10 @@
+<use name="root"/>
+<use name="roofit"/>
+<use name="roostats"/>
+
+<export>
+  <use name="root"/>
+  <use name="roofit"/>
+  <use name="roostats"/>
+  <lib name="StoppedHSCPToyMC"/>
+</export>
