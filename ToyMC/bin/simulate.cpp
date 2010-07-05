@@ -4,6 +4,8 @@
 #include <stdexcept>
 #include "Simulator.h"
 
+// read parameters from a file, then 
+
 int main() {
 
   Experiment *e = new Experiment;
