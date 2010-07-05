@@ -1,7 +1,9 @@
 import re
 import os
 
-# generate input files for many simulation jobs
+# generate input files to simulate multiple lifetimes
+
+
 
 # read lifetimes from lifetime file
 lifetimes = []
