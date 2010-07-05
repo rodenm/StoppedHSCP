@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.33 2010/05/27 12:58:17 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.34 2010/05/30 22:13:51 jbrooke Exp $
 //
 //
 
@@ -188,6 +188,7 @@ private:
   edm::InputTag cosmicMuonTag_;
   edm::InputTag caloTowerTag_;
   edm::InputTag hcalNoiseTag_;
+  edm::InputTag hcalNoiseFilterResultTag_;
   edm::InputTag rbxTag_;
   edm::InputTag hpdTag_;
   edm::InputTag hcalDigiTag_;
@@ -247,6 +248,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   cosmicMuonTag_(iConfig.getUntrackedParameter<edm::InputTag>("cosmicMuonTag",edm::InputTag("muonsFromCosmics"))),
   caloTowerTag_(iConfig.getUntrackedParameter<edm::InputTag>("caloTowerTag",edm::InputTag("towerMaker"))),
   hcalNoiseTag_(iConfig.getUntrackedParameter<edm::InputTag>("hcalNoiseTag",edm::InputTag("hcalnoise"))),
+  hcalNoiseFilterResultTag_(iConfig.getUntrackedParameter<edm::InputTag>("hcalNoiseFilterResultTag",edm::InputTag("HBHENoiseFilterResultProducer"))),
   rbxTag_(iConfig.getUntrackedParameter<edm::InputTag>("rbxTag",edm::InputTag("hcalnoise"))),
   hpdTag_(iConfig.getUntrackedParameter<edm::InputTag>("hpdTag",edm::InputTag("hcalnoise"))),
   hcalDigiTag_(iConfig.getUntrackedParameter<edm::InputTag>("hcalDigiTag",edm::InputTag(""))),
@@ -781,6 +783,17 @@ void StoppedHSCPTreeProducer::doHcalNoise(const edm::Event& iEvent) {
   else {
     if (!noiseSumMissing_) edm::LogWarning("MissingProduct") << "HCALNoiseSummary not found.  Branch will not be filled" << std::endl;
     noiseSumMissing_ = true;
+  }
+
+  // get noise filter flag
+  edm::Handle<bool> flag;
+  iEvent.getByLabel(hcalNoiseFilterResultTag_,flag);
+
+  if (flag.isValid()) {
+    event_->noiseFilterResult = flag.product();
+  }
+  else {
+    std::cout << "No HBHE filter flag in Event" << std::endl;
   }
 
 

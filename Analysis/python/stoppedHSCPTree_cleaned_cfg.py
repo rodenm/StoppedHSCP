@@ -132,11 +132,19 @@ process.ntuple = cms.Path(
     +process.l1extraParticles
     
 # filter HCAL noise
-    +process.HBHENoiseFilter
+#    +process.HBHENoiseFilter
 
 # generate TTree    
     +process.stoppedHSCPTree
 )
+
+#process.output = cms.OutputModule("PoolOutputModule",
+#    outputCommands = cms.untracked.vstring('keep *'),
+#    fileName = cms.untracked.string('test.root'),
+#)
+#process.out = cms.EndPath(process.output)
+
+
 
 # re-reco for MET cleaning
 process.rereco_step = cms.Path(

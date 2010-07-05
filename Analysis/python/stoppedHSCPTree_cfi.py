@@ -28,6 +28,7 @@ stoppedHSCPTree = cms.EDAnalyzer(
     
     # HCAL digis/noise
     hcalNoiseTag = cms.untracked.InputTag("hcalnoise"),
+    hcalNoiseFilterResultTag = cms.untracked.InputTag("HBHENoiseFilterResultProducer:HBHENoiseFilterResult"),
     rbxTag = cms.untracked.InputTag("hcalnoise"),
     hpdTag = cms.untracked.InputTag("hcalnoise"),
     hcalDigiTag = cms.untracked.InputTag("hcalDigis"),

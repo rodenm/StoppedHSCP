@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.20 2010/04/28 11:20:16 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.21 2010/05/30 22:13:51 jbrooke Exp $
 //
 //
 
@@ -291,6 +291,7 @@ class StoppedHSCPEvent : public TObject {
   double noiseMin25GeVHitTime;
   double noiseMax25GeVHitTime;
   double noiseMinRBXEMF;
+  bool noiseFilterResult;
 
   // HPDs identified by noise summary algos
   unsigned hpd_N;

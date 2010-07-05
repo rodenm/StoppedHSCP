@@ -3,7 +3,7 @@
 # LM: version date: 01/02/2010 --> fixed dataset search and added json output file (optional)
 # LM: updated 03/04/2010 --> adapted to new runreg api (and dcs status info)
 # LM: updated 15/04/2010 --> added bfield threshold
-# LM: updated 30/04/2010 --> added Energy range selection
+# LM: updated 3/05/2010 --> added Energy range selection,Lumi quality flags and DBS cross check
 
 # include XML-RPC client library
 # RR API uses XML-RPC webservices interface for data access
@@ -125,62 +125,96 @@ def searchrun(runno):
     return intervallist
 
 
+#def ene_in_run(LISTOFRUN):
+
 # needed by ene_in_run
 global RUNMIN,RUNMAX,BFIELD
-
-def ene_in_run(LISTOFRUN):
+def ene_in_run(run_data):
     global RUNMIN,RUNMAX,BFIELD
     BEAM_ENE_ALL=[450.0,3500.0]
     BEAM_ENE_DEF=3500.0
-
     ene_map={}
-    print "Running the xml retriever for energy map."
-    RRserver = xmlrpclib.ServerProxy('http://pccmsdqm04.cern.ch/runregistry/xmlrpc')
-    selection="{groupName} ='Collisions10' and {runNumber} >= "+RUNMIN+" and {runNumber} <= "+RUNMAX+" and {bfield}>"+BFIELD+" and {datasetName} LIKE '%Express%'"
-    XMLALL = RRserver.DataExporter.export('RUN', 'GLOBAL', 'xml_all', selection)
-#    print XMLALL
-    doc = xml.dom.minidom.parseString(XMLALL)
-    run_list = doc.getElementsByTagName('RUN')
-#    print run_list
-    for domrun in run_list:
-        runid= domrun.attributes["id"].value
-        runno= domrun.getElementsByTagName('NUMBER')[0].firstChild.data
-        if runno not in LISTOFRUN:
-            continue
-        command='wget "http://pccmsdqm04.cern.ch/runregistry/beamStatusTable.jsp?runid='+runid+'" -O - -o /dev/null'
-#        print command
-        table_orig=commands.getoutput(command)
-        table=""
-        #cleanup table removing comment lines (often with strange characters)
-        for line in table_orig.split("\n"):
-            if "Comments" not in line:
-                table+=line+"\n"
-
-#        print table
-        # now parse table
-        xmltable = xml.dom.minidom.parseString(table)
-#       print xmltable
-        rows=xmltable.getElementsByTagName('tr')
-        cols=rows[1].getElementsByTagName('td')
-        energy=str(cols[1].firstChild.data)
-        fill=str(cols[2].firstChild.data)
-#        print runid,runno,energy,fill
-        mindiff=999999.
-        for be in BEAM_ENE_ALL:
-            if abs(float(energy)-be)<mindiff:
-                mindiff=abs(float(energy)-be)
-        if mindiff>500.0:
-            print "WARNING: Something wrong with energies in run "+runno
-            print "WARNING: Getting: "+energy+" from RR.Using default value of:"+str(BEAM_ENE_DEF)
-            energy=str(BEAM_ENE_DEF)
-        ene_map[str(runno)]=float(energy)
-        # check that all runs are there and in case use default energy
-    for run in LISTOFRUN:
-        if run not in ene_map.keys():
-            print "WARNING: run "+run+" not found in RR energy map, using default energy for it."
-            ene_map[str(runno)]=BEAM_ENE_DEF
+    print "Retrieving energy from the RR run tabel and making some check...."
+    for line in run_data.split("\n"):
+#        print line
+        run=line.split(',')[0]
+        if run.isdigit():
+            # we need to do something to avoid parsing commas in comment column
+            group=line.split('",')[8]
+            energy=group.split(',')[0]
+#            print run,line,group,energy
+#            fill=group.split(',')[1]
+#            print run,energy,fill
+            mindiff=999999.
+            if energy.isdigit():
+                for be in BEAM_ENE_ALL:
+                    if abs(float(energy)-be)<mindiff:
+                        mindiff=abs(float(energy)-be)
+            if mindiff>500.0:
+                print "WARNING: Something wrong with energies in run "+run
+                print "WARNING: Getting: "+energy+" from RR.Using default value of:"+str(BEAM_ENE_DEF)
+                energy=str(BEAM_ENE_DEF)
+            ene_map[run]=float(energy)
 
     return ene_map
+
+
+
+
+# this is not used anymore
+#def ene_in_run_old(LISTOFRUN):
+#    global RUNMIN,RUNMAX,BFIELD
+#    BEAM_ENE_ALL=[450.0,3500.0]
+#    BEAM_ENE_DEF=3500.0
+#
+#    ene_map={}
+#    print "Running the xml retriever for energy map."
+#    RRserver = xmlrpclib.ServerProxy('http://pccmsdqm04.cern.ch/runregistry/xmlrpc')
+#    selection="{groupName} ='Collisions10' and {runNumber} >= "+RUNMIN+" and {runNumber} <= "+RUNMAX+" and {bfield}>"+BFIELD+" and {datasetName} LIKE '%Express%'"
+#    XMLALL = RRserver.DataExporter.export('RUN', 'GLOBAL', 'xml_all', selection)
+##    print XMLALL
+#    doc = xml.dom.minidom.parseString(XMLALL)
+#    run_list = doc.getElementsByTagName('RUN')
+##    print run_list
+#    for domrun in run_list:
+#        runid= domrun.attributes["id"].value
+#        runno= domrun.getElementsByTagName('NUMBER')[0].firstChild.data
+#        if runno not in LISTOFRUN:
+#            continue
+#        command='wget "http://pccmsdqm04.cern.ch/runregistry/beamStatusTable.jsp?runid='+runid+'" -O - -o /dev/null'
+##        print command
+#        table_orig=commands.getoutput(command)
+#        table=""
+#        #cleanup table removing comment lines (often with strange characters)
+#        for line in table_orig.split("\n"):
+#            if "Comments" not in line:
+#                table+=line+"\n"
+#
+##        print table
+#        # now parse table
+#        xmltable = xml.dom.minidom.parseString(table)
+##       print xmltable
+#        rows=xmltable.getElementsByTagName('tr')
+#        cols=rows[1].getElementsByTagName('td')
+#        energy=str(cols[1].firstChild.data)
+#        fill=str(cols[2].firstChild.data)
+##        print runid,runno,energy,fill
+#        mindiff=999999.
+#        for be in BEAM_ENE_ALL:
+#            if abs(float(energy)-be)<mindiff:
+#                mindiff=abs(float(energy)-be)
+#        if mindiff>500.0:
+#            print "WARNING: Something wrong with energies in run "+runno
+#            print "WARNING: Getting: "+energy+" from RR.Using default value of:"+str(BEAM_ENE_DEF)
+#            energy=str(BEAM_ENE_DEF)
+#        ene_map[str(runno)]=float(energy)
+#        # check that all runs are there and in case use default energy
+#    for run in LISTOFRUN:
+#        if run not in ene_map.keys():
+#            print "WARNING: run "+run+" not found in RR energy map, using default energy for it."
+#            ene_map[str(runno)]=BEAM_ENE_DEF
+#
+#    return ene_map
 
 # in order to get dbsjson files
 global DBS_PDS
@@ -255,7 +289,11 @@ QF_ALL_STAT=["GOOD","BAD","EXCL","NONE"]
 DCS_ALL=['Bpix','Fpix','Tibtid','TecM','TecP','Tob','Ebminus','Ebplus','EeMinus','EePlus','EsMinus','EsPlus','HbheA','HbheB','HbheC','H0','Hf','Dtminus','Dtplus','Dt0','CscMinus','CscPlus','Rpc','Castor',"NONE"]
 
 # reading config file
-CONFIGFILE='runreg.cfg'
+if len(sys.argv)==2:
+    CONFIGFILE=sys.argv[1]
+else:
+    CONFIGFILE='runreg.cfg'
+
 CONFIG = ConfigParser.ConfigParser()
 print 'Reading configuration file from ',CONFIGFILE
 CONFIG.read(CONFIGFILE)
@@ -397,6 +435,8 @@ if Tries==10:
 #print run_data
 #print ls_temp_data
 # find LS info in comment
+#print run_data
+#sys.exit(1)
 
 LISTOFRUN=[]
 for line in run_data.split("\n"):
@@ -409,7 +449,8 @@ for line in run_data.split("\n"):
 #print LISTOFRUN
 if BEAMENE!="-1":
     print "Building up beam energy per run info... please wait it can be long"
-    energies=ene_in_run(LISTOFRUN)
+#    energies=ene_in_run_old(LISTOFRUN)
+    energies=ene_in_run(run_data)
     for run in energies.keys():
         if abs(energies[run]-float(BEAMENE))>500.0:
             LISTOFRUN.remove(run)
@@ -428,6 +469,7 @@ jsonlist=json.loads(dcs_data)
 for element in jsonlist:
     if element in LISTOFRUN:
 # first search manual ls certification
+# this part really performs the run selection        
         if LSCOMMENT:
             # using LS intervals in comment
             manualbad_int=searchrun(element)
