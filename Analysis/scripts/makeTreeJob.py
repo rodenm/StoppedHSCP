@@ -7,31 +7,35 @@ import sys
 import getopt
 
 def usage():
-    print "makeTreeJob.py [-hjlc] <era> <label> <dataset> <global tag> <runs>"
+    print "makeTreeJob.py [-hjlcm] <era> <label> <dataset> <global tag> <runlist|JSON file>"
     print " Options   :"
-    print "   -h      : print this message"
-    print "   -l      : use local DBS"
-    print "   -j      : use JSON file of good LS"
+    print "   -h      : prints this message"
+    print "   -l      : use local DBS (http://cmsdbsprod.cern.ch/cms_dbs_ph_analysis_02/servlet/DBSServlet)"
+    print "   -j      : use JSON file to run on good LS"
     print "   -c      : use CAF"
+    print "   -m      : run on MC sample"
     print
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "hjlc")
+    opts, args = getopt.getopt(sys.argv[1:], "hjlcm")
 except getopt.GetoptError:
     usage()
     sys.exit(2)
 
-useLocalDBS = False;
-useJSON = False;
-useCAF = False;
+useLocalDBS = False
+useJSON = False
+useCAF = False
+useMC = False
 
 for opt, arg in opts:
     if opt=='-l':
         useLocalDBS=True
     if opt=='-j':
-        useJSON = True;
+        useJSON = True
     if opt=='-c':
-        useCAF = True;
+        useCAF = True
+    if opt=='-m':
+        useMC = True
     if opt=='-h':
         usage()
         sys.exit()
@@ -47,7 +51,7 @@ dataset = args[2]
 gtag = args[3]
 runs = args[4]
 jsonfile = args[4]
-    
+
 
 # create CRAB variables
 name = era + "_" + label
@@ -125,6 +129,14 @@ process.GlobalTag.globaltag = '"+gtag+"'\n\
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )\n\
 readFiles.extend( [\n\
 ] )\n\
+"
+if useMC:
+    cmsswStr+="\n\
+process.gctDigis.inputLabel = 'rawDataCollector' \n\
+process.gtDigis.DaqGtInputTag = 'rawDataCollector' \n\
+process.hcalDigis.InputLabel = 'rawDataCollector' \n\
+process.ntuple.remove(process.hltHighLevel) \n\
+\n\
 "
 
 # create CMSSW config
