@@ -7,11 +7,14 @@
 #include <iostream>
 #include <stdlib.h>
 #include "TMath.h"
+#include "TRandom2.h"
 #include "TF1.h"
+#include "TH2D.h"
 #include "TArrow.h"
 #include "TCanvas.h"
 #include "Math/ProbFuncMathCore.h"
 #include "Math/PdfFuncMathCore.h"
+#include "Math/QuantFuncMathCore.h"
 
 using namespace std;
 
@@ -307,12 +310,12 @@ double getQuantile (double fProbability,
   // get integral
   double integral = 0;
   for (unsigned i = 0; i < weights.size(); ++i) integral += weights[i];
-//    double mysum = 0;
-//    for (unsigned i = 0; i < weights.size(); ++i) {
-//      cout << "data: " << i << ' ' << limits[i] 
-//  	 << ' ' << weights[i]/integral 
-//  	 << ' ' << (mysum+=weights[i]/integral) << endl;
-//    }
+//     double mysum = 0;
+//     for (unsigned i = 0; i < weights.size(); ++i) {
+//       cout << "data: " << i << ' ' << limits[i] 
+//   	 << ' ' << weights[i]/integral 
+//   	 << ' ' << (mysum+=weights[i]/integral) << endl;
+//     }
 
   // search for quantile
   double target = integral * fProbability;
@@ -333,6 +336,7 @@ double getQuantile (double fProbability,
 
 std::vector<double> CLA(Double_t ilum, Double_t slum, Double_t eff, Double_t seff, Double_t bck, Double_t sbck, Int_t bckint)
 {
+  double smearing = 1.;
    plot = kFALSE;
    std::vector <int> vObserved;
    std::vector <double> vWeight;
@@ -340,20 +344,42 @@ std::vector<double> CLA(Double_t ilum, Double_t slum, Double_t eff, Double_t sef
    int maxNegBckg = int(floor(bck));
    double precision = 1.e-3*Poisson(bck,maxNegBckg);
    double sumAll = 0;
+   int nSampling = 100;
+   double dSumpling = 5*sbck/nSampling;
 
    for (int i = maxNegBckg; i >= 0; --i) {
      Double_t s95 = CL95(ilum, slum, eff, seff, bck, sbck, i, kFALSE, bckint);
      vObserved.push_back (i);
-     vWeight.push_back (Poisson (bck,i));
      vLimit.push_back (s95);
+     vWeight.push_back (0);
+     int iSample = nSampling;
+     while (--iSample >= 0) {
+       for (int iSide = -1; iSide <= 1; iSide+=2) {
+	 double sampledBkg = bck + smearing*iSide*(iSample+0.5)*dSumpling;
+	 if (sampledBkg < 0) continue;
+	 double bkgWeight = ROOT::Math::normal_pdf(sampledBkg, sbck, bck)*ROOT::Math::poisson_pdf (i, sampledBkg);
+	 //       std::cout << "sampledBkg/bkgWeight: " << sampledBkg << '/' << bkgWeight << ' ' << i << std::endl;
+	 vWeight.back() += bkgWeight;
+       }
+     }
      sumAll += vWeight.back()*vLimit.back();
      if (vWeight.back() < precision) break;
    }
    for (int i = maxNegBckg+1; ; ++i) {
      Double_t s95 = CL95(ilum, slum, eff, seff, bck, sbck, i, kFALSE, bckint);
      vObserved.push_back (i);
-     vWeight.push_back (Poisson (bck,i));
      vLimit.push_back (s95);
+     vWeight.push_back (0);
+     int iSample = nSampling;
+     while (--iSample >= 0) {
+       for (int iSide = -1; iSide <= 1; iSide+=2) {
+	 double sampledBkg = bck + smearing*iSide*(iSample+0.5)*dSumpling;
+	 if (sampledBkg < 0) continue;
+	 double bkgWeight = ROOT::Math::normal_pdf(sampledBkg, sbck, bck)*ROOT::Math::poisson_pdf (i, sampledBkg);
+	 //       std::cout << "sampledBkg/bkgWeight: " << sampledBkg << '/' << bkgWeight << ' ' << i << std::endl;
+	 vWeight.back() += bkgWeight;
+       }
+     }
      sumAll += vWeight.back()*vLimit.back();
      if (vWeight.back() < precision) break;
    }
@@ -391,4 +417,87 @@ std::vector<double> CLA(Double_t ilum, Double_t slum, Double_t eff, Double_t sef
    result.push_back(mean-2*msigma);
    result.push_back(mean+2*psigma);
    return result;
+}
+
+double poissonMeanMax (int nObserved, double probability, double precision) {
+  double xMin = nObserved;
+  double xMax = nObserved > 0 ? 2*nObserved : 1;
+  while (ROOT::Math::poisson_pdf (nObserved, xMax) > probability) xMax *= 2;
+  while (1) {
+    double x = 0.5*(xMin+xMax);
+    double delta = (probability - ROOT::Math::poisson_pdf (nObserved, x)) / probability;
+    std::cout << "poissonMeanMax-> " << nObserved << '/' << probability << '/' << precision
+	      << " xmin/xmax/x/delta: " << xMin << '/' << xMax << '/' <<  x << '/' << delta
+	      << std::endl; 
+    if (fabs(delta) < precision) return x;
+    if (delta > 0) {
+      xMax = x;
+    }
+    else {
+      xMin = x;
+    }
+  }
+}
+
+std::vector<TH2D*> CLCoverage(Double_t bck, Double_t sBck, Int_t nObserved, Int_t bckint)
+// run coverage test for the model
+{
+  int nBinsB = 9;
+  int nBinsS = 9;
+  // scan ranges
+  double precision = 1e-3;
+  double muBMin = bck + ROOT::Math::normal_quantile (precision, sBck);
+  if (muBMin < 0) muBMin = 0;
+  double muBMax = bck + ROOT::Math::normal_quantile_c (precision, sBck);
+  double dMuB = (muBMax-muBMin)/nBinsB;
+  double muSMin = 0;
+  double muSMax = poissonMeanMax (nObserved, precision, precision);
+  double dMuS = (muSMax-muSMin)/nBinsS;
+
+  char buffer[1024];
+  sprintf (buffer, "Coverage: N_{observed}=%d, #mu_{bkg}=%5.1f+-%4.1f; #mu_{background}; #mu_{signal}", nObserved, bck, sBck);
+  
+  TH2D* h_coverageBS = new TH2D ("h_coverageBS", buffer, 
+				 nBinsB+1, muBMin-0.5*dMuB, muBMax+0.5*dMuB,
+				 nBinsS+1, muSMin-0.5*dMuS, muSMax+0.5*dMuS
+				 );
+  
+  sprintf (buffer, "Probability to get N_{observed}=%d: #mu_{bkg}=%5.1f+-%4.1f; #mu_{background}; #mu_{signal}", nObserved, bck, sBck);
+  TH2D* h_NeventsBS = new TH2D ("h_NeventsBS", buffer,
+				nBinsB+1, muBMin-0.5*dMuB, muBMax+0.5*dMuB,
+				nBinsS+1, muSMin-0.5*dMuS, muSMax+0.5*dMuS
+				);
+  
+  TRandom2 rndm;
+  for (int iS = 0; iS <= nBinsS; ++iS) {
+    double muS = muSMin + iS*dMuS; 
+    for (int iB = 0; iB <= nBinsB; ++iB) {
+      double muB = muBMin + iB*dMuB;
+      if (muB < 0) continue;
+      double coverage = 0;
+      double fitNObserved = 0;
+      int nToy = 1000;
+      for (int iToy = 0; iToy < nToy; ++iToy) {
+	int nToyObserved = rndm.Poisson(muS+muB);
+	double toyLimit = CL95 (1, 0, 1, 0, muB, 0.35*muB, nToyObserved, 0, bckint);
+	//double toyLimit = CL95 (1, 0, 1, 0, bck, sBck, nToyObserved, 0, bckint);
+	if (toyLimit > muS) coverage += 1.;
+	if (nToyObserved == nObserved) fitNObserved += 1.;
+      }
+      coverage /= nToy;
+      fitNObserved /= nToy;
+      std::cout << "covarege-> " << iS << '/' << iB
+		<< " s/b:" << muS << '/' << muB
+		<< " coverage:" << coverage
+		<< " prob Observed:" << fitNObserved
+		<< std::endl;
+      h_coverageBS->Fill (muB, muS, coverage);
+      h_NeventsBS->Fill (muB, muS, fitNObserved);
+    }
+  }
+  
+  std::vector<TH2D*> result;
+  result.push_back(h_coverageBS);
+  result.push_back(h_NeventsBS);
+  return result;
 }
