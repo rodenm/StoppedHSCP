@@ -5,14 +5,17 @@ void runCountingCL95CMS (double lifetime, int observed, double bkg, double bkgSt
        << ' ' << scaleSys
        << ' ' << observed << endl;
 
-  gSystem->Load("cl95cms_C.so");
+  gSystem->Load("cl95cms_new_C.so");
 
 
   double bkgerrStat = bkgStat/bkg;
   double bkgerrSys = bkg*sqrt(bkgerrStat*bkgerrStat + bkgSys*bkgSys);
+  bkgerrStat = bkgStat;
 
   double cl95NoSys = CL95 (1.,0.,1.,0.,bkg,bkgerrStat,observed, false, 0);     
+  std::cout << "CL95(" << 1.<<','<<0.<<','<<1.<<','<<0.<<','<<bkg<<','<<bkgerrStat<<','<<observed<<','<< false<<','<< 0 << ") = " << cl95NoSys << std::endl;
   double cl95Sys = CL95 (1.,0.,1.,scaleSys,bkg,bkgerrSys,observed, false, 0); 
+  std::cout << "CL95(" << 1.<<','<<0.<<','<<1.<<','<<scaleSys<<','<<bkg<<','<<bkgerrSys<<','<<observed<<','<< false<<','<< 0 << ") = " << cl95Sys << std::endl;
   // std::vector<double> result = CLA(1.,0.,1.,0.0001,bkg,bkgerrStat, 0);
   std::vector<double> result = CLA(1.,0.,1.,scaleSys,bkg,bkgerrSys, 0);
 
