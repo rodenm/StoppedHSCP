@@ -1,5 +1,0 @@
-
-include "SUSYBSMAnalysis/RHadron/data/rHadronHLTPath.cfi"
-include "SUSYBSMAnalysis/RHadron/data/rHadronFilter.cfi"
-
-path rHadronPath = { rHadronHLTPath, rHadronFilter }
