@@ -1,7 +1,3 @@
 <use name="StoppedHSCP/ToyMC"/>
 
-<bin name="simulate" file="simulate_main.cpp"/>
-
-<bin name="analyze" file="analyze_main.cpp"/>
-
-<bin name="lifetime" file="lifetime_main.cpp"/>
+<bin name="simulate" file="simulate.cpp"/>

@@ -2,7 +2,7 @@
 #include <sstream>
 #include <string>
 #include <stdexcept>
-#include "Simulator.h"
+#include "StoppedHSCP/ToyMC/interface/Simulator.h"
 
 // read parameters from a file, then 
 
