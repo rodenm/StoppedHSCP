@@ -52,7 +52,7 @@ class Simulator {
   bool collisionHasL1A(double rate);
   bool isTriggerBlocked(const Experiment &e, unsigned int, unsigned int);
 
-  double countingExperiment95CLUpperLimitHybrid(int nObserved, double bkgMean, double bkgSigma, int nToys);
+  //  double countingExpt95CLUpperLimitHybrid(int nObserved, double bkgMean, double bkgSigma, int nToys);
 
   unsigned int bx_struct;
   unsigned int bxs_on, bxs_off;

@@ -42,12 +42,14 @@ public:
     // (i.e. beamgap or interfill or both)
     double nGeneratedDecays;
     double nSig_d;
+    double nSig_d_statErr;
     unsigned nSig;
     unsigned nObs;
     double nVetoes;
     unsigned nBg;
     // expected calculated background
     double nExpectedBg;
+    double nExpectedBg_statErr;
     // experiment p-values
     double Pb;
     double oneMinusPb;

@@ -1,4 +1,5 @@
 #include <fstream>
+#include <iostream>
 #include "StoppedHSCP/ToyMC/interface/Luminosity.h"
 #include "TH1D.h"
 
@@ -51,10 +52,27 @@ void Luminosity_Model::build_from_file(const char *filename) {
   lumis.clear();
 
   struct lumi_info l;
+
+  double total_lumi = 0, sensitive_lumi = 0;
+  unsigned int goodLS = 0;
   
   while (infile >> l.run >> l.ls >> l.lumi >> l.cms_sensitivity) {
+    l.lumi *= 1e30;
+    if (/*l.lumi > 0.01e30 &&*/ l.cms_sensitivity > 0.01) {
+      goodLS++;
+      sensitive_lumi += l.lumi; //pow(2,18)
+    }
+    total_lumi += l.lumi;
+
+    l.lumi /= (25e-9*3564*262144);  //pow(2,18)
     lumis.push_back(l);
   }
+
+  std::cerr << "N good LS " << goodLS 
+            << " - " << goodLS*3564*25e-9*262144 << " s"
+            << std::endl
+            << "Sensitive lumi " << sensitive_lumi << std::endl
+            << "Total lumi     " << total_lumi << std::endl;
 
   draw();
 }

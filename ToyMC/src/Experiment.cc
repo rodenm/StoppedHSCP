@@ -69,10 +69,12 @@ Experiment operator+(const Experiment &a, const Experiment &b) {
   e.nGeneratedDecays += b.nGeneratedDecays;
   e.nSig             += b.nSig;
   e.nSig_d           += b.nSig_d;
-  e.nObs             += b.nObs;
+  e.nSig_d_statErr = a.nSig_d_statErr + b.nSig_d_statErr;
+  // e.nObs             += b.nObs;
   e.nVetoes          += b.nVetoes;
   e.nBg              += b.nBg;
   e.nExpectedBg      += b.nExpectedBg;
+  e.nExpectedBg_statErr = a.nExpectedBg_statErr + b.nExpectedBg_statErr;
 
   return e;
 }

@@ -1,18 +1,7 @@
 #include "StoppedHSCP/ToyMC/interface/Simulator.h"
+#include "TMath.h"
 #include <assert.h>
 #include <iostream>
-
-// RooStats Hybrid 95CL stuff
-#include "RooRealVar.h"
-#include "RooArgSet.h"
-#include "RooUniform.h"
-#include "RooAddPdf.h"
-#include "RooExtendPdf.h"
-#include "RooGaussian.h"
-#include "RooDataSet.h"
-#include "RooStats/HybridCalculator.h"
-#include "RooStats/HypoTestInverter.h"
-#include "RooStats/HypoTestInverterResult.h"
 
 Simulator::Simulator() 
   : bx_struct(0), 
@@ -114,12 +103,10 @@ void Simulator::setupPlots() {
 void Simulator::setupLumi() {
 
   // ignore input for now, flat lumi assumption
-  std::string file( std::getenv("CMSSW_BASE" ) );
-  file += "/src/StoppedHSCP/ToyMC/data/lumi_record.txt";
-  
+
   lumis_by_section.build_from_file("lumi_record.txt");
 
-  //lumis_by_section.build_from_cycle(61, 1233, 2466, 2e29);
+  //lumis_by_section.build_from_cycle(7, 1233, 2466, 1e31);
 
   /*  lumis_by_section.clear();
 
@@ -159,10 +146,16 @@ void Simulator::setupBxStructure(unsigned int bx_struct_in) {
   // December 09 run 124230
   if (bx_struct == 2) {
     for (i = 0; i < NBXS_PER_ORBIT; i++) {
-      if (i ==    0 ||
-	  i == 1782) {
+      //      if (i ==    0 ||
+      //	  i == 1782) {
+      if (i ==    1 ||
+	  i == 1786) {
 	on_bxs.push_back(i);
-	beam[counter++] = 1;
+	beam[counter] = 1;
+	parasitic[counter-1] = 1;
+	parasitic[counter] = 1;
+	parasitic[counter+1] = 1;
+	counter++;
 	bxs_on++;
       }
       else {
@@ -170,6 +163,13 @@ void Simulator::setupBxStructure(unsigned int bx_struct_in) {
 	bxs_off++;
       }
     } 
+    parasitic[891] = 1;
+    parasitic[892] = 1;
+    parasitic[893] = 1;
+    parasitic[894] = 1;
+    parasitic[895] = 1;
+    parasitic[896] = 1;
+
   }
   else if (bx_struct == 3) {
     for (i = 0; i < NBXS_PER_ORBIT; i++) {
@@ -193,28 +193,124 @@ void Simulator::setupBxStructure(unsigned int bx_struct_in) {
       }
     }     
   }
-  else if (bx_struct == 9) {
+  else if (bx_struct == 4) {
     for (i = 0; i < NBXS_PER_ORBIT; i++) {
-      if (i ==   51 ||
-	  i ==  151 ||
-	  i ==  232 ||
-	  i == 1042 ||
-	  i == 1123 ||
-	  i == 1933 ||
-	  i == 2014 ||
-	  i == 2824 ||
-	  i == 2905) {
+      if (i ==    1 ||
+	  i ==  101 ||
+	  i == 1786 ||
+	  i == 1886) {
+
+	parasitic[counter] = 1;
+	if (counter != 0)
+	  parasitic[counter-1] = 1;
+	if (counter != NBXS_PER_ORBIT-1)
+	  parasitic[counter+1] = 1;
+
 	on_bxs.push_back(i);
 	beam[counter++] = 1;
 	bxs_on++;
       }
       else {
+	if (i ==  401 ||
+	    i ==  501 ||
+	    i ==  892 ||
+	    i ==  893 ||
+	    i ==  894 ||
+	    i ==  895 ||
+	    i ==  992 ||
+	    i ==  993 ||
+	    i ==  994 ||
+	    i ==  995) {
+	parasitic[counter] = 1;
+	if (counter != 0)
+	  parasitic[counter-1] = 1;
+	if (counter != NBXS_PER_ORBIT-1)
+	  parasitic[counter+1] = 1;
+	}
+	beam[counter++] = 0;
+	bxs_off++;
+      }
+    } 
+  }
+  else if (bx_struct == 5) {
+    // Single_10b_4_2_4
+    for (i = 0; i < NBXS_PER_ORBIT; i++) {
+      if (i ==    1 ||
+	  i ==  201 ||
+	  i ==  401 ||
+	  i ==  601) {
+
+	parasitic[counter] = 1;
+	if (counter != 0)
+	  parasitic[counter-1] = 1;
+	if (counter != NBXS_PER_ORBIT-1)
+	  parasitic[counter+1] = 1;
+
+	on_bxs.push_back(i);
+	beam[counter++] = 1;
+	bxs_on++;
+      }
+      else {
+	if (i ==  101 ||
+	    i ==  501 ||
+	    i ==  892 ||
+	    i ==  895 ||
+	    i ==  992 ||
+	    i ==  995 ||
+	    i == 1786 ||
+	    i == 1886
+	    ) {
+	parasitic[counter] = 1;
+	if (counter != 0)
+	  parasitic[counter-1] = 1;
+	if (counter != NBXS_PER_ORBIT-1)
+	  parasitic[counter+1] = 1;
+	}
+	beam[counter++] = 0;
+	bxs_off++;
+      }
+    } 
+  }
+  else if (bx_struct == 6) {
+    for (i = 0; i < NBXS_PER_ORBIT; i++) {
+      if (i ==    1 ||
+	  i ==  201 ||
+	  i ==  401 ||
+	  i == 1786 ||
+	  i == 1986 ||
+	  i == 2186) {
+
+	parasitic[counter] = 1;
+	if (counter != 0)
+	  parasitic[counter-1] = 1;
+	if (counter != NBXS_PER_ORBIT-1)
+	  parasitic[counter+1] = 1;
+
+	on_bxs.push_back(i);
+	beam[counter++] = 1;
+	bxs_on++;
+      }
+      else {
+	if (i ==  892 ||
+	    i ==  895 ||
+	    i == 1092 ||
+	    i == 1095 ||
+	    i == 1292 ||
+	    i == 1295
+	    ) {
+	parasitic[counter] = 1;
+	if (counter != 0)
+	  parasitic[counter-1] = 1;
+	if (counter != NBXS_PER_ORBIT-1)
+	  parasitic[counter+1] = 1;
+	}
 	beam[counter++] = 0;
 	bxs_off++;
       }
     } 
   }
   else if (bx_struct == 8) {
+    // Single_13b_8_8_8 before
     for (i = 0; i < NBXS_PER_ORBIT; i++) {
       if (i ==    1 ||
 	  i ==  101 ||
@@ -223,7 +319,7 @@ void Simulator::setupBxStructure(unsigned int bx_struct_in) {
 	  i == 1786 ||
 	  i == 1886 ||
 	  i == 1986 ||
-	  i == 2086) {
+	  i == 2086 ) {
 
 	parasitic[counter] = 1;
 	if (counter != 0)
@@ -246,6 +342,114 @@ void Simulator::setupBxStructure(unsigned int bx_struct_in) {
 	if (counter != NBXS_PER_ORBIT-1)
 	  parasitic[counter+1] = 1;
 	}
+	beam[counter++] = 0;
+	bxs_off++;
+      }
+    } 
+  }
+  else if (bx_struct == 10) {
+    // Single_13b_8_8_8 after
+    for (i = 0; i < NBXS_PER_ORBIT; i++) {
+      if (i ==    1 ||
+	  i ==  101 ||
+	  i ==  201 ||
+	  i ==  301 ||
+	  i == 1786 ||
+	  i == 1886 ||
+	  i == 1986 ||
+	  i == 2086 ) {
+
+	parasitic[counter] = 1;
+	if (counter != 0)
+	  parasitic[counter-1] = 1;
+	if (counter != NBXS_PER_ORBIT-1)
+	  parasitic[counter+1] = 1;
+
+	on_bxs.push_back(i);
+	beam[counter++] = 1;
+	bxs_on++;
+      }
+      else {
+	if (i ==  501 ||
+	    i ==  601 ||
+	    i ==  892 ||
+	    i ==  895 ||
+	    i ==  992 ||
+	    i ==  995 ||
+	    i == 1092 ||
+	    i == 1095 ||
+	    i == 1192 ||
+	    i == 1195) {
+	parasitic[counter] = 1;
+	if (counter != 0)
+	  parasitic[counter-1] = 1;
+	if (counter != NBXS_PER_ORBIT-1)
+	  parasitic[counter+1] = 1;
+	}
+	beam[counter++] = 0;
+	bxs_off++;
+      }
+    } 
+  }
+  else if (bx_struct == 11) {
+    // Single_12b_8_8_8
+    for (i = 0; i < NBXS_PER_ORBIT; i++) {
+      if (i ==    1 ||
+	  i ==  201 ||
+	  i ==  401 ||
+	  i ==  601 ||
+	  i == 1786 ||
+	  i == 1986 ||
+	  i == 2186 ||
+	  i == 2386 ) {
+
+	parasitic[counter] = 1;
+	if (counter != 0)
+	  parasitic[counter-1] = 1;
+	if (counter != NBXS_PER_ORBIT-1)
+	  parasitic[counter+1] = 1;
+
+	on_bxs.push_back(i);
+	beam[counter++] = 1;
+	bxs_on++;
+      }
+      else {
+	if (i ==  892 ||
+	    i ==  895 ||
+	    i == 1092 ||
+	    i == 1095 ||
+	    i == 1292 ||
+	    i == 1295 ||
+	    i == 1492 ||
+	    i == 1495
+	    ) {
+	parasitic[counter] = 1;
+	if (counter != 0)
+	  parasitic[counter-1] = 1;
+	if (counter != NBXS_PER_ORBIT-1)
+	  parasitic[counter+1] = 1;
+	}
+	beam[counter++] = 0;
+	bxs_off++;
+      }
+    } 
+  }
+  else if (bx_struct == 9) {
+    for (i = 0; i < NBXS_PER_ORBIT; i++) {
+      if (i ==   51 ||
+	  i ==  151 ||
+	  i ==  232 ||
+	  i == 1042 ||
+	  i == 1123 ||
+	  i == 1933 ||
+	  i == 2014 ||
+	  i == 2824 ||
+	  i == 2905) {
+	on_bxs.push_back(i);
+	beam[counter++] = 1;
+	bxs_on++;
+      }
+      else {
 	beam[counter++] = 0;
 	bxs_off++;
       }
@@ -358,7 +562,7 @@ void Simulator::setupBxStructure(unsigned int bx_struct_in) {
   else
     assert(0); //Unknown bunch structure!
 
-  assert(bxs_on  == bx_struct);
+  //  assert(bxs_on  == bx_struct);
   assert(counter == NBXS_PER_ORBIT);
 }
 
@@ -394,18 +598,18 @@ void Simulator::setupLifetimeBxMasking(double lifetime) {
       lifetimeMask[i] =
 	(( i - mostRecentOn ) * TIME_PER_BUNCH > 1.256 * lifetime);
     }
-    if (!lifetimeMask[i])
+    if (!lifetimeMask[i] && !parasitic[i])
       unmaskedBxs++;
   }
   mostRecentOn -= NBXS_PER_ORBIT;
   for (unsigned int i = 0; i < NBXS_PER_ORBIT && !beam[i]; i++) {
       lifetimeMask[i] =
 	(( i - mostRecentOn ) * TIME_PER_BUNCH > 1.256 * lifetime);    
-      if (!lifetimeMask[i])
+      if (!lifetimeMask[i] && !parasitic[i])
 	unmaskedBxs++;
   }
 
-  std::cerr << "Bxs remaining unmasked by lifetime optimization: "
+  std::cerr << "Bxs available for observation: "
 	    << unmaskedBxs << std::endl;
 }
 
@@ -419,7 +623,7 @@ void Simulator::simulateSignal(Experiment &e) {
 
   for (unsigned ls = 0; ls < lumis_by_section.size(); ls++) {
     if (ls * TIME_PER_LS > 24*3600*e.runningTime) break;
-    if (lumis_by_section.lumis[ls].cms_sensitivity < 0.01) continue;
+    //    if (lumis_by_section.lumis[ls].cms_sensitivity < 0.01) continue;
 
     // calculate decays for an on-bunch
     
@@ -494,7 +698,8 @@ void Simulator::simulateSignal(Experiment &e) {
 
       bool take_event = false;
       if ((e.lookwhere == e.BEAMGAP || e.lookwhere == e.BOTH)
-	  && lumis_by_section[decay_ls] > 1 // have beam
+	  //&& lumis_by_section[decay_ls] > 4.28e26 // have beam
+	  //&& lumis_by_section[decay_ls] > 1 // have beam
 	  && lumis_by_section.lumis[decay_ls].cms_sensitivity > 0.01
 	  && !beam[decay_bx]
 	  && !parasitic[decay_bx]
@@ -504,7 +709,8 @@ void Simulator::simulateSignal(Experiment &e) {
 	// do specific beamgap stuff
       }
       else if ((e.lookwhere == e.INTERFILL || e.lookwhere == e.BOTH)
-	&& lumis_by_section[decay_ls] < 1) { // no beam
+	       && lumis_by_section.lumis[decay_ls].cms_sensitivity > 0.01
+	       && lumis_by_section[decay_ls] < 1) { // no beam
 	take_event = true;
 
 	if (e.optimizeTimeCut) {
@@ -539,6 +745,7 @@ void Simulator::simulateSignal(Experiment &e) {
   }
 
   e.nSig_d = signal_events / e.scale;
+  e.nSig_d_statErr = TMath::Sqrt(signal_events) / e.scale;
   e.nSig = (unsigned int) (signal_events/e.scale);
   e.nGeneratedDecays = (generated_decays/e.scale);
   e.nVetoes = (vetoes/e.scale);
@@ -567,7 +774,8 @@ void Simulator::simulateBackground(Experiment &e) {
 
     bool take_event = false;
     if ((e.lookwhere == e.BEAMGAP || e.lookwhere == e.BOTH)
-	&& lumis_by_section[ls] > 1 // have beam
+	//&& lumis_by_section[ls] > 4.28e26 // have beam
+	//&& lumis_by_section[ls] > 1 // have beam
 	&& lumis_by_section.lumis[ls].cms_sensitivity > 0.01
 	&& !beam[bx]
 	&& !parasitic[bx]
@@ -575,6 +783,7 @@ void Simulator::simulateBackground(Experiment &e) {
       // do specific beamgap stuff
     }
     else if ((e.lookwhere == e.INTERFILL || e.lookwhere == e.BOTH)
+	     && lumis_by_section.lumis[ls].cms_sensitivity > 0.01
 	     && lumis_by_section[ls] < 1) { // no beam
       take_event = true;
 
@@ -600,47 +809,5 @@ void Simulator::simulateBackground(Experiment &e) {
 
   e.nBg = (unsigned int)(background_events / e.bgScale);
   e.nExpectedBg = background_events / e.bgScale;
-}
-
-
-double Simulator::countingExperiment95CLUpperLimitHybrid (int nObserved, double bkgMean, double bkgSigma, int nToys=500) {
-
-  using namespace RooStats;
-
-   // expect nothing beyond 5 sigma
- double bkgMaxExpected = bkgMean+5*bkgSigma; // 5 sigma
- double signalMaxExpected = nObserved > 0 ? nObserved+5*sqrt(double(nObserved))-bkgMean+5*bkgSigma : 5;
- // variables
- RooRealVar signal ("signal", "signal", 0, 0, signalMaxExpected);
- RooRealVar bkg ("bkg", "bkg", bkgMean, 0, bkgMaxExpected);
- RooRealVar flatUnit ("flatUnit","flatUnit",0.,1.);
- // sets
- RooArgSet nuisPar (bkg);
- RooArgSet poi (signal);
- // constants
- RooRealVar bkgMeanVar ("bkgMean", "bkgMean", bkgMean);
- RooRealVar bkgSigmaVar ("bkgSigma", "bkgSigma", bkgSigma);
- // PDFs
- RooUniform signalPdf ("signalPdf","signalPdf",flatUnit);
- RooUniform backgroundPdf ("backgroundPdf","backgroundPdf",flatUnit);
- RooAddPdf modelPdf ("model","model",RooArgList(signalPdf,backgroundPdf),RooArgList(signal,bkg));
- RooExtendPdf modelBkgPdf ("modelBkg","modelBkg",backgroundPdf,bkg);
- RooGaussian priorBkgPdf ("priorBkg","priorBkg",bkg,bkgMeanVar,bkgSigmaVar);
-
- RooDataSet* data = new RooDataSet ("data", "data", flatUnit);
- for (int i=0; i<nObserved; ++i) data->add (flatUnit);
-
- HybridCalculator hc(*data, modelPdf, modelBkgPdf, &nuisPar, &priorBkgPdf);
- hc.SetTestStatistic(2); // # of events
- hc.SetNumberOfToys(nToys);
- hc.UseNuisance(true);                            
- HypoTestInverter myInverter(hc,signal);
- double targetP = 0.05; // 95% C.L.
- myInverter.RunAutoScan(0, signalMaxExpected, targetP, 0.1*targetP);  
- HypoTestInverterResult* results = myInverter.GetInterval();
- results->SetConfidenceLevel (1-2.*targetP);
- double upperLimit = results->UpperLimit();
- delete data;
- // delete results;
- return upperLimit;
+  e.nExpectedBg_statErr = TMath::Sqrt(background_events)/e.bgScale;
 }
