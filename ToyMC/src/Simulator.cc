@@ -114,7 +114,9 @@ void Simulator::setupPlots() {
 void Simulator::setupLumi() {
 
   // ignore input for now, flat lumi assumption
-
+  std::string file( std::getenv("CMSSW_BASE" ) );
+  file += "/src/StoppedHSCP/ToyMC/data/lumi_record.txt";
+  
   lumis_by_section.build_from_file("lumi_record.txt");
 
   //lumis_by_section.build_from_cycle(61, 1233, 2466, 2e29);

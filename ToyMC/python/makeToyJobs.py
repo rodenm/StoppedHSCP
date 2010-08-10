@@ -1,5 +1,4 @@
-# generate simulation input files for multiple lifetimes
-# based on 
+# generate simulation scripts for multiple lifetimes
 
 import re
 import os
@@ -38,11 +37,24 @@ file.close()
 # regexps to replace lifetime in standard parameters file
 p = re.compile(r'(lifetime\s*)(\S*)')
 
-# generate file for each lifetime
-counter = 1
+# write master script
+master = open(odir+'/runAll.sh', 'w')
+
+# generate file for each job
+count = 1
+outfiles=''
 for lifetime in lifetimes:
+
+    # open std parameters file
     f = open(os.environ['CMSSW_BASE']+'/src/StoppedHSCP/ToyMC/data/parameters.txt')
-    w = open(odir+'/params'+str(counter)+'.txt', 'w')
+
+    # create output dir
+    jobdir=odir+'/job'+str(count)
+    if not os.path.exists(jobdir):
+        os.makedirs(jobdir)
+
+    # write params file
+    w = open(jobdir+'/params'+str(count)+'.txt', 'w')
     for line in f.readlines():
         m = p.match(line)
         if (not m):
@@ -51,6 +63,24 @@ for lifetime in lifetimes:
             w.write(m.group(1))
             w.write(str(lifetime))
             w.write('\n')
-#    os.system('./frontend < input_params_tmp.txt')
-#    os.system('mv outfile.root outfile'+str(counter)+'.root')
-    counter+=1
+    w.close()
+
+    # write job script
+    script = open(jobdir+'/job'+str(count)+'.sh', 'w')
+    script.write('cd '+jobdir+'\n')
+    script.write('cp '+os.environ['CMSSW_BASE']+'/src/StoppedHSCP/ToyMC/data/fills_bx3.txt lumi_record.txt\n')
+    script.write('simulate < params'+str(count)+'.txt >& job.log\n')
+    script.write('cd '+os.environ['PWD']+'\n')
+    script.close()
+
+    # write master script
+    master.write('source '+jobdir+'/job'+str(count)+'.sh\n')
+
+    outfiles+=' '+jobdir+'/outfile.root'
+    
+    count+=1
+
+# combine output of all jobs
+master.write('hadd -f '+odir+'/results.root '+outfiles+'\n')
+
+master.close()
