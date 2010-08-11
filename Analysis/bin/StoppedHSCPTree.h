@@ -499,6 +499,7 @@ public :
    virtual void     Show(Long64_t entry = -1);
    virtual unsigned NCuts();
    virtual bool     CutN(unsigned n);
+   virtual bool     CutNSyst(unsigned n, double smear);
    virtual bool     AllCutN(unsigned n);
    virtual const char*    CutName(unsigned n);
    virtual bool     CutNMinusOne(unsigned n);
@@ -846,7 +847,7 @@ bool StoppedHSCPTree::CutN(unsigned n)
   
   switch (n) {
   case 0:
-    return !isMC_ || (((gtAlgoWord0>>16)&1 == 1) && (hltJet_N>0) && (hltJetE[0]> 20.) && (hltJetEta[0]<1.3));
+    return !isMC_ || ((((gtAlgoWord0>>16)&1) == 1) && (hltJet_N>0) && (hltJetE[0]> 20.) && (hltJetEta[0]<1.3));
   case 1:
     return isMC_ || ! InDisallowedBX();
   case 2:
@@ -878,6 +879,29 @@ bool StoppedHSCPTree::CutN(unsigned n)
     
   }
 
+}
+
+// return result of a particular cut, after smearing for systematics
+bool StoppedHSCPTree::CutNSyst(unsigned n, double smear)
+{
+
+  switch (n) {
+  case 4:
+    if (jet_N>0  && jetEta[0]<1.3) {
+      double jetE_syst = jetE[0] * smear;
+      return jetE_syst>30.;
+    }
+    else return false;
+  case 5:
+    if (jet_N>0  && jetEta[0]<1.3) {
+      double jetE_syst = jetE[0] * smear;
+      return jetE_syst>50.;
+    }
+    else return false;
+  default:
+    return CutN(n);
+  }
+  
 }
 
 

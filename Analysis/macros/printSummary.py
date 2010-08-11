@@ -36,12 +36,30 @@ dataset=args[0]
 # ROOT
 from ROOT import *
 
+# run file
+if (not isMC):
+    rfile=TFile(dataset+"/"+dataset+"_byRun.root")
+    htime=rfile.Get("hlivetime")
+    hnlb=rfile.Get("hnlb")
+    
+    print "Run\tLS\tLivetime"
+    for i in range(1,htime.GetNbinsX()+1):
+        print htime.GetXaxis().GetBinLabel(i)+"\t"+str(hnlb.GetBinContent(i))+"\t"+str(htime.GetBinContent(i))
+
+
+    # total time
+    time=htime.Integral()
+    print "Total live time : "+str(time)+" s"
+
+
 # get histogram
 if isMC:
     hfile=TFile(dataset+"/histograms.root")
 else:
     hfile=TFile(dataset+"/selectedRuns.root")
-hcuts=hfile.Get("Cuts/hncutcum")
+hcutcum=hfile.Get("Cuts/hncutcum")
+hcutind=hfile.Get("Cuts/hncutind")
+hcutnmo=hfile.Get("Cuts/hnminus1cut")
 hnmu=hfile.Get("NoCuts/hnmu")
 
 cutnames=["HLT\t\t",
@@ -58,19 +76,23 @@ cutnames=["HLT\t\t",
           "Rpeak\t\t",
           "Router\t\t"]
 
+
 ntot=hnmu.GetEntries()
+if isMC:
+    ntot=hcutcum.GetBinContent(1)
 
-print "Cut\t\tN_evt\t\t%"
+if isMC:
+    print "Cut\t\tN_evt\t\tcum %\t\tN-1 %"
+else:
+    print "Cut\t\tN_evt\t\tind %\t\tcum %\t\tN-1 %"
+
 for i in range(0,13):
-    nevt = hcuts.GetBinContent(i+1)
-    print cutnames[i]+str(nevt)+"\t\t"+str(100.*nevt/ntot)
-
-print
-
-# total time
-rfile=TFile(dataset+"/"+dataset+"_byRun.root")
-htime=rfile.Get("hlivetime")
-time=htime.Integral()
-print "Total live time : "+str(time)+" s"
+    ncum = hcutcum.GetBinContent(i+1)
+    nind = hcutind.GetBinContent(i+1)
+    nnmo = hcutnmo.GetBinContent(i+1)
+    if isMC:
+        print cutnames[i]+str(ncum)+"\t\t"+str(100.*ncum/ntot)+"\t\t"+str(100.*nnmo/ntot)
+    else:
+        print cutnames[i]+str(ncum)+"\t\t"+str(100.*nind/ntot)+"\t\t"+str(100.*ncum/ntot)+"\t\t"+str(100.*nnmo/ntot)
 
 print

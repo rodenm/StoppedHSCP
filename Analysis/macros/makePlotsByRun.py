@@ -58,28 +58,15 @@ def hist2DByRun(name, title, nruns, ylabel, ny, ymin, ymax):
     h.Sumw2()
     return h
 
-def getLivetime(runtree, run):
-    time=0.
-    # loop over runs in run TTree
-    nruns=runtree.GetEntriesFast()
-    for i in range(0,nruns):
-        entry = runtree.LoadTree(i)
-        if entry < 0:
-            break
-        nb = runtree.GetEntry(i)
-        if nb <= 0:
-            continue
-        time+=runtree.livetime
-        if (runtree.run==run):
-            return runtree.livetime
-    return time
-
-def getLivetime2(hist) :
-    time=0.
+def getNLumiBlocks(hist) :
+    n=0
     for i in range(0,hist.GetNbinsX()):
         if (hist.GetBinContent(i) > 0.):
-            time += lumiBlockLength
-    return time
+            n=n+1
+    return n
+
+def getLivetime2(hist) :
+    return getNLumiBlocks(hist) * lumiBlockLength
 
 # main program starts here
 
@@ -89,7 +76,8 @@ nruns=len(runs)
 # histos
 hnhlt       = histByRun("hnhlt", "HLT counts", nruns)
 hnfin       = histByRun("hnfin", "Final counts", nruns)
-hefftime    = histByRun("hefftime", "EFfective live time", nruns)
+hefftime    = histByRun("hefftime", "Effective live time", nruns)
+hnlb        = histByRun("hnlb", "N lumi blocks", nruns)
 hlivetime   = histByRun("hlivetime", "Live time", nruns)
 hnpostjet   = histByRun("hnpostjet", "N events after jet cuts", nruns)
 hnposttim   = histByRun("hnposttim", "N events after timing cuts", nruns)
@@ -124,11 +112,14 @@ for run in runs:
     hnhlt.SetBinError(i+1, sqrt(nhlt))
 
     # effective time (HLT rate / nevents)
-#    efftime=0.
-#    if (hltrate[0] > 0.):
-#        efftime = nhlt / hltrate[0]
-#    hefftime.Fill(str(run), efftime)
-#    hefftime.SetBinError(i+1, 10.)
+    #    efftime=0.
+    #    if (hltrate[0] > 0.):
+    #        efftime = nhlt / hltrate[0]
+    #    hefftime.Fill(str(run), efftime)
+    #    hefftime.SetBinError(i+1, 10.)
+    
+    nlb = getNLumiBlocks(hlb)
+    hnlb.Fill(str(run), nlb)
 
     # live time (N non-zero LS after HLT)
     livetime = getLivetime2(hlb)
@@ -204,6 +195,7 @@ ofile = TFile(dir+"/"+dir+"_byRun.root", "recreate")
 hnhlt.Write()
 hefftime.Write()
 hlivetime.Write()
+hnlb.Write()
 hnfin.Write()
 for i in range(0,13):
     hratecuts[i].Write()
@@ -232,6 +224,7 @@ canvas.Print(filebase+"_byRun.ps[", "Portrait")
 
 # n counts, livetime etc.
 multiPlot([ "hnhlt" ],file, filebase+"_byRun.ps", False, True, 0., 0., "HLT counts", "run", "events", "E P1")
+multiPlot([ "hnlb" ],file, filebase+"_byRun.ps", False, False, 0., 0., "N LS", "run", "s", "E P1")
 multiPlot([ "hlivetime" ],file, filebase+"_byRun.ps", False, False, 0., 0., "time", "run", "s", "E P1")
 multiPlot([ "hnfin" ],file, filebase+"_byRun.ps", False, True, 0., 0., "Final counts", "run", "events", "E P1")
 

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 # copy all files from a GRID directory to local disk
 
@@ -30,7 +31,7 @@ gridloc   = "/pnfs/pp.rl.ac.uk/data/cms/store/user/jbrooke/"+dataset
 if (useCAF):
     gridroot  = "srm://srm-cms.cern.ch:8443/srm/managerv2?SFN="
     gridloc   = "/castor/cern.ch/cms/store/caf/user/jbrooke/"+dataset
-odir      = "/data/sdd1/phjjb/stoppedHSCP/"+dataset
+odir      = "/storage/phjjb/stoppedHSCP/"+dataset
 
 print "Copying files from :"
 print gridroot
@@ -52,6 +53,7 @@ for file in files.splitlines():
     command = "lcg-cp "+gridroot+"/"+file+" "+odir+"/"+basename
     print command
     cp = Popen(command, shell=True)
+    cp.wait()
 
 
 

@@ -108,8 +108,18 @@ def plotsFromHistos(filename):
     histPlot(dir+"/hrout", file, fileroot+".ps", 1., False, "", "R_{outer}", "")
 
     # 2D timing plots
-    hist2DPlot(dir+"/hr1r2", file, fileroot+".ps", 1., True, "", "R_{2}", "R_{1}", "", "CONT")
-    hist2DPlot(dir+"/hpkout", file, fileroot+".ps", 1., True, "", "R_{out}", "R_{peak}", "", "CONT")
+    hist2DPlot(dir+"/hr1r2", file, fileroot+".ps", 1., True, "", "R_{1}", "R_{2}", "", "COLZ")
+    hist2DPlot(dir+"/hpkout", file, fileroot+".ps", 1., True, "", "R_{peak}", "R_{out}", "", "COLZ")
+
+    # pulse shape variables after jet/mu cuts
+    dir = "Cuts"
+    histPlot(dir+"/hr1_jetmu", file, fileroot+".ps", 1., False, "R_{1} after jet/mu cuts", "R_{1}", "")
+    histPlot(dir+"/hr2_jetmu", file, fileroot+".ps", 1., False, "R_{2} after jet/mu cuts", "R_{2}", "")
+    histPlot(dir+"/hrpk_jetmu", file, fileroot+".ps", 1., False, "R_{peak} after jet/mu cuts", "R_{peak}", "")
+    histPlot(dir+"/hrout_jetmu", file, fileroot+".ps", 1., False, "R_{outer} after jet/mu cuts", "R_{outer}", "")
+    hist2DPlot(dir+"/hr1r2_jetmu", file, fileroot+".ps", 1., True, "After jet/mu cuts", "R_{1}", "R_{2}", "", "COLZ")
+    hist2DPlot(dir+"/hpkout_jetmu", file, fileroot+".ps", 1., True, "After jet/mu cuts", "R_{peak}", "R_{out}", "", "COLZ")
+
 
     # cut plots
     dir = "Cuts"
@@ -119,15 +129,15 @@ def plotsFromHistos(filename):
     histPlot(dir+"/holdcutcum", file, fileroot+".ps", 1., True, "", "Cut", "N_{events}")
     histPlot(dir+"/holdcutind", file, fileroot+".ps", 1., True, "", "Cut", "N_{events}")
 
-    histPlot(dir+"/hjete_nmo", file, fileroot+".ps", 1., True, "", "E (GeV)", "E")
-    histPlot(dir+"/hjetn60_nmo", file, fileroot+".ps", 1., True, "", "n60", "E")
-    histPlot(dir+"/hjetn90_nmo", file, fileroot+".ps", 1., True, "", "n90", "E")
-    histPlot(dir+"/hnmu_nmo", file, fileroot+".ps", 1., True, "", "N_{#mu}", "")
-    histPlot(dir+"/hr1_nmo", file, fileroot+".ps", 1., True, "", "R1", "")
-    histPlot(dir+"/hr2_nmo", file, fileroot+".ps", 1., True, "", "R2", "")
-    histPlot(dir+"/hrpk_nmo", file, fileroot+".ps", 1., True, "", "R_{peak}", "")
-    histPlot(dir+"/hrout_nmo", file, fileroot+".ps", 1., True, "", "R_{outer}", "")
-    histPlot(dir+"/hjetemf_nmo", file, fileroot+".ps", 1., True, "", "EM fraction", "E")
+    histPlot(dir+"/hjete_nmo", file, fileroot+".ps", 1., False, "", "E (GeV)", "E")
+    histPlot(dir+"/hjetn60_nmo", file, fileroot+".ps", 1., False, "", "n60", "E")
+    histPlot(dir+"/hjetn90_nmo", file, fileroot+".ps", 1., False, "", "n90", "E")
+    histPlot(dir+"/hnmu_nmo", file, fileroot+".ps", 1., False, "", "N_{#mu}", "")
+    histPlot(dir+"/hr1_nmo", file, fileroot+".ps", 1., False, "", "R1", "")
+    histPlot(dir+"/hr2_nmo", file, fileroot+".ps", 1., False, "", "R2", "")
+    histPlot(dir+"/hrpk_nmo", file, fileroot+".ps", 1., False, "", "R_{peak}", "")
+    histPlot(dir+"/hrout_nmo", file, fileroot+".ps", 1., False, "", "R_{outer}", "")
+    histPlot(dir+"/hjetemf_nmo", file, fileroot+".ps", 1., False, "", "EM fraction", "E")
 
 
     canvas = TCanvas("canvas")

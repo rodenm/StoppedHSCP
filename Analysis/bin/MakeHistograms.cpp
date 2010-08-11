@@ -8,6 +8,7 @@
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TMath.h"
+#include "TRandom3.h"
 #include <vector>
 
 #include <string>
@@ -46,6 +47,9 @@ public:
   void loopByRun();
 
   void readDisallowedBXs(unsigned run);
+  void readWatchedEvents();
+
+  bool isWatchedEvent();
 
   void cutAxisLabels(TH1D* h);
 
@@ -65,6 +69,10 @@ private:
   unsigned nCuts_;     // number of cuts
   unsigned currentRun_;   // current run #
   unsigned nHcalCuts_;     // number of cuts
+
+  std::vector< std::pair< unsigned, unsigned > > watchedEvents_;  /// events to print out
+
+  TRandom3* random_;  // random generator for systematics studies
 
   // the histograms
   TH1D* hbx_;
@@ -117,6 +125,9 @@ private:
   TH1D* hncutind_;
   TH1D* hncutcum_;
   TH1D* hnminus1cut_;
+  TH1D* hncutsystlo_;
+  TH1D* hncutsysthi_;
+  TH1D* hncutsystg_;
   TH1D* holdcutind_;
   TH1D* holdcutcum_;
   TH1D* hhcalcutind_;
@@ -135,6 +146,13 @@ private:
 
   // histograms after each cut
   std::vector<TH1D*> hjete_cuts_;
+  std::vector<TH1D*> hjetn60_cuts_;
+  std::vector<TH1D*> hjetn90_cuts_;
+  std::vector<TH1D*> hnmu_cuts_;
+  std::vector<TH1D*> hr1_cuts_;
+  std::vector<TH1D*> hr2_cuts_;
+  std::vector<TH1D*> hrpk_cuts_;
+  std::vector<TH1D*> hrout_cuts_;
   std::vector<TH2D*> hjetetaphi_cuts_;
   std::vector<TH2D*> hmuetaphi_cuts_;
   std::vector<TH1D*> hbx_cuts_;
@@ -218,6 +236,14 @@ void Analysis::bookHistos() {
   hnminus1cut_ = new TH1D("hnminus1cut", "N-1 cut counts", 20, 0., 20.);
   cutAxisLabels(hnminus1cut_);
 
+  // JES systematic
+  hncutsystlo_ = new TH1D("hncutsystlo", "Cum cut counts (low JES syst)", 20, 0., 20.);
+  cutAxisLabels(hncutsystlo_);  
+  hncutsysthi_ = new TH1D("hncutsysthi", "Cum cut counts (hi JES syst)", 20, 0., 20.);
+  cutAxisLabels(hncutsysthi_);  
+  hncutsystg_ = new TH1D("hncutsystg", "Cum cut counts (Gauss JES syst)", 20, 0., 20.);
+  cutAxisLabels(hncutsystg_);  
+
   // old cuts
   holdcutind_ = new TH1D("holdcutind", "Old cut counts", 20, 0., 20.);
   cutAxisLabels(holdcutind_);
@@ -246,6 +272,15 @@ void Analysis::bookHistos() {
     std::stringstream istr;
     istr << i;
     hjete_cuts_.push_back(new TH1D((std::string("hjete")+istr.str()).c_str(), "Leading jet energy", 50, 0., 200.));
+    hjetn60_cuts_.push_back(new TH1D((std::string("hjetn60")+istr.str()).c_str(), "Leading jet n60", 25, 0., 25.));
+    hjetn90_cuts_.push_back(new TH1D((std::string("hjetn90")+istr.str()).c_str(), "Leading jet n90", 25, 0., 25.));
+    hnmu_cuts_.push_back(new TH1D((std::string("hjetnmu")+istr.str()).c_str(), "N muons", 4, -0.5, 3.5));
+    hr1_cuts_.push_back(new TH1D((std::string("hr1")+istr.str()).c_str(), "R1", 50, 0., 1.));
+    hr2_cuts_.push_back(new TH1D((std::string("hr2")+istr.str()).c_str(), "R2", 50, 0., 1.));
+    hrpk_cuts_.push_back(new TH1D((std::string("hrpk")+istr.str()).c_str(), "Rpeak", 50, 0., 1.));
+    hrout_cuts_.push_back(new TH1D((std::string("hrout")+istr.str()).c_str(), "Router", 50, 0., 1.));
+
+
     hjetetaphi_cuts_.push_back(new TH2D((std::string("hjetetaphi")+istr.str()).c_str(), "Leading jet pos", 70, -3.5, 3.5, 72, -1 * TMath::Pi(),  TMath::Pi()));
     hmuetaphi_cuts_.push_back(new TH2D((std::string("hmuetaphi")+istr.str()).c_str(), "Muon pos", 70, -3.5, 3.5, 72, -1 * TMath::Pi(),  TMath::Pi()));
     hbx_cuts_.push_back(new TH1D((std::string("hbx")+istr.str()).c_str(), "BX number", 3564, 0., 3564.));
@@ -324,6 +359,10 @@ void Analysis::writeHistos() {
   hncutcum_->Write("",TObject::kOverwrite);
   hnminus1cut_->Write("",TObject::kOverwrite);
 
+  hncutsystlo_->Write("",TObject::kOverwrite);
+  hncutsysthi_->Write("",TObject::kOverwrite);
+  hncutsystg_->Write("",TObject::kOverwrite);
+
   holdcutind_->Write("",TObject::kOverwrite);
   holdcutcum_->Write("",TObject::kOverwrite);
 
@@ -343,6 +382,13 @@ void Analysis::writeHistos() {
   
   for (unsigned i=0; i< nCuts_; ++i) {
     hjete_cuts_.at(i)->Write("",TObject::kOverwrite);
+    hjetn60_cuts_.at(i)->Write("",TObject::kOverwrite);
+    hjetn90_cuts_.at(i)->Write("",TObject::kOverwrite);
+    hnmu_cuts_.at(i)->Write("",TObject::kOverwrite);
+    hr1_cuts_.at(i)->Write("",TObject::kOverwrite);
+    hr2_cuts_.at(i)->Write("",TObject::kOverwrite);
+    hrpk_cuts_.at(i)->Write("",TObject::kOverwrite);
+    hrout_cuts_.at(i)->Write("",TObject::kOverwrite);
     hjetetaphi_cuts_.at(i)->Write("",TObject::kOverwrite);
     hmuetaphi_cuts_.at(i)->Write("",TObject::kOverwrite);
     hbx_cuts_.at(i)->Write("",TObject::kOverwrite);
@@ -408,6 +454,10 @@ void Analysis::getHistos() {
   hncutcum_ = (TH1D*) ofile_->Get("Cuts/hncutcum");
   hnminus1cut_ = (TH1D*) ofile_->Get("Cuts/hnminus1cut");
 
+  hncutsystlo_ = (TH1D*) ofile_->Get("Cuts/hncutsystlo");
+  hncutsysthi_ = (TH1D*) ofile_->Get("Cuts/hncutsysthi");
+  hncutsystg_ = (TH1D*) ofile_->Get("Cuts/hncutsystg");
+
   holdcutind_ = (TH1D*) ofile_->Get("Cuts/holdcutind");
   holdcutcum_ = (TH1D*) ofile_->Get("Cuts/holdcutcum");
 
@@ -429,6 +479,13 @@ void Analysis::getHistos() {
     std::stringstream istr;
     istr << i;
     hjete_cuts_.push_back( (TH1D*) ofile_->Get((std::string("Cuts/hjete")+istr.str()).c_str()));
+    hjetn60_cuts_.push_back( (TH1D*) ofile_->Get((std::string("Cuts/hjetn60")+istr.str()).c_str()));
+    hjetn90_cuts_.push_back( (TH1D*) ofile_->Get((std::string("Cuts/hjetn90")+istr.str()).c_str()));
+    hnmu_cuts_.push_back( (TH1D*) ofile_->Get((std::string("Cuts/hnmu")+istr.str()).c_str()));
+    hr1_cuts_.push_back( (TH1D*) ofile_->Get((std::string("Cuts/hr1")+istr.str()).c_str()));
+    hr2_cuts_.push_back( (TH1D*) ofile_->Get((std::string("Cuts/hr2")+istr.str()).c_str()));
+    hrpk_cuts_.push_back( (TH1D*) ofile_->Get((std::string("Cuts/hrpk")+istr.str()).c_str()));
+    hrout_cuts_.push_back( (TH1D*) ofile_->Get((std::string("Cuts/hrout")+istr.str()).c_str()));
     hjetetaphi_cuts_.push_back( (TH2D*) ofile_->Get((std::string("Cuts/hjetetaphi")+istr.str()).c_str()) );
     hmuetaphi_cuts_.push_back( (TH2D*) ofile_->Get((std::string("Cuts/hmuetaphi")+istr.str()).c_str()) );
     hbx_cuts_.push_back( (TH1D*) ofile_->Get((std::string("Cuts/hbx")+istr.str()).c_str()) );
@@ -492,6 +549,9 @@ void Analysis::deleteHistos() {
     delete hncutind_;
     delete hncutcum_;
     delete hnminus1cut_;
+    delete hncutsystlo_;
+    delete hncutsysthi_;
+    delete hncutsystg_;
     delete holdcutind_;
     delete holdcutcum_;
     delete hhcalcutind_;
@@ -510,12 +570,26 @@ void Analysis::deleteHistos() {
 
     for (unsigned i=0; i< hjete_cuts_.size(); ++i) {
       delete hjete_cuts_.at(i);
+      delete hjetn60_cuts_.at(i);
+      delete hjetn90_cuts_.at(i);
+      delete hnmu_cuts_.at(i);
+      delete hr1_cuts_.at(i);
+      delete hr2_cuts_.at(i);
+      delete hrpk_cuts_.at(i);
+      delete hrout_cuts_.at(i);
       delete hjetetaphi_cuts_.at(i);
       delete hmuetaphi_cuts_.at(i);
       delete hbx_cuts_.at(i);
       delete hjetemf_cuts_.at(i);
     }
     hjete_cuts_.clear();
+    hjetn60_cuts_.clear();
+    hjetn90_cuts_.clear();
+    hnmu_cuts_.clear();
+    hr1_cuts_.clear();
+    hr2_cuts_.clear();
+    hrpk_cuts_.clear();
+    hrout_cuts_.clear();
     hjetetaphi_cuts_.clear();
     hmuetaphi_cuts_.clear();
     hbx_cuts_.clear();
@@ -609,6 +683,13 @@ void Analysis::fillHistos(StoppedHSCPTree& tree) {
       hncutcum_->Fill(c);
       if (tree.jet_N>0) {
 	hjete_cuts_.at(c)->Fill(tree.jetE.at(0));
+	hjetn60_cuts_.at(c)->Fill(tree.jetN60.at(0));
+	hjetn90_cuts_.at(c)->Fill(tree.jetN90.at(0));
+	hnmu_cuts_.at(c)->Fill(tree.mu_N);
+	hr1_cuts_.at(c)->Fill(tree.top5DigiR1);
+	hr2_cuts_.at(c)->Fill(tree.top5DigiR2);
+	hrpk_cuts_.at(c)->Fill(tree.top5DigiRPeak);
+	hrout_cuts_.at(c)->Fill(tree.top5DigiROuter);
 	hjetetaphi_cuts_.at(c)->Fill(tree.jetEta.at(0), tree.jetPhi.at(0));
 	hjetemf_cuts_.at(c)->Fill(tree.jetEEm.at(0)/tree.jetE.at(0));
       }
@@ -617,6 +698,28 @@ void Analysis::fillHistos(StoppedHSCPTree& tree) {
       }
       hbx_cuts_.at(c)->Fill(tree.bx);
     }
+  }
+
+  // systematics
+  fail=false;
+  double smear = 0.9;
+  for (unsigned c=0; c<nCuts_; c++) {
+    if (!tree.CutNSyst(c, smear)) fail |= true;
+    if (!fail) hncutsystlo_->Fill(c);
+  }
+
+  fail=false;
+  smear = 1.1;
+  for (unsigned c=0; c<nCuts_; c++) {
+    if (!tree.CutNSyst(c, smear)) fail |= true;
+    if (!fail) hncutsysthi_->Fill(c);
+  }
+
+  fail=false;
+  smear = random_->Gaus(1, 0.1);
+  for (unsigned c=0; c<nCuts_; c++) {
+    if (!tree.CutNSyst(c, smear)) fail |= true;
+    if (!fail) hncutsystg_->Fill(c);
   }
 
   // old cuts
@@ -744,6 +847,10 @@ void Analysis::loopAll() {
     fillHistos(*tree_);
     nevts++;
 
+    if (dumpEvents_ && isWatchedEvent()) {
+      tree_->PrintCutValues(fullDumpFile_);
+    }
+
   }
 
   saveHistos();
@@ -860,6 +967,48 @@ void Analysis::readDisallowedBXs(unsigned run) {
 
 }
 
+
+void Analysis::readWatchedEvents() {
+
+  // open file
+  std::string fname("watchedEvents.csv");
+  std::ifstream file(fname.c_str(), ifstream::in);
+
+  // read lines until we find the current run
+  std::string line;
+  if (!file.fail()) {
+    while (!file.eof()) {
+      getline(file, line);
+      std::vector<std::string> strs;
+      boost::split(strs, line, boost::is_any_of(",")); 
+      if(atoi(strs.at(0).c_str())>0) {
+	unsigned run=(unsigned) atoi(strs.at(0).c_str());
+	unsigned id=(unsigned) atoi(strs.at(1).c_str());
+	watchedEvents_.push_back(std::pair<unsigned, unsigned>(run, id));
+      }
+    }
+  }
+
+  std::cout << "Watching for " << watchedEvents_.size() << " events" << std::endl;
+  for (unsigned i=0; i<watchedEvents_.size(); ++i) {
+    std::cout << watchedEvents_.at(i).first << ", " << watchedEvents_.at(i).second << std::endl;
+  }
+ 
+}
+
+
+bool Analysis::isWatchedEvent() {
+
+  bool result=false;
+  for (unsigned i=0; i<watchedEvents_.size(); ++i) {
+    if (tree_->run == watchedEvents_.at(i).first && 
+	tree_->id == watchedEvents_.at(i).second) result=true;
+  }
+
+  return result;
+
+}
+
 Analysis::Analysis(const char* filename, const char* outdir, unsigned nlimit, bool dump, bool isMC) :
   file_(filename), 
   ttree_(0),
@@ -868,7 +1017,8 @@ Analysis::Analysis(const char* filename, const char* outdir, unsigned nlimit, bo
   ofile_(0),
   nlimit_(nlimit),
   dumpEvents_(dump),
-  currentRun_(0)
+  currentRun_(0),
+  watchedEvents_(0)
 {
 
   // log files
@@ -888,10 +1038,13 @@ Analysis::Analysis(const char* filename, const char* outdir, unsigned nlimit, bo
   nCuts_ = 13;
   nHcalCuts_ = 12;
 
+  readWatchedEvents();
+
   // open file and get tree
   //  ttree_ = (TTree*) file_.Get("stoppedHSCPTree/StoppedHSCPTree");
   tree_ = new StoppedHSCPTree(&file_, isMC);
 
+  random_ = new TRandom3();
 }
 
 

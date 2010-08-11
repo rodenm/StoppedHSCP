@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # copy all files from a GRID directory to local disk
 
 import getopt
@@ -18,7 +20,7 @@ except getopt.GetoptError:
     sys.exit(2)
 
 dataset  = args[0]
-dir      = "/data/sdd1/phjjb/stoppedHSCP/"+dataset
+dir      = "/storage/phjjb/stoppedHSCP/"+dataset
 ofile    = dataset+".root"
 odir     = "/users/phjjb/stoppedHSCP/ntuples"
 
