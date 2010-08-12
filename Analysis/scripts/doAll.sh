@@ -100,7 +100,7 @@ echo "Log file : $dataset.log"
 if [[ $flag != *q* ]]
 then
     echo "Making histograms from ntuples/stoppedHSCP_tree_$dataset.root"
-    makeHistograms $doPrint $ntuple $dataset
+    makeHistograms $doPrint $ntuple $dataset $runs
 fi
 
 # make plots
