@@ -6,4 +6,3 @@
 
 <bin name="makeHistograms" file="MakeHistograms.cpp"/>
 
-<bin name="dijets" file="dijets.cpp"/>
