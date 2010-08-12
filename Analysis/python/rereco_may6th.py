@@ -23,7 +23,7 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load('Configuration.EventContent.EventContent_cff')
 
 process.configurationMetadata = cms.untracked.PSet(
-    version = cms.untracked.string('$Revision: 1.8 $'),
+    version = cms.untracked.string('$Revision: 1.1 $'),
     annotation = cms.untracked.string('reco_FirstCollisions_MinimumBias_35X nevts:1'),
     name = cms.untracked.string('PyReleaseValidation')
 )
@@ -38,11 +38,14 @@ process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring('reco_FirstCollisions_MinimumBias_35X_DIGI2RAW.root')
 )
 
+process.source.inputCommands = cms.untracked.vstring("keep *", "drop *_MEtoEDMConverter_*_*", "drop L1GlobalTriggerObjectMapRecord_hltL1GtObjectMap__HLT")
+
+
 # Output definition
 process.output = cms.OutputModule("PoolOutputModule",
     splitLevel = cms.untracked.int32(0),
     outputCommands = process.FEVTEventContent.outputCommands,
-    fileName = cms.untracked.string('reco_FirstCollisions_MinimumBias_35X_RAW2DIGI_L1Reco_RECO_DQM_ALCA.root'),
+    fileName = cms.untracked.string('StoppedHSCP_ReReco.root'),
     dataset = cms.untracked.PSet(
         dataTier = cms.untracked.string('FEVT'),
         filterName = cms.untracked.string('')

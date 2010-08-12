@@ -30,7 +30,7 @@ era = args[0]
 label = args[1]
 dataset = args[2]
 gtag = args[3]
-runs = args[4]
+runs = 0
 
 # create CRAB variables
 name = era + "_" + label
@@ -61,9 +61,13 @@ output_file = stoppedHSCP_rereco.root\n\
 [USER]\n\
 return_data = 0\n\
 copy_data = 1\n\
-storage_element = T2_UK_SGrid_Bristol\n\
+storage_element = T2_UK_SGrid_RALPP\n\
 user_remote_dir = "+dirStr+"\n\
 ui_working_dir  = "+dirStr+"\n\
+publish_data=1\n\
+publish_data_name = StoppedHSCP_"+name+"\n\
+dbs_url_for_publication = http://cmsdbsprod.cern.ch/cms_dbs_ph_analysis_02/servlet/DBSServlet
+
 [GRID]\n\
 rb = CERN\n\
 proxy_server = myproxy.cern.ch\n\
@@ -80,29 +84,32 @@ crab.close()
 
 # create CMSSW variables
 cmsswStr = "\n\
+import FWCore.ParameterSet.Config as cms\n\
+from StoppedHSCP.Analysis.rereco_"+label+" import *\n\
+
 process.load('StoppedHSCP.Analysis.rereco_"+label+"')\n\
 \n\
 process.source.fileNames = cms.untracked.vstring(\n\
-    # test file
+    # test file\n\
     'rfio:/castor/cern.ch/user/j/jbrooke/hscp/test/Calo_CRAFT09-GR09_31X_V5P_StoppedHSCP-332_v4_RAW-RECO_111039_test.root'\n\
     # HLT reskim files on Bristol SE\n\
 #    '/store/user/jbrooke/Calo/StoppedHSCP_CRAFT09_rerunHLT_v3/a9f20537e9e1239e6910ee9cb81f358d/stoppedHSCP_rerunHLT_9.root'\n\
 )\n\
 \n\
-process.GlobalTag.globaltag = '"+gtag+"\n\
+process.GlobalTag.globaltag = '"+gtag+"'\n\
 \n\
 process.schedule = cms.Schedule(process.raw2digi_step,process.L1Reco_step,process.reconstruction_step,process.endjob_step,process.out_step)\n\
-
+\n\
 process.source.inputCommands = cms.untracked.vstring(\n\
     'drop *',\n\
     'keep *_*_*_HLT',\n\
     'drop *_MEtoEDMConverter_*_*')\n\
 \n\
-process.FEVT.outputCommands = cms.untracked.vstring(\n\
+process.output.outputCommands = cms.untracked.vstring(\n\
     process.FEVTEventContent.outputCommands\n\
 )\n\
 \n\
-process.FEVT.fileName = cms.untracked.string('StoppedHSCP_rereco.root')\n\
+process.output.fileName = cms.untracked.string('stoppedHSCP_rereco.root')\n\
 "
 
 # create CMSSW config

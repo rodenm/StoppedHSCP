@@ -132,7 +132,7 @@ process.ntuple = cms.Path(
     +process.l1extraParticles
     
 # filter HCAL noise
-#    +process.HBHENoiseFilter
+    +process.HBHENoiseFilter
 
 # generate TTree    
     +process.stoppedHSCPTree
