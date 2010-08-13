@@ -6,6 +6,7 @@
 #include "StoppedHSCP/Analysis/interface/StoppedHSCPEvent.h"
 #include "StoppedHSCP/Analysis/interface/Cuts.h"
 #include "StoppedHSCP/Analysis/interface/Histogrammer.h"
+#include "StoppedHSCP/Analysis/interface/LhcFills.h"
 
 #include "TFile.h"
 #include "TTree.h"
@@ -68,6 +69,8 @@ class Analyser {
   Cuts cuts_;
 
   Histogrammer histogrammer_;
+
+  LhcFills fills_;
 
   std::vector< std::pair< unsigned, unsigned > > watchedEvents_;
   std::ofstream eventFile_;

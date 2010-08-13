@@ -13,6 +13,7 @@ Analyser::Analyser(std::string ifile, std::string outdir, std::vector<unsigned> 
   iEvent_(0),
   cuts_(0, isMC),
   histogrammer_(outdir+std::string("/histograms.root"), runs, &cuts_),
+  fills_(),
   watchedEvents_(0),
   eventFile_(),
   dumpFile_()
@@ -36,6 +37,8 @@ Analyser::Analyser(std::string ifile, std::string outdir, std::vector<unsigned> 
     std::cout << runs.at(i) << ",";
   }
   std::cout << std::endl;
+
+  //  fills_.print(std::cout);
 
 }
 
