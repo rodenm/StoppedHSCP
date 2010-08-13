@@ -1,7 +1,10 @@
+#!/bin/env python
+
 # generate simulation scripts for multiple lifetimes
 
 import re
 import os
+import stat
 import sys
 import getopt
 
@@ -20,6 +23,10 @@ for opt, arg in opts:
         usage()
         sys.exit()
 
+if len(args)<1:
+    usage()
+    sys.exit()
+    
 dataset = args[0]
 odir = os.environ['PWD']+'/'+dataset+'/toymc'
 
@@ -83,4 +90,7 @@ for lifetime in lifetimes:
 # combine output of all jobs
 master.write('hadd -f '+odir+'/results.root '+outfiles+'\n')
 
+os.chmod(odir+'/runAll.sh', 0755)
+
 master.close()
+
