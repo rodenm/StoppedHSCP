@@ -1,0 +1,50 @@
+# list of fills with filling scheme used
+1044   
+1045	
+1046	
+1047	
+1049	
+1058	
+1059	
+1089	
+1090	
+1101	
+1104	
+1107	
+1112	
+1117	Single_6b_3_3_3
+1118	Single_6b_3_3_3
+1119	Single13b_8_8_8
+1121	Single13b_8_8_8
+1122	Single13b_8_8_8
+1128	?
+1134	?
+1179	Single_3b_2_2_2
+1180	Single_3b_2_2_2
+1182	Single_3b_2_2_2
+1185	Single_3b_2_2_2
+1186	Single_3b_2_2_2
+1188	Single_3b_2_2_2
+1190	Single7b_4_4_4
+1192	Single7b_4_4_4
+1196	Single7b_4_4_4
+1197	Single7b_4_4_4
+1198	Single7b_4_4_4
+1199	Single_10b_4_2_4
+1207	Single_10b_4_2_4
+1222	Single_9b_6_6_6
+1224    Single_12b_8_8_8
+1225    Single_12b_8_8_8
+1226	Single_13b_8_8_8
+1229	?
+1232	?
+1233	?
+1250	Single13b_8_8_8
+1251	Multi_25b_16_16_16
+1253	Multi_25b_16_16_16
+1256	Multi_25b_16_16_16
+1257	Multi_25b_16_16_16
+1258	Multi_25b_16_16_16
+1260	Multi_25b_16_16_16
+1262	Multi_25b_16_16_16
+1263	Multi_25b_16_16_16
