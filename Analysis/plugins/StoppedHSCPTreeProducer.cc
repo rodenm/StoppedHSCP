@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.34 2010/05/30 22:13:51 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.35 2010/07/05 10:56:33 jbrooke Exp $
 //
 //
 
@@ -51,7 +51,7 @@
 #include "DataFormats/HLTReco/interface/TriggerTypeDefs.h"
 #include "DataFormats/HLTReco/interface/TriggerObject.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
-#include "FWCore/ParameterSet/interface/InputTag.h"
+#include "FWCore/Utilities/interface/InputTag.h"
 
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 

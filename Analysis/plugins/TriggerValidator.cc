@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  Fri Oct  9 14:28:32 CEST 2009
-// $Id: TriggerValidator.cc,v 1.1 2009/10/12 16:18:51 jbrooke Exp $
+// $Id: TriggerValidator.cc,v 1.2 2010/03/18 13:06:10 jbrooke Exp $
 //
 //
 
@@ -56,7 +56,7 @@
 #include "DataFormats/HLTReco/interface/TriggerTypeDefs.h"
 #include "DataFormats/HLTReco/interface/TriggerObject.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
-#include "FWCore/ParameterSet/interface/InputTag.h"
+#include "FWCore/Utilities/interface/InputTag.h"
 
 #include "DataFormats/JetReco/interface/CaloJetCollection.h"
 
