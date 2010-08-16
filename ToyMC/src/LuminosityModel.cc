@@ -1,21 +1,21 @@
 #include <fstream>
 #include <iostream>
-#include "StoppedHSCP/ToyMC/interface/Luminosity.h"
+#include "StoppedHSCP/ToyMC/interface/LuminosityModel.h"
 #include "TH1D.h"
 
-Luminosity_Model::Luminosity_Model() {
+LuminosityModel::LuminosityModel() {
 
 }
 
-double Luminosity_Model::operator[](unsigned int index) const {
+double LuminosityModel::operator[](unsigned int index) const {
   return lumis[index].lumi;
 }
 
-unsigned int Luminosity_Model::size() const {
+unsigned int LuminosityModel::size() const {
   return lumis.size();
 }
 
-TCanvas *Luminosity_Model::draw() const {
+TCanvas *LuminosityModel::draw() const {
   TCanvas *c = new TCanvas("lumi_dist");
   
   c->cd();
@@ -44,7 +44,7 @@ TCanvas *Luminosity_Model::draw() const {
   return c;
 }
 
-void Luminosity_Model::build_from_file(const char *filename) {
+void LuminosityModel::build_from_file(const char *filename) {
   std::ifstream infile(filename);
 
   // Run LS pass pass pass Lumi
@@ -77,7 +77,7 @@ void Luminosity_Model::build_from_file(const char *filename) {
   draw();
 }
 
-void Luminosity_Model::build_from_cycle(unsigned int cycles, 
+void LuminosityModel::build_from_cycle(unsigned int cycles, 
 					unsigned int units_on, unsigned int units_off,
 					double amt) {
   lumis.clear();

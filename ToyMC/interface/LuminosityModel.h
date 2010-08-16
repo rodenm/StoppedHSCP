@@ -1,6 +1,7 @@
 
-#ifndef LUMINOSITY_H
-#define LUMINOSITY_H
+#ifndef LuminosityModel_h
+#define LuminosityModel_h
+
 #include <vector>
 #include "TCanvas.h"
 
@@ -9,10 +10,10 @@ struct lumi_info {
   double lumi, cms_sensitivity;
 };
 
-class Luminosity_Model {
+class LuminosityModel {
 
  public:
-  Luminosity_Model();
+  LuminosityModel();
   double operator[](unsigned int) const;
   unsigned int size() const;
   
