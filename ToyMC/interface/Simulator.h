@@ -10,7 +10,7 @@
 #include "TTree.h"
 #include "TFile.h"
 #include "StoppedHSCP/ToyMC/interface/Experiment.h"
-#include "StoppedHSCP/ToyMC/interface/LuminosityModel.h"
+#include "StoppedHSCP/ToyMC/interface/Luminosity.h"
 
 #include "StoppedHSCP/Analysis/interface/LhcFills.h"
 
@@ -66,7 +66,7 @@ class Simulator {
   std::vector<bool> lifetimeMask; //bunches too far from collision
   std::vector<unsigned int> on_bxs;
 
-  LuminosityModel lumis_by_section;
+  Luminosity lumis_by_section;
   //std::vector<double> lumis_by_section;
 
   TFile lifetimeFitOutput;

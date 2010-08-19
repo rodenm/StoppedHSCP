@@ -109,31 +109,8 @@ void Simulator::setupLumi(std::vector<unsigned long> fillsToSimulate) {
     runs.insert(runs.end(),r.begin(), r.end());
   }	
 
-  lumis_by_section.build_from_file(runs);
+  lumis_by_section.buildFromFile(runs);
 
-  //lumis_by_section.build_from_cycle(7, 1233, 2466, 1e31);
-
-  /*  lumis_by_section.clear();
-
-  lumis_by_section.reserve(62*924); // so the "new"s don't take forever
-  //lumis_by_section.reserve(68);
-  */
-  /*
-    for (int i = 0; i < 68; i++) {
-    lumis_by_section.push_back(4.56e26);
-  }
-  */
-
-  /*
-  for (int i = 0; i < 62; i++) {
-    for (int j = 0; j < 308; j++) //8hr
-      //for (int j = 0; j < 462; j++) //12hr
-      lumis_by_section.push_back(2e29);
-    for (int j = 0; j < 616; j++) //16hr
-      //for (int j = 0; j < 462; j++)
-      lumis_by_section.push_back(0);
-  }
-  */
 }
 
 void Simulator::setupBxStructure(unsigned int bx_struct_in) {
@@ -686,7 +663,7 @@ void Simulator::simulateSignal(Experiment &e) {
       // Amount of time 
       e.scale * TIME_PER_LS
       // Events / time
-      * e.crossSection * lumis_by_section[ls]
+      * e.crossSection * lumis_by_section.luminosity(ls)
       // Efficiencies
       * e.signalEff;
 
@@ -755,7 +732,7 @@ void Simulator::simulateSignal(Experiment &e) {
       if ((e.lookwhere == e.BEAMGAP || e.lookwhere == e.BOTH)
 	  //&& lumis_by_section[decay_ls] > 4.28e26 // have beam
 	  //&& lumis_by_section[decay_ls] > 1 // have beam
-	  && lumis_by_section.lumis[decay_ls].cms_sensitivity > 0.01
+	  && lumis_by_section.cmsSensitive(decay_ls)
 	  && !beam[decay_bx]
 	  && !parasitic[decay_bx]
 	  && (!lifetimeMask[decay_bx] || !e.optimizeTimeCut)
@@ -764,13 +741,13 @@ void Simulator::simulateSignal(Experiment &e) {
 	// do specific beamgap stuff
       }
       else if ((e.lookwhere == e.INTERFILL || e.lookwhere == e.BOTH)
-	       && lumis_by_section.lumis[decay_ls].cms_sensitivity > 0.01
-	       && lumis_by_section[decay_ls] < 1) { // no beam
+	       && lumis_by_section.cmsSensitive(decay_ls)
+	       && lumis_by_section.luminosity(decay_ls) < 1) { // no beam
 	take_event = true;
 
 	if (e.optimizeTimeCut) {
 	  unsigned int i;
-	  for (i = decay_ls; lumis_by_section[i] < 1; i--);
+	  for (i = decay_ls; lumis_by_section.luminosity(i) < 1; i--);
 	  if ((decay_ls - i - 1) * TIME_PER_LS >
 	      e.lifetime * 1.256) 
 	    take_event = false;
@@ -831,20 +808,20 @@ void Simulator::simulateBackground(Experiment &e) {
     if ((e.lookwhere == e.BEAMGAP || e.lookwhere == e.BOTH)
 	//&& lumis_by_section[ls] > 4.28e26 // have beam
 	//&& lumis_by_section[ls] > 1 // have beam
-	&& lumis_by_section.lumis[ls].cms_sensitivity > 0.01
+	&& lumis_by_section.cmsSensitive(ls)
 	&& !beam[bx]
 	&& !parasitic[bx]
 	&& (!lifetimeMask[bx] || !e.optimizeTimeCut)) {      take_event = true;
       // do specific beamgap stuff
     }
     else if ((e.lookwhere == e.INTERFILL || e.lookwhere == e.BOTH)
-	     && lumis_by_section.lumis[ls].cms_sensitivity > 0.01
-	     && lumis_by_section[ls] < 1) { // no beam
+	     && lumis_by_section.cmsSensitive(ls)
+	     && lumis_by_section.luminosity(ls) < 1) { // no beam
       take_event = true;
 
       if (e.optimizeTimeCut) {
 	unsigned int i;
-	for (i = ls; lumis_by_section[i] < 1 && i > 0; i--);
+	for (i = ls; lumis_by_section.luminosity(i) < 1 && i > 0; i--);
 	if (i==0) take_event = false;
 	if ((ls - i - 1) * TIME_PER_LS >
 	    e.lifetime * 1.256) 
