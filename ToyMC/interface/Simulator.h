@@ -10,7 +10,9 @@
 #include "TTree.h"
 #include "TFile.h"
 #include "StoppedHSCP/ToyMC/interface/Experiment.h"
-#include "StoppedHSCP/ToyMC/interface/Luminosity.h"
+#include "StoppedHSCP/ToyMC/interface/LuminosityModel.h"
+
+#include "StoppedHSCP/Analysis/interface/LhcFills.h"
 
 static const unsigned int NBXS_PER_ORBIT = 3564;
 static const double TIME_PER_BUNCH = 25e-9;
@@ -30,18 +32,18 @@ class Simulator {
   Simulator();
   ~Simulator() { clearPlots(); }
   
-  void setupLumi();
+  void setupLumi(std::vector<unsigned long> fillsToSimulate);
   void run(Experiment &);
 
   std::map<std::string, TH1D *> run_specific_plots;
 
   void writeOutLifetimeFit();
 
- protected:
   void clearPlots();
   void setupPlots();
   
   void setupBxStructure(unsigned int);
+  void setFillScheme(unsigned fill);
   void setupLifetimeBxMasking(double);
 
   void simulateSignal(Experiment &);
@@ -53,6 +55,9 @@ class Simulator {
   bool isTriggerBlocked(const Experiment &e, unsigned int, unsigned int);
 
   //  double countingExpt95CLUpperLimitHybrid(int nObserved, double bkgMean, double bkgSigma, int nToys);
+ private:
+
+  LhcFills fills_;
 
   unsigned int bx_struct;
   unsigned int bxs_on, bxs_off;
@@ -61,7 +66,7 @@ class Simulator {
   std::vector<bool> lifetimeMask; //bunches too far from collision
   std::vector<unsigned int> on_bxs;
 
-  Luminosity_Model lumis_by_section;
+  LuminosityModel lumis_by_section;
   //std::vector<double> lumis_by_section;
 
   TFile lifetimeFitOutput;

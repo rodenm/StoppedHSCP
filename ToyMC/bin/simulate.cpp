@@ -2,6 +2,9 @@
 #include <sstream>
 #include <string>
 #include <stdexcept>
+#include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
+
 #include "StoppedHSCP/ToyMC/interface/Simulator.h"
 
 // read parameters from a file, then 
@@ -18,7 +21,16 @@ int main() {
   std::istringstream value;
   while (std::cin >> name >> value_str) {
     std::istringstream value(value_str);
-    if (name == "bxStruct")
+    if (name == "isProjection") 
+      e->isProjection = boost::lexical_cast<bool>(value_str);
+    else if (name == "fills") {
+      std::vector<std::string> strs;
+      boost::split(strs, value_str, boost::is_any_of(",")); 
+      for (unsigned i=0; i<strs.size(); ++i) {
+	e->fills.push_back(atoi(strs.at(i).c_str()));
+      }
+    }
+    else if (name == "bxStruct")
       value >> e->bxStruct;
     else if (name == "runningTime")
       value >> e->runningTime;
@@ -58,13 +70,15 @@ int main() {
     else if (name == "nObs")
       value >> e->nObs;
     else {
-      throw (std::invalid_argument("Unrecognized parameter name "));
+      throw (std::invalid_argument("Unrecognized parameter name "+name));
     }
   }
 
   Simulator sim;
-  std::cerr << "Running experiment" << std::endl;
+  std::cout << "Running experiment" << std::endl;
   sim.run(*e);
+  
+  std::cout << *e;
 
   tree->Fill();
   f.cd();

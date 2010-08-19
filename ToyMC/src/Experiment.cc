@@ -1,8 +1,11 @@
 #include "StoppedHSCP/ToyMC/interface/Experiment.h"
 
+#include <iostream>
+
 ClassImp(Experiment)
 
 Experiment::Experiment() :
+  isProjection(false),
   mass(0),
   crossSection(0),
   lifetime(0),
@@ -14,6 +17,7 @@ Experiment::Experiment() :
   signalEff(0),
   beamOnTime(0),
   beamOffTime(0),
+  fills(0),
   lookwhere(BOTH),
   optimizeTimeCut(true),
   scale(1000),
@@ -22,45 +26,44 @@ Experiment::Experiment() :
   nVetoes(0)
 {
 }
-/*
+
 std::ostream &operator<<(std::ostream &o, const Experiment &e) {
-    using namespace std;
   return o
-    << "Stopped HSCP experiment" << endl
-    << " Physics" << endl
-    << "  Gluino mass      : " << e.mass << endl
-    << "  Cross-section    : " << e.crossSection << endl
-    << "  Lifetime         : " << e.lifetime << endl
-    << " Expt parameters" << endl
-    << "  Lumi             : " << e.lumi << endl
-    << "  BX structure     : " << e.bxStruct << endl
-    << "  BG rate          : " << e.bgRate << endl
-    << "  Sig eff          : " << e.signalEff << endl
-    << "  Running time     : " << e.runningTime << endl
-    << "  Beam On  time    : " << e.beamOnTime << endl
-    << "  Beam Off time    : " << e.beamOffTime << endl
-    << " Anlsys parameters" << endl
-    << "  Optimize Time Cut: " << (e.optimizeTimeCut ? "X" : "") << endl
+    << "Stopped HSCP experiment" << std::endl
+    << " Physics" << std::endl
+    << "  Gluino mass      : " << e.mass << std::endl
+    << "  Cross-section    : " << e.crossSection << std::endl
+    << "  Lifetime         : " << e.lifetime << std::endl
+    << " Expt parameters" << std::endl
+    << "  Lumi             : " << e.lumi << std::endl
+    << "  BX structure     : " << e.bxStruct << std::endl
+    << "  BG rate          : " << e.bgRate << std::endl
+    << "  Sig eff          : " << e.signalEff << std::endl
+    << "  Running time     : " << e.runningTime << std::endl
+    << "  Beam On  time    : " << e.beamOnTime << std::endl
+    << "  Beam Off time    : " << e.beamOffTime << std::endl
+    << " Anlsys parameters" << std::endl
+    << "  Optimize Time Cut: " << (e.optimizeTimeCut ? "X" : "") << std::endl
     << "  Beamgap          : " << (e.lookwhere == e.BEAMGAP ||
                                    e.lookwhere == e.BOTH ?
-                                   "X" : "") << endl
+                                   "X" : "") << std::endl
     << "  Interfill        : " << (e.lookwhere == e.INTERFILL ||
                                    e.lookwhere == e.BOTH ?
-                                   "X" : "") << endl
-    << "  S Scaling Factor : " << e.scale << endl
-    << "  B Scaling Factor : " << e.bgScale << endl
-    << " Results" << endl
-    << "  N generated decays " << e.nGeneratedDecays << endl
-    << "  Ns               : " << e.nSig << endl
-    << "  Nb               : " << e.nBg << endl
-    << "  Expected Nb      : " << e.nExpectedBg << endl
-    << "  Pb               : " << e.Pb << endl
-    << "  1 - Pb           : " << e.oneMinusPb << endl
-    << "  Psb              : " << e.Psb << endl
-    << "  1 - Psb          : " << e.oneMinusPsb << endl
-    << endl;
+                                   "X" : "") << std::endl
+    << "  S Scaling Factor : " << e.scale << std::endl
+    << "  B Scaling Factor : " << e.bgScale << std::endl
+    << " Results" << std::endl
+    << "  N generated decays " << e.nGeneratedDecays << std::endl
+    << "  Ns               : " << e.nSig << std::endl
+    << "  Nb               : " << e.nBg << std::endl
+    << "  Expected Nb      : " << e.nExpectedBg << std::endl
+    << "  Pb               : " << e.Pb << std::endl
+    << "  1 - Pb           : " << e.oneMinusPb << std::endl
+    << "  Psb              : " << e.Psb << std::endl
+    << "  1 - Psb          : " << e.oneMinusPsb << std::endl
+    << std::endl;
 }
-*/
+
 
 Experiment operator+(const Experiment &a, const Experiment &b) {
 

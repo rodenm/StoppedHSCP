@@ -14,7 +14,6 @@ Simulator::Simulator()
   t.Branch("orbit", &_orbit, "orbit/I");
   t.Branch("bx", &_bx, "bx/I");
 
-  setupLumi();
 }
 
 void Simulator::writeOutLifetimeFit() {
@@ -100,11 +99,17 @@ void Simulator::setupPlots() {
 	     3564, -.5, 3563.5);    
 }
 
-void Simulator::setupLumi() {
+void Simulator::setupLumi(std::vector<unsigned long> fillsToSimulate) {
 
-  // ignore input for now, flat lumi assumption
+  // get runs for all fills
+  std::vector<unsigned long> runs;
 
-  lumis_by_section.build_from_file("lumi_record.txt");
+  for (unsigned i=0; i<fillsToSimulate.size(); ++i) {
+    std::vector<unsigned long> r = fills_.getRuns(fillsToSimulate.at(i));
+    runs.insert(runs.end(),r.begin(), r.end());
+  }	
+
+  lumis_by_section.build_from_file(runs);
 
   //lumis_by_section.build_from_cycle(7, 1233, 2466, 1e31);
 
@@ -432,7 +437,7 @@ void Simulator::setupBxStructure(unsigned int bx_struct_in) {
 	beam[counter++] = 0;
 	bxs_off++;
       }
-    } 
+    }
   }
   else if (bx_struct == 9) {
     for (i = 0; i < NBXS_PER_ORBIT; i++) {
@@ -566,8 +571,58 @@ void Simulator::setupBxStructure(unsigned int bx_struct_in) {
   assert(counter == NBXS_PER_ORBIT);
 }
 
+
+void Simulator::setFillScheme(unsigned fill) {
+
+  std::cout << "Using filling scheme " << fills_.getFillingScheme(fill) << std::endl;
+
+  std::vector<unsigned> colls = fills_.getCollisions(fill);
+  std::vector<unsigned> bunches = fills_.getBunches(fill);
+
+  // loop over orbit
+  for (unsigned i=0; i<NBXS_PER_ORBIT; ++i) {
+
+    // first do collisions
+    for (unsigned j=0; j<colls.size(); ++j) {
+      if (colls.at(j) == i) {
+	bxs_on++;
+	beam[i] = true;
+      }
+      else {
+	bxs_off++;
+	beam[i] = false;
+      }
+    }
+
+    // then do masks
+    parasitic.at(i) = false;
+    for (unsigned j=0; j<colls.size(); ++j) {
+      unsigned bunch=bunches.at(j);
+      if (bunch >= i-1 && bunch <= i+1) parasitic.at(i) = true;
+    }
+
+  }
+
+  on_bxs = colls;
+
+}
+
+
 void Simulator::run(Experiment &e) {
-  setupBxStructure(e.bxStruct);
+
+  // set up luminosity data
+  setupLumi(e.fills);
+  
+  // set up LHC filling scheme
+  if (!e.isProjection) {
+    std::cout << "Simulating fill " << e.fills.at(0) << std::endl;
+    setFillScheme(e.fills.at(0));
+  }
+  else {
+    setupBxStructure(e.bxStruct);
+  }
+  
+  // reset plots
   clearPlots();
   setupPlots();
 

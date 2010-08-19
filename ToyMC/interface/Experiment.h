@@ -2,6 +2,8 @@
 #define EXPERIMENT_H
 
 #include "TObject.h"
+#include <vector>
+#include <iostream>
 
 class Experiment : public TObject
 {
@@ -15,6 +17,7 @@ public:
     };
 
     //inputs
+    bool isProjection;
     // particle parameters
     double mass;
     double crossSection;
@@ -28,6 +31,7 @@ public:
     double signalEff;
     double beamOnTime;
     double beamOffTime;
+    std::vector<ULong_t> fills;
     // analysis parameters
     lookwhere_type lookwhere;
     bool optimizeTimeCut;
@@ -58,6 +62,8 @@ public:
 
     ClassDef(Experiment,1);
 };
+
+std::ostream &operator<<(std::ostream &o, const Experiment &e);
 
 Experiment operator+(const Experiment &, const Experiment &);
 

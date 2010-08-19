@@ -6,7 +6,7 @@
 #include "TCanvas.h"
 
 struct lumi_info {
-  unsigned int run, ls;
+  unsigned long run, ls;
   double lumi, cms_sensitivity;
 };
 
@@ -17,7 +17,10 @@ class LuminosityModel {
   double operator[](unsigned int) const;
   unsigned int size() const;
   
-  void build_from_file(const char *);
+  // build model from file, for a list of runs
+  void build_from_file(std::vector<unsigned long> runs);
+
+  // generate model from parameters
   void build_from_cycle(unsigned int, unsigned int, unsigned int, double);
 
   TCanvas *draw() const;

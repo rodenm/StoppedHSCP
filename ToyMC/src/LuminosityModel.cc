@@ -1,7 +1,12 @@
+#include "StoppedHSCP/ToyMC/interface/LuminosityModel.h"
+
+#include "TH1D.h"
+
+#include <algorithm>
+
 #include <fstream>
 #include <iostream>
-#include "StoppedHSCP/ToyMC/interface/LuminosityModel.h"
-#include "TH1D.h"
+
 
 LuminosityModel::LuminosityModel() {
 
@@ -44,10 +49,11 @@ TCanvas *LuminosityModel::draw() const {
   return c;
 }
 
-void LuminosityModel::build_from_file(const char *filename) {
-  std::ifstream infile(filename);
+void LuminosityModel::build_from_file(std::vector<unsigned long> runs) {
+  
+  std::string filename("StoppedHSCP/ToyMC/data/lumi_record.txt");
 
-  // Run LS pass pass pass Lumi
+  std::ifstream infile(filename.c_str());
 
   lumis.clear();
 
@@ -55,25 +61,32 @@ void LuminosityModel::build_from_file(const char *filename) {
 
   double total_lumi = 0, sensitive_lumi = 0;
   unsigned int goodLS = 0;
-  
+
+  // Run LS pass pass pass Lumi  
   while (infile >> l.run >> l.ls >> l.lumi >> l.cms_sensitivity) {
-    l.lumi *= 1e30;
-    if (/*l.lumi > 0.01e30 &&*/ l.cms_sensitivity > 0.01) {
-      goodLS++;
-      sensitive_lumi += l.lumi; //pow(2,18)
+
+    // check this is a run we are simulating
+    std::vector<unsigned long>::iterator p = find(runs.begin(), runs.end(), l.run);
+    if (p != runs.end()) {
+      l.lumi *= 1e30;
+      if (/*l.lumi > 0.01e30 &&*/ l.cms_sensitivity > 0.01) {
+	goodLS++;
+	sensitive_lumi += l.lumi; //pow(2,18)
+      }
+      total_lumi += l.lumi;
+      
+      l.lumi /= (25e-9*3564*262144);  //pow(2,18)
+      lumis.push_back(l);
     }
-    total_lumi += l.lumi;
-
-    l.lumi /= (25e-9*3564*262144);  //pow(2,18)
-    lumis.push_back(l);
+    
   }
-
+ 
   std::cerr << "N good LS " << goodLS 
-            << " - " << goodLS*3564*25e-9*262144 << " s"
-            << std::endl
-            << "Sensitive lumi " << sensitive_lumi << std::endl
-            << "Total lumi     " << total_lumi << std::endl;
-
+	    << " - " << goodLS*3564*25e-9*262144 << " s"
+	    << std::endl
+	    << "Sensitive lumi " << sensitive_lumi << std::endl
+	    << "Total lumi     " << total_lumi << std::endl;
+  
   draw();
 }
 

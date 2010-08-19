@@ -1,7 +1,8 @@
-bxStruct	3
+isProjection	0
 runningTime	7
+fills		1251,1253,1256,1257,1258,1260,1262,1263
 lookwhere	BEAMGAP
-bgRate		0.000114
+bgRate		6.9E-5
 errBgRate	0.000025
 scale		1e7
 bgScale		1e5

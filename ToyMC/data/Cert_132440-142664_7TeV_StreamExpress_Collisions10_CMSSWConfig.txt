@@ -1,14 +1,75 @@
-#utility to generate lumi_record.txt formatted output from Lumi csv file
-
-import re
-
-goodRange = re.compile(r'^(\d*):(\d*)-\d*:(\d*)')
-goodLine = re.compile(r'^\s*(\d*),\s*(\d*),\s*\d*,\s*\d*,\s*[0-9e+-.]*,\s*([0-9e+-.]*)')
-
-start_run = 132440
-end_run   = 142664
-
-ranges = (
+Reading configuration file from  runreg_7TeVCollisions10StreamExpress.cfg
+You asked for the runreg info in the run range:132440-142664
+for dataset: %Express%
+with the following quality flags:
+Muon GOOD
+Egam GOOD
+Jmet GOOD
+Lumi GOOD
+Ecal GOOD
+L1t GOOD
+Hlt GOOD
+Csc GOOD
+Pix GOOD
+Track GOOD
+Rpc GOOD
+Strip GOOD
+Hcal GOOD
+Dt GOOD
+Es GOOD
+and with the following DCS status:
+Bpix
+Fpix
+Tibtid
+TecM
+TecP
+Tob
+Ebminus
+Ebplus
+EeMinus
+EePlus
+EsMinus
+EsPlus
+HbheA
+HbheB
+HbheC
+Ho
+Hf
+Dtminus
+Dtplus
+Dt0
+CscMinus
+CscPlus
+Rpc
+Manual bad LS in comment column: True
+Beam energy requested: 3500
+Cross-check requested agains DBS in PDs: ['/MinimumBias/Commissioning10-v4/RAW', ' /MinimumBias/Run2010A-v1/RAW']
+RunRegistry from:  http://pccmsdqm04.cern.ch/runregistry/xmlrpc
+ 
+Accessing run registry....
+ 
+Building up beam energy per run info... please wait it can be long
+Retrieving energy from the RR run tabel and making some check....
+WARNING: Something wrong with energies in run 142558
+WARNING: Getting: 7864 from RR.Using default value of:3500.0
+WARNING: Something wrong with energies in run 142076
+WARNING: Getting: 7864 from RR.Using default value of:3500.0
+WARNING: Something wrong with energies in run 140401
+WARNING: Getting: 7864 from RR.Using default value of:3500.0
+WARNING: Something wrong with energies in run 140359
+WARNING: Getting: " from RR.Using default value of:3500.0
+WARNING: Something wrong with energies in run 133082
+WARNING: Getting: 3143877 from RR.Using default value of:3500.0
+WARNING: Something wrong with energies in run 133031
+WARNING: Getting: 7864 from RR.Using default value of:3500.0
+Accessing DBS to get lumi mapping: this can be VERY long....
+ 
+-------------------------------------------
+Json file:  Cert_132440-142664_7TeV_StreamExpress_Collisions10_JSON.txt  written.
+-------------------------------------------
+ 
+CFG snippet to select:
+process.source.lumisToProcess = cms.untracked.VLuminosityBlockRange(
 	'132440:157-132440:378',
 	'132596:382-132596:382',
 	'132596:447-132596:447',
@@ -422,29 +483,4 @@ ranges = (
 	'142662:1-142662:186',
 	'142663:1-142663:167',
 	'142664:1-142664:80',
-    )
-
-rs = []
-
-for line in ranges:
-    range = goodRange.match(line)
-    if (range):
-        rs.append({'run' : range.group(1),
-                   'low' : int(range.group(2)),
-                   'high': int(range.group(3))})
-
-f = open("data/lumi.csv")
-for line in f.readlines():
-    m = goodLine.match(line)
-    ok = False
-    if (m
-        and int(m.group(1)) >= start_run
-        and int(m.group(1)) <= end_run):
-        for r in rs:
-            if (m.group(1) == r['run']
-                and int(m.group(2)) >= r['low']
-                and int(m.group(2)) <= r['high']):
-                print m.group(1), m.group(2), m.group(3), 1
-                ok = True
-        if (not ok):
-            print m.group(1), m.group(2), m.group(3), 0
+)

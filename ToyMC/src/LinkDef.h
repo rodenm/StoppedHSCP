@@ -1,3 +1,4 @@
+#include <vector>
 #include "StoppedHSCP/ToyMC/interface/Experiment.h"
 
 #ifdef __CINT__
