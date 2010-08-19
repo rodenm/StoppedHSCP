@@ -4,21 +4,21 @@
 #include <iostream>
 
 Simulator::Simulator() 
-  : bx_struct(0), 
-    parasitic(NBXS_PER_ORBIT, 0),
-    lifetimeMask(NBXS_PER_ORBIT, 0),    
-    lifetimeFitOutput("events.root", "RECREATE"),
-    t("events", "Event time structure")
+  : beamStructure_(0), 
+    maskedBXs_(NBXS_PER_ORBIT, 0),
+    lifetimeMask_(NBXS_PER_ORBIT, 0),    
+    lifetimeFitOutput_("events.root", "RECREATE"),
+    tree_("events", "Event time structure")
 {
-  t.Branch("ls", &_ls, "ls/I");
-  t.Branch("orbit", &_orbit, "orbit/I");
-  t.Branch("bx", &_bx, "bx/I");
+  tree_.Branch("ls", &ls_, "ls/I");
+  tree_.Branch("orbit", &orbit_, "orbit/I");
+  tree_.Branch("bx", &bx_, "bx/I");
 
 }
 
 void Simulator::writeOutLifetimeFit() {
-  lifetimeFitOutput.cd();
-  t.Write();
+  lifetimeFitOutput_.cd();
+  tree_.Write();
 }
 
 void Simulator::clearPlots() {
@@ -33,16 +33,16 @@ void Simulator::sendEventToLifetimeFit(unsigned int ls,
 				       unsigned int bx) {
 
   //  event[0] = (int)ls;
-  _ls = (int)ls;
-  _orbit = (int)orbit;
-  _bx = (int)bx;
+  ls_ = (int)ls;
+  orbit_ = (int)orbit;
+  bx_ = (int)bx;
 
-  t.Fill();
+  tree_.Fill();
 
 }
 
 bool Simulator::collisionHasL1A(double rate) {
-  return rndm.Rndm() < rate * TIME_PER_BUNCH * bxs_on / NBXS_PER_ORBIT;
+  return random_.Rndm() < rate * TIME_PER_BUNCH * nBxOn_ / NBXS_PER_ORBIT;
 }
 
 bool Simulator::isTriggerBlocked(const Experiment &e, unsigned int bx,
@@ -53,13 +53,13 @@ bool Simulator::isTriggerBlocked(const Experiment &e, unsigned int bx,
       bxs_from_originating_l1a < 3) return true;
   for (new_bx = bx - 1; new_bx >= ((int)bx) - 2; new_bx--) {
     int bx_to_check = (new_bx >= 0 ? new_bx : new_bx + NBXS_PER_ORBIT);
-    if (beam[bx_to_check] && collisionHasL1A(e.collisionL1Arate)) return true;
+    if (beam_[bx_to_check] && collisionHasL1A(e.collisionL1Arate)) return true;
   }
   if (bxs_from_originating_l1a >= 3 &&
       bxs_from_originating_l1a < 8) other_l1as++;
   for (; new_bx >= ((int)bx) - 7; new_bx--) {
     int bx_to_check = (new_bx >= 0 ? new_bx : new_bx + NBXS_PER_ORBIT);
-    if (beam[bx_to_check] && collisionHasL1A(e.collisionL1Arate))
+    if (beam_[bx_to_check] && collisionHasL1A(e.collisionL1Arate))
       other_l1as++;
   }
   if (other_l1as > 1) return true;
@@ -67,7 +67,7 @@ bool Simulator::isTriggerBlocked(const Experiment &e, unsigned int bx,
       bxs_from_originating_l1a < 100) other_l1as++;
   for (; new_bx >= ((int)bx) - 99; new_bx--) {
     int bx_to_check = (new_bx >= 0 ? new_bx : new_bx + NBXS_PER_ORBIT);
-    if (beam[bx_to_check] && collisionHasL1A(e.collisionL1Arate))
+    if (beam_[bx_to_check] && collisionHasL1A(e.collisionL1Arate))
       other_l1as++;
   }
   if (other_l1as > 2) return true;
@@ -75,7 +75,7 @@ bool Simulator::isTriggerBlocked(const Experiment &e, unsigned int bx,
       bxs_from_originating_l1a < 240) other_l1as++;
   for (; new_bx >= ((int)bx) - 239; new_bx--) {
     int bx_to_check = (new_bx >= 0 ? new_bx : new_bx + NBXS_PER_ORBIT);
-    if (beam[bx_to_check] && collisionHasL1A(e.collisionL1Arate))
+    if (beam_[bx_to_check] && collisionHasL1A(e.collisionL1Arate))
       other_l1as++;
   }
   if (other_l1as > 3) return true;
@@ -109,88 +109,88 @@ void Simulator::setupLumi(std::vector<unsigned long> fillsToSimulate) {
     runs.insert(runs.end(),r.begin(), r.end());
   }	
 
-  lumis_by_section.buildFromFile(runs);
+  lumi_.buildFromFile(runs);
 
 }
 
 void Simulator::setupBxStructure(unsigned int bx_struct_in) {
-  if (bx_struct == bx_struct_in) return;
+  if (beamStructure_ == bx_struct_in) return;
 
   // set up bunch structure
   unsigned int i, j, k, l, counter = 0;
 
-  bx_struct = bx_struct_in;
-  bxs_on    = 0;
-  bxs_off   = 0;
-  on_bxs.clear();
-  on_bxs.reserve(bx_struct_in);
+  beamStructure_ = bx_struct_in;
+  nBxOn_    = 0;
+  nBxOff_   = 0;
+  collisions_.clear();
+  collisions_.reserve(bx_struct_in);
 
   // December 09 run 124230
-  if (bx_struct == 2) {
+  if (beamStructure_ == 2) {
     for (i = 0; i < NBXS_PER_ORBIT; i++) {
       //      if (i ==    0 ||
       //	  i == 1782) {
       if (i ==    1 ||
 	  i == 1786) {
-	on_bxs.push_back(i);
-	beam[counter] = 1;
-	parasitic[counter-1] = 1;
-	parasitic[counter] = 1;
-	parasitic[counter+1] = 1;
+	collisions_.push_back(i);
+	beam_[counter] = 1;
+	maskedBXs_[counter-1] = 1;
+	maskedBXs_[counter] = 1;
+	maskedBXs_[counter+1] = 1;
 	counter++;
-	bxs_on++;
+	nBxOn_++;
       }
       else {
-	beam[counter++] = 0;
-	bxs_off++;
+	beam_[counter++] = 0;
+	nBxOff_++;
       }
     } 
-    parasitic[891] = 1;
-    parasitic[892] = 1;
-    parasitic[893] = 1;
-    parasitic[894] = 1;
-    parasitic[895] = 1;
-    parasitic[896] = 1;
+    maskedBXs_[891] = 1;
+    maskedBXs_[892] = 1;
+    maskedBXs_[893] = 1;
+    maskedBXs_[894] = 1;
+    maskedBXs_[895] = 1;
+    maskedBXs_[896] = 1;
 
   }
-  else if (bx_struct == 3) {
+  else if (beamStructure_ == 3) {
     for (i = 0; i < NBXS_PER_ORBIT; i++) {
       if (i ==    1 ||
 	  i ==  201 ||
 	  i ==  401) {
 
-	parasitic[counter] = 1;
+	maskedBXs_[counter] = 1;
 	if (counter != 0)
-	  parasitic[counter-1] = 1;
+	  maskedBXs_[counter-1] = 1;
 	if (counter != NBXS_PER_ORBIT-1)
-	  parasitic[counter+1] = 1;
+	  maskedBXs_[counter+1] = 1;
 
-	on_bxs.push_back(i);
-	beam[counter++] = 1;
-	bxs_on++;
+	collisions_.push_back(i);
+	beam_[counter++] = 1;
+	nBxOn_++;
       }
       else {
-	beam[counter++] = 0;
-	bxs_off++;
+	beam_[counter++] = 0;
+	nBxOff_++;
       }
     }     
   }
-  else if (bx_struct == 4) {
+  else if (beamStructure_ == 4) {
     for (i = 0; i < NBXS_PER_ORBIT; i++) {
       if (i ==    1 ||
 	  i ==  101 ||
 	  i == 1786 ||
 	  i == 1886) {
 
-	parasitic[counter] = 1;
+	maskedBXs_[counter] = 1;
 	if (counter != 0)
-	  parasitic[counter-1] = 1;
+	  maskedBXs_[counter-1] = 1;
 	if (counter != NBXS_PER_ORBIT-1)
-	  parasitic[counter+1] = 1;
+	  maskedBXs_[counter+1] = 1;
 
-	on_bxs.push_back(i);
-	beam[counter++] = 1;
-	bxs_on++;
+	collisions_.push_back(i);
+	beam_[counter++] = 1;
+	nBxOn_++;
       }
       else {
 	if (i ==  401 ||
@@ -203,18 +203,18 @@ void Simulator::setupBxStructure(unsigned int bx_struct_in) {
 	    i ==  993 ||
 	    i ==  994 ||
 	    i ==  995) {
-	parasitic[counter] = 1;
+	maskedBXs_[counter] = 1;
 	if (counter != 0)
-	  parasitic[counter-1] = 1;
+	  maskedBXs_[counter-1] = 1;
 	if (counter != NBXS_PER_ORBIT-1)
-	  parasitic[counter+1] = 1;
+	  maskedBXs_[counter+1] = 1;
 	}
-	beam[counter++] = 0;
-	bxs_off++;
+	beam_[counter++] = 0;
+	nBxOff_++;
       }
     } 
   }
-  else if (bx_struct == 5) {
+  else if (beamStructure_ == 5) {
     // Single_10b_4_2_4
     for (i = 0; i < NBXS_PER_ORBIT; i++) {
       if (i ==    1 ||
@@ -222,15 +222,15 @@ void Simulator::setupBxStructure(unsigned int bx_struct_in) {
 	  i ==  401 ||
 	  i ==  601) {
 
-	parasitic[counter] = 1;
+	maskedBXs_[counter] = 1;
 	if (counter != 0)
-	  parasitic[counter-1] = 1;
+	  maskedBXs_[counter-1] = 1;
 	if (counter != NBXS_PER_ORBIT-1)
-	  parasitic[counter+1] = 1;
+	  maskedBXs_[counter+1] = 1;
 
-	on_bxs.push_back(i);
-	beam[counter++] = 1;
-	bxs_on++;
+	collisions_.push_back(i);
+	beam_[counter++] = 1;
+	nBxOn_++;
       }
       else {
 	if (i ==  101 ||
@@ -242,18 +242,18 @@ void Simulator::setupBxStructure(unsigned int bx_struct_in) {
 	    i == 1786 ||
 	    i == 1886
 	    ) {
-	parasitic[counter] = 1;
+	maskedBXs_[counter] = 1;
 	if (counter != 0)
-	  parasitic[counter-1] = 1;
+	  maskedBXs_[counter-1] = 1;
 	if (counter != NBXS_PER_ORBIT-1)
-	  parasitic[counter+1] = 1;
+	  maskedBXs_[counter+1] = 1;
 	}
-	beam[counter++] = 0;
-	bxs_off++;
+	beam_[counter++] = 0;
+	nBxOff_++;
       }
     } 
   }
-  else if (bx_struct == 6) {
+  else if (beamStructure_ == 6) {
     for (i = 0; i < NBXS_PER_ORBIT; i++) {
       if (i ==    1 ||
 	  i ==  201 ||
@@ -262,15 +262,15 @@ void Simulator::setupBxStructure(unsigned int bx_struct_in) {
 	  i == 1986 ||
 	  i == 2186) {
 
-	parasitic[counter] = 1;
+	maskedBXs_[counter] = 1;
 	if (counter != 0)
-	  parasitic[counter-1] = 1;
+	  maskedBXs_[counter-1] = 1;
 	if (counter != NBXS_PER_ORBIT-1)
-	  parasitic[counter+1] = 1;
+	  maskedBXs_[counter+1] = 1;
 
-	on_bxs.push_back(i);
-	beam[counter++] = 1;
-	bxs_on++;
+	collisions_.push_back(i);
+	beam_[counter++] = 1;
+	nBxOn_++;
       }
       else {
 	if (i ==  892 ||
@@ -280,18 +280,18 @@ void Simulator::setupBxStructure(unsigned int bx_struct_in) {
 	    i == 1292 ||
 	    i == 1295
 	    ) {
-	parasitic[counter] = 1;
+	maskedBXs_[counter] = 1;
 	if (counter != 0)
-	  parasitic[counter-1] = 1;
+	  maskedBXs_[counter-1] = 1;
 	if (counter != NBXS_PER_ORBIT-1)
-	  parasitic[counter+1] = 1;
+	  maskedBXs_[counter+1] = 1;
 	}
-	beam[counter++] = 0;
-	bxs_off++;
+	beam_[counter++] = 0;
+	nBxOff_++;
       }
     } 
   }
-  else if (bx_struct == 8) {
+  else if (beamStructure_ == 8) {
     // Single_13b_8_8_8 before
     for (i = 0; i < NBXS_PER_ORBIT; i++) {
       if (i ==    1 ||
@@ -303,33 +303,33 @@ void Simulator::setupBxStructure(unsigned int bx_struct_in) {
 	  i == 1986 ||
 	  i == 2086 ) {
 
-	parasitic[counter] = 1;
+	maskedBXs_[counter] = 1;
 	if (counter != 0)
-	  parasitic[counter-1] = 1;
+	  maskedBXs_[counter-1] = 1;
 	if (counter != NBXS_PER_ORBIT-1)
-	  parasitic[counter+1] = 1;
+	  maskedBXs_[counter+1] = 1;
 
-	on_bxs.push_back(i);
-	beam[counter++] = 1;
-	bxs_on++;
+	collisions_.push_back(i);
+	beam_[counter++] = 1;
+	nBxOn_++;
       }
       else {
 	if (i ==  894 ||
 	    i ==  994 ||
 	    i == 1094 ||
 	    i == 1194) {
-	parasitic[counter] = 1;
+	maskedBXs_[counter] = 1;
 	if (counter != 0)
-	  parasitic[counter-1] = 1;
+	  maskedBXs_[counter-1] = 1;
 	if (counter != NBXS_PER_ORBIT-1)
-	  parasitic[counter+1] = 1;
+	  maskedBXs_[counter+1] = 1;
 	}
-	beam[counter++] = 0;
-	bxs_off++;
+	beam_[counter++] = 0;
+	nBxOff_++;
       }
     } 
   }
-  else if (bx_struct == 10) {
+  else if (beamStructure_ == 10) {
     // Single_13b_8_8_8 after
     for (i = 0; i < NBXS_PER_ORBIT; i++) {
       if (i ==    1 ||
@@ -341,15 +341,15 @@ void Simulator::setupBxStructure(unsigned int bx_struct_in) {
 	  i == 1986 ||
 	  i == 2086 ) {
 
-	parasitic[counter] = 1;
+	maskedBXs_[counter] = 1;
 	if (counter != 0)
-	  parasitic[counter-1] = 1;
+	  maskedBXs_[counter-1] = 1;
 	if (counter != NBXS_PER_ORBIT-1)
-	  parasitic[counter+1] = 1;
+	  maskedBXs_[counter+1] = 1;
 
-	on_bxs.push_back(i);
-	beam[counter++] = 1;
-	bxs_on++;
+	collisions_.push_back(i);
+	beam_[counter++] = 1;
+	nBxOn_++;
       }
       else {
 	if (i ==  501 ||
@@ -362,18 +362,18 @@ void Simulator::setupBxStructure(unsigned int bx_struct_in) {
 	    i == 1095 ||
 	    i == 1192 ||
 	    i == 1195) {
-	parasitic[counter] = 1;
+	maskedBXs_[counter] = 1;
 	if (counter != 0)
-	  parasitic[counter-1] = 1;
+	  maskedBXs_[counter-1] = 1;
 	if (counter != NBXS_PER_ORBIT-1)
-	  parasitic[counter+1] = 1;
+	  maskedBXs_[counter+1] = 1;
 	}
-	beam[counter++] = 0;
-	bxs_off++;
+	beam_[counter++] = 0;
+	nBxOff_++;
       }
     } 
   }
-  else if (bx_struct == 11) {
+  else if (beamStructure_ == 11) {
     // Single_12b_8_8_8
     for (i = 0; i < NBXS_PER_ORBIT; i++) {
       if (i ==    1 ||
@@ -385,15 +385,15 @@ void Simulator::setupBxStructure(unsigned int bx_struct_in) {
 	  i == 2186 ||
 	  i == 2386 ) {
 
-	parasitic[counter] = 1;
+	maskedBXs_[counter] = 1;
 	if (counter != 0)
-	  parasitic[counter-1] = 1;
+	  maskedBXs_[counter-1] = 1;
 	if (counter != NBXS_PER_ORBIT-1)
-	  parasitic[counter+1] = 1;
+	  maskedBXs_[counter+1] = 1;
 
-	on_bxs.push_back(i);
-	beam[counter++] = 1;
-	bxs_on++;
+	collisions_.push_back(i);
+	beam_[counter++] = 1;
+	nBxOn_++;
       }
       else {
 	if (i ==  892 ||
@@ -405,18 +405,18 @@ void Simulator::setupBxStructure(unsigned int bx_struct_in) {
 	    i == 1492 ||
 	    i == 1495
 	    ) {
-	parasitic[counter] = 1;
+	maskedBXs_[counter] = 1;
 	if (counter != 0)
-	  parasitic[counter-1] = 1;
+	  maskedBXs_[counter-1] = 1;
 	if (counter != NBXS_PER_ORBIT-1)
-	  parasitic[counter+1] = 1;
+	  maskedBXs_[counter+1] = 1;
 	}
-	beam[counter++] = 0;
-	bxs_off++;
+	beam_[counter++] = 0;
+	nBxOff_++;
       }
     }
   }
-  else if (bx_struct == 9) {
+  else if (beamStructure_ == 9) {
     for (i = 0; i < NBXS_PER_ORBIT; i++) {
       if (i ==   51 ||
 	  i ==  151 ||
@@ -427,17 +427,17 @@ void Simulator::setupBxStructure(unsigned int bx_struct_in) {
 	  i == 2014 ||
 	  i == 2824 ||
 	  i == 2905) {
-	on_bxs.push_back(i);
-	beam[counter++] = 1;
-	bxs_on++;
+	collisions_.push_back(i);
+	beam_[counter++] = 1;
+	nBxOn_++;
       }
       else {
-	beam[counter++] = 0;
-	bxs_off++;
+	beam_[counter++] = 0;
+	nBxOff_++;
       }
     } 
   }
-  else if (bx_struct == 156) {
+  else if (beamStructure_ == 156) {
 
     for (i=0; i<4; i++) {
       for (j=0; j<3; j++) {
@@ -445,30 +445,30 @@ void Simulator::setupBxStructure(unsigned int bx_struct_in) {
         if (i==0 && j==0) n=8;
         if (j==2) n=16;
         for (k=0; k<n; k++) {
-	  on_bxs.push_back(counter);
-          beam[counter++]=1;
-          bxs_on++;
+	  collisions_.push_back(counter);
+          beam_[counter++]=1;
+          nBxOn_++;
           for (l=0; l<20; l++) {
-            beam[counter++]=0;
-            bxs_off++;
+            beam_[counter++]=0;
+            nBxOff_++;
           }
         }
         for (k=0; k<17; k++) {
-          beam[counter++]=0;
-          bxs_off++;
+          beam_[counter++]=0;
+          nBxOff_++;
         }
       }
     }
 
     for (l=0; l<84; l++) {
-      beam[counter++]=0;
-      bxs_off++;
+      beam_[counter++]=0;
+      nBxOff_++;
     }
 
   }
 
   // 75ns spacing
-  else if (bx_struct == 936) {
+  else if (beamStructure_ == 936) {
     for (i = 1; i <= 4; i++) {
 
       for (j = 1; j <= 3; j++) {
@@ -476,69 +476,69 @@ void Simulator::setupBxStructure(unsigned int bx_struct_in) {
         for (k = 1; k <= (j == 3 && i < 4 ? 4 : 3); k++) {
           for (l = 1; l <= 72; l++) {
             if (l % 3 == 1) {
-	      on_bxs.push_back(counter);
-              beam[counter++] = 1;
-              bxs_on++;
+	      collisions_.push_back(counter);
+              beam_[counter++] = 1;
+              nBxOn_++;
             }
             else {
-              beam[counter++] = 0;
-              bxs_off++;
+              beam_[counter++] = 0;
+              nBxOff_++;
             }
           }
           for (l = 1; l <= 8; l++) {
-            beam[counter++] = 0;
-            bxs_off++;
+            beam_[counter++] = 0;
+            nBxOff_++;
           }
         }
 
         for (k = 1; k <= 30; k++) {
-          beam[counter++] = 0;
-          bxs_off++;
+          beam_[counter++] = 0;
+          nBxOff_++;
         }
 
       }
 
-      beam[counter++] = 0;
-      bxs_off++;
+      beam_[counter++] = 0;
+      nBxOff_++;
     }
 
     for (i = 1; i <= 8 + 72; i++) {
-      beam[counter++] = 0;
-      bxs_off++;
+      beam_[counter++] = 0;
+      nBxOff_++;
     }
   }
 
-    else if (bx_struct == 2808) {
+    else if (beamStructure_ == 2808) {
     for (i = 1; i <= 4; i++) {
 
       for (j = 1; j <= 3; j++) {
 
         for (k = 1; k <= (j == 3 && i < 4 ? 4 : 3); k++) {
           for (l = 1; l <= 72; l++) {
-	    on_bxs.push_back(counter);
-            beam[counter++] = 1;
-            bxs_on++;
+	    collisions_.push_back(counter);
+            beam_[counter++] = 1;
+            nBxOn_++;
           }
           for (l = 1; l <= 8; l++) {
-            beam[counter++] = 0;
-            bxs_off++;
+            beam_[counter++] = 0;
+            nBxOff_++;
           }
         }
 
         for (k = 1; k <= 30; k++) {
-          beam[counter++] = 0;
-          bxs_off++;
+          beam_[counter++] = 0;
+          nBxOff_++;
         }
 
       }
 
-      beam[counter++] = 0;
-      bxs_off++;
+      beam_[counter++] = 0;
+      nBxOff_++;
     }
 
     for (i = 1; i <= 8 + 72; i++) {
-      beam[counter++] = 0;
-      bxs_off++;
+      beam_[counter++] = 0;
+      nBxOff_++;
     }
   }
   else
@@ -562,25 +562,25 @@ void Simulator::setFillScheme(unsigned fill) {
     // first do collisions
     for (unsigned j=0; j<colls.size(); ++j) {
       if (colls.at(j) == i) {
-	bxs_on++;
-	beam[i] = true;
+	nBxOn_++;
+	beam_[i] = true;
       }
       else {
-	bxs_off++;
-	beam[i] = false;
+	nBxOff_++;
+	beam_[i] = false;
       }
     }
 
     // then do masks
-    parasitic.at(i) = false;
+    maskedBXs_.at(i) = false;
     for (unsigned j=0; j<colls.size(); ++j) {
       unsigned bunch=bunches.at(j);
-      if (bunch >= i-1 && bunch <= i+1) parasitic.at(i) = true;
+      if (bunch >= i-1 && bunch <= i+1) maskedBXs_.at(i) = true;
     }
 
   }
 
-  on_bxs = colls;
+  collisions_ = colls;
 
 }
 
@@ -603,8 +603,8 @@ void Simulator::run(Experiment &e) {
   clearPlots();
   setupPlots();
 
-  for (unsigned int i = 0; i < on_bxs.size(); i++) {
-    run_specific_plots["bunch_structure"]->Fill(on_bxs[i]);
+  for (unsigned int i = 0; i < collisions_.size(); i++) {
+    run_specific_plots["bunch_structure"]->Fill(collisions_[i]);
   }
 
   setupLifetimeBxMasking(e.lifetime);
@@ -619,25 +619,25 @@ void Simulator::setupLifetimeBxMasking(double lifetime) {
 
   int mostRecentOn = -1;
   for (unsigned int i = 0; i < NBXS_PER_ORBIT; i++) {
-    if (beam[i]) {
+    if (beam_[i]) {
       mostRecentOn = i;
-      lifetimeMask[i] = false; // but will be blocked by other factors
+      lifetimeMask_[i] = false; // but will be blocked by other factors
     }
     else if (mostRecentOn == -1) {
-      lifetimeMask[i] = true;
+      lifetimeMask_[i] = true;
     }
     else {
-      lifetimeMask[i] =
+      lifetimeMask_[i] =
 	(( i - mostRecentOn ) * TIME_PER_BUNCH > 1.256 * lifetime);
     }
-    if (!lifetimeMask[i] && !parasitic[i])
+    if (!lifetimeMask_[i] && !maskedBXs_[i])
       unmaskedBxs++;
   }
   mostRecentOn -= NBXS_PER_ORBIT;
-  for (unsigned int i = 0; i < NBXS_PER_ORBIT && !beam[i]; i++) {
-      lifetimeMask[i] =
+  for (unsigned int i = 0; i < NBXS_PER_ORBIT && !beam_[i]; i++) {
+      lifetimeMask_[i] =
 	(( i - mostRecentOn ) * TIME_PER_BUNCH > 1.256 * lifetime);    
-      if (!lifetimeMask[i] && !parasitic[i])
+      if (!lifetimeMask_[i] && !maskedBXs_[i])
 	unmaskedBxs++;
   }
 
@@ -653,9 +653,9 @@ void Simulator::simulateSignal(Experiment &e) {
 
   //Steps involved in running:
 
-  for (unsigned ls = 0; ls < lumis_by_section.size(); ls++) {
+  for (unsigned ls = 0; ls < lumi_.size(); ls++) {
     if (ls * TIME_PER_LS > 24*3600*e.runningTime) break;
-    //    if (lumis_by_section.lumis[ls].cms_sensitivity < 0.01) continue;
+    //    if (lumi_.lumis[ls].cms_sensitivity < 0.01) continue;
 
     // calculate decays for an on-bunch
     
@@ -663,7 +663,7 @@ void Simulator::simulateSignal(Experiment &e) {
       // Amount of time 
       e.scale * TIME_PER_LS
       // Events / time
-      * e.crossSection * lumis_by_section.luminosity(ls)
+      * e.crossSection * lumi_.luminosity(ls)
       // Efficiencies
       * e.signalEff;
 
@@ -674,11 +674,11 @@ void Simulator::simulateSignal(Experiment &e) {
       // Don't truncate the last fraction of an event:
       //  Randomly determine whether to use it
       if (decay > nDecays && 
-	  (rndm.Rndm() < decay-nDecays)) break;
+	  (random_.Rndm() < decay-nDecays)) break;
 
       // Find the time of a decay
       
-      double       tau                  = rndm.Exp(e.lifetime);
+      double       tau                  = random_.Exp(e.lifetime);
       unsigned int tau_in_LSs           = 
 	(unsigned int) (tau / TIME_PER_LS);
       unsigned int tau_remainder_in_bxs = 
@@ -691,8 +691,8 @@ void Simulator::simulateSignal(Experiment &e) {
       // Since each productions are approx equally distributed among
       // orbits in a LS, simulate all of them at once,
       // and randomly assign them.
-      unsigned int start_bx = on_bxs[rndm.Integer(on_bxs.size())];      
-      unsigned int start_orbit = rndm.Integer(NORBITS_PER_LS);
+      unsigned int start_bx = collisions_[random_.Integer(collisions_.size())];      
+      unsigned int start_orbit = random_.Integer(NORBITS_PER_LS);
       
       unsigned int tau_remainder_in_orbits    =  
 	(tau_remainder_in_bxs / NBXS_PER_ORBIT);
@@ -717,12 +717,12 @@ void Simulator::simulateSignal(Experiment &e) {
       
       /*
       double decay_within_bx =
-	rndm.Rndm() * TIME_PER_BUNCH;
+	random_.Rndm() * TIME_PER_BUNCH;
       */      
 
       // Store the result
       
-      if (decay_ls > lumis_by_section.size() ||
+      if (decay_ls > lumi_.size() ||
 	  (decay_ls * TIME_PER_LS > e.runningTime * 24. * 3600))
 	continue;
 
@@ -730,24 +730,24 @@ void Simulator::simulateSignal(Experiment &e) {
 
       bool take_event = false;
       if ((e.lookwhere == e.BEAMGAP || e.lookwhere == e.BOTH)
-	  //&& lumis_by_section[decay_ls] > 4.28e26 // have beam
-	  //&& lumis_by_section[decay_ls] > 1 // have beam
-	  && lumis_by_section.cmsSensitive(decay_ls)
-	  && !beam[decay_bx]
-	  && !parasitic[decay_bx]
-	  && (!lifetimeMask[decay_bx] || !e.optimizeTimeCut)
+	  //&& lumi_[decay_ls] > 4.28e26 // have beam
+	  //&& lumi_[decay_ls] > 1 // have beam
+	  && lumi_.cmsSensitive(decay_ls)
+	  && !beam_[decay_bx]
+	  && !maskedBXs_[decay_bx]
+	  && (!lifetimeMask_[decay_bx] || !e.optimizeTimeCut)
 	  ) {
 	take_event = true;
 	// do specific beamgap stuff
       }
       else if ((e.lookwhere == e.INTERFILL || e.lookwhere == e.BOTH)
-	       && lumis_by_section.cmsSensitive(decay_ls)
-	       && lumis_by_section.luminosity(decay_ls) < 1) { // no beam
+	       && lumi_.cmsSensitive(decay_ls)
+	       && lumi_.luminosity(decay_ls) < 1) { // no beam
 	take_event = true;
 
 	if (e.optimizeTimeCut) {
 	  unsigned int i;
-	  for (i = decay_ls; lumis_by_section.luminosity(i) < 1; i--);
+	  for (i = decay_ls; lumi_.luminosity(i) < 1; i--);
 	  if ((decay_ls - i - 1) * TIME_PER_LS >
 	      e.lifetime * 1.256) 
 	    take_event = false;
@@ -770,7 +770,7 @@ void Simulator::simulateSignal(Experiment &e) {
 	run_specific_plots["sensitive_in_beam"]->Fill(decay_bx);
 
 	if (e.sendToLifetimeFit &&
-	    rndm.Integer((unsigned int)e.scale) == 0)
+	    random_.Integer((unsigned int)e.scale) == 0)
 	  sendEventToLifetimeFit(decay_ls, decay_orbit, decay_bx);
       }
     }
@@ -786,7 +786,7 @@ void Simulator::simulateSignal(Experiment &e) {
 void Simulator::simulateBackground(Experiment &e) {
 
   double nHits =
-    e.bgRate * e.bgScale * TIME_PER_LS * lumis_by_section.size();
+    e.bgRate * e.bgScale * TIME_PER_LS * lumi_.size();
 
   assert (nHits < 4294967296.); // 2^32, too many hits!!
 
@@ -796,32 +796,32 @@ void Simulator::simulateBackground(Experiment &e) {
     // Don't truncate the last fraction of an event:
     //  Randomly determine whether to use it
     if (hit > nHits && 
-	(rndm.Rndm() < hit-nHits)) break;
+	(random_.Rndm() < hit-nHits)) break;
     
-    unsigned int ls    = rndm.Integer(lumis_by_section.size());
-    unsigned int orbit = rndm.Integer(NORBITS_PER_LS);
-    unsigned int bx    = rndm.Integer(NBXS_PER_ORBIT);
+    unsigned int ls    = random_.Integer(lumi_.size());
+    unsigned int orbit = random_.Integer(NORBITS_PER_LS);
+    unsigned int bx    = random_.Integer(NBXS_PER_ORBIT);
 
     if (ls * TIME_PER_LS > 3600 * 24 * e.runningTime) continue;
 
     bool take_event = false;
     if ((e.lookwhere == e.BEAMGAP || e.lookwhere == e.BOTH)
-	//&& lumis_by_section[ls] > 4.28e26 // have beam
-	//&& lumis_by_section[ls] > 1 // have beam
-	&& lumis_by_section.cmsSensitive(ls)
-	&& !beam[bx]
-	&& !parasitic[bx]
-	&& (!lifetimeMask[bx] || !e.optimizeTimeCut)) {      take_event = true;
+	//&& lumi_[ls] > 4.28e26 // have beam
+	//&& lumi_[ls] > 1 // have beam
+	&& lumi_.cmsSensitive(ls)
+	&& !beam_[bx]
+	&& !maskedBXs_[bx]
+	&& (!lifetimeMask_[bx] || !e.optimizeTimeCut)) {      take_event = true;
       // do specific beamgap stuff
     }
     else if ((e.lookwhere == e.INTERFILL || e.lookwhere == e.BOTH)
-	     && lumis_by_section.cmsSensitive(ls)
-	     && lumis_by_section.luminosity(ls) < 1) { // no beam
+	     && lumi_.cmsSensitive(ls)
+	     && lumi_.luminosity(ls) < 1) { // no beam
       take_event = true;
 
       if (e.optimizeTimeCut) {
 	unsigned int i;
-	for (i = ls; lumis_by_section.luminosity(i) < 1 && i > 0; i--);
+	for (i = ls; lumi_.luminosity(i) < 1 && i > 0; i--);
 	if (i==0) take_event = false;
 	if ((ls - i - 1) * TIME_PER_LS >
 	    e.lifetime * 1.256) 
@@ -834,7 +834,7 @@ void Simulator::simulateBackground(Experiment &e) {
       // do common beamgap AND interfill stuff
       ++background_events;
       if (e.sendToLifetimeFit &&
-	  rndm.Integer((unsigned int)e.bgScale) == 0)
+	  random_.Integer((unsigned int)e.bgScale) == 0)
 	sendEventToLifetimeFit(ls, orbit, bx);
     }
   }

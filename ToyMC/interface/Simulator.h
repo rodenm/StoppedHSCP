@@ -57,25 +57,31 @@ class Simulator {
   //  double countingExpt95CLUpperLimitHybrid(int nObserved, double bkgMean, double bkgSigma, int nToys);
  private:
 
+  // random numbers
+  TRandom3 random_;
+
+  // LHC bunch structure
   LhcFills fills_;
 
-  unsigned int bx_struct;
-  unsigned int bxs_on, bxs_off;
-  bool beam[NBXS_PER_ORBIT];
-  std::vector<bool> parasitic;//bad bunches to look inside
-  std::vector<bool> lifetimeMask; //bunches too far from collision
-  std::vector<unsigned int> on_bxs;
+  // luminosity delivered
+  Luminosity lumi_;
 
-  Luminosity lumis_by_section;
-  //std::vector<double> lumis_by_section;
+  // local info used for bunch structure
+  unsigned int beamStructure_;  // number of filled BXs?
+  unsigned int nBxOn_;          // think this is just a cross-check
+  unsigned int nBxOff_;         // think this is just a cross-check
+  bool beam_[NBXS_PER_ORBIT];   // whether each bucket in the orbit is filled or not
+  std::vector<bool> maskedBXs_;    // bad bunches to look inside
+  std::vector<bool> lifetimeMask_; // bunches too far from collision
+  std::vector<unsigned int> collisions_;  // BXs of collisions
 
-  TFile lifetimeFitOutput;
-  TTree t;
+  // output stuff
+  TFile lifetimeFitOutput_;
+  TTree tree_;
 
-  int event[3];
-  int _ls, _bx, _orbit;
+  int event_[3];
+  long int ls_, bx_, orbit_;
 
-  TRandom3 rndm;
 };
 
 #endif
