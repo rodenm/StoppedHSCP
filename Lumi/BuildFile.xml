@@ -1,5 +1,6 @@
 <use name="root"/>
 <use name="rootrflx"/>
+<use name="oracleocci"/>
 
 <export>
   <use name="root"/>
