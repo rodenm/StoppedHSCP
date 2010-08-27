@@ -14,24 +14,37 @@ class LhcFills {
   LhcFills();
   ~LhcFills();
 
-  std::vector<unsigned> getFills();
+  std::vector<unsigned long> getFills();
 
   // get info about a particular fill
-  std::vector<unsigned> getRuns(unsigned fill);
-  std::string getFillScheme(unsigned fill);
-  std::vector<unsigned> getCollions(unsigned fill);
+  std::vector<unsigned long> getRuns(unsigned fill);
+  std::string getFillingScheme(unsigned fill);
+  std::vector<unsigned> getCollisions(unsigned fill);
   std::vector<unsigned> getBunches(unsigned fill);
+
+  // get info about a particular run
+  unsigned long getFillFromRun(unsigned long run);
+  std::string getFillingSchemeFromRun(unsigned long run);
+  std::vector<unsigned> getCollisionsFromRun(unsigned long run);
+  std::vector<unsigned> getBunchesFromRun(unsigned long run);
 
   // print info
   void printSummary(std::ostream& o);
   void print(std::ostream& o);
 
+  // write files etc
+  void writeBunchMaskFile();
+
+ private:
+
+  bool blankString(std::string& s);
+
  private:
 
   struct Fill {
-    unsigned number;
+    unsigned long number;
     std::string scheme;
-    std::vector<unsigned> runs;
+    std::vector<unsigned long> runs;
     std::vector<unsigned> beam1;
     std::vector<unsigned> beam2;
   };

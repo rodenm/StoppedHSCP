@@ -9,7 +9,7 @@ def usage():
     print "Usage : printSummary.py [-h] <input dataset>"
 
 
-# the main program
+# get arguments
 try:
     opts, args = getopt.getopt(sys.argv[1:], "hm")
 except getopt.GetoptError:
@@ -53,14 +53,12 @@ if (not isMC):
 
 
 # get histogram
-if isMC:
-    hfile=TFile(dataset+"/histograms.root")
-else:
-    hfile=TFile(dataset+"/selectedRuns.root")
-hcutcum=hfile.Get("Cuts/hncutcum")
-hcutind=hfile.Get("Cuts/hncutind")
-hcutnmo=hfile.Get("Cuts/hnminus1cut")
-hnmu=hfile.Get("NoCuts/hnmu")
+hfile=TFile(dataset+"/histograms.root")
+
+hcutcum=hfile.Get("All/Cuts/hncutcum")
+hcutind=hfile.Get("All/Cuts/hncutind")
+hcutnmo=hfile.Get("All/Cuts/hnminus1cut")
+hnmu=hfile.Get("All/NoCuts/hnmu")
 
 cutnames=["HLT\t\t",
           "BX veto\t\t",

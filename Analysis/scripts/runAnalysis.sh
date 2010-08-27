@@ -1,13 +1,12 @@
-#!/bin/bash
+#!/bin/sh
 
 # run all steps of the analysis
 
-
-dataset = $1
-runs = $2
+dataset=$1
+runs=$2
 
 # make histograms
-makeHistograms ntuples/stoppedHSCP_tree_$dataset $runs
+makeHistograms ntuples/stoppedHSCP_tree_$dataset.root $dataset $runs
 
 # make plots
 python $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/makePlots.py $dataset

@@ -70,10 +70,11 @@ def getLivetime2(hist) :
 
 # main program starts here
 
-# make plots of rate by run
-nruns=len(runs)
+# open ROOT file
+file = TFile(dir+"/histograms.root")
 
-# histos
+# create histograms
+nruns=len(runs)
 hnhlt       = histByRun("hnhlt", "HLT counts", nruns)
 hnfin       = histByRun("hnfin", "Final counts", nruns)
 hefftime    = histByRun("hefftime", "Effective live time", nruns)
@@ -102,11 +103,10 @@ i=0
 for run in runs:
 
     print run
-    
-    file = TFile(dir+"/histograms"+str(run)+".root")
+    runstr=str(run)
     
     # HLT counts
-    hlb=file.Get("NoCuts/hlb")
+    hlb=file.Get(runstr+"/NoCuts/hlb")
     nhlt=hlb.GetEntries()
     hnhlt.Fill(str(run), nhlt)
     hnhlt.SetBinError(i+1, sqrt(nhlt))
@@ -126,7 +126,7 @@ for run in runs:
     hlivetime.Fill(str(run), livetime)
     hlivetime.SetBinError(i+1, 10.)
 
-    hcutcount = file.Get("Cuts/hncutcum")
+    hcutcount = file.Get(runstr+"/Cuts/hncutcum")
 
     # final counts
     nevtFinal = hcutcount.GetBinContent(12)
@@ -157,12 +157,12 @@ for run in runs:
         hratecuts[c].SetBinError(i+1, erate)
 
     # BX vs run
-    hbx0=file.Get("Cuts/hbx0")
+    hbx0=file.Get(runstr+"/Cuts/hbx0")
     for j in range(0,3564):
         hbx.Fill(str(run), j, hbx0.GetBinContent(j+1))
 
     # eta/phi vs run
-    hetaphi0=file.Get("Cuts/hjetetaphi0")
+    hetaphi0=file.Get(runstr+"/Cuts/hjetetaphi0")
     heta0=hetaphi0.ProjectionX()
     for j in range(1,heta0.GetNbinsX()):
         heta.Fill(str(run), heta0.GetBinCenter(j), heta0.GetBinContent(j))
@@ -172,12 +172,12 @@ for run in runs:
         hphi.Fill(str(run), hphi0.GetBinCenter(j), hphi0.GetBinContent(j))
 
     # BX vs run (after all cuts)
-    hbx11=file.Get("Cuts/hbx11")
+    hbx11=file.Get(runstr+"/Cuts/hbx11")
     for j in range(0,3564):
         hbxfin.Fill(str(run), j, hbx11.GetBinContent(j+1))
 
     # eta/phi vs run (after all cuts)
-    hetaphi11=file.Get("Cuts/hjetetaphi11")
+    hetaphi11=file.Get(runstr+"/Cuts/hjetetaphi11")
     heta11=hetaphi11.ProjectionX()
     for j in range(1,heta11.GetNbinsX()):
         hetafin.Fill(str(run), heta11.GetBinCenter(j), heta11.GetBinContent(j))

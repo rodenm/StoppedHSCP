@@ -38,7 +38,8 @@ Analyser::Analyser(std::string ifile, std::string outdir, std::vector<unsigned> 
   }
   std::cout << std::endl;
 
-  //  fills_.print(std::cout);
+  // for backwards compatibility with old versions of the analysis
+  fills_.writeBunchMaskFile();
 
 }
 
@@ -104,13 +105,12 @@ void Analyser::reset() {
 
 void Analyser::nextEvent() {
 
-  int nb=0;
   if (iEvent_ < nEvents_-1) {
+    int nb=0;
     nb = tree_->GetEntry(iEvent_);
     iEvent_++;
+    if (nb == 0) {  std::cout << "TTree GetEntry() failed" << std::endl; }
   }
-
-  if (nb == 0) {  std::cout << "TTree GetEntry() failed" << std::endl; }
 
 }
 
@@ -161,6 +161,8 @@ void Analyser::loop() {
 
   reset();
 
+  unsigned currentRun=0;
+
   // run loop
   for (unsigned long i=0; i<nEvents_; ++i, nextEvent()) {
     
@@ -168,6 +170,15 @@ void Analyser::loop() {
       std::cout << "Processing " << i << "th event" << std::endl;
     }
     
+    // check to see if the run number changed
+    // update fill structure if so
+    if (event_->run != currentRun) {
+      std::cout << "New run : " << event_->run << std::endl;
+      cuts_.setMaskedBXs(fills_.getBunchesFromRun(event_->run));
+      currentRun = event_->run;
+    }
+
+    // fill histograms
     histogrammer_.fill(*event_);
     
     // print watched events
@@ -180,7 +191,7 @@ void Analyser::loop() {
       printCutValues(dumpFile_);
       eventFile_ << event_->run << ", " << event_->lb << ", " << event_->orbit << ", " << event_->bx << ", " << event_->id << std::endl;
     }
-    
+
   }
 
   histogrammer_.save();

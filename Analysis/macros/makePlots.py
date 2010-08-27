@@ -38,7 +38,7 @@ for opt, arg in opts:
         doRuns=True;
 
 # arguments
-filename=args[0]
+filename=args[0]+"/histograms.root"
 runs=[]
 if (len(args)>1):
     runlist=args[1].split(',')
@@ -66,7 +66,7 @@ def plotsFromHistos(filename):
     canvas = TCanvas("canvas")
     canvas.Print(fileroot+".ps[", "Portrait")
 
-    dir="NoCuts";
+    dir="All/NoCuts";
 
     # BX plots etc
     histPlot(dir+"/hbx", file, fileroot+".ps", 0., True, "", "BX", "N events")
@@ -112,7 +112,7 @@ def plotsFromHistos(filename):
     hist2DPlot(dir+"/hpkout", file, fileroot+".ps", 1., True, "", "R_{peak}", "R_{out}", "", "COLZ")
 
     # pulse shape variables after jet/mu cuts
-    dir = "Cuts"
+    dir = "All/Cuts"
     histPlot(dir+"/hr1_jetmu", file, fileroot+".ps", 1., False, "R_{1} after jet/mu cuts", "R_{1}", "")
     histPlot(dir+"/hr2_jetmu", file, fileroot+".ps", 1., False, "R_{2} after jet/mu cuts", "R_{2}", "")
     histPlot(dir+"/hrpk_jetmu", file, fileroot+".ps", 1., False, "R_{peak} after jet/mu cuts", "R_{peak}", "")
@@ -122,7 +122,7 @@ def plotsFromHistos(filename):
 
 
     # cut plots
-    dir = "Cuts"
+    dir = "All/Cuts"
     histPlot(dir+"/hncutcum", file, fileroot+".ps", 1., True, "", "Cut", "N_{events}")
     histPlot(dir+"/hncutind", file, fileroot+".ps", 1., True, "", "Cut", "N_{events}")
     histPlot(dir+"/hnminus1cut", file, fileroot+".ps", 1., True, "", "Cut", "N_{events}")

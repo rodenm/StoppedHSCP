@@ -11,8 +11,9 @@
 
 Cuts::Cuts(StoppedHSCPEvent* event, bool isMC) :
   event_(event),
-  maskedBXs_(0),
-  isMC_(isMC)
+  isMC_(isMC),
+  bxWindow_(1),
+  maskedBXs_(0)
 {
 
 }
@@ -49,6 +50,26 @@ void Cuts::readMaskedBXs(std::string filename, unsigned run) {
       }
     }
   }
+
+}
+
+
+void Cuts::setMaskedBXs(std::vector<unsigned> filledBXs) {
+
+  maskedBXs_.clear();
+
+  // add window either side of bunches
+  for (unsigned i=0; i<filledBXs.size(); ++i) {
+    for (int j=(-1*bxWindow_); j<=bxWindow_; ++j) {
+      maskedBXs_.push_back(filledBXs.at(i) + j);
+    }
+  }
+
+  std::cout << "Updating BX mask : ";
+  for (unsigned i=0; i<maskedBXs_.size(); ++i) {
+    std::cout << maskedBXs_.at(i) << ",";
+  }
+  std::cout << std::endl;
 
 }
 

@@ -13,8 +13,11 @@ class Cuts {
   Cuts(StoppedHSCPEvent* event, bool isMC);
   ~Cuts();
 
-  // setup BX masks
+  // read BX masks form file - old method
   void readMaskedBXs(std::string filename, unsigned run);
+
+  // set BX masks from filled bunches and window
+  void setMaskedBXs(std::vector<unsigned> filledBXs);
 
   // set current event
   void setEvent(StoppedHSCPEvent* event) {event_ = event; }
@@ -52,11 +55,18 @@ class Cuts {
 
  private:
 
+  // poitner to the event
   StoppedHSCPEvent* event_;
 
+  // this is MC data
+  bool isMC_;
+
+  // how many BX either side of a bunch to mask
+  int bxWindow_;
+
+  // list of BXs to mask
   std::vector<unsigned> maskedBXs_;
 
-  bool isMC_;
 
 };
 

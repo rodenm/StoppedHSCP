@@ -25,7 +25,7 @@ LhcFills::LhcFills() {
     // skip header line
     getline(fills, line);
 
-    // read remainder
+    // read remainder of file
     while (!fills.eof()) {
       
       getline(fills, line);
@@ -33,6 +33,11 @@ LhcFills::LhcFills() {
       boost::split(strs, line, boost::is_any_of("\t\v\f\r \n"));
 
       if (atoi(strs.at(0).c_str()) > 0) {
+
+// 	for (std::vector<std::string>::iterator itr=strs.begin(); itr!=strs.end();) {
+// 	  if (itr->length()==0) strs.erase(itr);
+// 	  else ++itr;
+// 	}
 
 	Fill fill;
 
@@ -88,8 +93,104 @@ LhcFills::LhcFills() {
 
 }
 
+
 LhcFills::~LhcFills() {
 
+}
+
+
+std::vector<unsigned long> LhcFills::getRuns(unsigned fill) {
+
+  for (unsigned f=0; f<fills_.size(); ++f) {
+    if (fills_.at(f).number == fill) return fills_.at(f).runs;
+  }
+  return std::vector<unsigned long>(0);
+
+}
+
+
+std::string LhcFills::getFillingScheme(unsigned fill) {
+
+  for (unsigned f=0; f<fills_.size(); ++f) {
+    if (fills_.at(f).number == fill) return fills_.at(f).scheme;
+  }
+  return std::string();
+
+}
+
+
+std::vector<unsigned> LhcFills::getCollisions(unsigned fill) {
+
+  std::vector<unsigned> colls(0);
+
+  for (unsigned f=0; f<fills_.size(); ++f) {
+    if (fills_.at(f).number == fill) {
+      for (unsigned b1=0; b1<fills_.at(f).beam1.size(); ++b1) {
+	for (unsigned b2=0; b2<fills_.at(f).beam2.size(); ++b2) {
+	  if (fills_.at(f).beam1.at(b1) == fills_.at(f).beam2.at(b2)) {
+	    colls.push_back(fills_.at(f).beam1.at(b1));
+	  }
+	}
+      }
+
+    }
+
+  }
+
+  return colls;
+
+}
+
+
+std::vector<unsigned> LhcFills::getBunches(unsigned fill) {
+
+  std::vector<unsigned> bxs(0);
+
+  for (unsigned f=0; f<fills_.size(); ++f) {
+
+    if (fills_.at(f).number == fill) {
+      for (unsigned b1=0; b1<fills_.at(f).beam1.size(); ++b1) {
+	bxs.push_back(fills_.at(f).beam1.at(b1));
+      }
+      for (unsigned b2=0; b2<fills_.at(f).beam2.size(); ++b2) {
+	bxs.push_back(fills_.at(f).beam2.at(b2));
+      }
+    }
+    
+  }
+
+  sort(bxs.begin(), bxs.end());
+  bxs.erase(std::unique(bxs.begin(), bxs.end()), bxs.end());  
+
+  return bxs;
+
+}
+
+
+unsigned long LhcFills::getFillFromRun(unsigned long run) {
+
+  for (unsigned f=0; f<fills_.size(); ++f) {
+    for (unsigned r=0; r<fills_.at(f).runs.size(); ++r) {
+      if (fills_.at(f).runs.at(r) == run) return fills_.at(f).number;
+    }
+  }
+  return 0;
+
+}
+
+
+std::string LhcFills::getFillingSchemeFromRun(unsigned long run) {
+  return getFillingScheme(getFillFromRun(run));
+}
+
+
+std::vector<unsigned> LhcFills::getCollisionsFromRun(unsigned long run) {
+  return getCollisions(getFillFromRun(run));
+}
+
+
+std::vector<unsigned> LhcFills::getBunchesFromRun(unsigned long run) {
+  return getBunches(getFillFromRun(run));
 }
 
 
@@ -100,6 +201,7 @@ void LhcFills::printSummary(std::ostream& o) {
   }
   o << std::endl;
 }
+
 
 void LhcFills::print(std::ostream& o) {
   o << "Fill Information" << std::endl;
@@ -123,4 +225,46 @@ void LhcFills::print(std::ostream& o) {
     o << std::endl;
   }
   o << std::endl;
+}
+
+
+// this is a temporary measure
+// write file of same format as used previous to set masks
+void LhcFills::writeBunchMaskFile() {
+
+  std::ofstream ofile;
+  ofile.open("bx_mask.csv");
+
+  for (unsigned f=0; f<fills_.size(); ++f) {
+
+    for (unsigned r=0; r<fills_.at(f).runs.size(); ++r) {
+
+      std::vector<unsigned> mask(0);
+
+      for (unsigned b=0; b<fills_.at(f).beam1.size(); ++b) {
+	mask.push_back( fills_.at(f).beam1.at(b)-1 );
+	mask.push_back( fills_.at(f).beam1.at(b) );
+	mask.push_back( fills_.at(f).beam1.at(b)+1 );
+      }
+      for (unsigned b=0; b<fills_.at(f).beam2.size(); ++b) {
+	mask.push_back( fills_.at(f).beam2.at(b)-1 );
+	mask.push_back( fills_.at(f).beam2.at(b) );
+	mask.push_back( fills_.at(f).beam2.at(b)+1 );
+      }
+
+      // sort and remove duplicates
+      sort(mask.begin(), mask.end());
+      mask.erase(std::unique(mask.begin(), mask.end()), mask.end());
+
+      ofile << fills_.at(f).runs.at(r) << ",";
+
+      for (unsigned i=0; i<mask.size(); ++i) {
+	ofile << mask.at(i) << ",";
+      }
+
+      ofile << std::endl;
+    }
+
+  }
+
 }
