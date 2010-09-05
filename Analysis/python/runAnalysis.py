@@ -20,21 +20,19 @@ fillstr = args[1]
 
 # convert fill list to runs list
 filllist=fillstr.split(',')
-print filllist
 runs=''
 ffile = open("StoppedHSCP/Analysis/data/fills.txt")
 ffile.next()
 for line in ffile:
     tokens=line.split()
-    print tokens
     if (len(tokens)>2):
         if (filllist.count(tokens[0])>0):
-            print tokens[0]
             rstrs=tokens[2].split(',')
             for r in rstrs:
                 runs+=r+","
 
-print runs
+print "Fills :", fillstr
+print "Runs  :", runs
 
 
 # make histograms
