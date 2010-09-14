@@ -207,7 +207,7 @@ void Histograms::fill(StoppedHSCPEvent& event) {
 
   // plots after jet and mu cuts
   if (cuts_->allCutN(8)) {
-    hrpksample_->Fill(event.top5DigiPeakSample);
+    hpksample_->Fill(event.top5DigiPeakSample);
     hr1_->Fill(event.top5DigiR1);
     hr2_->Fill(event.top5DigiR2);
     hrpk_->Fill(event.top5DigiRPeak);
