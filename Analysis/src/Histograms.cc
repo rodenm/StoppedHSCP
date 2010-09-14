@@ -333,6 +333,7 @@ void Histograms::save() {
   hjetfhpd_->Write("",TObject::kOverwrite);
   hnmu_->Write("",TObject::kOverwrite);
   hmuetaphi_->Write("",TObject::kOverwrite);
+
   hpksample_->Write("",TObject::kOverwrite);
   hr1_->Write("",TObject::kOverwrite);
   hr2_->Write("",TObject::kOverwrite);
@@ -340,20 +341,15 @@ void Histograms::save() {
   hrout_->Write("",TObject::kOverwrite);
   hr1r2_->Write("",TObject::kOverwrite);
   hpkout_->Write("",TObject::kOverwrite);
+
   hr1_old_->Write("",TObject::kOverwrite);
   hr2_old_->Write("",TObject::kOverwrite);
   hrpk_old_->Write("",TObject::kOverwrite);
   hrout_old_->Write("",TObject::kOverwrite);
+
   hbxup_->Write("",TObject::kOverwrite);
 
   base_->cd("Cuts");
-
-  hr1_jetmu_->Write("",TObject::kOverwrite);
-  hr2_jetmu_->Write("",TObject::kOverwrite);
-  hrpk_jetmu_->Write("",TObject::kOverwrite);
-  hrout_jetmu_->Write("",TObject::kOverwrite);
-  hr1r2_jetmu_->Write("",TObject::kOverwrite);
-  hpkout_jetmu_->Write("",TObject::kOverwrite);
 
   hncutind_->Write("",TObject::kOverwrite);
   hncutcum_->Write("",TObject::kOverwrite);
