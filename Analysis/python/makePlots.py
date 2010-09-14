@@ -111,16 +111,6 @@ def plotsFromHistos(filename):
     hist2DPlot(dir+"/hr1r2", file, fileroot+".ps", 1., True, "", "R_{1}", "R_{2}", "", "COLZ")
     hist2DPlot(dir+"/hpkout", file, fileroot+".ps", 1., True, "", "R_{peak}", "R_{out}", "", "COLZ")
 
-    # pulse shape variables after jet/mu cuts
-    dir = "All/Cuts"
-    histPlot(dir+"/hr1_jetmu", file, fileroot+".ps", 1., False, "R_{1} after jet/mu cuts", "R_{1}", "")
-    histPlot(dir+"/hr2_jetmu", file, fileroot+".ps", 1., False, "R_{2} after jet/mu cuts", "R_{2}", "")
-    histPlot(dir+"/hrpk_jetmu", file, fileroot+".ps", 1., False, "R_{peak} after jet/mu cuts", "R_{peak}", "")
-    histPlot(dir+"/hrout_jetmu", file, fileroot+".ps", 1., False, "R_{outer} after jet/mu cuts", "R_{outer}", "")
-    hist2DPlot(dir+"/hr1r2_jetmu", file, fileroot+".ps", 1., True, "After jet/mu cuts", "R_{1}", "R_{2}", "", "COLZ")
-    hist2DPlot(dir+"/hpkout_jetmu", file, fileroot+".ps", 1., True, "After jet/mu cuts", "R_{peak}", "R_{out}", "", "COLZ")
-
-
     # cut plots
     dir = "All/Cuts"
     histPlot(dir+"/hncutcum", file, fileroot+".ps", 1., True, "", "Cut", "N_{events}")
