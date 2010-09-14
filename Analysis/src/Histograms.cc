@@ -83,14 +83,6 @@ void Histograms::book() {
 
   base_->cd("Cuts");
 
-  // pulse shapes after jet/mu cuts
-  hr1_jetmu_ = new TH1D("hr1_jetmu", "R_{1}", 50, 0., 1.);
-  hr2_jetmu_ = new TH1D("hr2_jetmu", "R_{2}", 50, 0., 1.);
-  hrpk_jetmu_ = new TH1D("hrpk_jetmu", "R_{peak}", 50, 0., 1.);
-  hrout_jetmu_ = new TH1D("hrout_jetmu", "R_{outer}", 30, 0., 1.);    
-  hr1r2_jetmu_ = new TH2D("hr1r2_jetmu", "R_{1} vs R_{2}", 50, 0., 1., 50, 0., 1.);
-  hpkout_jetmu_ = new TH2D("hpkout_jetmu", "R_{peak} vs R_{outer}", 50, 0., 1., 50, 0., 1.);
-  
   // special
   hbxup_ = new TH1D("hbxup", "BX (unpaired bunches)", 3564, 0., 3564.);
 
@@ -170,53 +162,52 @@ void Histograms::fill(StoppedHSCPEvent& event) {
   hl1bits_->Fill("L1_SingleJet10U", (event.gtAlgoWord0>>16)&0x1);
   hl1bits_->Fill("L1_SingleMuOpen", (event.gtAlgoWord0>>55)&0x1);
   hl1bits_->Fill("L1Tech_BSC_minBias_thresh1", (event.gtTechWord>>40)&0x1);
-  if (event.l1Jet_N > 0) {
-    hl1et_->Fill(event.l1JetE.at(0));
-    hl1eta_->Fill(event.l1JetEta.at(0));
-    hl1phi_->Fill(event.l1JetPhi.at(0));
-    hl1type_->Fill(event.l1JetType.at(0));
+
+  if ( ((event.gtAlgoWord1>>(80-64))&0x1)>0 || ((event.gtAlgoWord1>>(81-64))&0x1)>0) {
+    hbxup_->Fill(event.bx);
   }
-  if (event.hltJet_N > 0) {
-    hhlte_->Fill(event.hltJetE.at(0));
-    hhlteta_->Fill(event.hltJetEta.at(0));
-    hhltphi_->Fill(event.hltJetPhi.at(0));
+
+  // fill remaining histograms for events passing BX veto etc.
+  if (!inMaskedBX) {
+
+    if (event.l1Jet_N > 0) {
+      hl1et_->Fill(event.l1JetE.at(0));
+      hl1eta_->Fill(event.l1JetEta.at(0));
+      hl1phi_->Fill(event.l1JetPhi.at(0));
+      hl1type_->Fill(event.l1JetType.at(0));
+    }
+    if (event.hltJet_N > 0) {
+      hhlte_->Fill(event.hltJetE.at(0));
+      hhlteta_->Fill(event.hltJetEta.at(0));
+      hhltphi_->Fill(event.hltJetPhi.at(0));
+    }
+    if (event.jet_N > 0) {
+      hjete_->Fill(event.jetE.at(0));
+      hjeteta_->Fill(event.jetEta.at(0));
+      hjetphi_->Fill(event.jetPhi.at(0));
+      hjetetaphi_->Fill(event.jetEta.at(0), event.jetPhi.at(0));
+      hjeteem_->Fill(event.jetEEm.at(0));
+      hjetehad_->Fill(event.jetEHad.at(0));
+      hjetemf_->Fill(event.jetEEm.at(0)/event.jetE.at(0));
+      hjetn60_->Fill(event.jetN60.at(0));
+      hjetn90_->Fill(event.jetN90.at(0));
+      hjetn90hits_->Fill(0.);
+      hjetfhpd_->Fill(0.);
+    }
+    hnmu_->Fill(event.mu_N);
+    if (event.mu_N>0) {
+      hmuetaphi_->Fill(event.muEta.at(0), event.muPhi.at(0));
+    }
+    hntowsameiphi_->Fill(event.nTowerSameiPhi);
+    if (event.tower_N>0) {
+      htowietaiphi_->Fill(event.towerIEta.at(0), event.towerIPhi.at(0));
+    }
+
   }
-  if (event.jet_N > 0) {
-    hjete_->Fill(event.jetE.at(0));
-    hjeteta_->Fill(event.jetEta.at(0));
-    hjetphi_->Fill(event.jetPhi.at(0));
-    hjetetaphi_->Fill(event.jetEta.at(0), event.jetPhi.at(0));
-    hjeteem_->Fill(event.jetEEm.at(0));
-    hjetehad_->Fill(event.jetEHad.at(0));
-    hjetemf_->Fill(event.jetEEm.at(0)/event.jetE.at(0));
-    hjetn60_->Fill(event.jetN60.at(0));
-    hjetn90_->Fill(event.jetN90.at(0));
-    hjetn90hits_->Fill(0.);
-    hjetfhpd_->Fill(0.);
-  }
-  hnmu_->Fill(event.mu_N);
-  if (event.mu_N>0) {
-    hmuetaphi_->Fill(event.muEta.at(0), event.muPhi.at(0));
-  }
-  hntowsameiphi_->Fill(event.nTowerSameiPhi);
-  if (event.tower_N>0) {
-    htowietaiphi_->Fill(event.towerIEta.at(0), event.towerIPhi.at(0));
-  }
-//   hrpk_->Fill(event.top5DigiPeakSample);
-//   hr1_->Fill(event.top5DigiR1);
-//   hr2_->Fill(event.top5DigiR2);
-//   hrpk_->Fill(event.top5DigiRPeak);
-//   hrout_->Fill(event.top5DigiROuter);
-//   hr1r2_->Fill(event.top5DigiR1, event.top5DigiR2);
-//   hpkout_->Fill(event.top5DigiRPeak, event.top5DigiROuter);
-//   hr1_old_->Fill(event.TimingRightPeak);
-//   hr2_old_->Fill(event.TimingFracRightNextRight);
-//   hrpk_old_->Fill(event.TimingFracInLeader);
-//   hrout_old_->Fill(1.-event.TimingFracInCentralFour);
 
   // plots after jet and mu cuts
   if (cuts_->allCutN(8)) {
-    hrpk_->Fill(event.top5DigiPeakSample);
+    hrpksample_->Fill(event.top5DigiPeakSample);
     hr1_->Fill(event.top5DigiR1);
     hr2_->Fill(event.top5DigiR2);
     hrpk_->Fill(event.top5DigiRPeak);
@@ -225,10 +216,6 @@ void Histograms::fill(StoppedHSCPEvent& event) {
     hpkout_->Fill(event.top5DigiRPeak, event.top5DigiROuter);
   }
   
-  if ( ((event.gtAlgoWord1>>(80-64))&0x1)>0 || ((event.gtAlgoWord1>>(81-64))&0x1)>0) {
-    hbxup_->Fill(event.bx);
-  }
-
   // loop over cuts
   bool fail=false;
   for (unsigned c=0; c<cuts_->nCuts(); c++) {
