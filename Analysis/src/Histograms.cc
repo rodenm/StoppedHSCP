@@ -202,13 +202,13 @@ void Histograms::fill(StoppedHSCPEvent& event) {
   if (event.tower_N>0) {
     htowietaiphi_->Fill(event.towerIEta.at(0), event.towerIPhi.at(0));
   }
-  hr1_->Fill(event.top5DigiPeakSample);
-  hr1_->Fill(event.top5DigiR1);
-  hr2_->Fill(event.top5DigiR2);
-  hrpk_->Fill(event.top5DigiRPeak);
-  hrout_->Fill(event.top5DigiROuter);
-  hr1r2_->Fill(event.top5DigiR1, event.top5DigiR2);
-  hpkout_->Fill(event.top5DigiRPeak, event.top5DigiROuter);
+//   hrpk_->Fill(event.top5DigiPeakSample);
+//   hr1_->Fill(event.top5DigiR1);
+//   hr2_->Fill(event.top5DigiR2);
+//   hrpk_->Fill(event.top5DigiRPeak);
+//   hrout_->Fill(event.top5DigiROuter);
+//   hr1r2_->Fill(event.top5DigiR1, event.top5DigiR2);
+//   hpkout_->Fill(event.top5DigiRPeak, event.top5DigiROuter);
 //   hr1_old_->Fill(event.TimingRightPeak);
 //   hr2_old_->Fill(event.TimingFracRightNextRight);
 //   hrpk_old_->Fill(event.TimingFracInLeader);
@@ -216,7 +216,7 @@ void Histograms::fill(StoppedHSCPEvent& event) {
 
   // plots after jet and mu cuts
   if (cuts_->allCutN(8)) {
-    hr1_->Fill(event.top5DigiPeakSample);
+    hrpk_->Fill(event.top5DigiPeakSample);
     hr1_->Fill(event.top5DigiR1);
     hr2_->Fill(event.top5DigiR2);
     hrpk_->Fill(event.top5DigiRPeak);
