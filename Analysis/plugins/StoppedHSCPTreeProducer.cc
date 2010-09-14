@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.35 2010/07/05 10:56:33 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.36 2010/08/13 10:45:03 jbrooke Exp $
 //
 //
 
@@ -181,6 +181,7 @@ private:
   edm::InputTag l1BitsTag_;
   edm::InputTag hltResultsTag_;
   edm::InputTag hltEventTag_;
+  std::string hltPath_;
   edm::InputTag hltL3Tag_;
   edm::InputTag mcTag_;
   edm::InputTag jetTag_;
@@ -230,6 +231,8 @@ private:
   std::vector<HcalDetId> hcalDetIds_;
   std::vector<unsigned> hcalDetJets_;
 
+  HBHERecHitCollection recHits_;
+
 };
 
 
@@ -242,6 +245,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   hltResultsTag_(iConfig.getUntrackedParameter<edm::InputTag>("hltResultsTag",edm::InputTag("TriggerResults","","HLT"))),
   hltEventTag_(iConfig.getUntrackedParameter<edm::InputTag>("hltEventTag",edm::InputTag("hltTriggerSummaryAOD","","HLT"))),
   hltL3Tag_(iConfig.getUntrackedParameter<edm::InputTag>("hltL3Tag",edm::InputTag("hltStoppedHSCP1CaloJetEnergy","","HLT"))),
+  hltPath_(iConfig.getUntrackedParameter<std::string>("hltPath",std::string("HLT_StoppedHSCP"))),
   mcTag_(iConfig.getUntrackedParameter<edm::InputTag>("mcTag",edm::InputTag("generator"))),
   jetTag_(iConfig.getUntrackedParameter<edm::InputTag>("jetTag",edm::InputTag("sisCone5CaloJets"))),
   muonTag_(iConfig.getUntrackedParameter<edm::InputTag>("muonTag",edm::InputTag("muons"))),
@@ -410,7 +414,7 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
   // HLT config setup
   bool changed;
   hltConfig_.init(iEvent, hltResultsTag_.process(), changed);
-  hltPathIndex_ = hltConfig_.triggerIndex("HLT_StoppedHSCP_8E29");
+  hltPathIndex_ = hltConfig_.triggerIndex(hltPath_);
 
   // get HLT results
   edm::Handle<edm::TriggerResults> HLTR;
@@ -561,13 +565,13 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
    edm::Handle<CaloJetCollection> caloJets;
    iEvent.getByLabel(jetTag_, caloJets);
    
-   edm::Handle<HBHEDigiCollection> hcalDigis;
-   iEvent.getByLabel(hcalDigiTag_,hcalDigis);
+//    edm::Handle<HBHEDigiCollection> hcalDigis;
+//    iEvent.getByLabel(hcalDigiTag_,hcalDigis);
    
-   if (doDigis_ && !digisMissing_ && !(hcalDigis.isValid()) ) {
-     edm::LogWarning("MissingProduct") << "HBHEDigiCollection not found.  Branch will not be filled" << std::endl;
-     digisMissing_ = true;
-   }
+//    if (doDigis_ && !digisMissing_ && !(hcalDigis.isValid()) ) {
+//      edm::LogWarning("MissingProduct") << "HBHEDigiCollection not found.  Branch will not be filled" << std::endl;
+//      digisMissing_ = true;
+//    }
 
    // count jets
    unsigned njet=0;
@@ -622,39 +626,6 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
 	     tow.eEm = tower->emEnergy();
 	     tow.etEm = tower->emEt();
 	     event_->addTower(tow);
-
-	     // get digis
-// 	     if (doDigis_) {
-// 	       for (unsigned i=0; i<tower->constituentsSize(); ++i) {
-// 		 DetId id = tower->constituent(i);
-		 
-// 		 // check digi in HCAL and HB/HE
-// 		 if (id.det()==DetId::Hcal && 
-// 		     (HcalSubdetector(id.subdetId())==HcalBarrel || 
-// 		      HcalSubdetector(id.subdetId())==HcalEndcap) ) {
-		   
-// 		   // get digi
-// 		   HBHEDigiCollection::const_iterator digi = find_if(hcalDigis->begin(), hcalDigis->end(), std::bind2nd(digiDetId_eq(), id) );
-		   
-// 		   // write digi
-// 		   shscp::HcalDigi d;
-// 		   d.id = digi->id();
-// 		   d.nJet = njet;
-// 		   d.fc0 = digi->sample(0).nominal_fC();
-// 		   d.fc1 = digi->sample(1).nominal_fC();
-// 		   d.fc2 = digi->sample(2).nominal_fC();
-// 		   d.fc3 = digi->sample(3).nominal_fC();
-// 		   d.fc4 = digi->sample(4).nominal_fC();
-// 		   d.fc5 = digi->sample(5).nominal_fC();
-// 		   d.fc6 = digi->sample(6).nominal_fC();
-// 		   d.fc7 = digi->sample(7).nominal_fC();
-// 		   d.fc8 = digi->sample(8).nominal_fC();
-// 		   d.fc9 = digi->sample(9).nominal_fC();
-// 		   event_->addDigi(d);
-// 		 }
-		 
-// 	       }
-// 	     }
 	     
 	   }
 	   
@@ -849,122 +820,60 @@ void StoppedHSCPTreeProducer::doHcalNoise(const edm::Event& iEvent) {
 }
 
 
-
-//define this as a plug-in
-DEFINE_FWK_MODULE(StoppedHSCPTreeProducer);
-
-
-// this method obsolete
-// void StoppedHSCPTreeProducer::doTowersAboveThreshold(const edm::Event& iEvent) {
-   
-//   edm::Handle<CaloTowerCollection> caloTowers;
-//   iEvent.getByLabel(caloTowerTag_,caloTowers);
-  
-//   if (caloTowers.isValid()) {
-    
-//     std::vector<CaloTower> towers;
-//     towers.insert(towers.end(), caloTowers->begin(), caloTowers->end());     
-//     sort(towers.begin(), towers.end(), calotower_gt());
-    
-//     for(std::vector<CaloTower>::const_iterator it = towers.begin(); 
-// 	it!=towers.end();
-// 	++it) {
-//       if (it->energy() > towerMinEnergy_ &&
-// 	  fabs(it->eta()) < towerMaxEta_) {
-// 	shscp::Tower tow;
-// 	tow.e = it->energy();
-// 	tow.et = it->et();
-// 	tow.eta = it->eta();
-// 	tow.phi = it->phi();
-// 	tow.ieta = it->ieta();
-// 	tow.iphi = it->iphi();
-// 	tow.nJet = 999;
-// 	tow.eHad = it->hadEnergy();
-// 	tow.etHad = it->hadEt();
-// 	tow.eEm = it->emEnergy();
-// 	tow.etEm = it->emEt();
-// 	event_->addTower(tow);
-//       }
-//     }
-//   }
-//   else {
-//     if (!towersMissing_) edm::LogWarning("MissingProduct") << "CaloTowers not found.  Branch will not be filled" << std::endl;
-//     towersMissing_ = true;
-//   }
-  
-// }
-
-// this method obsolete
-// void StoppedHSCPTreeProducer::doDigisAboveThreshold(const edm::Event& iEvent) {
-
-//   // TODO - include threshold!
-
-//   edm::Handle<HBHEDigiCollection > hcalDigis;
-//   iEvent.getByLabel(hcalDigiTag_,hcalDigis);
-    
-//   if (hcalDigis.isValid()) {
-  
-//     std::vector<HBHEDataFrame> digis;
-//     digis.insert(digis.end(), hcalDigis->begin(), hcalDigis->end());
-//     sort(digis.begin(), digis.end(), digi_gt());
-
-//     for(HBHEDigiCollection::const_iterator it=digis.begin();
-// 	it!=digis.end() && event_->nDigis() < StoppedHSCPEvent::MAX_N_DIGIS;
-// 	it++) {
-
-//       double totFc=0.;
-//       for(int i=0; i<10; i++) totFc += it->sample(i).nominal_fC();
-
-//       if (totFc > digiMinFc_) {
-
-// 	shscp::HcalDigi d;
-// 	d.id = it->id();
-// 	d.nJet = 999;
-// 	d.fc0 = it->sample(0).nominal_fC();
-// 	d.fc1 = it->sample(1).nominal_fC();
-// 	d.fc2 = it->sample(2).nominal_fC();
-// 	d.fc3 = it->sample(3).nominal_fC();
-// 	d.fc4 = it->sample(4).nominal_fC();
-// 	d.fc5 = it->sample(5).nominal_fC();
-// 	d.fc6 = it->sample(6).nominal_fC();
-// 	d.fc7 = it->sample(7).nominal_fC();
-// 	d.fc8 = it->sample(8).nominal_fC();
-// 	d.fc9 = it->sample(9).nominal_fC();
-// 	event_->addDigi(d);
-	
-//       }
-      
-//     }
-//   }
-//   else {
-//     if (!digisMissing_) edm::LogWarning("MissingProduct") << "HBHEDigiCollection not found.  Branch will not be filled" << std::endl;
-//     digisMissing_ = true;
-//   }
-
-// }
-
-
-
 void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent) {
 
-  edm::Handle<HBHEDigiCollection > hcalDigis;
+  // this code taken from John Paul Chou's noise info producer
+  // RecoMET/METProducers/src/HcalNoiseInfoProducer.cc
+
+  // get the conditions and channel quality
+  edm::ESHandle<HcalDbService> conditions;
+  iSetup.get<HcalDbRecord>().get(conditions);
+  const HcalQIEShape* shape = conditions->getHcalShape();
+
+  // get the digis themselves
+  edm::Handle<HBHEDigiCollection> hcalDigis;
   iEvent.getByLabel(hcalDigiTag_,hcalDigis);
     
   if (hcalDigis.isValid()) {
 
-    // copy and sort digis
-    std::vector<HBHEDataFrame> digis;
-    digis.insert(digis.end(), hcalDigis->begin(), hcalDigis->end());
-    sort(digis.begin(), digis.end(), digi_gt());
+    // loop over the digis
+    for(HBHEDigiCollection::const_iterator it=hcalDigis->begin(); it!=hcalDigis->end(); ++it) {
 
-    // leading digi variables
-    event_->leadingDigiIEta=digis.at(0).id().ieta();
-    event_->leadingDigiIPhi=digis.at(0).id().iphi();
-    
-    // leading digi timing
-    for (int i=0; i<HBHEDataFrame::MAXSAMPLES; ++i) {
-      double sample = digis.at(0).sample(i).nominal_fC();
-      if (sample > 5) event_->leadingDigiTimeSamples.at(i) = sample;
+      const HBHEDataFrame &digi=(*it);
+      HcalDetId cell = digi.id();
+      DetId detcell=(DetId)cell;
+
+      // get the calibrations and coder
+      const HcalCalibrations& calibrations=conditions->getHcalCalibrations(cell);
+      const HcalQIECoder* channelCoder = conditions->getHcalCoder (cell);
+      HcalCoderDb coder (*channelCoder, *shape);
+
+      // figure out if this digi corresponds to highest RecHit or top 5 RecHits
+      bool isBig=false, isBig5=false;
+      unsigned counter=0;
+      for(HBHERecHitCollection::const_iterator hit=recHits_.begin();
+	  hit!=recHits_.end() && counter < 6;
+	  ++hit, ++counter) {
+	if((*hit)->id() == digi.id()) {
+	  if(counter==0) isBig=isBig5=true;  // digi is also the highest energy rechit
+	  if(counter<5) isBig5=true;         // digi is one of 5 highest energy rechits
+	}
+      }
+     
+      // correct time slices for pedestal
+      int totalzeros=0;
+      CaloSamples tool;
+      coder.adc2fC(digi,tool);
+      for(int ts=0; ts<tool.size(); ++ts) {
+	
+	// get the fC's
+	double corrfc = tool[ts]-calibrations.pedestal(digi[ts].capid());
+	
+	// fill the relevant digi arrays
+	if(isBig)  event_->leadingDigiTimeSamples.at(ts) += corrfc;
+	if(isBig5) event_->top5DigiTimeSamples.at(ts) += corrfc;
+      }
+
     }
 
     // find peaks in time samples and totals
@@ -975,18 +884,7 @@ void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent) {
 			event_->leadingDigiR2,
 			event_->leadingDigiRPeak,
 			event_->leadingDigiROuter);
-
-    // store time samples of leading five digis
-    for (int i=0; i<HBHEDataFrame::MAXSAMPLES; ++i) {
-      event_->top5DigiTimeSamples.at(i) = 0.;
-    }
-    for(unsigned i=0; i<5; ++i) {
-      for (int j=0; j<HBHEDataFrame::MAXSAMPLES; ++j) {
-	double sample = digis.at(i).sample(j).nominal_fC();
-	if (sample > 5) event_->top5DigiTimeSamples.at(j) += sample;
-      }
-    }
-
+    
     pulseShapeVariables(event_->top5DigiTimeSamples,
 			event_->top5DigiPeakSample,
 			event_->top5DigiTotal,
@@ -994,10 +892,15 @@ void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent) {
 			event_->top5DigiR2,
 			event_->top5DigiRPeak,
 			event_->top5DigiROuter);
-
-
+    
   }
-
+  else {
+    if (!digisMissing_) {
+      edm::LogWarning("MissingProduct") << "HBHEDigiCollection not found.  Branch will not be filled" << std::endl;
+      digisMissing_ = true;
+    }
+  }
+  
 }
 
 
@@ -1060,3 +963,31 @@ void StoppedHSCPTreeProducer::pulseShapeVariables(const std::vector<double>& sam
 }
 
 
+/// fill rec hit 
+void
+StoppedHSCPTreeProducer::fillRecHits(edm::Event& iEvent, const edm::EventSetup& iSetup) const
+{
+  // get the rechits
+  edm::Handle<HBHERecHitCollection> handle;
+  iEvent.getByLabel(recHitCollName_, handle);
+  if(handle.isValid()) {
+
+    // copy RecHit collection
+    recHits_ = handle.product();
+
+    //    sort(recHits_.begin(), recHits_.end(), rechit_gt());
+
+  }
+  else {
+    edm::LogWarning("MissingProduct") << " could not find HBHERecHitCollection named " << recHitCollName_ << "\n.";
+  }
+
+  return;
+
+  }
+
+
+
+
+//define this as a plug-in
+DEFINE_FWK_MODULE(StoppedHSCPTreeProducer);
