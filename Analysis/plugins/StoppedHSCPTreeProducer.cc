@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.36 2010/08/13 10:45:03 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.37 2010/09/14 16:01:52 jbrooke Exp $
 //
 //
 
@@ -67,6 +67,11 @@
 #include "DataFormats/CaloTowers/interface/CaloTowerDetId.h"
 
 // digis
+#include "CalibFormats/HcalObjects/interface/HcalCoderDb.h"
+#include "CalibFormats/HcalObjects/interface/HcalCalibrations.h"
+#include "CalibFormats/HcalObjects/interface/HcalDbService.h"
+#include "CalibFormats/HcalObjects/interface/HcalDbRecord.h"
+
 #include "DataFormats/HcalDigi/interface/HBHEDataFrame.h"
 #include "DataFormats/HcalDigi/interface/HcalDigiCollections.h"
 #include "DataFormats/HcalDetId/interface/HcalDetId.h"
@@ -112,12 +117,10 @@ private:
   void doJets(const edm::Event&);
   void doCaloTowers(const edm::Event&);
   void doMuons(const edm::Event&);
-  void doTowersAboveThreshold(const edm::Event&);
-  void doTowersInJets(const edm::Event&);
   void doHcalNoise(const edm::Event&);
-  void doDigisAboveThreshold(const edm::Event&);
-  void doDigisInJets(const edm::Event&);
-  void doTimingFromDigis(const edm::Event&);
+  void doRecHits(const edm::Event& iEvent);
+  void doTimingFromDigis(const edm::Event&, const edm::EventSetup&);
+
   void pulseShapeVariables(const std::vector<double>& samples,
 			   unsigned& ipeak,
 			   double& total,
@@ -192,6 +195,7 @@ private:
   edm::InputTag hcalNoiseFilterResultTag_;
   edm::InputTag rbxTag_;
   edm::InputTag hpdTag_;
+  edm::InputTag hcalRecHitTag_;
   edm::InputTag hcalDigiTag_;
 
   // HLT config helper
@@ -244,8 +248,8 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   l1BitsTag_(iConfig.getUntrackedParameter<edm::InputTag>("l1BitsTag",edm::InputTag("gtDigis"))),
   hltResultsTag_(iConfig.getUntrackedParameter<edm::InputTag>("hltResultsTag",edm::InputTag("TriggerResults","","HLT"))),
   hltEventTag_(iConfig.getUntrackedParameter<edm::InputTag>("hltEventTag",edm::InputTag("hltTriggerSummaryAOD","","HLT"))),
-  hltL3Tag_(iConfig.getUntrackedParameter<edm::InputTag>("hltL3Tag",edm::InputTag("hltStoppedHSCP1CaloJetEnergy","","HLT"))),
   hltPath_(iConfig.getUntrackedParameter<std::string>("hltPath",std::string("HLT_StoppedHSCP"))),
+  hltL3Tag_(iConfig.getUntrackedParameter<edm::InputTag>("hltL3Tag",edm::InputTag("hltStoppedHSCP1CaloJetEnergy","","HLT"))),
   mcTag_(iConfig.getUntrackedParameter<edm::InputTag>("mcTag",edm::InputTag("generator"))),
   jetTag_(iConfig.getUntrackedParameter<edm::InputTag>("jetTag",edm::InputTag("sisCone5CaloJets"))),
   muonTag_(iConfig.getUntrackedParameter<edm::InputTag>("muonTag",edm::InputTag("muons"))),
@@ -255,7 +259,8 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   hcalNoiseFilterResultTag_(iConfig.getUntrackedParameter<edm::InputTag>("hcalNoiseFilterResultTag",edm::InputTag("HBHENoiseFilterResultProducer"))),
   rbxTag_(iConfig.getUntrackedParameter<edm::InputTag>("rbxTag",edm::InputTag("hcalnoise"))),
   hpdTag_(iConfig.getUntrackedParameter<edm::InputTag>("hpdTag",edm::InputTag("hcalnoise"))),
-  hcalDigiTag_(iConfig.getUntrackedParameter<edm::InputTag>("hcalDigiTag",edm::InputTag(""))),
+  hcalRecHitTag_(iConfig.getUntrackedParameter<edm::InputTag>("hcalRecHitTag",edm::InputTag("hbhereco"))),
+  hcalDigiTag_(iConfig.getUntrackedParameter<edm::InputTag>("hcalDigiTag",edm::InputTag("hcalDigis"))),
   towerMinEnergy_(iConfig.getUntrackedParameter<double>("towerMinEnergy", 1.)),
   towerMaxEta_(iConfig.getUntrackedParameter<double>("towerMaxEta", 1.3)),
   jetMinEnergy_(iConfig.getUntrackedParameter<double>("jetMinEnergy", 1.)),
@@ -344,7 +349,8 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
     doJets(iEvent);
     doMuons(iEvent);
     doHcalNoise(iEvent);
-    doTimingFromDigis(iEvent);
+    doRecHits(iEvent);
+    doTimingFromDigis(iEvent, iSetup);
   }
   
   tree_->Fill();
@@ -764,7 +770,7 @@ void StoppedHSCPTreeProducer::doHcalNoise(const edm::Event& iEvent) {
     event_->noiseFilterResult = flag.product();
   }
   else {
-    std::cout << "No HBHE filter flag in Event" << std::endl;
+    edm::LogWarning("MissingProduct") << "No HBHE filter flag in Event" << std::endl;
   }
 
 
@@ -820,7 +826,7 @@ void StoppedHSCPTreeProducer::doHcalNoise(const edm::Event& iEvent) {
 }
 
 
-void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent) {
+void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
   // this code taken from John Paul Chou's noise info producer
   // RecoMET/METProducers/src/HcalNoiseInfoProducer.cc
@@ -854,14 +860,13 @@ void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent) {
       for(HBHERecHitCollection::const_iterator hit=recHits_.begin();
 	  hit!=recHits_.end() && counter < 6;
 	  ++hit, ++counter) {
-	if((*hit)->id() == digi.id()) {
+	if(hit->id() == digi.id()) {
 	  if(counter==0) isBig=isBig5=true;  // digi is also the highest energy rechit
 	  if(counter<5) isBig5=true;         // digi is one of 5 highest energy rechits
 	}
       }
      
       // correct time slices for pedestal
-      int totalzeros=0;
       CaloSamples tool;
       coder.adc2fC(digi,tool);
       for(int ts=0; ts<tool.size(); ++ts) {
@@ -870,8 +875,8 @@ void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent) {
 	double corrfc = tool[ts]-calibrations.pedestal(digi[ts].capid());
 	
 	// fill the relevant digi arrays
-	if(isBig)  event_->leadingDigiTimeSamples.at(ts) += corrfc;
-	if(isBig5) event_->top5DigiTimeSamples.at(ts) += corrfc;
+	if(isBig && corrfc > 0.)  event_->leadingDigiTimeSamples.at(ts) += corrfc;
+	if(isBig5 && corrfc > 0.) event_->top5DigiTimeSamples.at(ts) += corrfc;
       }
 
     }
@@ -923,14 +928,17 @@ void StoppedHSCPTreeProducer::pulseShapeVariables(const std::vector<double>& sam
     if (samples.at(i) > samples.at(ipeak)) {
       ipeak = i;
     }
-    total += samples.at(i);
+    //    if (samples.at(i) > 0) {
+      total += samples.at(i);
+      //}
   }
 
   if (total==0.) return;
   
   // R1
   if (ipeak < HBHEDataFrame::MAXSAMPLES-1) {
-    if (samples.at(ipeak) > 0.) {
+    if (samples.at(ipeak) > 0.) { 
+      	//samples.at(ipeak+1) >= 0.) {
       r1 = samples.at(ipeak+1) / samples.at(ipeak);
     }
     else r1 = 1.;
@@ -939,8 +947,8 @@ void StoppedHSCPTreeProducer::pulseShapeVariables(const std::vector<double>& sam
   // R2
   if (ipeak < HBHEDataFrame::MAXSAMPLES-2) {
     if (samples.at(ipeak+1) > 0. &&
-	samples.at(ipeak+1) > 
-	samples.at(ipeak+2)) {
+	samples.at(ipeak+1) > samples.at(ipeak+2)) {
+      //samples.at(ipeak+2) >= 0.) {
       r2 = samples.at(ipeak+2) / samples.at(ipeak+1);
     }
     else r2 = 1.;
@@ -958,33 +966,32 @@ void StoppedHSCPTreeProducer::pulseShapeVariables(const std::vector<double>& sam
       samples.at(ipeak+1) +
       samples.at(ipeak+2);
   }
-  router = 1. - (foursample / total);
-
+  //  if (foursample > 0.) {
+    router = 1. - (foursample / total);
+    //  }
 }
 
 
 /// fill rec hit 
 void
-StoppedHSCPTreeProducer::fillRecHits(edm::Event& iEvent, const edm::EventSetup& iSetup) const
+StoppedHSCPTreeProducer::doRecHits(const edm::Event& iEvent)
 {
   // get the rechits
   edm::Handle<HBHERecHitCollection> handle;
-  iEvent.getByLabel(recHitCollName_, handle);
+  iEvent.getByLabel(hcalRecHitTag_, handle);
   if(handle.isValid()) {
 
     // copy RecHit collection
-    recHits_ = handle.product();
+    recHits_ = (*handle);//->product();
 
     //    sort(recHits_.begin(), recHits_.end(), rechit_gt());
 
   }
   else {
-    edm::LogWarning("MissingProduct") << " could not find HBHERecHitCollection named " << recHitCollName_ << "\n.";
+    edm::LogWarning("MissingProduct") << "HBHERecHitCollection not found.  HCAL timing variables will be affected" << std::endl;
   }
 
-  return;
-
-  }
+}
 
 
 
