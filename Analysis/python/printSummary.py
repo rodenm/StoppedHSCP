@@ -36,11 +36,14 @@ dataset=args[0]
 # ROOT
 from ROOT import *
 
-# run file
+
+hfile=TFile(dataset+"/histograms.root")
+
+# run info
+time=0
 if (not isMC):
-    rfile=TFile(dataset+"/"+dataset+"_byRun.root")
-    htime=rfile.Get("hlivetime")
-    hnlb=rfile.Get("hnlb")
+    htime=hfile.Get("ByRun/hlivetime")
+    hnlb=hfile.Get("ByRun/hnlb")
     
     print "Run\tLS\tLivetime"
     for i in range(1,htime.GetNbinsX()+1):
@@ -52,22 +55,19 @@ if (not isMC):
     print "Total live time : "+str(time)+" s"
 
 
-# get histogram
-hfile=TFile(dataset+"/histograms.root")
-
 hcutcum=hfile.Get("All/Cuts/hncutcum")
 hcutind=hfile.Get("All/Cuts/hncutind")
 hcutnmo=hfile.Get("All/Cuts/hnminus1cut")
 hnmu=hfile.Get("All/NoCuts/hnmu")
 
-cutnames=["HLT\t\t",
-          "BX veto\t\t",
+cutnames=["HBHE filter\t",
+          "BX veto\t",
           "BPTX veto\t",
           "muon veto\t",
           "jet 30 GeV\t",
           "jet 50 GeV\t",
-          "jet n60\t\t",
-          "jet n90\t\t",
+          "jet n60\t",
+          "jet n90\t",
           "Calo tower\t",
           "R1\t\t",
           "R2\t\t",
@@ -79,18 +79,21 @@ ntot=hnmu.GetEntries()
 if isMC:
     ntot=hcutcum.GetBinContent(1)
 
+print
+print '[TABLE border=1]'
+
 if isMC:
-    print "Cut\t\tN_evt\t\tcum %\t\tN-1 %"
+    print "|Cut\t|N\t|cum %\t|N-1 % |-"
 else:
-    print "Cut\t\tN_evt\t\tind %\t\tcum %\t\tN-1 %"
+    print "|Cut\t|N\t|Rate (Hz) |ind %\t|cum %\t|N-1 % |-"
 
 for i in range(0,13):
     ncum = hcutcum.GetBinContent(i+1)
     nind = hcutind.GetBinContent(i+1)
     nnmo = hcutnmo.GetBinContent(i+1)
     if isMC:
-        print cutnames[i]+str(ncum)+"\t\t"+str(100.*ncum/ntot)+"\t\t"+str(100.*nnmo/ntot)
+        print '|%s | %i | %.2e | %.2e |' % (cutnames[i], ncum, 100.*ncum/ntot, 100.*nnmo/ntot)
     else:
-        print cutnames[i]+str(ncum)+"\t\t"+str(100.*nind/ntot)+"\t\t"+str(100.*ncum/ntot)+"\t\t"+str(100.*nnmo/ntot)
+        print '|%s | %i | %.2e | %.2e | %.2e | %.2e |-' % (cutnames[i], ncum, ncum/time, 100.*nind/ntot, 100.*ncum/ntot, 100.*nnmo/ntot)
 
-print
+print '[/TABLE]'

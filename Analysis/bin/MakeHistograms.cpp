@@ -71,13 +71,6 @@ int main(int argc, char* argv[]) {
     if (run > 0) runs.push_back(run);
   }
 
-  // clean output directory
-  std::string command("mkdir ");
-  command += outdir;
-  system(command.c_str());
-  command = std::string("ls ");
-  command += outdir;
-  system(command.c_str());
 
   // sum of squares error info for histograms
   TH1D::SetDefaultSumw2();

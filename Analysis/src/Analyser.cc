@@ -29,9 +29,9 @@ Analyser::Analyser(std::string ifile, std::string outdir, std::vector<unsigned> 
   ei+="/eventList.log";
   eventFile_.open(ei.c_str());
 
-  std::cout << "Stopped Gluino Analysis" << std::endl;
+  std::cout << "Stopped Gluino Histogrammer" << std::endl;
   std::cout << "Ntuple file       : " << ifile << std::endl;
-  std::cout << "Output directory  : " << outdir << std::endl;
+  std::cout << "Output file       : " << outdir+std::string("/histograms.root") << std::endl;
   std::cout << "Run list          : ";
   for (unsigned i=0; i<runs.size(); ++i) {
     std::cout << runs.at(i) << ",";

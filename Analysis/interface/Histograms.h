@@ -35,6 +35,7 @@ class Histograms {
   Cuts* cuts_;
   TDirectory* base_;
 
+  TH1D* hrun_;
   TH1D* hbx_;
   TH1D* horb_;
   TH1D* hlb_;
