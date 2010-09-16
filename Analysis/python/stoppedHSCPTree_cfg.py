@@ -82,16 +82,7 @@ process.source = cms.Source ("PoolSource",fileNames = readFiles, secondaryFileNa
 process.GlobalTag.globaltag = "GR_R_36X_V12::All"
 
 readFiles.extend( [
-        '/store/data/Run2010A/MinimumBias/RAW-RECO/Skim_StoppedHSCP-May27thSkim_v3/0034/F41E77E7-2E6F-DF11-9C8E-00E08178C0FF.root',
-        '/store/data/Run2010A/MinimumBias/RAW-RECO/Skim_StoppedHSCP-May27thSkim_v3/0034/EE5BCC14-2F6F-DF11-BE6B-00E0817917B9.root',
-        '/store/data/Run2010A/MinimumBias/RAW-RECO/Skim_StoppedHSCP-May27thSkim_v3/0034/EC2F02EA-2E6F-DF11-9D68-003048635E2C.root',
-        '/store/data/Run2010A/MinimumBias/RAW-RECO/Skim_StoppedHSCP-May27thSkim_v3/0034/EA4D19F3-2E6F-DF11-87E4-00E081791749.root'
-    
-#        '/store/data/Commissioning10/MinimumBias/RAW-RECO/Skim_StoppedHSCP-May27thSkim_v5/0022/FECEB1C8-B472-DF11-A462-002618943856.root',
-#        '/store/data/Commissioning10/MinimumBias/RAW-RECO/Skim_StoppedHSCP-May27thSkim_v5/0022/FEC9C45A-B572-DF11-B77D-001A92971B8A.root',
-#        '/store/data/Commissioning10/MinimumBias/RAW-RECO/Skim_StoppedHSCP-May27thSkim_v5/0022/FCFDBAD3-B472-DF11-9FAC-001BFCDBD154.root',
-#        '/store/data/Commissioning10/MinimumBias/RAW-RECO/Skim_StoppedHSCP-May27thSkim_v5/0022/FCFB546D-B572-DF11-BE61-0018F3D09616.root',
-#        '/store/data/Commissioning10/MinimumBias/RAW-RECO/Skim_StoppedHSCP-May27thSkim_v5/0022/FCA62A47-B572-DF11-A273-0018F3D095F2.root'
+
    ] )
 
 
