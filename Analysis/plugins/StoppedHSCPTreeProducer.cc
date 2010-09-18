@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.37 2010/09/14 16:01:52 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.38 2010/09/16 09:30:57 jbrooke Exp $
 //
 //
 
@@ -349,7 +349,6 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
     doJets(iEvent);
     doMuons(iEvent);
     doHcalNoise(iEvent);
-    doRecHits(iEvent);
     doTimingFromDigis(iEvent, iSetup);
   }
   
@@ -615,25 +614,25 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
 	   CaloTowerPtr tower = it->getCaloConstituent(i);
 
 	   // check tower above threshold
-	   if (tower->energy() > towerMinEnergy_ &&
-	       fabs(tower->eta()) < towerMaxEta_) {
+// 	   if (tower->energy() > towerMinEnergy_ &&
+// 	       fabs(tower->eta()) < towerMaxEta_) {
 
-	     // write tower
-	     shscp::Tower tow;
-	     tow.e = tower->energy();
-	     tow.et = tower->et();
-	     tow.eta = tower->eta();
-	     tow.phi = tower->phi();
-	     tow.ieta = tower->ieta();
-	     tow.iphi = tower->iphi();
-	     tow.nJet = njet;
-	     tow.eHad = tower->hadEnergy();
-	     tow.etHad = tower->hadEt();
-	     tow.eEm = tower->emEnergy();
-	     tow.etEm = tower->emEt();
-	     event_->addTower(tow);
+// 	     // write tower
+// 	     shscp::Tower tow;
+// 	     tow.e = tower->energy();
+// 	     tow.et = tower->et();
+// 	     tow.eta = tower->eta();
+// 	     tow.phi = tower->phi();
+// 	     tow.ieta = tower->ieta();
+// 	     tow.iphi = tower->iphi();
+// 	     tow.nJet = njet;
+// 	     tow.eHad = tower->hadEnergy();
+// 	     tow.etHad = tower->hadEt();
+// 	     tow.eEm = tower->emEnergy();
+// 	     tow.etEm = tower->emEt();
+// 	     event_->addTower(tow);
 	     
-	   }
+// 	   }
 	   
 	 }
        }
@@ -831,6 +830,14 @@ void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent, const 
   // this code taken from John Paul Chou's noise info producer
   // RecoMET/METProducers/src/HcalNoiseInfoProducer.cc
 
+  // get the rechits (to select digis ordered by energy)
+  edm::Handle<HBHERecHitCollection> recHits;
+  iEvent.getByLabel(hcalRecHitTag_, recHits);
+  if(!recHits.isValid()) {
+    edm::LogWarning("MissingProduct") << "HBHERecHitCollection not found.  HCAL timing variables will be affected" << std::endl;
+  }
+
+
   // get the conditions and channel quality
   edm::ESHandle<HcalDbService> conditions;
   iSetup.get<HcalDbRecord>().get(conditions);
@@ -857,8 +864,8 @@ void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent, const 
       // figure out if this digi corresponds to highest RecHit or top 5 RecHits
       bool isBig=false, isBig5=false;
       unsigned counter=0;
-      for(HBHERecHitCollection::const_iterator hit=recHits_.begin();
-	  hit!=recHits_.end() && counter < 6;
+      for(HBHERecHitCollection::const_iterator hit=recHits->begin();
+	  hit!=recHits->end() && counter < 6;
 	  ++hit, ++counter) {
 	if(hit->id() == digi.id()) {
 	  if(counter==0) isBig=isBig5=true;  // digi is also the highest energy rechit
@@ -875,7 +882,11 @@ void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent, const 
 	double corrfc = tool[ts]-calibrations.pedestal(digi[ts].capid());
 	
 	// fill the relevant digi arrays
-	if(isBig && corrfc > 0.)  event_->leadingDigiTimeSamples.at(ts) += corrfc;
+	if(isBig) {
+	  event_->leadingDigiTimeSamples.at(ts) += corrfc;
+	  event_->leadingDigiIEta = digi.id().ieta();
+	  event_->leadingDigiIPhi = digi.id().iphi();
+	}
 	if(isBig5 && corrfc > 0.) event_->top5DigiTimeSamples.at(ts) += corrfc;
       }
 
@@ -976,20 +987,6 @@ void StoppedHSCPTreeProducer::pulseShapeVariables(const std::vector<double>& sam
 void
 StoppedHSCPTreeProducer::doRecHits(const edm::Event& iEvent)
 {
-  // get the rechits
-  edm::Handle<HBHERecHitCollection> handle;
-  iEvent.getByLabel(hcalRecHitTag_, handle);
-  if(handle.isValid()) {
-
-    // copy RecHit collection
-    recHits_ = (*handle);//->product();
-
-    //    sort(recHits_.begin(), recHits_.end(), rechit_gt());
-
-  }
-  else {
-    edm::LogWarning("MissingProduct") << "HBHERecHitCollection not found.  HCAL timing variables will be affected" << std::endl;
-  }
 
 }
 
