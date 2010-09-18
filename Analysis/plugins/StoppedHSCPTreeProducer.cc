@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.38 2010/09/16 09:30:57 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.39 2010/09/18 09:15:42 jbrooke Exp $
 //
 //
 
@@ -148,6 +148,12 @@ public:
       return ( x.hadEnergy() > y.hadEnergy() ) ;
     }
   };
+
+  struct rechit_gt : public std::binary_function<CaloRecHit, CaloRecHit, bool> {
+    bool operator()(const CaloRecHit& x, const CaloRecHit& y) {
+      return ( x.energy() > y.energy() ) ;
+    }
+  };
   
   struct digi_gt : public std::binary_function<HBHEDataFrame, HBHEDataFrame, bool> {
     bool operator()(const HBHEDataFrame& x, const HBHEDataFrame& y) {
@@ -235,7 +241,7 @@ private:
   std::vector<HcalDetId> hcalDetIds_;
   std::vector<unsigned> hcalDetJets_;
 
-  HBHERecHitCollection recHits_;
+  std::vector<HBHERecHit> recHits_;
 
 };
 
@@ -349,6 +355,7 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
     doJets(iEvent);
     doMuons(iEvent);
     doHcalNoise(iEvent);
+    doRecHits(iEvent);
     doTimingFromDigis(iEvent, iSetup);
   }
   
@@ -830,14 +837,6 @@ void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent, const 
   // this code taken from John Paul Chou's noise info producer
   // RecoMET/METProducers/src/HcalNoiseInfoProducer.cc
 
-  // get the rechits (to select digis ordered by energy)
-  edm::Handle<HBHERecHitCollection> recHits;
-  iEvent.getByLabel(hcalRecHitTag_, recHits);
-  if(!recHits.isValid()) {
-    edm::LogWarning("MissingProduct") << "HBHERecHitCollection not found.  HCAL timing variables will be affected" << std::endl;
-  }
-
-
   // get the conditions and channel quality
   edm::ESHandle<HcalDbService> conditions;
   iSetup.get<HcalDbRecord>().get(conditions);
@@ -864,8 +863,8 @@ void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent, const 
       // figure out if this digi corresponds to highest RecHit or top 5 RecHits
       bool isBig=false, isBig5=false;
       unsigned counter=0;
-      for(HBHERecHitCollection::const_iterator hit=recHits->begin();
-	  hit!=recHits->end() && counter < 6;
+      for(HBHERecHitCollection::const_iterator hit=recHits_.begin();
+	  hit!=recHits_.end() && counter < 6;
 	  ++hit, ++counter) {
 	if(hit->id() == digi.id()) {
 	  if(counter==0) isBig=isBig5=true;  // digi is also the highest energy rechit
@@ -928,7 +927,7 @@ void StoppedHSCPTreeProducer::pulseShapeVariables(const std::vector<double>& sam
 						  double& rpeak,
 						  double& router) {
 
-  ipeak = 0.;
+  ipeak = 3;
   total = 0.;
   r1 = 0.;
   r2 = 0.;
@@ -939,9 +938,7 @@ void StoppedHSCPTreeProducer::pulseShapeVariables(const std::vector<double>& sam
     if (samples.at(i) > samples.at(ipeak)) {
       ipeak = i;
     }
-    //    if (samples.at(i) > 0) {
       total += samples.at(i);
-      //}
   }
 
   if (total==0.) return;
@@ -949,7 +946,6 @@ void StoppedHSCPTreeProducer::pulseShapeVariables(const std::vector<double>& sam
   // R1
   if (ipeak < HBHEDataFrame::MAXSAMPLES-1) {
     if (samples.at(ipeak) > 0.) { 
-      	//samples.at(ipeak+1) >= 0.) {
       r1 = samples.at(ipeak+1) / samples.at(ipeak);
     }
     else r1 = 1.;
@@ -959,7 +955,6 @@ void StoppedHSCPTreeProducer::pulseShapeVariables(const std::vector<double>& sam
   if (ipeak < HBHEDataFrame::MAXSAMPLES-2) {
     if (samples.at(ipeak+1) > 0. &&
 	samples.at(ipeak+1) > samples.at(ipeak+2)) {
-      //samples.at(ipeak+2) >= 0.) {
       r2 = samples.at(ipeak+2) / samples.at(ipeak+1);
     }
     else r2 = 1.;
@@ -970,16 +965,13 @@ void StoppedHSCPTreeProducer::pulseShapeVariables(const std::vector<double>& sam
   
   // Router - leading digi
   double foursample=0.;
-  if (ipeak > 0 && 
-      ipeak < HBHEDataFrame::MAXSAMPLES-2) {
-    foursample = samples.at(ipeak-1) +
-      samples.at(ipeak) +
-      samples.at(ipeak+1) +
-      samples.at(ipeak+2);
+  for (int i=-1; i<3; ++i) {
+    if (ipeak+i > 0 && ipeak+i<(int)HBHEDataFrame::MAXSAMPLES) {
+      foursample += samples.at(ipeak+i);
+    }
   }
-  //  if (foursample > 0.) {
-    router = 1. - (foursample / total);
-    //  }
+  router = 1. - (foursample / total);
+  
 }
 
 
@@ -987,6 +979,27 @@ void StoppedHSCPTreeProducer::pulseShapeVariables(const std::vector<double>& sam
 void
 StoppedHSCPTreeProducer::doRecHits(const edm::Event& iEvent)
 {
+
+  recHits_.clear();
+
+  // get the rechits (to select digis ordered by energy)
+  edm::Handle<HBHERecHitCollection> recHits;
+  iEvent.getByLabel(hcalRecHitTag_, recHits);
+  if(!recHits.isValid()) {
+    edm::LogWarning("MissingProduct") << "HBHERecHitCollection not found.  HCAL timing variables will be affected" << std::endl;
+  }
+
+  recHits_.insert(recHits_.end(), recHits->begin(), recHits->end());
+  sort(recHits_.begin(), recHits_.end(), rechit_gt());
+
+  // loop over rechits, print first five
+  unsigned count=0;
+  for (HBHERecHitCollection::const_iterator hit=recHits_.begin();
+	hit!=recHits_.end() && count < 6;
+	++hit, ++count) {
+    edm::LogWarning("RecHits") << "RecHit energy=" << hit->energy() << " id=" << hit->id() << std::endl;
+  }
+
 
 }
 
