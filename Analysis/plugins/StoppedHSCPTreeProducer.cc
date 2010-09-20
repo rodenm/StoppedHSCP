@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.39 2010/09/18 09:15:42 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.40 2010/09/18 13:44:21 jbrooke Exp $
 //
 //
 
@@ -993,12 +993,12 @@ StoppedHSCPTreeProducer::doRecHits(const edm::Event& iEvent)
   sort(recHits_.begin(), recHits_.end(), rechit_gt());
 
   // loop over rechits, print first five
-  unsigned count=0;
-  for (HBHERecHitCollection::const_iterator hit=recHits_.begin();
-	hit!=recHits_.end() && count < 6;
-	++hit, ++count) {
-    edm::LogWarning("RecHits") << "RecHit energy=" << hit->energy() << " id=" << hit->id() << std::endl;
-  }
+//   unsigned count=0;
+//   for (HBHERecHitCollection::const_iterator hit=recHits_.begin();
+// 	hit!=recHits_.end() && count < 6;
+// 	++hit, ++count) {
+//     edm::LogWarning("RecHits") << "RecHit energy=" << hit->energy() << " id=" << hit->id() << std::endl;
+//   }
 
 
 }
