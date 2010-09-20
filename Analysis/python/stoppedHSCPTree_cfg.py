@@ -27,7 +27,7 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 # HLT bit filter
 process.load('HLTrigger.HLTfilters.hltHighLevel_cfi')
 process.hltHighLevel.TriggerResultsTag = cms.InputTag("TriggerResults","","HLT")
-process.hltHighLevel.HLTPaths = cms.vstring("HLT_StoppedHSCP_8E29")
+process.hltHighLevel.HLTPaths = cms.vstring("HLT_StoppedHSCP")
 
 # things missing from RECO
 process.load('Configuration/StandardSequences/RawToDigi_Data_cff')
@@ -35,10 +35,6 @@ process.load('L1Trigger.Configuration.L1Extra_cff')
 
 # Ntuple producer
 process.load('StoppedHSCP/Analysis/stoppedHSCPTree_cfi')
-
-
-# Ben's ntuple producer
-process.load('StoppedHSCP/Analysis/globalRunAnalyser_cfi')
 
 # Ken's histogrammer
 process.load('StoppedHSCP/Analysis/jetanalyzer_cfi')
@@ -59,7 +55,7 @@ process.ntuple = cms.Path(
     +process.l1extraParticles
     
 # filter HCAL noise
-#    +process.HBHENoiseFilter
+    +process.HBHENoiseFilter
 
 # generate TTree    
     +process.stoppedHSCPTree
@@ -79,7 +75,7 @@ process.source = cms.Source ("PoolSource",fileNames = readFiles, secondaryFileNa
 
 
 # Global Tag and input files
-process.GlobalTag.globaltag = "GR_R_36X_V12::All"
+process.GlobalTag.globaltag = "GR10_P_V6::All"
 
 readFiles.extend( [
 

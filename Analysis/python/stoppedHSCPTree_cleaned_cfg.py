@@ -27,7 +27,8 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 # HLT bit filter
 process.load('HLTrigger.HLTfilters.hltHighLevel_cfi')
 process.hltHighLevel.TriggerResultsTag = cms.InputTag("TriggerResults","","HLT")
-process.hltHighLevel.HLTPaths = cms.vstring("HLT_StoppedHSCP_8E29")
+process.hltHighLevel.HLTPaths = cms.vstring("HLT_StoppedHSCP")
+
 
 ######################################################
 ####### MET CLEANING RECOMMENDATION STARTS HERE#######
@@ -108,10 +109,6 @@ process.load('L1Trigger.Configuration.L1Extra_cff')
 
 # Ntuple producer
 process.load('StoppedHSCP/Analysis/stoppedHSCPTree_cfi')
-
-
-# Ben's ntuple producer
-process.load('StoppedHSCP/Analysis/globalRunAnalyser_cfi')
 
 # Ken's histogrammer
 process.load('StoppedHSCP/Analysis/jetanalyzer_cfi')

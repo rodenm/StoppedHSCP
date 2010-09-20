@@ -7,6 +7,7 @@ stoppedHSCPTree = cms.EDAnalyzer(
     l1JetsTag = cms.untracked.string("l1extraParticles"),
     hltResultsTag = cms.untracked.InputTag("TriggerResults","","HLT"),
     hltEventTag = cms.untracked.InputTag("hltTriggerSummaryAOD","","HLT"),
+    hltPath = cms.untracked.string("HLT_StoppedHSCP"),
     hltL3Tag = cms.untracked.InputTag("hltStoppedHSCP1CaloJetEnergy","","HLT"),
 
     # MC
