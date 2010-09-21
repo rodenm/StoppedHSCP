@@ -39,5 +39,12 @@ stoppedHSCPTree = cms.EDAnalyzer(
     doMC = cms.untracked.bool(True),
     doReco = cms.untracked.bool(True),
     doDigis = cms.untracked.bool(True),
-    writeHistos = cms.untracked.bool(False)
+    writeHistos = cms.untracked.bool(False),
+
+    # bit 0:  off;
+    #bit 1:  exclude rechit;
+    #bit 5:  dead;
+    #bit 6:  hot;
+    #bit 18:  exclude from calotower
+    badchannelstatus=cms.untracked.int32(1<<0 | 1<<1 | 1<<5 | 1<<6 | 1<<18) 
     )

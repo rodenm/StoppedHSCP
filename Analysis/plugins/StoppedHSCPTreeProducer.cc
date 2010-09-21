@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.40 2010/09/18 13:44:21 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.41 2010/09/20 15:09:16 jbrooke Exp $
 //
 //
 
@@ -81,6 +81,15 @@
 #include "DataFormats/METReco/interface/HcalNoiseHPD.h"
 #include "DataFormats/METReco/interface/HcalNoiseRBX.h"
 #include "DataFormats/METReco/interface/HcalNoiseSummary.h"
+
+// HCAL Channel Status
+#include "CondFormats/HcalObjects/interface/HcalChannelStatus.h"
+#include "CondFormats/HcalObjects/interface/HcalChannelQuality.h"
+#include "CondFormats/HcalObjects/interface/HcalCondObjectContainer.h"
+#include "CondFormats/DataRecord/interface/HcalChannelQualityRcd.h"
+
+#include "CalibCalorimetry/HcalAlgos/interface/HcalDbASCIIIO.h"
+#include "CalibFormats/HcalObjects/interface/HcalDbRecord.h"
 
 // ROOT output stuff
 #include "FWCore/ServiceRegistry/interface/Service.h"
@@ -221,6 +230,11 @@ private:
   bool doDigis_;
   bool writeHistos_;
 
+  // bad channel status to mask;
+  HcalChannelQuality* chanquality_;
+  int badchannelstatus_;
+  std::vector<HcalDetId> badChannels_;
+
   // debug stuff
   bool l1JetsMissing_;
   bool hltJetsMissing_;
@@ -276,6 +290,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   doReco_(iConfig.getUntrackedParameter<bool>("doReco",true)),
   doDigis_(iConfig.getUntrackedParameter<bool>("doDigis",false)),
   writeHistos_(iConfig.getUntrackedParameter<bool>("writeHistos",false)),
+  badchannelstatus_(iConfig.getUntrackedParameter<int>("badchannelstatus",0)),
   l1JetsMissing_(false),
   hltJetsMissing_(false),
   hltMissing_(false),
@@ -330,6 +345,23 @@ StoppedHSCPTreeProducer::beginRun(edm::Run const & run, edm::EventSetup const& i
   //  bool changed;
   //  hltConfig_.init(run, iSetup, hltResultsTag_.process(), changed);
   //  hltPathIndex_ = hltConfig_.triggerIndex("HLT_StoppedHSCP_8E29");
+  badChannels_.clear();
+  edm::ESHandle<HcalChannelQuality> p;
+  iSetup.get<HcalChannelQualityRcd>().get(p);
+  chanquality_= new HcalChannelQuality(*p.product());
+  std::vector<DetId> mydetids = chanquality_->getAllChannels();
+  for (std::vector<DetId>::const_iterator i = mydetids.begin();i!=mydetids.end();++i)
+    {
+      if (i->det()!=DetId::Hcal) continue; // not an hcal cell
+      // Only consider HB/HE for now; revise when necessary
+      if (i->subdetId()!=HcalBarrel && i->subdetId()!=HcalEndcap) continue;
+      HcalDetId id=HcalDetId(*i);
+      int status=(chanquality_->getValues(id))->getValue();
+      if ((status&badchannelstatus_)==0) continue;
+      //std::cout <<"ID = "<<id.subdet()<<"  ("<<id.ieta()<<" "<<id.iphi()<<" "<<id.depth()<<")  STATUS = "<<std::hex<<status<<"  BCS = 0x"<<badchannelstatus_<<std::dec<<std::endl;
+      badChannels_.push_back(id);
+    }
+  //std::cout <<"bad Channel size = "<<badChannels_.size()<<std::endl;
 }
 
 
@@ -853,6 +885,14 @@ void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent, const 
 
       const HBHEDataFrame &digi=(*it);
       HcalDetId cell = digi.id();
+      if (std::find(badChannels_.begin(),
+		    badChannels_.end(),
+		    cell)!=badChannels_.end())
+	{
+	  //std::cout <<"BAD FOUND!";
+	  //std::cout <<"\t("<<cell.ieta()<<","<<cell.iphi()<<","<<cell.depth()<<")"<<  std::endl;
+	  continue;
+	}
       DetId detcell=(DetId)cell;
 
       // get the calibrations and coder
@@ -865,12 +905,19 @@ void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent, const 
       unsigned counter=0;
       for(HBHERecHitCollection::const_iterator hit=recHits_.begin();
 	  hit!=recHits_.end() && counter < 6;
-	  ++hit, ++counter) {
-	if(hit->id() == digi.id()) {
-	  if(counter==0) isBig=isBig5=true;  // digi is also the highest energy rechit
-	  if(counter<5) isBig5=true;         // digi is one of 5 highest energy rechits
+	  ++hit) 
+	{
+	  if (std::find(badChannels_.begin(),
+			badChannels_.end(),
+			hit->id())!=badChannels_.end())
+	    continue;
+	  if(hit->id() == digi.id()) 
+	    {
+	      if(counter==0) isBig=isBig5=true;  // digi is also the highest energy rechit
+	      if(counter<5) isBig5=true;         // digi is one of 5 highest energy rechits
+	    }
+	  ++counter;
 	}
-      }
      
       // correct time slices for pedestal
       CaloSamples tool;
