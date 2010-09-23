@@ -103,9 +103,9 @@ vector<double> CountingExperiment::cl95ExpectedLimit () {
   double dSumpling = 5*backgroundSigma()/nSampling;
   
   for (int i = maxNegBckg; i >= 0; --i) {
-    cout << "cl95limit... " << i << endl;
+    //    cout << "cl95limit... " << i << endl;
     Double_t s95 = cl95limit (i);
-    cout << "nObserved/limit: " << i << '/' << s95 << endl;
+    //  cout << "nObserved/limit: " << i << '/' << s95 << endl;
     vObserved.push_back (i);
     vLimit.push_back (s95);
     vWeight.push_back (0);
@@ -123,9 +123,9 @@ vector<double> CountingExperiment::cl95ExpectedLimit () {
     if (vWeight.back() < precision) break;
   }
   for (int i = maxNegBckg+1; ; ++i) {
-    cout << "cl95limit... " << i << endl;
+    // cout << "cl95limit... " << i << endl;
     Double_t s95 = cl95limit (i);
-    cout << "nObserved/limit: " << i << '/' << s95 << endl;
+    // cout << "nObserved/limit: " << i << '/' << s95 << endl;
     vObserved.push_back (i);
     vLimit.push_back (s95);
     vWeight.push_back (0);
