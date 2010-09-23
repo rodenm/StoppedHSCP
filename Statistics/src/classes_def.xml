@@ -1,0 +1,6 @@
+<lcgdict>
+  <class name="CountingExperiment"/>
+  <class name="BayesianCountingExperiment"/>
+  <class name="CL95CMSCountingExperiment"/>
+  <class name="CLsCountingExperiment"/>
+</lcgdict>
