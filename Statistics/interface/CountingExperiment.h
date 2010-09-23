@@ -3,6 +3,8 @@
 
 #include <vector>
 
+class TH1D;
+
 class CountingExperiment {
  public:
   CountingExperiment (double fBackground, double fBackgroundSigma, double fScale, double fScaleSigma);
@@ -15,7 +17,8 @@ class CountingExperiment {
   virtual double cl95limit (int nObserved, bool fPlot = false) = 0;
   std::vector<double>  cl95ExpectedLimit ();
   double coverage (double fTrueSignal, double fPrecision = 0.2);
-  virtual CountingExperiment* clone(double fBackground, double fBackgroundSigma, double fScale, double fScaleSigma) = 0;
+  TH1D* plotCoverage (const char* fId, int fBins, double fMinSignal, double fMaxSignal, bool fShowProgress = true);
+  virtual CountingExperiment* clone(double fBackground, double fBackgroundSigma, double fScale, double fScaleSigma) const = 0;
  private:
   double mBackground;
   double mBackgroundSigma;

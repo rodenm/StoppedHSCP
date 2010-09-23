@@ -121,7 +121,7 @@ double CLsCountingExperiment::cl95limit (int nObserved, bool fPlot) {
   return sThis*scale();
 }
 
-CountingExperiment* CLsCountingExperiment::clone(double fBackground, double fBackgroundSigma, double fScale, double fScaleSigma) {
+CountingExperiment* CLsCountingExperiment::clone(double fBackground, double fBackgroundSigma, double fScale, double fScaleSigma) const {
   return new CLsCountingExperiment (fBackground, fBackgroundSigma, fScale, fScaleSigma);
 }
 

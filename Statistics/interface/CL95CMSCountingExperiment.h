@@ -13,7 +13,7 @@ class CL95CMSCountingExperiment : public CountingExperiment {
   CL95CMSCountingExperiment (double fBackground, double fBackgroundSigma, double fScale, double fScaleSigma, BackgroundModel fModel = gaussian);
   virtual ~CL95CMSCountingExperiment();
   virtual double cl95limit (int nObserved, bool fPlot = false);
-  virtual CountingExperiment* clone(double fBackground, double fBackgroundSigma, double fScale, double fScaleSigma);
+  virtual CountingExperiment* clone(double fBackground, double fBackgroundSigma, double fScale, double fScaleSigma) const;
  private:
   BackgroundModel mBkgModel;
 };

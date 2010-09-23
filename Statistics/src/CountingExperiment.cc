@@ -7,6 +7,7 @@
 #include "Math/PdfFuncMathCore.h"
 #include "Math/QuantFuncMathCore.h"
 
+#include "TH1D.h"
 #include "TRandom2.h"
 
 using namespace std;
@@ -202,4 +203,16 @@ double CountingExperiment::coverage (double fTrueSignal, double fPrecision) {
     if (counter==0 && iToy >= 3*100) break; // nothing in 1%
   }
   return 1. - double(counter)/double(iToy);
+}
+
+TH1D* CountingExperiment::plotCoverage (const char* fId, int fBins, double fMinSignal, double fMaxSignal, bool fShowProgress)  {
+  TH1D* result = new TH1D (fId, "Coverage", fBins, fMinSignal, fMaxSignal);
+  if (fShowProgress) cout << endl; 
+  for (int i = 1; i <= result->GetNbinsX(); ++i) {
+    result->SetBinContent (i, coverage (result->GetBinCenter(i)));
+    if (fShowProgress) cout << '.' << flush;
+  }
+  if (fShowProgress) cout << endl;
+  result->SetStats (false);
+  return result;
 }

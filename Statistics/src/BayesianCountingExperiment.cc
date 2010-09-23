@@ -146,7 +146,7 @@ double BayesianCountingExperiment::cl95limit (int nObserved, bool fPlot) {
   return result;
 }
 
-CountingExperiment* BayesianCountingExperiment::clone(double fBackground, double fBackgroundSigma, double fScale, double fScaleSigma) {
+CountingExperiment* BayesianCountingExperiment::clone(double fBackground, double fBackgroundSigma, double fScale, double fScaleSigma) const {
   return new BayesianCountingExperiment (fBackground, fBackgroundSigma, fScale, fScaleSigma);
 }
 
@@ -175,7 +175,7 @@ double BayesianCountingExperiment::cl95limit (int nObserved, bool fPlot) {
   return 0;
 }
 
-CountingExperiment* BayesianCountingExperiment::clone(double fBackground, double fBackgroundSigma, double fScale, double fScaleSigma) {
+CountingExperiment* BayesianCountingExperiment::clone(double fBackground, double fBackgroundSigma, double fScale, double fScaleSigma) const {
   cerr << "BayesianCountingExperiment is not implemented in ROOT < 5.27" << endl;
   return 0;
 }

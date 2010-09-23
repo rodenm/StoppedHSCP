@@ -16,7 +16,7 @@ class BayesianCountingExperiment : public CountingExperiment {
   BayesianCountingExperiment (double fBackground, double fBackgroundSigma, double fScale, double fScaleSigma);
   virtual ~BayesianCountingExperiment();
   virtual double cl95limit (int nObserved, bool fPlot = false);
-  virtual CountingExperiment* clone(double fBackground, double fBackgroundSigma, double fScale, double fScaleSigma);
+  virtual CountingExperiment* clone(double fBackground, double fBackgroundSigma, double fScale, double fScaleSigma) const;
   void print ();
  private:
   RooStats::BayesianCalculator* mCalculator;

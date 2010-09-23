@@ -8,7 +8,7 @@ class CLsCountingExperiment : public CountingExperiment {
   CLsCountingExperiment (double fBackground, double fBackgroundSigma, double fScale, double fScaleSigma);
   virtual ~CLsCountingExperiment();
   virtual double cl95limit (int nObserved, bool fPlot = false);
-  virtual CountingExperiment* clone(double fBackground, double fBackgroundSigma, double fScale, double fScaleSigma);
+  virtual CountingExperiment* clone(double fBackground, double fBackgroundSigma, double fScale, double fScaleSigma) const;
  private:
 };
 

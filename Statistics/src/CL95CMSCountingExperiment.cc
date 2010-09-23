@@ -15,7 +15,7 @@ double CL95CMSCountingExperiment::cl95limit (int nObserved, bool fPlot) {
   return CL95 (1., 0., scale(), scaleSigma(), background(), backgroundSigma(), nObserved, int(mBkgModel));
 }
 
-CountingExperiment* CL95CMSCountingExperiment::clone(double fBackground, double fBackgroundSigma, double fScale, double fScaleSigma) {
+CountingExperiment* CL95CMSCountingExperiment::clone(double fBackground, double fBackgroundSigma, double fScale, double fScaleSigma) const {
   return new CL95CMSCountingExperiment (fBackground, fBackgroundSigma, fScale, fScaleSigma, mBkgModel);
 }
 
