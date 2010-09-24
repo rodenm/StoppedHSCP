@@ -18,45 +18,25 @@
 using namespace std;
 
 namespace {
-int limitedPoisson (double mu, int nMax, TRandom* rndm) {
-  const int maxSize = 1000;
-  if (double(nMax) > mu || nMax > maxSize-1) {
-    int result = nMax+1;
-    while ((result = rndm->Poisson (mu)) > nMax) {}
-    return result;
-  }
-  double pdfC [maxSize];
-  double p = exp(-mu);
-  pdfC [0] = exp(-mu);
-  for (int i = 1; i <= nMax; ++i) {
-    p *= mu/i;
-    pdfC [i] = pdfC [i-1] + p;
-  }
-  double pick = rndm->Uniform (pdfC [nMax]);
-  for (int i = 0; i <= nMax; ++i) {
-    if (pick < pdfC [i]) return i;
-  }
-  std::cerr << "limitedPoisson-> we should never get here" << std::endl;
-  return 0;
-}
 
 double upperLimitCountingCLS (double signal, int nObserved, double bkgMean, double bkgSigma, double scaleSigma) {
   // Cousins-Highland approach
   TRandom2 rndm;
   int nToys = 1000;
   double nGeObserved = 0;
+  double CLb = 0;
+  double CLsb = 0;
   for (int iToy = 0; iToy < nToys; ++iToy) {
     double bkg = rndm.Gaus (bkgMean, bkgSigma);
     while (bkg < 0) bkg = rndm.Gaus (bkgMean, bkgSigma);
-    int nBkg = limitedPoisson (bkg, nObserved, &rndm);
     double scale = rndm.Gaus (1., scaleSigma);
     while (scale <= 0) scale = rndm.Gaus (1., scaleSigma);
-    nGeObserved += ROOT::Math::poisson_cdf_c (nObserved-nBkg, signal * scale);
+    CLb += ROOT::Math::poisson_cdf (nObserved, bkg);
+    CLsb += ROOT::Math::poisson_cdf (nObserved, bkg + signal * scale);
   }
-//   std::cout << "upperLimitCountingCLS-> " 
-// 	    << signal << '/' << nObserved << '/' << bkgMean << '/' << bkgSigma << '/' << scaleSigma 
-// 	    << " nlo/ntoy/cls: " << nGeObserved << '/' << nToys << '/' << double (nGeObserved) / nToys << std::endl;
-  return double (nGeObserved) / nToys;
+//   cout << "upperLimitCountingCLS-> " << signal<<'/'<<bkgMean<<'/'
+//        <<CLb/nToys<<'/'<<CLsb/nToys<<'/'<<1-CLsb/CLb<<endl;
+  return 1-CLsb/CLb;
 }
 
 }
