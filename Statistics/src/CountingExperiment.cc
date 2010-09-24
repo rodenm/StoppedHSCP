@@ -194,7 +194,7 @@ double CountingExperiment::coverage (double fTrueSignal, double fPrecision) {
     int nEvents = rndm.Poisson (nEventsTrue);
     double cl95Toy = instance->cl95limit (nEvents);
     delete instance;
-    // cout << iToy << '/' << nEvents << '/' << fTrueSignal << '/' << cl95Toy << '/' << counter << endl;
+    //     cout << iToy << '/' << nEvents << '/' << fTrueSignal << '/' << cl95Toy << '/' << counter << endl;
     if (fTrueSignal >= cl95Toy) ++counter;
     if (counter >= maxCounters) {
       iToy += int (floor(0.5*iToy/maxCounters+0.5));
@@ -208,7 +208,7 @@ double CountingExperiment::coverage (double fTrueSignal, double fPrecision) {
 TH1D* CountingExperiment::plotCoverage (const char* fId, int fBins, double fMinSignal, double fMaxSignal, bool fShowProgress)  {
   TH1D* result = new TH1D (fId, "Coverage", fBins, fMinSignal, fMaxSignal);
   if (fShowProgress) cout << endl; 
-  for (int i = 1; i <= result->GetNbinsX(); ++i) {
+  for (int i = 1; i <= fBins; ++i) {
     result->SetBinContent (i, coverage (result->GetBinCenter(i)));
     if (fShowProgress) cout << '.' << flush;
   }

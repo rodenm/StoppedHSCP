@@ -3,4 +3,5 @@
   <class name="BayesianCountingExperiment"/>
   <class name="CL95CMSCountingExperiment"/>
   <class name="CLsCountingExperiment"/>
+  <class name="CLsbCountingExperiment"/>
 </lcgdict>
