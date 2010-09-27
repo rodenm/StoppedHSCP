@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.42 2010/09/21 19:52:35 temple Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.43 2010/09/27 00:45:19 temple Exp $
 //
 //
 
@@ -342,9 +342,12 @@ StoppedHSCPTreeProducer::beginJob()
 void 
 StoppedHSCPTreeProducer::beginRun(edm::Run const & run, edm::EventSetup const& iSetup)
 {
-  //  bool changed;
-  //  hltConfig_.init(run, iSetup, hltResultsTag_.process(), changed);
-  //  hltPathIndex_ = hltConfig_.triggerIndex("HLT_StoppedHSCP_8E29");
+  // HLT setup
+  bool changed;
+  hltConfig_.init(run, iSetup, hltResultsTag_.process(), changed);
+  hltPathIndex_ = hltConfig_.triggerIndex(hltPath_);
+
+  // HCAL bad channel removal
   badChannels_.clear();
   edm::ESHandle<HcalChannelQuality> p;
   iSetup.get<HcalChannelQualityRcd>().get(p);
@@ -454,9 +457,7 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
  
 
   // HLT config setup
-  bool changed;
-  hltConfig_.init(iEvent, hltResultsTag_.process(), changed);
-  hltPathIndex_ = hltConfig_.triggerIndex(hltPath_);
+  // moved to beginRun()
 
   // get HLT results
   edm::Handle<edm::TriggerResults> HLTR;
