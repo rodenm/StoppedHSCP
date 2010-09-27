@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.41 2010/09/20 15:09:16 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.42 2010/09/21 19:52:35 temple Exp $
 //
 //
 
@@ -233,7 +233,7 @@ private:
   // bad channel status to mask;
   HcalChannelQuality* chanquality_;
   int badchannelstatus_;
-  std::vector<HcalDetId> badChannels_;
+  std::set<HcalDetId> badChannels_;
 
   // debug stuff
   bool l1JetsMissing_;
@@ -358,8 +358,7 @@ StoppedHSCPTreeProducer::beginRun(edm::Run const & run, edm::EventSetup const& i
       HcalDetId id=HcalDetId(*i);
       int status=(chanquality_->getValues(id))->getValue();
       if ((status&badchannelstatus_)==0) continue;
-      //std::cout <<"ID = "<<id.subdet()<<"  ("<<id.ieta()<<" "<<id.iphi()<<" "<<id.depth()<<")  STATUS = "<<std::hex<<status<<"  BCS = 0x"<<badchannelstatus_<<std::dec<<std::endl;
-      badChannels_.push_back(id);
+      badChannels_.insert(id);
     }
   //std::cout <<"bad Channel size = "<<badChannels_.size()<<std::endl;
 }
@@ -374,7 +373,6 @@ StoppedHSCPTreeProducer::endJob() {
 void
 StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-
   event_ = new StoppedHSCPEvent();
   
   doEventInfo(iEvent);
@@ -877,7 +875,7 @@ void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent, const 
   // get the digis themselves
   edm::Handle<HBHEDigiCollection> hcalDigis;
   iEvent.getByLabel(hcalDigiTag_,hcalDigis);
-    
+
   if (hcalDigis.isValid()) {
 
     // loop over the digis
@@ -885,11 +883,13 @@ void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent, const 
 
       const HBHEDataFrame &digi=(*it);
       HcalDetId cell = digi.id();
+
+      // still need to check on valid digis; don't want to include bad channels in digi check
       if (std::find(badChannels_.begin(),
 		    badChannels_.end(),
 		    cell)!=badChannels_.end())
 	{
-	  //std::cout <<"BAD FOUND!";
+	  //std::cout <<"BAD CHANNEL FOUND IN DIGI COLLECTION!";
 	  //std::cout <<"\t("<<cell.ieta()<<","<<cell.iphi()<<","<<cell.depth()<<")"<<  std::endl;
 	  continue;
 	}
@@ -903,20 +903,17 @@ void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent, const 
       // figure out if this digi corresponds to highest RecHit or top 5 RecHits
       bool isBig=false, isBig5=false;
       unsigned counter=0;
+
       for(HBHERecHitCollection::const_iterator hit=recHits_.begin();
-	  hit!=recHits_.end() && counter < 6;
-	  ++hit) 
+	  hit!=recHits_.end() && counter < 5;
+	  ++hit, ++counter) 
 	{
-	  if (std::find(badChannels_.begin(),
-			badChannels_.end(),
-			hit->id())!=badChannels_.end())
-	    continue;
 	  if(hit->id() == digi.id()) 
 	    {
-	      if(counter==0) isBig=isBig5=true;  // digi is also the highest energy rechit
-	      if(counter<5) isBig5=true;         // digi is one of 5 highest energy rechits
+	      if(counter==0) isBig=true;  // digi is also the highest energy rechit
+	      isBig5=true;         // digi is one of 5 highest energy rechits
+	      break;
 	    }
-	  ++counter;
 	}
      
       // correct time slices for pedestal
@@ -1026,7 +1023,6 @@ void StoppedHSCPTreeProducer::pulseShapeVariables(const std::vector<double>& sam
 void
 StoppedHSCPTreeProducer::doRecHits(const edm::Event& iEvent)
 {
-
   recHits_.clear();
 
   // get the rechits (to select digis ordered by energy)
@@ -1036,17 +1032,33 @@ StoppedHSCPTreeProducer::doRecHits(const edm::Event& iEvent)
     edm::LogWarning("MissingProduct") << "HBHERecHitCollection not found.  HCAL timing variables will be affected" << std::endl;
   }
 
-  recHits_.insert(recHits_.end(), recHits->begin(), recHits->end());
+  // reject bad status rechits from collection
+  for (HBHERecHitCollection::const_iterator it=recHits->begin();
+       it!=recHits->end();++it)
+    {
+      if (std::find(badChannels_.begin(),
+		    badChannels_.end(),
+		    it->id())!=badChannels_.end())
+	{
+	  //std::cout <<"REJECTED RECHIT "<<it->id()<<std::endl;
+	  continue;
+	}
+      recHits_.push_back(*it);
+
+    }
+
+  //recHits_.insert(recHits_.end(), recHits->begin(), recHits->end());
   sort(recHits_.begin(), recHits_.end(), rechit_gt());
 
   // loop over rechits, print first five
-//   unsigned count=0;
-//   for (HBHERecHitCollection::const_iterator hit=recHits_.begin();
-// 	hit!=recHits_.end() && count < 6;
-// 	++hit, ++count) {
-//     edm::LogWarning("RecHits") << "RecHit energy=" << hit->energy() << " id=" << hit->id() << std::endl;
-//   }
-
+  /*
+  unsigned count=0;
+  for (HBHERecHitCollection::const_iterator hit=recHits_.begin();
+       hit!=recHits_.end() && count < 6000;
+       ++hit, ++count) {
+    std::cout << "RecHit energy=" << hit->energy() << " id=" << hit->id() << std::endl;
+  }
+  */
 
 }
 
