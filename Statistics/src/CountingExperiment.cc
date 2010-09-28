@@ -183,7 +183,7 @@ double CountingExperiment::coverage (double fTrueSignal, double fPrecision) {
   double nEventsTrue = fTrueSignal/scale() + background();
   const int nToys = 100 * maxCounters; // consider 99% maximum
   int counter = 0;
-  TRandom2 rndm;
+  static TRandom2 rndm;
   int iToy = 0;
   for (; iToy < nToys; ++iToy) {
     double bkg = -1;
@@ -194,7 +194,7 @@ double CountingExperiment::coverage (double fTrueSignal, double fPrecision) {
     int nEvents = rndm.Poisson (nEventsTrue);
     double cl95Toy = instance->cl95limit (nEvents);
     delete instance;
-    //     cout << iToy << '/' << nEvents << '/' << fTrueSignal << '/' << cl95Toy << '/' << counter << endl;
+    //    cout << iToy << '/' << nEvents << '/' << fTrueSignal << '/' << cl95Toy << '/' << counter << endl;
     if (fTrueSignal >= cl95Toy) ++counter;
     if (counter >= maxCounters) {
       iToy += int (floor(0.5*iToy/maxCounters+0.5));

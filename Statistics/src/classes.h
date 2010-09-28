@@ -5,5 +5,6 @@
 #include "StoppedHSCP/Statistics/interface/CL95CMSCountingExperiment.h"
 #include "StoppedHSCP/Statistics/interface/CLsCountingExperiment.h"
 #include "StoppedHSCP/Statistics/interface/CLsbCountingExperiment.h"
+#include "StoppedHSCP/Statistics/interface/FRCountingExperiment.h"
 
 #endif
