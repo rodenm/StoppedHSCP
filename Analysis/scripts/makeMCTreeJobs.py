@@ -3,7 +3,7 @@
 import sys
 
 ifilepath='/data/sdd1/phjjb/stoppedHSCP_MC/'
-ofilepath='/data/sdd1/phjjb/stoppedHSCP/stoppedHSCP_tree_MC_361/'
+ofilepath='/data/sdd1/phjjb/stoppedHSCP/stoppedHSCP_tree_MC_361_v2/'
 
 files=['StoppedGluino200-Neutralino100-v2_1', \
        'StoppedGluino200-Neutralino150-v2_1', \
@@ -30,7 +30,7 @@ process.GlobalTag.globaltag = 'START36_V9::All' # MC \n\
 process.gctDigis.inputLabel = 'rawDataCollector' \n\
 process.gtDigis.DaqGtInputTag = 'rawDataCollector' \n\
 process.hcalDigis.InputLabel = 'rawDataCollector' \n\
-process.myPath.remove(process.hltHighLevel) \n\
+process.ntuple.remove(process.hltHighLevel) \n\
 process.maxEvents.input = cms.untracked.int32(-1) \n\
 process.source.fileNames = cms.untracked.vstring('file:"+ifilepath+file+".root') \n\
 process.TFileService.fileName = cms.string('"+ofilepath+"stoppedHSCPTree_"+file+".root')"

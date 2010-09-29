@@ -10,12 +10,18 @@
 
 LhcFills::LhcFills() {
 
+  std::cout << "Setting up LHC fills data" << std::endl;
+
   // open fills file
-  std::string fillsname("StoppedHSCP/Analysis/data/fills.txt");
+  std::string fillsname(getenv("CMSSW_BASE"));
+  fillsname+=std::string("/src/StoppedHSCP/Analysis/data/fills.txt");
+  std::cout << "Getting fills from " << fillsname << std::endl;
   std::ifstream fills(fillsname.c_str(), std::ifstream::in);
 
   // open filling schemes file
-  std::string schemesname("StoppedHSCP/Analysis/data/fillingSchemes.txt");
+  std::string schemesname(getenv("CMSSW_BASE"));
+  schemesname+=("/src/StoppedHSCP/Analysis/data/fillingSchemes.txt");
+  std::cout << "Getting filling scheme from " << schemesname << std::endl;
   std::ifstream schemes(schemesname.c_str(), std::ifstream::in);
 
   // read data
@@ -90,6 +96,8 @@ LhcFills::LhcFills() {
     }
     
   }
+
+  std::cout << std::endl;
 
 }
 

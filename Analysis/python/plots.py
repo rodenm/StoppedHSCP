@@ -82,46 +82,90 @@ def hist2DPlot(hist, file, ofilename, scale=0., log=False, title="histogram", xt
     canvas.Print(ofilename)
 
 
+class PlotStyle:
+
+    # construct object with default style
+    def __init__(self, style):
+        self.norm    = False
+        self.log     = False
+        self.leg     = False
+        self.opt     = " "
+        self.port    = False
+        self.colours = [2, 4, 5]
+        self.markers = [22, 25, 27]
+        self.fills   = [0, 0, 0]
+        self.lstyles = [0, 0, 0]
+        
+        # style dictionary
+        styles={0:self.style0,
+                1:self.style1}
+        
+        styles[style]()
+
+    # just markers
+    def style0(self):
+        self.opt     = "E P0"
+
+    # background vs data comparison
+    def style1(self):  
+        self.norm    = True
+        self.leg     = True
+        self.colours = [17, 2, 4]
+        self.markers = [0, 0, 0]
+        self.fills   = [17, 0, 0]
+        self.lstyles = [0, 1, 1]
+        self.opt     = "HIST"
+
+
 # superimpose multiple histograms
-def multiPlot(hists, file, ofilename, norm=False, log=False, ymin=0., ymax=0., title="histogram", xtitle="", ytitle="", opt="HIST", port=False) :
+def multiPlot(hists, labels, ofile, ymin=0., ymax=0., title="histogram", xtitle="", ytitle="", style=0) :
+
+    s = PlotStyle(style)
 
     canvas=TCanvas("canvas")
 
     # set log scale, or not
-    if (log) :
+    if (s.log) :
         canvas.SetLogy(1)
     else :
         canvas.SetLogy(0)
 
-    # set y axis maximum
-    setMaxMin = false
-    if (not norm) :
-        for hist in hists:
-            h = file.Get(hist)
-            if h.GetMaximum() > ymax:
-                ymax=1.1*h.GetMaximum()
-    else:
-        ymax = 1.1
+    # get y axis maximum
+    if (ymax==0.):
+        for h in hists:
+            if s.norm:
+                max = 1.1*h.GetMaximum()/h.Integral()
+            else:
+                max = 1.1*h.GetMaximum()
+            if max > ymax:
+                ymax = max
 
-    # set titles
 
-    # set list of colours
-    colours = [2, 4, 5, 6, 7, 8, 9, 1]
-    markers = [22, 25, 27, 28, 29, 22, 25, 27, 28]
+    # legend
+    legend=TLegend(0.65, 0.65, 0.95, 0.75)
+    legend.SetFillColor(0)
+    legend.SetBorderSize(1)
+
+    opt = s.opt
 
     # iterate over histograms
     first=True
-    for hist,col,mark in zip(hists,colours,markers):
-
-        h = file.Get(hist)
+    for h,col,lstyle,mark,fill,label in zip(hists,s.colours,s.lstyles,s.markers,s.fills,labels):
 
         # set colour
         h.SetLineColor(col)
-        h.SetMarkerColor(col)
-        h.SetMarkerStyle(mark)
+        h.SetLineStyle(lstyle)
+        if (fill!=0):
+            h.SetFillColor(fill)
+        else:
+            h.SetFillStyle(0)
+        if (mark!=0):
+            h.SetMarkerStyle(mark)
+            h.SetMarkerColor(col)
+            opt+="PE"
 
         # normalise if required
-        if (norm and h.Integral() > 0.):
+        if (s.norm and h.Integral() > 0.):
             h.Scale(1./h.Integral())
 
         # plot histogram
@@ -136,14 +180,24 @@ def multiPlot(hists, file, ofilename, norm=False, log=False, ymin=0., ymax=0., t
             h.Draw(opt)
             first=False
         else:
-#            h.SetMaximum(ymax)
-#            h.SetMinimum(ymin)
             h.Draw(opt+" SAME")
 
+        if (fill!=0):
+            legend.AddEntry(h, label, "f")
+        else:
+            if (mark!=0):
+                legend.AddEntry(h, label, "m")
+            else:
+                legend.AddEntry(h, label, "l")
+
+    if s.leg :
+        legend.Draw()
+
     canvas.Update()
-    if (port):
-        canvas.Print(ofilename, "Portrait")
+    
+    if (s.port):
+        canvas.Print(ofile, "Portrait")
     else:
-        canvas.Print(ofilename)
+        canvas.Print(ofile)
 
 

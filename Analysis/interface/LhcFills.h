@@ -28,6 +28,10 @@ class LhcFills {
   std::vector<unsigned> getCollisionsFromRun(unsigned long run);
   std::vector<unsigned> getBunchesFromRun(unsigned long run);
 
+  // get info about a particular filling scheme
+  //   std::vector<unsigned> getCollisionsFromScheme(std::string scheme);
+  //   std::vector<unsigned> getBunchesFromScheme(std::string scheme);
+
   // print info
   void printSummary(std::ostream& o);
   void print(std::ostream& o);
