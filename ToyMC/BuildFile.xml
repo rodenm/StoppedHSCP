@@ -2,6 +2,7 @@
 <use name="roofit"/>
 <use name="roostats"/>
 <use name="StoppedHSCP/Analysis"/>
+<use name="StoppedHSCP/Statistics"/>
 
 <export>
   <use name="root"/>

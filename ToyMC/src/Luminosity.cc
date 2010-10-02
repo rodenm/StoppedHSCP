@@ -1,12 +1,19 @@
 #include "StoppedHSCP/ToyMC/interface/Luminosity.h"
 
+#include "StoppedHSCP/ToyMC/interface/jsonxx.h"
+
+#include "TFile.h"
 #include "TH1D.h"
 
 #include <algorithm>
 
 #include <fstream>
 #include <iostream>
+#include <sstream>
+#include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 
+static const double LUMIFILE_TO_PB = 1e-6;
 
 Luminosity::Luminosity() {
 
@@ -38,7 +45,7 @@ void Luminosity::makePlots() const {
   for (std::vector<struct LumiBlock>::const_iterator cit = lumis_.begin();
        cit != lumis_.end(); cit++) {
     lumi_dist_h->Fill(counter, cit->lumi);
-    cms_dist_h->Fill(counter++, (cit->cmsSensitivity>0.01?
+    cms_dist_h->Fill(counter++, (cit->good?
 				 50e27 : 0));
   }
 
@@ -52,45 +59,119 @@ void Luminosity::makePlots() const {
 
 }
 
-void Luminosity::buildFromFile(std::vector<unsigned long> runs) {
+void Luminosity::buildFromFile(std::vector<unsigned long> runs, bool useHists, std::string goodLSFile, unsigned lumiFirstRun, unsigned lumiLastRun) {
+
+  std::cout << "Setting up Lumi data" << std::endl;
+
+  // open file with lumi info
+  std::string filename(getenv("CMSSW_BASE"));
+  filename+=std::string("/src/StoppedHSCP/Analysis/data/lumi_all.csv");
+  std::cout << "Reading lumi info from " << filename << std::endl;
+  std::ifstream lumifile(filename.c_str());
   
-  std::string filename("StoppedHSCP/ToyMC/data/lumi_record.txt");
+  // open GOODLS file with CMS live info
+  std::cout << "Reading good LS info from " << goodLSFile << std::endl;
 
-  std::ifstream infile(filename.c_str());
+  std::string line;
+  TFile* histFile=0;
+  jsonxx::Object goodLumis;
 
-  lumis_.clear();
-
-  LumiBlock l;
-
-  double total_lumi = 0, sensitive_lumi = 0;
-  unsigned int goodLS = 0;
-
-  // Run LS pass pass pass Lumi  
-  while (infile >> l.run >> l.ls >> l.lumi >> l.cmsSensitivity) {
-
-    // check this is a run we are simulating
-    std::vector<unsigned long>::iterator p = find(runs.begin(), runs.end(), l.run);
-    if (p != runs.end()) {
-      l.lumi *= 1e30;
-      if (l.cmsSensitivity > 0.01) {
-	goodLS++;
-	sensitive_lumi += l.lumi; //pow(2,18)
-      }
-      total_lumi += l.lumi;
-      
-      l.lumi /= (25e-9*3564*262144);  //pow(2,18)
-      lumis_.push_back(l);
-    }
-    
+  if (useHists) {
+    histFile = new TFile(goodLSFile.c_str(), "read");
   }
- 
-  std::cerr << "N good LS " << goodLS 
-	    << " - " << goodLS*3564*25e-9*262144 << " s"
-	    << std::endl
-	    << "Sensitive lumi " << sensitive_lumi << std::endl
-	    << "Total lumi     " << total_lumi << std::endl;
-  
+  else {
+    std::ifstream goodLSfile(goodLSFile.c_str());
+    getline(goodLSfile, line);
+    std::istringstream iss(line);
+
+    jsonxx::Object::parse(iss, goodLumis);
+    std::cout << "Found " << goodLumis.kv_map().size() << " runs in good LS file" << std::endl;
+  }
+
+  // setup lumi info
+  lumis_.clear();
+  totalLumi = 0.;
+  if (!lumifile.fail()) {
+
+    // read header
+    getline(lumifile, line);
+
+    // loop over lines
+    while (!lumifile.eof()) {
+
+      getline(lumifile, line);
+
+      // split into tokens
+      std::vector<std::string> strs;
+      boost::split(strs, line, boost::is_any_of(","));
+
+      // convert to lumi block info
+      if (strs.size() > 2) {
+
+	LumiBlock lb;
+	lb.run  = boost::lexical_cast<unsigned long>(strs.at(0));
+	lb.ls   = boost::lexical_cast<unsigned long>(strs.at(1));
+	lb.lumi = LUMIFILE_TO_PB * boost::lexical_cast<double>(strs.at(2));
+	lb.good = false;
+	
+	// ignore anything before the first lumi run
+	if (lb.run < lumiFirstRun) continue;
+
+	// stop if we went past the last lumi run
+	if (lb.run > lumiLastRun) break;
+
+	// is this lumi block good
+	if (useHists) {
+	  std::string hstr = strs.at(0)+std::string("/NoCuts/hlb");
+	  //	  std::cout << histFile << " " << hstr << std::endl;
+	  TH1D* hlb = (TH1D*) histFile->Get(hstr.c_str());
+	  if (hlb != NULL) {
+	    lb.good = (hlb->GetBinContent(lb.ls+1) > 0);
+	  }
+	  
+	}
+	else {
+	  std::string runstr = strs.at(0);
+	  lb.good = false;
+	  if (goodLumis.has<jsonxx::Array>(runstr)) {
+	    // loop over good LS ranges
+	    for (unsigned i=0; i<goodLumis.get<jsonxx::Array>(runstr).size(); ++i) {
+	      
+	      // get range
+	      if (goodLumis.get<jsonxx::Array>(runstr).has<jsonxx::Array>(i)) {
+		if (goodLumis.get<jsonxx::Array>(runstr).get<jsonxx::Array>(i).has<double>(0) &&
+		    goodLumis.get<jsonxx::Array>(runstr).get<jsonxx::Array>(i).has<double>(1)) {
+		  if (lb.ls >= (unsigned) goodLumis.get<jsonxx::Array>(runstr).get<jsonxx::Array>(i).get<double>(0) ||
+		      lb.ls <= (unsigned) goodLumis.get<jsonxx::Array>(runstr).get<jsonxx::Array>(i).get<double>(1) ) {
+		    lb.good = true;
+		  }
+		}
+	      }   
+	    }	
+	  }    	    
+	  
+	}
+
+	totalLumi += lb.lumi;
+	lumis_.push_back(lb);
+
+      }
+
+    }
+
+  }
+
+  // count good lumis
+  nGoodLS = 0;
+  for (unsigned i=0; i<lumis_.size(); ++i) {
+    if (lumis_.at(i).good) ++nGoodLS;
+  }
+
+  dump(std::cout, false);
+  std::cout << std::endl;
+
   makePlots();
+
 }
 
 void Luminosity::buildFromModel(unsigned int cycles, 
@@ -103,7 +184,7 @@ void Luminosity::buildFromModel(unsigned int cycles,
   LumiBlock l;
   l.run = 1;
   l.ls = 1;
-  l.cmsSensitivity = 1;
+  l.good = true;
   unsigned int i,j;
   for (i = 0; i < cycles; i++) {
     for (j = 0; j < units_on; j++) {
@@ -117,4 +198,20 @@ void Luminosity::buildFromModel(unsigned int cycles,
       lumis_.push_back(l);
     }
   }
+}
+
+
+void Luminosity::dump(ostream& o, bool full) {
+
+  if (full) {
+    for (unsigned i=0; i<lumis_.size(); ++i) {
+      if (lumis_.at(i).good) {
+	o << "Good lumi : " << lumis_.at(i).run << "," << lumis_.at(i).ls << " : " << lumis_.at(i).lumi << std::endl;
+      }
+    }
+  }
+
+  std::cout << "Total lumi                 : " << totalLumi << " /pb" << std::endl;
+  std::cout << "N lumi sections good/total : " << nGoodLS << "/" << lumis_.size() << std::endl;
+
 }

@@ -28,7 +28,8 @@ if len(args)<1:
     sys.exit()
     
 dataset = args[0]
-odir = os.environ['PWD']+'/'+dataset+'/toymc'
+ddir = os.environ['PWD']+'/'+dataset
+odir = ddir+'/toymc'
 
 # create output directory
 if not os.path.exists(odir):
@@ -75,8 +76,7 @@ for lifetime in lifetimes:
     # write job script
     script = open(jobdir+'/job'+str(count)+'.sh', 'w')
     script.write('cd '+jobdir+'\n')
-    script.write('cp '+os.environ['CMSSW_BASE']+'/src/StoppedHSCP/ToyMC/data/fills_bx3.txt lumi_record.txt\n')
-    script.write('simulate < params'+str(count)+'.txt >& job.log\n')
+    script.write('simulate params'+str(count)+'.txt >& job.log\n')
     script.write('cd '+os.environ['PWD']+'\n')
     script.close()
 

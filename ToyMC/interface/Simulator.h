@@ -9,56 +9,60 @@
 #include "TRandom3.h"
 #include "TTree.h"
 #include "TFile.h"
-#include "StoppedHSCP/ToyMC/interface/Experiment.h"
+
 #include "StoppedHSCP/ToyMC/interface/Luminosity.h"
+#include "StoppedHSCP/ToyMC/interface/Events.h"
+#include "StoppedHSCP/ToyMC/interface/Experiment.h"
 
 #include "StoppedHSCP/Analysis/interface/LhcFills.h"
-
-static const unsigned int NBXS_PER_ORBIT = 3564;
-static const double TIME_PER_BUNCH = 25e-9;
-static const double TIME_PER_ORBIT = 
-  8.91e-5;
-//NBXS_PER_ORBIT * TIME_PER_BUNCH;
-//static const unsigned int NORBITS_PER_LS = 1048576; //2^20
-static const unsigned int NORBITS_PER_LS = 262144; //2^18
-static const double TIME_PER_LS =
-  8.91e-5 * 262144;
-//    8.91e-5 * 1048576;
-//TIME_PER_ORBIT * NORBITS_PER_LS;
 
 
 class Simulator {
  public:
   Simulator();
-  ~Simulator() { clearPlots(); }
+  ~Simulator();
   
-  void setupLumi(std::vector<unsigned long> fillsToSimulate);
-  void run(Experiment &);
-
-  std::map<std::string, TH1D *> run_specific_plots;
-
-  void writeOutLifetimeFit();
-
-  void clearPlots();
-  void setupPlots();
-  
-  void setupBxStructure(unsigned int);
+  // set up
+  void setParameters(Experiment* e);
+  void setupLumi();
   void setFillScheme(unsigned fill);
-  void setupLifetimeBxMasking(double);
+  void setupLifetimeBxMasking();
+  void setupObservedEvents();
 
-  void simulateSignal(Experiment &);
-  void simulateBackground(Experiment &);
+  // run MC simulation
+  void simulateSignal();
+  void simulateBackground();
+  void calculateExpectedBG();
+  void calculateObservedEvents();
+  void calculateLimit();
 
-  void sendEventToLifetimeFit(unsigned int, unsigned int, unsigned int);
+  // make plots for debugging etc
+  //  void makeBXMaskPlot();  // 
 
-  bool collisionHasL1A(double rate);
-  bool isTriggerBlocked(const Experiment &e, unsigned int, unsigned int);
 
-  //  double countingExpt95CLUpperLimitHybrid(int nObserved, double bkgMean, double bkgSigma, int nToys);
+  // print out for debugging
+  void printMaskInfo();
+
+/*   // not clear what these are for */
+/*   bool collisionHasL1A(double rate); */
+/*   bool isTriggerBlocked(const Experiment &e, unsigned int, unsigned int); */
+
+/*   // plots (move elsewhere!) */
+/*   void clearPlots(); */
+/*   void setupPlots(); */
+/*   std::map<std::string, TH1D *> run_specific_plots; */
+
+/*   // lifetime fit (move elsewhere!) */
+/*   void sendEventToLifetimeFit(unsigned int, unsigned int, unsigned int); */
+/*   void writeOutLifetimeFit(); */
+
  private:
 
   // random numbers
   TRandom3 random_;
+
+  // parameters
+  Experiment* expt_;
 
   // LHC bunch structure
   LhcFills fills_;
@@ -66,19 +70,18 @@ class Simulator {
   // luminosity delivered
   Luminosity lumi_;
 
-  // local info used for bunch structure
-  unsigned int beamStructure_;  // number of filled BXs?
-  unsigned int nBxOn_;          // think this is just a cross-check
-  unsigned int nBxOff_;         // think this is just a cross-check
-  bool beam_[NBXS_PER_ORBIT];   // whether each bucket in the orbit is filled or not
-  std::vector<bool> maskedBXs_;    // bad bunches to look inside
-  std::vector<bool> lifetimeMask_; // bunches too far from collision
-  std::vector<unsigned int> collisions_;  // BXs of collisions
+  // observed events
+  Events events_;
 
+  // 
+  unsigned fill_;    // fill used for filling scheme
+  unsigned nColls_, nMasks_, nLifetimeMasks_;
+  std::vector<bool> collisions_;            // bool for each BX, true if collision
+  std::vector<bool> masks_;                  // bool for each BX, true if masked (BX +/-1)
+  std::vector<bool> lifetimeMasks_;          // bool for each BX, true if masked for lifetime
+  
   // output stuff
-  TFile lifetimeFitOutput_;
   TTree tree_;
-
   int event_[3];
   long int ls_, bx_, orbit_;
 
