@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.22 2010/07/05 10:56:33 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.23 2010/10/05 13:24:56 jbrooke Exp $
 //
 //
 
@@ -292,6 +292,10 @@ class StoppedHSCPEvent : public TObject {
   double noiseMax25GeVHitTime;
   double noiseMinRBXEMF;
   bool noiseFilterResult;
+
+  // Beam Halo data
+  bool beamHalo_CSCTight;
+  bool beamHalo_CSCLoose;
 
   // HPDs identified by noise summary algos
   unsigned hpd_N;

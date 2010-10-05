@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.44 2010/09/27 02:11:46 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.45 2010/10/05 13:25:12 jbrooke Exp $
 //
 //
 
@@ -91,6 +91,9 @@
 #include "CalibCalorimetry/HcalAlgos/interface/HcalDbASCIIIO.h"
 #include "CalibFormats/HcalObjects/interface/HcalDbRecord.h"
 
+// Beam Halo Summary
+#include "DataFormats/METReco/interface/BeamHaloSummary.h"
+
 // ROOT output stuff
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
@@ -127,6 +130,7 @@ private:
   void doCaloTowers(const edm::Event&);
   void doMuons(const edm::Event&);
   void doHcalNoise(const edm::Event&);
+  void doBeamHalo(const edm::Event&);
   void doRecHits(const edm::Event& iEvent);
   void doTimingFromDigis(const edm::Event&, const edm::EventSetup&);
 
@@ -229,6 +233,7 @@ private:
   bool doReco_;
   bool doDigis_;
   bool writeHistos_;
+
 
   // bad channel status to mask;
   HcalChannelQuality* chanquality_;
@@ -351,6 +356,7 @@ StoppedHSCPTreeProducer::beginRun(edm::Run const & run, edm::EventSetup const& i
   badChannels_.clear();
   edm::ESHandle<HcalChannelQuality> p;
   iSetup.get<HcalChannelQualityRcd>().get(p);
+  //std::cout <<"BEGIN RUN STARTED!"<<std::endl;
   chanquality_= new HcalChannelQuality(*p.product());
   std::vector<DetId> mydetids = chanquality_->getAllChannels();
   for (std::vector<DetId>::const_iterator i = mydetids.begin();i!=mydetids.end();++i)
@@ -360,7 +366,9 @@ StoppedHSCPTreeProducer::beginRun(edm::Run const & run, edm::EventSetup const& i
       if (i->subdetId()!=HcalBarrel && i->subdetId()!=HcalEndcap) continue;
       HcalDetId id=HcalDetId(*i);
       int status=(chanquality_->getValues(id))->getValue();
+      //std::cout <<"checking "<<id<<"  STATUS = "<<status<<std::endl;
       if ((status&badchannelstatus_)==0) continue;
+      //std::cout <<"\tBAD CHANNEL FOUND!"<<id<<"  STATUS = "<<status<<std::endl;
       badChannels_.insert(id);
     }
   //std::cout <<"bad Channel size = "<<badChannels_.size()<<std::endl;
@@ -387,6 +395,7 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
     doCaloTowers(iEvent);
     doJets(iEvent);
     doMuons(iEvent);
+    doBeamHalo(iEvent);
     doHcalNoise(iEvent);
     doRecHits(iEvent);
     doTimingFromDigis(iEvent, iSetup);
@@ -775,6 +784,27 @@ void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent) {
   }
 
 }
+
+
+void StoppedHSCPTreeProducer::doBeamHalo(const edm::Event& iEvent)
+{
+    
+  edm::Handle<BeamHaloSummary> TheBeamHaloSummary;
+  iEvent.getByLabel("BeamHaloSummary",TheBeamHaloSummary);
+  bool beamhalo_csctight=false;
+  bool beamhalo_cscloose=false;
+
+  if (TheBeamHaloSummary.isValid())
+    {
+      const BeamHaloSummary TheSummary = (*TheBeamHaloSummary.product() );
+      if (TheSummary.CSCTightHaloId()==true)  beamhalo_csctight = true; 
+      if (TheSummary.CSCLooseHaloId()==true)  beamhalo_cscloose = true; 
+    }
+  event_->beamHalo_CSCTight=beamhalo_csctight;
+  event_->beamHalo_CSCLoose=beamhalo_cscloose;
+
+  return;
+} // void StoppedHSCPTreeProducer::doBeamHalo(iEvent)
 
 
 void StoppedHSCPTreeProducer::doHcalNoise(const edm::Event& iEvent) {

@@ -115,6 +115,8 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   noiseMax25GeVHitTime(0.),
   noiseMinRBXEMF(0.),
   noiseFilterResult(0),
+  beamHalo_CSCTight(false),
+  beamHalo_CSCLoose(false),
   hpd_N(0),
   hpdId(0),
   hpdEta(0),
