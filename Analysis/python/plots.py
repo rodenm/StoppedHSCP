@@ -98,7 +98,8 @@ class PlotStyle:
         
         # style dictionary
         styles={0:self.style0,
-                1:self.style1}
+                1:self.style1,
+                2:self.style2}
         
         styles[style]()
 
@@ -114,6 +115,12 @@ class PlotStyle:
         self.markers = [0, 0, 0]
         self.fills   = [17, 0, 0]
         self.lstyles = [0, 1, 1]
+        self.opt     = "HIST"
+
+    # simple different color histograms
+    def style2(self):
+        self.colours = [1, 2, 4]
+        self.markers = [0, 0, 0]
         self.opt     = "HIST"
 
 

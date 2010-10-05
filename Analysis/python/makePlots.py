@@ -119,7 +119,11 @@ def distributions(file, basedir, ofile):
     histPlot(dir+"/hr2_nmo", file, ofile+".ps", 1., False, "", "R2", "")
     histPlot(dir+"/hrpk_nmo", file, ofile+".ps", 1., False, "", "R_{peak}", "")
     histPlot(dir+"/hrout_nmo", file, ofile+".ps", 1., False, "", "R_{outer}", "")
-    histPlot(dir+"/hjetemf_nmo", file, ofile+".ps", 1., False, "", "EM fraction", "E")
+
+    # final distributions
+    multiPlot([ file.Get("All/NoCuts/hcoll"), file.Get("All/Cuts/hbx12")], ["collisions","events"], ofile+".ps", 0., 0., "Events after all cuts", "BX", "N", 2)
+    histPlot(dir+"/hjete12", file, ofile+".ps", 1., False, "Jet energy (after all cuts)", "E (GeV)", "E")
+    hist2DPlot(dir+"/hjetetaphi12", file, ofile+".ps", 1., False, "Jet pos (after all cuts)", "#eta", "#phi", "", "COLZ")
 
     canvas = TCanvas("canvas")
     canvas.Print(ofile+".ps]")

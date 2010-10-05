@@ -110,8 +110,8 @@ bool Cuts::cutN(unsigned n) const
     return (event_->top5DigiRPeak > 0.4) && (event_->top5DigiRPeak < 0.7) && (event_->top5DigiPeakSample > 0) && (event_->top5DigiPeakSample < 7);
   case 12:
     return (event_->top5DigiROuter < 0.1) && (event_->top5DigiROuter >= 0.0) && (event_->top5DigiPeakSample > 0) && (event_->top5DigiPeakSample < 7);
-  case 13:
-    return event_->jet_N>0 && (event_->jetEEm[0] / event_->jetE[0]) > 0.05;
+    //  case 13:
+    //    return event_->jet_N>0 && (event_->jetEEm[0] / event_->jetE[0]) > 0.05;
   default:
     return true;
     

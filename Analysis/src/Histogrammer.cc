@@ -1,6 +1,8 @@
 #include "StoppedHSCP/Analysis/interface/Histogrammer.h"
+#include "StoppedHSCP/Analysis/interface/LhcFills.h"
 
 #include <sstream>
+#include <algorithm>
 
 Histogrammer::Histogrammer(std::string filename, std::vector<unsigned> runs, Cuts* cuts) :
   file_(filename.c_str(), "recreate"),
@@ -31,9 +33,25 @@ void Histogrammer::fill(StoppedHSCPEvent& event) {
   for (unsigned i=0; i<runs_.size(); ++i) {
     if (runs_.at(i) == event.run) {
       runHists_.at(i).fill(event);
+      break;
     }
   }
   
+}
+
+
+void Histogrammer::fillCollisionsHistos(unsigned run, LhcFills* fills) {
+
+  hists_.fillCollisionsHisto(fills->getCollisionsFromRun(run));
+
+  std::vector<Histograms>::iterator hists;
+  for (unsigned i=0; i<runs_.size(); ++i) {
+    if (runs_.at(i)==run) {
+      runHists_.at(i).fillCollisionsHisto(fills->getCollisionsFromRun(run));
+      break;
+    }
+  }
+
 }
 
 

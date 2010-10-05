@@ -24,6 +24,8 @@ class Histograms {
 
   void fill(StoppedHSCPEvent& event);
 
+  void fillCollisionsHisto(std::vector<unsigned> colls);
+
   void save();
 
   void cutAxisLabels(TH1D* h);
@@ -35,6 +37,7 @@ class Histograms {
   Cuts* cuts_;
   TDirectory* base_;
 
+  TH1D* hcoll_;
   TH1D* hrun_;
   TH1D* hbx_;
   TH1D* horb_;

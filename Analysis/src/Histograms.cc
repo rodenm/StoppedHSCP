@@ -4,6 +4,7 @@
 #include "TMath.h"
 
 #include <sstream>
+#include <iostream>
 
 Histograms::Histograms(Cuts* cuts, TFile* file, std::string name) :
   cuts_(cuts),
@@ -27,6 +28,9 @@ Histograms::~Histograms() {
 void Histograms::book() {
 
   base_->cd("NoCuts");
+
+  // non-event histograms
+  hcoll_ = new TH1D("hcoll", "Collision BX", 3564, 0., 3564.);
 
   // time
   hbx_ = new TH1D("hbx", "BX number", 3564, 0., 3564.);
@@ -69,17 +73,13 @@ void Histograms::book() {
   hmuetaphi_ = new TH2D("hmuetaphi", "Muon pos", 70, -3.5, 3.5, 72, -1 * TMath::Pi(),  TMath::Pi());
   
   // pulse shape
-  hpksample_ = new TH1D("hpksample", "Peak sample", 10, 0., 10.);
-  hr1_ = new TH1D("hr1", "R_{1}", 50, 0., 1.);
-  hr2_ = new TH1D("hr2", "R_{2}", 50, 0., 1.);
-  hrpk_ = new TH1D("hrpk", "R_{peak}", 50, 0., 1.);
-  hrout_ = new TH1D("hrout", "R_{outer}", 30, 0., 1.);    
-  hr1r2_ = new TH2D("hr1r2", "R_{1} vs R_{2}", 50, 0., 1., 50, 0., 1.);
-  hpkout_ = new TH2D("hpkout", "R_{peak} vs R_{outer}", 50, 0., 1., 50, 0., 1.);
-  hr1_old_ = new TH1D("hr1old", "R_{1} old", 50, 0., 1.);
-  hr2_old_ = new TH1D("hr2old", "R_{2} old", 50, 0., 1.);
-  hrpk_old_ = new TH1D("hrpkold", "R_{peak} old", 50, 0., 1.);
-  hrout_old_ = new TH1D("hroutold", "R_{outer} old", 30, 0., 1.);    
+  hpksample_ = new TH1D("hpksample", "Peak sample (after jet/#mu cuts)", 10, 0., 10.);
+  hr1_ = new TH1D("hr1", "R_{1} (after jet/#mu cuts)", 50, 0., 1.);
+  hr2_ = new TH1D("hr2", "R_{2} (after jet/#mu cuts)", 50, 0., 1.);
+  hrpk_ = new TH1D("hrpk", "R_{peak} (after jet/#mu cuts)", 50, 0., 1.);
+  hrout_ = new TH1D("hrout", "R_{outer} (after jet/#mu cuts)", 30, 0., 1.);    
+  hr1r2_ = new TH2D("hr1r2", "R_{1} vs R_{2} (after jet/#mu cuts)", 50, 0., 1., 50, 0., 1.);
+  hpkout_ = new TH2D("hpkout", "R_{peak} vs R_{outer} (after jet/#mu cuts)", 50, 0., 1., 50, 0., 1.);
 
   base_->cd("Cuts");
 
@@ -298,9 +298,23 @@ void Histograms::fill(StoppedHSCPEvent& event) {
 }
 
 
+void Histograms::fillCollisionsHisto(std::vector<unsigned> colls) {
+
+  std::cout << "Filling colls " << colls.size() << " : " << std::endl;
+  for (unsigned i=0; i<colls.size(); ++i) {
+    std::cout << " " << colls.at(i);
+    hcoll_->SetBinContent(colls.at(i), 1);
+  }
+  std::cout << std::endl;
+
+}
+
+
 void Histograms::save() {
 
   base_->cd("NoCuts");
+
+  hcoll_->Write("",TObject::kOverwrite);
 
   hbx_->Write("",TObject::kOverwrite);
   horb_->Write("",TObject::kOverwrite);
@@ -311,6 +325,8 @@ void Histograms::save() {
   htime_->Write("",TObject::kOverwrite);
   hlblive_->Write("",TObject::kOverwrite);
   hl1bits_->Write("",TObject::kOverwrite);
+  hbxup_->Write("",TObject::kOverwrite);
+
   hl1et_->Write("",TObject::kOverwrite);
   hl1eta_->Write("",TObject::kOverwrite);
   hl1phi_->Write("",TObject::kOverwrite);
@@ -341,13 +357,6 @@ void Histograms::save() {
   hrout_->Write("",TObject::kOverwrite);
   hr1r2_->Write("",TObject::kOverwrite);
   hpkout_->Write("",TObject::kOverwrite);
-
-  hr1_old_->Write("",TObject::kOverwrite);
-  hr2_old_->Write("",TObject::kOverwrite);
-  hrpk_old_->Write("",TObject::kOverwrite);
-  hrout_old_->Write("",TObject::kOverwrite);
-
-  hbxup_->Write("",TObject::kOverwrite);
 
   base_->cd("Cuts");
 

@@ -173,9 +173,13 @@ void Analyser::loop() {
     // check to see if the run number changed
     // update fill structure if so
     if (event_->run != currentRun) {
+
       std::cout << "New run : " << event_->run << std::endl;
       cuts_.setMaskedBXs(fills_.getBunchesFromRun(event_->run));
       currentRun = event_->run;
+
+      // write new histograms
+      histogrammer_.fillCollisionsHistos(currentRun, &fills_);
     }
 
     // fill histograms

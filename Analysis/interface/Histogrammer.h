@@ -9,6 +9,7 @@
 #include <map>
 
 class Cuts;
+class LhcFills;
 
 class Histogrammer {
  public:
@@ -18,6 +19,9 @@ class Histogrammer {
   
   // fill histograms
   void fill(StoppedHSCPEvent& event);
+
+  // fill non-event histograms
+  void fillCollisionsHistos(unsigned run, LhcFills* fills);
 
   // save them
   void save();
