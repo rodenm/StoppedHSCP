@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.21 2010/05/30 22:13:51 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.22 2010/07/05 10:56:33 jbrooke Exp $
 //
 //
 
@@ -162,12 +162,12 @@ class StoppedHSCPEvent : public TObject {
  public:  // data
 
   // event
-  unsigned id;
-  unsigned bx;
-  unsigned orbit;
-  unsigned lb;
-  unsigned run;
-  unsigned fill;
+  ULong_t id;
+  ULong_t bx;
+  ULong_t orbit;
+  ULong_t lb;
+  ULong_t run;
+  ULong_t fill;
   ULong64_t time;   // timestamp from EvF
   ULong64_t time2;  // calculated from run start + L1 counters for LS, orbit, BX
   ULong64_t time3;  // timestamp from LHC info in L1 data
@@ -307,7 +307,7 @@ class StoppedHSCPEvent : public TObject {
   // digis
 
 
-  ClassDef(StoppedHSCPEvent,4);
+  ClassDef(StoppedHSCPEvent,5);
 
 };
 
