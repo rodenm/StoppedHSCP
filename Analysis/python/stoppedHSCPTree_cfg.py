@@ -40,13 +40,13 @@ process.load('Configuration/StandardSequences/RawToDigi_Data_cff')
 
 # Ntuple producer
 process.load('StoppedHSCP/Analysis/stoppedHSCPTree_cfi')
-process.stoppedHSCPTree.hltPath = cms.untracked.string("HLT_StoppedHSCP")
+process.stoppedHSCPTree.hltPath = cms.untracked.string("HLT_StoppedHSCP*")
 
 # path
 process.ntuple = cms.Path(
 
 # filter on HLT bit
-    process.hltHighLevel
+#    process.hltHighLevel
 
 # filter HCAL noise
     +process.HBHENoiseFilterResultProducer
