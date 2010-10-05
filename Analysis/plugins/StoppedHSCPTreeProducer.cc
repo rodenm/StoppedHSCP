@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.43 2010/09/27 00:45:19 temple Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.44 2010/09/27 02:11:46 jbrooke Exp $
 //
 //
 
@@ -400,7 +400,7 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
 
 void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent){ 
 
-  unsigned long orbitsPerLB = 1<<20;
+  unsigned long orbitsPerLB = 1<<18;
   unsigned long bxPerOrbit = 3564;
   unsigned nsPerBx = 25;
 
@@ -803,8 +803,9 @@ void StoppedHSCPTreeProducer::doHcalNoise(const edm::Event& iEvent) {
   edm::Handle<bool> flag;
   iEvent.getByLabel(hcalNoiseFilterResultTag_,flag);
 
+  event_->noiseFilterResult = true;
   if (flag.isValid()) {
-    event_->noiseFilterResult = flag.product();
+    event_->noiseFilterResult = (*flag.product());
   }
   else {
     edm::LogWarning("MissingProduct") << "No HBHE filter flag in Event" << std::endl;

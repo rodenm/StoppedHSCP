@@ -27,21 +27,20 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 # HLT bit filter
 process.load('HLTrigger.HLTfilters.hltHighLevel_cfi')
 process.hltHighLevel.TriggerResultsTag = cms.InputTag("TriggerResults","","HLT")
-process.hltHighLevel.HLTPaths = cms.vstring("HLT_StoppedHSCP")
+process.hltHighLevel.HLTPaths = cms.vstring("HLT_StoppedHSCP*")
 
 # HCAL noise filter
 process.load('CommonTools/RecoAlgos/HBHENoiseFilter_cfi')
 
 # Instead of rejecting the event, add a flag indicating the HBHE noise 
-#process.load('CommonTools/RecoAlgos/HBHENoiseFilterResultProducer_cfi')
-#process.hbheflag = cms.Path(process.HBHENoiseFilterResultProducer)
+process.load('CommonTools/RecoAlgos/HBHENoiseFilterResultProducer_cfi')
 
 # get RAW data
 process.load('Configuration/StandardSequences/RawToDigi_Data_cff')
 
 # Ntuple producer
 process.load('StoppedHSCP/Analysis/stoppedHSCPTree_cfi')
-
+process.stoppedHSCPTree.hltPath = cms.untracked.string("HLT_StoppedHSCP")
 
 # path
 process.ntuple = cms.Path(
@@ -50,7 +49,7 @@ process.ntuple = cms.Path(
     process.hltHighLevel
 
 # filter HCAL noise
-    +process.HBHENoiseFilter
+    +process.HBHENoiseFilterResultProducer
 
 # get hcal digis
     +process.hcalDigis
@@ -73,17 +72,17 @@ process.TFileService = cms.Service("TFileService",
 
 
 # input files
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 readFiles = cms.untracked.vstring()
 secFiles = cms.untracked.vstring()
 process.source = cms.Source ("PoolSource",fileNames = readFiles, secondaryFileNames = secFiles)
 
 
 # Global Tag and input files
-process.GlobalTag.globaltag = "GR_R_36X_V12::All"
+process.GlobalTag.globaltag = "GR10_P_V10::All"
 
 readFiles.extend( [
-
+    'file:///tmp/jbrooke/D4EBF75E-14CB-DF11-9404-003048D15DDA.root'
    ] )
 
 
