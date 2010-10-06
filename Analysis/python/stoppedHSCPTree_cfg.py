@@ -49,7 +49,7 @@ process.ntuple = cms.Path(
 #    process.hltHighLevel
 
 # filter HCAL noise
-    +process.HBHENoiseFilterResultProducer
+    process.HBHENoiseFilterResultProducer
 
 # get hcal digis
     +process.hcalDigis
