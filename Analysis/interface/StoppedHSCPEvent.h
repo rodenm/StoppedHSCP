@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.24 2010/10/05 23:35:30 temple Exp $
+// $Id: StoppedHSCPEvent.h,v 1.25 2010/10/07 16:29:19 temple Exp $
 //
 //
 
@@ -311,7 +311,7 @@ class StoppedHSCPEvent : public TObject {
   // digis
 
 
-  ClassDef(StoppedHSCPEvent,5);
+  ClassDef(StoppedHSCPEvent,6);
 
 };
 
