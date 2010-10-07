@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.23 2010/10/05 13:24:56 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.24 2010/10/05 23:35:30 temple Exp $
 //
 //
 
@@ -58,7 +58,7 @@ namespace shscp {
     double et;
     double eta;
     double phi;
-    unsigned ieta;
+    int ieta;
     unsigned iphi;
     unsigned nJet;
     double eHad;
