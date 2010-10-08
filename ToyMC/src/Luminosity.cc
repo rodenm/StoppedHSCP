@@ -13,7 +13,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
-static const double LUMIFILE_TO_PB = 1e-6;
+const double Luminosity::LUMIFILE_TO_PB = 1e-6;
+const double Luminosity::THRESHOLD = 0.00001;  // threshold below which lumi is ignored (in pb-1)
 
 Luminosity::Luminosity() {
 
@@ -23,13 +24,11 @@ Luminosity::~Luminosity() {
 
 }
 
-//double Luminosity::operator[](unsigned int index) const {
-//  return lumis_[index].lumi;
-//}
 
 unsigned int Luminosity::size() const {
   return lumis_.size();
 }
+
 
 void Luminosity::makePlots() const {
   TCanvas *c = new TCanvas("lumi_dist");

@@ -15,14 +15,29 @@ struct LumiBlock {
 class Luminosity {
 
  public:
+
+  static const double LUMIFILE_TO_PB;
+  static const double THRESHOLD;
+
+  typedef std::vector<LumiBlock>::const_iterator const_iterator;
+
+ public:
   Luminosity();
   ~Luminosity();
 
-  // how many blocks
+  // STL access operators
   unsigned int size() const;
+  LumiBlock at(unsigned long i) const { return lumis_.at(i); }
+  Luminosity::const_iterator begin() { return lumis_.begin(); }
+  Luminosity::const_iterator end() { return lumis_.end(); }
+  Luminosity::const_iterator beginRun(unsigned run);
+  Luminosity::const_iterator endRun(unsigned run);
 
   // get lumiblock
   LumiBlock block(unsigned long i) const { return lumis_.at(i); }
+
+  // get run
+  unsigned run(unsigned long i) const { return lumis_.at(i).run; }
 
   // get integrated luminosity for a block (pb^-1)
   double luminosity(unsigned long int i) const { return lumis_.at(i).lumi; }

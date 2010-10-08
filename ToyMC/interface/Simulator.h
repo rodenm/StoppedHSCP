@@ -26,7 +26,7 @@ class Simulator {
   void setParameters(Experiment* e);
   void setupLumi();
   void setFillScheme(unsigned fill);
-  void setupLifetimeBxMasking();
+  void setupLifetimeMask();
   void setupObservedEvents();
 
   // run MC simulation
@@ -73,12 +73,13 @@ class Simulator {
   // observed events
   Events events_;
 
-  // 
-  unsigned fill_;    // fill used for filling scheme
-  unsigned nColls_, nMasks_, nLifetimeMasks_;
-  std::vector<bool> collisions_;            // bool for each BX, true if collision
-  std::vector<bool> masks_;                  // bool for each BX, true if masked (BX +/-1)
-  std::vector<bool> lifetimeMasks_;          // bool for each BX, true if masked for lifetime
+  // current fill.  stored twice for future compatibility
+  unsigned prodFill_;
+  unsigned decayFill_;
+
+  // lifetime masking - TODO move to LhcFills class
+/*   unsigned nLifetimeMasks_; */
+/*   std::vector<bool> lifetimeMasks_;          // bool for each BX, true if masked for lifetime */
   
   // output stuff
   TTree tree_;

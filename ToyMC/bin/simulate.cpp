@@ -51,9 +51,9 @@ int main(int argc, char* argv[]) {
   sim.setFillScheme(e->fills.at(0));
 
   // set up lifetime mask
-  sim.setupLifetimeBxMasking();
+  sim.setupLifetimeMask();
 
-  //  sim.printMaskInfo();
+  //sim.printMaskInfo();
 
   // expected background
   sim.calculateExpectedBG();

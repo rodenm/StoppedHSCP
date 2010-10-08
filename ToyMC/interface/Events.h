@@ -6,10 +6,19 @@
 #include <iostream>
 
 class Events {
+
+ public:
+
+  typedef std::vector<Event>::const_iterator const_iterator;
+
  public:
 
   Events(std::string file="");
   ~Events();
+
+  unsigned size(){ return events_.size(); }
+  const_iterator begin() { return events_.begin(); }
+  const_iterator end() { return events_.end(); }
 
   unsigned countAfterBXMask(std::vector<bool> mask);
 
