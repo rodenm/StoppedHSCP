@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.25 2010/10/07 16:29:19 temple Exp $
+// $Id: StoppedHSCPEvent.h,v 1.26 2010/10/07 16:51:11 temple Exp $
 //
 //
 
@@ -297,6 +297,12 @@ class StoppedHSCPEvent : public TObject {
   bool beamHalo_CSCTight;
   bool beamHalo_CSCLoose;
 
+  // vertices
+  unsigned nVtx;
+  std::vector<UInt_t> vtxNDOF;
+  std::vector<Double_t> vtxZ;
+  std::vector<Double_t> vtxRho;
+
   // HPDs identified by noise summary algos
   unsigned hpd_N;
   std::vector<UInt_t> hpdId;
@@ -311,7 +317,7 @@ class StoppedHSCPEvent : public TObject {
   // digis
 
 
-  ClassDef(StoppedHSCPEvent,6);
+  ClassDef(StoppedHSCPEvent,7);
 
 };
 

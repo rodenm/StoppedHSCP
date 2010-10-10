@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.45 2010/10/05 13:25:12 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.46 2010/10/05 23:35:30 temple Exp $
 //
 //
 
@@ -94,6 +94,10 @@
 // Beam Halo Summary
 #include "DataFormats/METReco/interface/BeamHaloSummary.h"
 
+// Vertices
+#include "DataFormats/VertexReco/interface/Vertex.h"
+#include "DataFormats/VertexReco/interface/VertexFwd.h"
+
 // ROOT output stuff
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
@@ -131,6 +135,7 @@ private:
   void doMuons(const edm::Event&);
   void doHcalNoise(const edm::Event&);
   void doBeamHalo(const edm::Event&);
+  void doVertices(const edm::Event&);
   void doRecHits(const edm::Event& iEvent);
   void doTimingFromDigis(const edm::Event&, const edm::EventSetup&);
 
@@ -209,6 +214,7 @@ private:
   edm::InputTag jetTag_;
   edm::InputTag muonTag_;
   edm::InputTag cosmicMuonTag_;
+  edm::InputTag verticesTag_;
   edm::InputTag caloTowerTag_;
   edm::InputTag hcalNoiseTag_;
   edm::InputTag hcalNoiseFilterResultTag_;
@@ -279,6 +285,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   jetTag_(iConfig.getUntrackedParameter<edm::InputTag>("jetTag",edm::InputTag("sisCone5CaloJets"))),
   muonTag_(iConfig.getUntrackedParameter<edm::InputTag>("muonTag",edm::InputTag("muons"))),
   cosmicMuonTag_(iConfig.getUntrackedParameter<edm::InputTag>("cosmicMuonTag",edm::InputTag("muonsFromCosmics"))),
+  verticesTag_(iConfig.getUntrackedParameter("verticesTag",edm::InputTag("offlinePrimaryVertices"))),
   caloTowerTag_(iConfig.getUntrackedParameter<edm::InputTag>("caloTowerTag",edm::InputTag("towerMaker"))),
   hcalNoiseTag_(iConfig.getUntrackedParameter<edm::InputTag>("hcalNoiseTag",edm::InputTag("hcalnoise"))),
   hcalNoiseFilterResultTag_(iConfig.getUntrackedParameter<edm::InputTag>("hcalNoiseFilterResultTag",edm::InputTag("HBHENoiseFilterResultProducer"))),
@@ -805,6 +812,29 @@ void StoppedHSCPTreeProducer::doBeamHalo(const edm::Event& iEvent)
 
   return;
 } // void StoppedHSCPTreeProducer::doBeamHalo(iEvent)
+
+
+void StoppedHSCPTreeProducer::doVertices(const edm::Event& iEvent) {
+
+  edm::Handle<reco::VertexCollection> recoVertices;
+  iEvent.getByLabel(verticesTag_, recoVertices);
+
+  event_->nVtx=0;
+  for(reco::VertexCollection::const_iterator it=recoVertices->begin();
+      it!=recoVertices->end();
+      ++it) {
+    
+    if (!it->isFake()) {
+      
+      event_->vtxNDOF.push_back(it->ndof());
+      event_->vtxZ.push_back(it->z());
+      event_->vtxRho.push_back(it->position().rho());
+      event_->nVtx++;
+    }
+  }
+
+  
+}
 
 
 void StoppedHSCPTreeProducer::doHcalNoise(const edm::Event& iEvent) {
