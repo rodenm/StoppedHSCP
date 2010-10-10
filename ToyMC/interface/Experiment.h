@@ -64,6 +64,11 @@ public:
   
   // limits
   double limit95cl;
+  double expLimit;
+  double expLim1SigLo;
+  double expLim1SigHi;
+  double expLim2SigLo;
+  double expLim2SigHi;
 
   ClassDef(Experiment,2);
 

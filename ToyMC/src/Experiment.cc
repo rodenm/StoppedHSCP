@@ -49,7 +49,12 @@ Experiment::Experiment(std::string filename) :
   nObs_MC(0),
   nSig_MC(0),
   nBG_MC(0),
-  limit95cl(0.)
+  limit95cl(0.),
+  expLimit(0.),
+  expLim1SigLo(0.),
+  expLim1SigHi(0.),
+  expLim2SigLo(0.),
+  expLim2SigHi(0.)
 {
 
   if (filename!="") {
@@ -147,7 +152,13 @@ void Experiment::summary(ostream& o) {
   o << expBackground << "\t";
   o << expBackground_e << "\t";
   o << nObserved << "\t";
-  o << limit95cl << std::endl;
+  o << limit95cl << "\t";
+  o << expLimit << "\t";
+  o << expLim1SigLo << "\t";
+  o << expLim1SigHi << "\t";
+  o << expLim2SigLo << "\t";
+  o << expLim2SigHi << "\t";
+  o << std::endl;
 
 }
 
