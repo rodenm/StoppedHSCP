@@ -91,15 +91,16 @@ class PlotStyle:
         self.leg     = False
         self.opt     = " "
         self.port    = False
-        self.colours = [2, 4, 5]
-        self.markers = [22, 25, 27]
-        self.fills   = [0, 0, 0]
-        self.lstyles = [0, 0, 0]
+        self.colours = [1, 2, 3, 4]
+        self.markers = [21, 22, 23, 24]
+        self.fills   = [0, 0, 0, 0]
+        self.lstyles = [0, 0, 0, 0]
         
         # style dictionary
         styles={0:self.style0,
                 1:self.style1,
-                2:self.style2}
+                2:self.style2,
+                3:self.style3}
         
         styles[style]()
 
@@ -119,13 +120,17 @@ class PlotStyle:
 
     # simple different color histograms
     def style2(self):
-        self.colours = [1, 2, 4]
-        self.markers = [0, 0, 0]
+        self.leg     = True
+        self.colours = [1, 2, 4, 6]
+        self.markers = [0, 0, 0, 0]
         self.opt     = "HIST"
 
+    # 2D colour map
+    def style3(self):
+        self.opt     = "COLZ"
 
 # superimpose multiple histograms
-def multiPlot(hists, labels, ofile, ymin=0., ymax=0., title="histogram", xtitle="", ytitle="", style=0) :
+def multiPlot(hists, labels, ofile, ymin=0., ymax=0., title="histogram", xtitle="", ytitle="", ztitle="", style=0, xmin=0., xmax=0.) :
 
     s = PlotStyle(style)
 
@@ -147,6 +152,10 @@ def multiPlot(hists, labels, ofile, ymin=0., ymax=0., title="histogram", xtitle=
             if max > ymax:
                 ymax = max
 
+    # set x range
+    if (not xmax==0. and not xmin==0.):
+        for h in hists:
+            h.SetAxisRange(xmin, xmax)
 
     # legend
     legend=TLegend(0.65, 0.65, 0.95, 0.75)

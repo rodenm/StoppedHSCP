@@ -281,6 +281,7 @@ void StoppedHSCPEvent::Dump() {
   cout << "LS           " << lb << endl;
   cout << "nTowSameiPhi " << nTowerSameiPhi << endl;
   cout << "nMuon        " << mu_N << endl;
+  cout << "BeamHalo     " << beamHalo_CSCLoose << " " << beamHalo_CSCTight << std::endl;
 
 }
 

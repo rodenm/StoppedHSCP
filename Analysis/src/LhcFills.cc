@@ -7,8 +7,43 @@
 #include <boost/algorithm/string.hpp>
 //#include <boost/lexical_cast.hpp>
 
+const unsigned LhcFills::NBX_PER_ORBIT = 3564;
+const double LhcFills::TIME_WINDOW     = 1.256;
+const double LhcFills::TIME_PER_BX     = 25.e-9;
+
 
 LhcFills::LhcFills() {
+
+  readFiles();
+
+  // set up index lookup tables
+  unsigned i=0;
+  for (std::vector<Fill>::iterator f=fills_.begin(); f!=fills_.end(); ++f, ++i) {
+    
+    // set fill indices
+    lookupFillIndex_.resize(f->number+1, 0);
+    lookupFillIndex_.at(f->number) = i;
+
+    // set run indices
+    for (unsigned j=0; j<f->runs.size(); ++j) {
+      lookupRunIndex_.resize(f->runs.at(j)+1);
+      lookupRunIndex_.at(f->runs.at(j)) = i;
+    }
+  }
+
+  // set up other internal vectors
+  setupCollisions();
+  setupBunches();
+
+}
+
+
+LhcFills::~LhcFills() {
+
+}
+
+
+void LhcFills::readFiles() {
 
   std::cout << "Setting up LHC fills data" << std::endl;
 
@@ -102,9 +137,79 @@ LhcFills::LhcFills() {
 }
 
 
-LhcFills::~LhcFills() {
+// setup internal vectors for fast access to info
+void LhcFills::setupCollisions() {
+
+  // loop over fills
+  for (std::vector<Fill>::iterator f=fills_.begin(); f!=fills_.end(); ++f) {
+    
+    // loop over both beams and find coincidences
+    for (unsigned b1=0; b1<f->beam1.size(); ++b1) {
+      for (unsigned b2=0; b2<f->beam2.size(); ++b2) {
+	if (f->beam1.at(b1) == f->beam2.at(b2)) {
+	  f->collisions.push_back(f->beam1.at(b1));
+	}
+      }
+    }
+
+  }
 
 }
+
+
+void LhcFills::setupBunches() {
+
+  for (std::vector<Fill>::iterator f=fills_.begin(); f!=fills_.end(); ++f) {
+    
+    // copy beam 1 & beam 2 to bunches vector
+    f->bunches.insert(f->bunches.end(), f->beam1.begin(), f->beam1.end());
+    f->bunches.insert(f->bunches.end(), f->beam2.begin(), f->beam2.end());
+    
+    // sort list and remove duplicates
+    std::sort(f->bunches.begin(), f->bunches.end());
+    f->bunches.erase(std::unique(f->bunches.begin(), f->bunches.end()), f->bunches.end());  
+ 
+    // set up mask
+    f->mask.resize(LhcFills::NBX_PER_ORBIT, false);
+    
+    for (unsigned i=0; i<f->bunches.size(); ++i) {
+      unsigned bx=f->bunches.at(i);
+      f->mask.at((bx-1)%LhcFills::NBX_PER_ORBIT)=true;
+      f->mask.at((bx)%LhcFills::NBX_PER_ORBIT)=true;
+      f->mask.at((bx+1)%LhcFills::NBX_PER_ORBIT)=true;
+    }
+
+  }
+  
+}
+
+
+void LhcFills::setupLifetimeMask(double lifetime) {
+
+  for (std::vector<Fill>::iterator f=fills_.begin(); f!=fills_.end(); ++f) {
+    
+    f->lifetimeMask.resize(LhcFills::NBX_PER_ORBIT, false);
+
+    // TODO - this won't work with a filling scheme which doesn't have a collision in BX 0 or 1 !!!
+    int lastColl    = -1;
+    // loop over orbit
+    for (unsigned int bx=0; bx < LhcFills::NBX_PER_ORBIT; ++bx) {
+      
+      // if this is a collision, set lastColl index
+      for (unsigned i=0; i<f->collisions.size(); ++i) {
+	if (f->collisions.at(i) == bx) lastColl = bx;
+      }
+      
+      // mask the BX if the time since last collision is more than 1.256 x lifetime
+      double tSinceLastColl = (bx - lastColl) * LhcFills::TIME_PER_BX;
+      f->lifetimeMask.at(bx) = (tSinceLastColl > (LhcFills::TIME_WINDOW * lifetime));
+      
+    }
+
+  }
+
+}
+
 
 
 std::vector<unsigned long> LhcFills::getRuns(unsigned fill) {
@@ -128,52 +233,22 @@ std::string LhcFills::getFillingScheme(unsigned fill) {
 
 
 std::vector<unsigned> LhcFills::getCollisions(unsigned fill) {
-
-  std::vector<unsigned> colls(0);
-
-  for (unsigned f=0; f<fills_.size(); ++f) {
-    if (fills_.at(f).number == fill) {
-      for (unsigned b1=0; b1<fills_.at(f).beam1.size(); ++b1) {
-	for (unsigned b2=0; b2<fills_.at(f).beam2.size(); ++b2) {
-	  if (fills_.at(f).beam1.at(b1) == fills_.at(f).beam2.at(b2)) {
-	    colls.push_back(fills_.at(f).beam1.at(b1));
-	  }
-	}
-      }
-
-    }
-
-  }
-
-  return colls;
-
+  return fills_.at(getIndexFromFill(fill)).collisions;
 }
 
 
 std::vector<unsigned> LhcFills::getBunches(unsigned fill) {
-
-  std::vector<unsigned> bxs(0);
-
-  for (unsigned f=0; f<fills_.size(); ++f) {
-
-    if (fills_.at(f).number == fill) {
-      for (unsigned b1=0; b1<fills_.at(f).beam1.size(); ++b1) {
-	bxs.push_back(fills_.at(f).beam1.at(b1));
-      }
-      for (unsigned b2=0; b2<fills_.at(f).beam2.size(); ++b2) {
-	bxs.push_back(fills_.at(f).beam2.at(b2));
-      }
-    }
-    
-  }
-
-  sort(bxs.begin(), bxs.end());
-  bxs.erase(std::unique(bxs.begin(), bxs.end()), bxs.end());  
-
-  return bxs;
-
+  return fills_.at(getIndexFromFill(fill)).bunches;
 }
 
+
+std::vector<bool> LhcFills::getMask(unsigned fill) {
+  return fills_.at(getIndexFromFill(fill)).mask;
+}
+
+std::vector<bool> LhcFills::getLifetimeMask(unsigned fill) {
+  return fills_.at(getIndexFromFill(fill)).lifetimeMask;
+}
 
 unsigned long LhcFills::getFillFromRun(unsigned long run) {
 
@@ -199,6 +274,25 @@ std::vector<unsigned> LhcFills::getCollisionsFromRun(unsigned long run) {
 
 std::vector<unsigned> LhcFills::getBunchesFromRun(unsigned long run) {
   return getBunches(getFillFromRun(run));
+}
+
+
+std::vector<bool> LhcFills::getMaskFromRun(unsigned run) {
+  return getMask(getFillFromRun(run));
+}
+
+std::vector<bool> LhcFills::getLifetimeMaskFromRun(unsigned run) {
+  return getLifetimeMask(getFillFromRun(run));
+}
+
+
+unsigned LhcFills::getIndexFromFill(unsigned fill) {
+  return lookupFillIndex_.at(fill);
+}
+
+
+unsigned LhcFills::getIndexFromRun(unsigned run) {
+  return lookupRunIndex_.at(run);
 }
 
 

@@ -81,10 +81,11 @@ void Analyser::readWatchedEvents() {
     while (!file.eof()) {
       getline(file, line);
       std::vector<std::string> strs;
-      boost::split(strs, line, boost::is_any_of(",")); 
+      boost::split(strs, line, boost::is_any_of(":")); 
       if(atoi(strs.at(0).c_str())>0) {
-	unsigned run=(unsigned) atoi(strs.at(0).c_str());
-	unsigned id=(unsigned) atoi(strs.at(1).c_str());
+	unsigned run = (unsigned) atoi(strs.at(0).c_str());
+	unsigned lb  = (unsigned) atoi(strs.at(1).c_str());
+	unsigned id  = (unsigned) atoi(strs.at(2).c_str());
 	watchedEvents_.push_back(std::pair<unsigned, unsigned>(run, id));
       }
     }
@@ -123,15 +124,22 @@ void Analyser::printEvent() {
 void Analyser::printCutValues(ostream& o) {
 
   o << "Stopped HSCP Event" << std::endl;
-  o << "  id             = " << event_->id << std::endl;
-  o << "  lb             = " << event_->lb << std::endl;
   o << "  run            = " << event_->run << std::endl;
+  o << "  lb             = " << event_->lb << std::endl;
+  o << "  id             = " << event_->id << std::endl;
+  o << "  bx             = " << event_->bx << std::endl;
+  o << "  orbit          = " << event_->orbit << std::endl;
+  o << "  mu_N           = " << event_->mu_N << std::endl;
+  std::string halo("None");
+  if (event_->beamHalo_CSCLoose) halo = "CSCLoose";
+  if (event_->beamHalo_CSCTight) halo = "CSCTight";
+  o << "  beamHalo       = " << halo << std::endl;
+  o << "  HCAL noise     = " << event_->noiseFilterResult << std::endl;
   o << "  nTowerSameiPhi = " << event_->nTowerSameiPhi << std::endl;
   o << "  jetE[0]        = " << event_->jetE[0] << std::endl;
   o << "  jetEta[0]      = " << event_->jetEta[0] << std::endl;
   o << "  jetN60[0]      = " << event_->jetN60[0] << std::endl;
   o << "  jetN90[0]      = " << event_->jetN90[0] << std::endl;
-  o << "  mu_N           = " << event_->mu_N << std::endl;
   o << "  top5DigiR1     = " << event_->top5DigiR1 << std::endl;
   o << "  top5DigiR2     = " << event_->top5DigiR2 << std::endl;
   o << "  top5DigiRPeak  = " << event_->top5DigiRPeak << std::endl;
@@ -193,7 +201,7 @@ void Analyser::loop() {
     // print selected events
     if (cuts_.cut()) {
       printCutValues(dumpFile_);
-      eventFile_ << event_->run << ", " << event_->lb << ", " << event_->orbit << ", " << event_->bx << ", " << event_->id << std::endl;
+      eventFile_ << event_->run << ":" << event_->lb << ":"  << event_->id << std::endl; //<< event_->orbit << ", " << event_->bx << ", " << event_->id << std::endl;
     }
 
   }

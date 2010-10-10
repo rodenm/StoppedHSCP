@@ -72,6 +72,9 @@ void Histograms::book() {
   hnmu_ = new TH1D("hnmu", "N muons", 4, -0.5, 3.5);
   hmuetaphi_ = new TH2D("hmuetaphi", "Muon pos", 70, -3.5, 3.5, 72, -1 * TMath::Pi(),  TMath::Pi());
   
+  // beam halo
+  hhalo_ = new TH1D("hhalo", "Halo ID", 4, 0., 0.);
+
   // pulse shape
   hpksample_ = new TH1D("hpksample", "Peak sample (after jet/#mu cuts)", 10, 0., 10.);
   hr1_ = new TH1D("hr1", "R_{1} (after jet/#mu cuts)", 50, 0., 1.);
@@ -129,20 +132,19 @@ void Histograms::book() {
   for (unsigned i=0; i<cuts_->nCuts(); ++i) {
     std::stringstream istr;
     istr << i;
-    hjete_cuts_.push_back(new TH1D((std::string("hjete")+istr.str()).c_str(), "Leading jet energy", 50, 0., 200.));
-    hjetn60_cuts_.push_back(new TH1D((std::string("hjetn60")+istr.str()).c_str(), "Leading jet n60", 25, 0., 25.));
-    hjetn90_cuts_.push_back(new TH1D((std::string("hjetn90")+istr.str()).c_str(), "Leading jet n90", 25, 0., 25.));
-    hnmu_cuts_.push_back(new TH1D((std::string("hjetnmu")+istr.str()).c_str(), "N muons", 4, -0.5, 3.5));
-    hr1_cuts_.push_back(new TH1D((std::string("hr1")+istr.str()).c_str(), "R1", 50, 0., 1.));
-    hr2_cuts_.push_back(new TH1D((std::string("hr2")+istr.str()).c_str(), "R2", 50, 0., 1.));
-    hrpk_cuts_.push_back(new TH1D((std::string("hrpk")+istr.str()).c_str(), "Rpeak", 50, 0., 1.));
-    hrout_cuts_.push_back(new TH1D((std::string("hrout")+istr.str()).c_str(), "Router", 50, 0., 1.));
-
-
-    hjetetaphi_cuts_.push_back(new TH2D((std::string("hjetetaphi")+istr.str()).c_str(), "Leading jet pos", 70, -3.5, 3.5, 72, -1 * TMath::Pi(),  TMath::Pi()));
-    hmuetaphi_cuts_.push_back(new TH2D((std::string("hmuetaphi")+istr.str()).c_str(), "Muon pos", 70, -3.5, 3.5, 72, -1 * TMath::Pi(),  TMath::Pi()));
-    hbx_cuts_.push_back(new TH1D((std::string("hbx")+istr.str()).c_str(), "BX number", 3564, 0., 3564.));
-    hjetemf_cuts_.push_back(new TH1D((std::string("hjetemf")+istr.str()).c_str(), "Leading jet EM fraction", 100, 0., 1.));
+    std::string cstr=cuts_->cutName(i);
+    hjete_cuts_.push_back(new TH1D((std::string("hjete")+istr.str()).c_str(), (std::string("Jet E after ")+cstr).c_str(), 50, 0., 200.));
+    hjetn60_cuts_.push_back(new TH1D((std::string("hjetn60")+istr.str()).c_str(), (std::string("Jet n60 after ")+cstr).c_str(), 25, 0., 25.));
+    hjetn90_cuts_.push_back(new TH1D((std::string("hjetn90")+istr.str()).c_str(), (std::string("Jet n90 after ")+cstr).c_str(), 25, 0., 25.));
+    hnmu_cuts_.push_back(new TH1D((std::string("hjetnmu")+istr.str()).c_str(), (std::string("N mu after ")+cstr).c_str(), 4, -0.5, 3.5));
+    hr1_cuts_.push_back(new TH1D((std::string("hr1")+istr.str()).c_str(), (std::string("R1 after ")+cstr).c_str(), 50, 0., 1.));
+    hr2_cuts_.push_back(new TH1D((std::string("hr2")+istr.str()).c_str(), (std::string("R2 after ")+cstr).c_str(), 50, 0., 1.));
+    hrpk_cuts_.push_back(new TH1D((std::string("hrpk")+istr.str()).c_str(), (std::string("R_{peak} after ")+cstr).c_str(), 50, 0., 1.));
+    hrout_cuts_.push_back(new TH1D((std::string("hrout")+istr.str()).c_str(), (std::string("R_{outer} after ")+cstr).c_str(), 50, 0., 1.));
+    hjetetaphi_cuts_.push_back(new TH2D((std::string("hjetetaphi")+istr.str()).c_str(), (std::string("Jet pos after ")+cstr).c_str(), 70, -3.5, 3.5, 72, -1 * TMath::Pi(),  TMath::Pi()));
+    hmuetaphi_cuts_.push_back(new TH2D((std::string("hmuetaphi")+istr.str()).c_str(), (std::string("#mu pos after ")+cstr).c_str(), 70, -3.5, 3.5, 72, -1 * TMath::Pi(),  TMath::Pi()));
+    hbx_cuts_.push_back(new TH1D((std::string("hbx")+istr.str()).c_str(), (std::string("BX after ")+cstr).c_str(), 3564, 0., 3564.));
+    hjetemf_cuts_.push_back(new TH1D((std::string("hjetemf")+istr.str()).c_str(), (std::string("Jet EMF after ")+cstr).c_str(), 100, 0., 1.));
   }
 
 }
@@ -166,6 +168,11 @@ void Histograms::fill(StoppedHSCPEvent& event) {
   if ( ((event.gtAlgoWord1>>(80-64))&0x1)>0 || ((event.gtAlgoWord1>>(81-64))&0x1)>0) {
     hbxup_->Fill(event.bx);
   }
+
+  std::string halo("None");
+  if (event.beamHalo_CSCLoose) halo = "CSCLoose";
+  if (event.beamHalo_CSCTight) halo = "CSCTight";
+  hhalo_->Fill(halo.c_str(), 1.);
 
   // fill remaining histograms for events passing BX veto etc.
   if (!(cuts_->inMaskedBX())) {
@@ -215,7 +222,7 @@ void Histograms::fill(StoppedHSCPEvent& event) {
     hr1r2_->Fill(event.top5DigiR1, event.top5DigiR2);
     hpkout_->Fill(event.top5DigiRPeak, event.top5DigiROuter);
   }
-  
+
   // loop over cuts
   bool fail=false;
   for (unsigned c=0; c<cuts_->nCuts(); c++) {

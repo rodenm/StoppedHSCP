@@ -60,19 +60,21 @@ hcutind=hfile.Get("All/Cuts/hncutind")
 hcutnmo=hfile.Get("All/Cuts/hnminus1cut")
 hnmu=hfile.Get("All/NoCuts/hnmu")
 
-cutnames=["HBHE filter\t",
-          "BX veto\t",
-          "BPTX veto\t",
-          "muon veto\t",
-          "jet 30 GeV\t",
-          "jet 50 GeV\t",
-          "jet n60\t",
-          "jet n90\t",
-          "Calo tower\t",
-          "R1\t\t",
-          "R2\t\t",
-          "Rpeak\t\t",
-          "Router\t\t"]
+## cutnames=["HLT\t",
+##           "BX veto\t",
+##           "BPTX veto\t",
+##           "Beam halo\t",
+##           "Muon veto\t",
+##           "HCAL noise\t",
+##           "Jet 30 GeV\t",
+##           "Jet 50 GeV\t",
+##           "Jet n60\t",
+##           "Jet n90\t",
+##           "Calo tower\t",
+##           "R1\t\t",
+##           "R2\t\t",
+##           "Rpeak\t\t",
+##           "Router\t\t"]
 
 
 ntot=hnmu.GetEntries()
@@ -85,15 +87,18 @@ print '[TABLE border=1]'
 if isMC:
     print "|Cut\t|N\t|cum %\t|N-1 % |-"
 else:
-    print "|Cut\t|N\t|Rate (Hz) |ind %\t|cum %\t|N-1 % |-"
+    print "|Cut\t|N\t|Rate (Hz) |ind %\t|cum %\t|N-1 % |N-1 (Hz)|-"
 
-for i in range(0,13):
+for i in range(0,15):
     ncum = hcutcum.GetBinContent(i+1)
     nind = hcutind.GetBinContent(i+1)
     nnmo = hcutnmo.GetBinContent(i+1)
+    label = hcutcum.GetXaxis().GetBinLabel(i+1)
     if isMC:
-        print '|%s | %i | %.2e | %.2e |' % (cutnames[i], ncum, 100.*ncum/ntot, 100.*nnmo/ntot)
+        print '|%s | %i | %.2e | %.2e |' % (label, ncum, 100.*ncum/ntot, 100.*nnmo/ntot)
     else:
-        print '|%s | %i | %.2e | %.2e | %.2e | %.2e |-' % (cutnames[i], ncum, ncum/time, 100.*nind/ntot, 100.*ncum/ntot, 100.*nnmo/ntot)
+        print '|%s | %i | %.2e | %.2e | %.2e | %.2e | %.2e |-' % (label, ncum, ncum/time, 100.*nind/ntot, 100.*ncum/ntot, 100.*nnmo/ntot, nnmo/time)
 
 print '[/TABLE]'
+print
+

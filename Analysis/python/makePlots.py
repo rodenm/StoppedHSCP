@@ -121,7 +121,7 @@ def distributions(file, basedir, ofile):
     histPlot(dir+"/hrout_nmo", file, ofile+".ps", 1., False, "", "R_{outer}", "")
 
     # final distributions
-    multiPlot([ file.Get("All/NoCuts/hcoll"), file.Get("All/Cuts/hbx12")], ["collisions","events"], ofile+".ps", 0., 0., "Events after all cuts", "BX", "N", 2)
+    multiPlot([ file.Get("All/NoCuts/hcoll"), file.Get("All/Cuts/hbx12")], ["collisions","events"], ofile+".ps", 0., 0., "Events after all cuts", "BX", "N", "", 2)
     histPlot(dir+"/hjete12", file, ofile+".ps", 1., False, "Jet energy (after all cuts)", "E (GeV)", "E")
     hist2DPlot(dir+"/hjetetaphi12", file, ofile+".ps", 1., False, "Jet pos (after all cuts)", "#eta", "#phi", "", "COLZ")
 
@@ -132,16 +132,67 @@ def distributions(file, basedir, ofile):
     subprocess.call(["rm", ofile+".ps"])
 
 
+def bxPlots(file, ofile):
+
+    canvas = TCanvas("canvas")
+    canvas.Print(ofile+".ps[", "Portrait")
+
+    for i in range(0,15):
+        multiPlot([ file.Get("All/Cuts/hbx"+str(i)) ], [""], ofile+".ps", 0., 0., "", "BX", "events", "", 2, 0., 100.)
+
+    canvas = TCanvas("canvas")
+    canvas.Print(ofile+".ps]")
+
+    subprocess.call(["ps2pdf", ofile+".ps", ofile+".pdf"])
+    subprocess.call(["rm", ofile+".ps"])
+    
+
+def jetEtaPhiPlots(file, ofile):    
+
+    canvas = TCanvas("canvas")
+    canvas.Print(ofile+".ps[", "Portrait")
+
+    for i in range(0,15):
+        multiPlot([ file.Get("All/Cuts/hjetetaphi"+str(i)) ], [""], ofile+".ps", 0., 0., "", "#eta", "#phi", "events", 3)
+
+    canvas = TCanvas("canvas")
+    canvas.Print(ofile+".ps]")
+
+    subprocess.call(["ps2pdf", ofile+".ps", ofile+".pdf"])
+    subprocess.call(["rm", ofile+".ps"])
+
+
+def nMinusOnePlots(file, ofile):
+
+    canvas = TCanvas("canvas")
+    canvas.Print(ofile+".ps[", "Portrait")
+
+    multiPlot([ file.Get("All/Cuts/hjete_nmo") ], [""], ofile+".ps", 0., 0., "", "GeV", "events", "", 0)
+    multiPlot([ file.Get("All/Cuts/hjetn60_nmo") ], [""], ofile+".ps", 0., 0., "", "n60", "events", "", 0)
+    multiPlot([ file.Get("All/Cuts/hjetn90_nmo") ], [""], ofile+".ps", 0., 0., "", "n90", "events", "", 0)
+    multiPlot([ file.Get("All/Cuts/hnmu_nmo") ], [""], ofile+".ps", 0., 0., "", "n#mu", "events", "", 0)
+    multiPlot([ file.Get("All/Cuts/hr1_nmo") ], [""], ofile+".ps", 0., 0., "", "R1", "events", "", 0)
+    multiPlot([ file.Get("All/Cuts/hr2_nmo") ], [""], ofile+".ps", 0., 0., "", "R2", "events", "", 0)
+    multiPlot([ file.Get("All/Cuts/hrpk_nmo") ], [""], ofile+".ps", 0., 0., "", "R_{peak}", "events", "", 0)
+    multiPlot([ file.Get("All/Cuts/hrout_nmo") ], [""], ofile+".ps", 0., 0., "", "R_{outer}", "events", "", 0)
+
+    canvas = TCanvas("canvas")
+    canvas.Print(ofile+".ps]")
+
+    subprocess.call(["ps2pdf", ofile+".ps", ofile+".pdf"])
+    subprocess.call(["rm", ofile+".ps"])
+    
+
 def runPlots(file, ofile):
 
     canvas = TCanvas("canvas")
     canvas.Print(ofile+".ps[", "Portrait")
 
     # n counts, livetime etc.
-    multiPlot([ file.Get("ByRun/hnhlt") ], [""], ofile+".ps", 0., 0., "HLT counts", "run", "events", 0)
-    multiPlot([ file.Get("ByRun/hnlb") ], [""], ofile+".ps", 0., 0., "N LS", "run", "s", 0)
-    multiPlot([ file.Get("ByRun/hlivetime") ], [""], ofile+".ps", 0., 0., "time", "run", "s", 0)
-    multiPlot([ file.Get("ByRun/hnfin") ], [""], ofile+".ps", 0., 0., "Final counts", "run", "events", 0)
+    multiPlot([ file.Get("ByRun/hnhlt") ], [""], ofile+".ps", 0., 0., "HLT counts", "run", "events", "", 0)
+    multiPlot([ file.Get("ByRun/hnlb") ], [""], ofile+".ps", 0., 0., "N LS", "run", "s", "", 0)
+    multiPlot([ file.Get("ByRun/hlivetime") ], [""], ofile+".ps", 0., 0., "time", "run", "s", "", 0)
+    multiPlot([ file.Get("ByRun/hnfin") ], [""], ofile+".ps", 0., 0., "Final counts", "run", "events", "", 0)
     
 
     # rate per cut
@@ -173,7 +224,9 @@ def fillPlots(file, ofile):
     canvas = TCanvas("canvas")
     canvas.Print(ofile+".ps[", "Portrait")
 
-    multiPlot([ file.Get("ByFill/hfillcount"), file.Get("ByFill/hbgmean") ], ["Data","Expected"], ofile+".ps", 0., 0., "", "Fill", "N_{events}", 0)   
+    multiPlot([ file.Get("ByFill/hfillrate") ], ["Data"], ofile+".ps", 0., 0., "", "Fill", "Rate (Hz)", 2)
+    multiPlot([ file.Get("ByFill/hfj50nmo") ], ["Data"], ofile+".ps", 0., 0., "", "Fill", "N_{events}", 2)
+    multiPlot([ file.Get("ByFill/hfillcount"), file.Get("ByFill/hbgmean"), file.Get("ByFill/hbgj50") ], ["Data","Exp","J50"], ofile+".ps", 0., 0., "", "Fill", "N_{events}", 2)   
 
     canvas = TCanvas("canvas")
     canvas.Print(ofile+".ps]")
@@ -188,28 +241,28 @@ def compPlots(file, bgfile, ofile, dataset, control):
     canvas = TCanvas("canvas")
     canvas.Print(ofile+".ps[", "Portrait")
 
-    multiPlot([bgfile.Get("All/NoCuts/hjete"), file.Get("All/NoCuts/hjete") ], [control, dataset], ofile+".ps", 0., 0., "Jet Energy", "GeV", "events", 1)   
-    multiPlot([bgfile.Get("All/NoCuts/hjeteta"), file.Get("All/NoCuts/hjeteta") ], [control, dataset], ofile+".ps", 0., 0., "Jet #eta", "#eta", "events", 1)   
-    multiPlot([bgfile.Get("All/NoCuts/hjetphi"), file.Get("All/NoCuts/hjetphi") ], [control, dataset], ofile+".ps", 0., 0., "Jet #phi", "#phi", "events", 1)   
-    multiPlot([bgfile.Get("All/NoCuts/hjeteem"), file.Get("All/NoCuts/hjeteem") ], [control, dataset], ofile+".ps", 0., 0., "Jet EM Energy", "GeV", "events", 1)   
-    multiPlot([bgfile.Get("All/NoCuts/hjetehad"), file.Get("All/NoCuts/hjetehad") ], [control, dataset], ofile+".ps", 0., 0., "Jet Had Energy", "GeV", "events", 1)   
-    multiPlot([bgfile.Get("All/NoCuts/hjetemf"), file.Get("All/NoCuts/hjetemf") ], [control, dataset], ofile+".ps", 0., 0., "Jet Em fraction", "emf", "events", 1)   
-    multiPlot([bgfile.Get("All/NoCuts/hjetn60"), file.Get("All/NoCuts/hjetn90") ], [control, dataset], ofile+".ps", 0., 0., "Jet N60", "n60", "events", 1)   
-    multiPlot([bgfile.Get("All/NoCuts/hnmu"), file.Get("All/NoCuts/hnmu") ], [control, dataset], ofile+".ps", 0., 0., "Jet N90", "n90", "events", 1)   
-    multiPlot([bgfile.Get("All/NoCuts/hpksample"), file.Get("All/NoCuts/hpksample") ], [control, dataset], ofile+".ps", 0., 0., "Peak sample", "BX", "events", 1)   
-    multiPlot([bgfile.Get("All/NoCuts/hr1"), file.Get("All/NoCuts/hr1") ], [control, dataset], ofile+".ps", 0., 0., "R_{1} after jet/mu cuts", "R_{1}", "events", 1)   
-    multiPlot([bgfile.Get("All/NoCuts/hr2"), file.Get("All/NoCuts/hr2") ], [control, dataset], ofile+".ps", 0., 0., "R_{2} after jet/mu cuts", "R_{2}", "events", 1)   
-    multiPlot([bgfile.Get("All/NoCuts/hrpk"), file.Get("All/NoCuts/hrpk") ], [control, dataset], ofile+".ps", 0., 0., "R_{peak} after jet/mu cuts", "R_{peak}", "events", 1)   
-    multiPlot([bgfile.Get("All/NoCuts/hrout"), file.Get("All/NoCuts/hrout") ], [control, dataset], ofile+".ps", 0., 0., "R_{outer} after jet/mu cuts", "R_{outer}", "events", 1)   
+    multiPlot([bgfile.Get("All/NoCuts/hjete"), file.Get("All/NoCuts/hjete") ], [control, dataset], ofile+".ps", 0., 0., "Jet Energy", "GeV", "events", "", 1)   
+    multiPlot([bgfile.Get("All/NoCuts/hjeteta"), file.Get("All/NoCuts/hjeteta") ], [control, dataset], ofile+".ps", 0., 0., "Jet #eta", "#eta", "events", "", 1)   
+    multiPlot([bgfile.Get("All/NoCuts/hjetphi"), file.Get("All/NoCuts/hjetphi") ], [control, dataset], ofile+".ps", 0., 0., "Jet #phi", "#phi", "events", "", 1)   
+    multiPlot([bgfile.Get("All/NoCuts/hjeteem"), file.Get("All/NoCuts/hjeteem") ], [control, dataset], ofile+".ps", 0., 0., "Jet EM Energy", "GeV", "events", "", 1)   
+    multiPlot([bgfile.Get("All/NoCuts/hjetehad"), file.Get("All/NoCuts/hjetehad") ], [control, dataset], ofile+".ps", 0., 0., "Jet Had Energy", "GeV", "events", "", 1)   
+    multiPlot([bgfile.Get("All/NoCuts/hjetemf"), file.Get("All/NoCuts/hjetemf") ], [control, dataset], ofile+".ps", 0., 0., "Jet Em fraction", "emf", "events", "", 1)   
+    multiPlot([bgfile.Get("All/NoCuts/hjetn60"), file.Get("All/NoCuts/hjetn90") ], [control, dataset], ofile+".ps", 0., 0., "Jet N60", "n60", "events", "", 1)   
+    multiPlot([bgfile.Get("All/NoCuts/hnmu"), file.Get("All/NoCuts/hnmu") ], [control, dataset], ofile+".ps", 0., 0., "Jet N90", "n90", "events", "", 1)   
+    multiPlot([bgfile.Get("All/NoCuts/hpksample"), file.Get("All/NoCuts/hpksample") ], [control, dataset], ofile+".ps", 0., 0., "Peak sample", "BX", "events", "", 1)   
+    multiPlot([bgfile.Get("All/NoCuts/hr1"), file.Get("All/NoCuts/hr1") ], [control, dataset], ofile+".ps", 0., 0., "R_{1} after jet/mu cuts", "R_{1}", "events", "", 1)   
+    multiPlot([bgfile.Get("All/NoCuts/hr2"), file.Get("All/NoCuts/hr2") ], [control, dataset], ofile+".ps", 0., 0., "R_{2} after jet/mu cuts", "R_{2}", "events", "", 1)   
+    multiPlot([bgfile.Get("All/NoCuts/hrpk"), file.Get("All/NoCuts/hrpk") ], [control, dataset], ofile+".ps", 0., 0., "R_{peak} after jet/mu cuts", "R_{peak}", "events", "", 1)   
+    multiPlot([bgfile.Get("All/NoCuts/hrout"), file.Get("All/NoCuts/hrout") ], [control, dataset], ofile+".ps", 0., 0., "R_{outer} after jet/mu cuts", "R_{outer}", "events", "", 1)   
 
-    multiPlot([bgfile.Get("All/Cuts/hjete_nmo"), file.Get("All/Cuts/hjete_nmo") ], [control, dataset], ofile+".ps", 0., 0., "Jet E (N-1)", "GeV", "events", 1)   
-    multiPlot([bgfile.Get("All/Cuts/hjetn60_nmo"), file.Get("All/Cuts/hjetn60_nmo") ], [control, dataset], ofile+".ps", 0., 0., "Jet n60 (N-1)", "n60", "events", 1)   
-    multiPlot([bgfile.Get("All/Cuts/hjetn90_nmo"), file.Get("All/Cuts/hjetn90_nmo") ], [control, dataset], ofile+".ps", 0., 0., "Jet n90 (N-1)", "n90", "events", 1)   
-    multiPlot([bgfile.Get("All/Cuts/hnmu_nmo"), file.Get("All/Cuts/hnmu_nmo") ], [control, dataset], ofile+".ps", 0., 0., "N muons (N-1)", "N_{#mu}", "events", 1)   
-    multiPlot([bgfile.Get("All/Cuts/hr1_nmo"), file.Get("All/Cuts/hr1_nmo") ], [control, dataset], ofile+".ps", 0., 0., "R_{1} (N-1)", "R_{1}", "events", 1)   
-    multiPlot([bgfile.Get("All/Cuts/hr2_nmo"), file.Get("All/Cuts/hr2_nmo") ], [control, dataset], ofile+".ps", 0., 0., "R_{2} (N-1)", "R_{2}", "events", 1)   
-    multiPlot([bgfile.Get("All/Cuts/hrpk_nmo"), file.Get("All/Cuts/hrpk_nmo") ], [control, dataset], ofile+".ps", 0., 0., "R_{peak} (N-1)", "R_{peak}", "events", 1)   
-    multiPlot([bgfile.Get("All/Cuts/hrout_nmo"), file.Get("All/Cuts/hrout_nmo") ], [control, dataset], ofile+".ps", 0., 0., "R_{outer} (N-1)", "R_{outer}", "events", 1)   
+    multiPlot([bgfile.Get("All/Cuts/hjete_nmo"), file.Get("All/Cuts/hjete_nmo") ], [control, dataset], ofile+".ps", 0., 0., "Jet E (N-1)", "GeV", "events", "", 1)   
+    multiPlot([bgfile.Get("All/Cuts/hjetn60_nmo"), file.Get("All/Cuts/hjetn60_nmo") ], [control, dataset], ofile+".ps", 0., 0., "Jet n60 (N-1)", "n60", "events", "", 1)   
+    multiPlot([bgfile.Get("All/Cuts/hjetn90_nmo"), file.Get("All/Cuts/hjetn90_nmo") ], [control, dataset], ofile+".ps", 0., 0., "Jet n90 (N-1)", "n90", "events", "", 1)   
+    multiPlot([bgfile.Get("All/Cuts/hnmu_nmo"), file.Get("All/Cuts/hnmu_nmo") ], [control, dataset], ofile+".ps", 0., 0., "N muons (N-1)", "N_{#mu}", "events", "", 1)   
+    multiPlot([bgfile.Get("All/Cuts/hr1_nmo"), file.Get("All/Cuts/hr1_nmo") ], [control, dataset], ofile+".ps", 0., 0., "R_{1} (N-1)", "R_{1}", "events", "", 1)   
+    multiPlot([bgfile.Get("All/Cuts/hr2_nmo"), file.Get("All/Cuts/hr2_nmo") ], [control, dataset], ofile+".ps", 0., 0., "R_{2} (N-1)", "R_{2}", "events", "", 1)   
+    multiPlot([bgfile.Get("All/Cuts/hrpk_nmo"), file.Get("All/Cuts/hrpk_nmo") ], [control, dataset], ofile+".ps", 0., 0., "R_{peak} (N-1)", "R_{peak}", "events", "", 1)   
+    multiPlot([bgfile.Get("All/Cuts/hrout_nmo"), file.Get("All/Cuts/hrout_nmo") ], [control, dataset], ofile+".ps", 0., 0., "R_{outer} (N-1)", "R_{outer}", "events", "", 1)   
 
     canvas = TCanvas("canvas")
     canvas.Print(ofile+".ps]")
@@ -233,8 +286,17 @@ bgfile = TFile("Comm10_Jun14th_371_v1/histograms.root", "read")
 # distributions
 distributions(file, "All", dataset+"/"+dataset)
 
+# BX distributions
+bxPlots(file, dataset+"/"+dataset+"_BXDist")
+
+# jet eta/phi plots
+jetEtaPhiPlots(file, dataset+"/"+dataset+"_EtaPhi")
+
+# N-1 plots
+nMinusOnePlots(file, dataset+"/"+dataset+"_NMinusOne")
+
 # per run plots
-runPlots(file, dataset+"/"+dataset+"_ByRun")
+#runPlots(file, dataset+"/"+dataset+"_ByRun")
 
 # per fill plots
 fillPlots(file, dataset+"/"+dataset+"_ByFill")

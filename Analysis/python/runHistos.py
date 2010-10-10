@@ -7,6 +7,10 @@ from ROOT import *
 
 lumiBlockLength = 25.e-9 * 3564. * pow(2., 18)
 
+nCuts   = 15
+nCutJ50 = 7
+nCutCT  = 10
+
 def getNLumiBlocks(hist) :
     n=0
     for i in range(0,hist.GetNbinsX()):
@@ -35,10 +39,11 @@ def runHistos(hfile, runs):
     hlivetime   = TH1D("hlivetime", "Live time", nruns, 0., 0.)
     hnpostjet   = TH1D("hnpostjet", "N events after jet cuts", nruns, 0., 0.)
     hnposttim   = TH1D("hnposttim", "N events after timing cuts", nruns, 0., 0.)
+    hnj50nmo    = TH1D("hnj50nmo", "Jet50 N-1 counts", nruns, 0., 0.)
     
     # rate after each cut
     hratecuts = []
-    for c in range(0,13):
+    for c in range(0,nCuts):
         hratecuts.append(TH1D("hratecut"+str(c), "Rate cut "+str(c), nruns, 0., 0.))
 
     # 2D vs run plots
@@ -70,29 +75,36 @@ def runHistos(hfile, runs):
             # live time (N non-zero LS after HLT)
             livetime = getLivetime2(hlb)
             hlivetime.Fill(str(run), livetime)
-            hlivetime.SetBinError(i+1, 10.)
+            hlivetime.SetBinError(i+1, lumiBlockLength/2)
             
             hcutcount = hfile.Get(runstr+"/Cuts/hncutcum")
             
             # final counts
-            nevtFinal = hcutcount.GetBinContent(13)
+            nevtFinal = hcutcount.GetBinContent(nCuts)
             hnfin.Fill(str(run), nevtFinal)
             hnfin.SetBinError(i+1, sqrt(nevtFinal))
             
             # post jet counst
-            npostjet = hcutcount.GetBinContent(7)
+            npostjet = hcutcount.GetBinContent(nCutCT+1)
             hnpostjet.Fill(str(run), npostjet)
             hnpostjet.SetBinError(i+1, sqrt(npostjet))
             
             # post timing counts
-            nposttim = hcutcount.GetBinContent(7)
+            nposttim = 0#hcutcount.GetBinContent(7)
             hnposttim.Fill(str(run), nposttim)
             hnposttim.SetBinError(i+1, sqrt(nposttim))
+
+            hnminus1cut = hfile.Get(runstr+"/Cuts/hnminus1cut")
+
+            # J50 N-1 counts
+            nj50nmo = hnminus1cut.GetBinContent(nCutJ50+1)
+            hnj50nmo.Fill(str(run), nj50nmo)
+            hnj50nmo.SetBinError(i+1, sqrt(nj50nmo))
             
             # rate after N cuts
             cut = TCut("")
             
-            for c in range(0, 13):
+            for c in range(0, nCuts):
                 n=hcutcount.GetBinContent(c+1)
                 rate=0.
                 erate=0.
@@ -142,7 +154,8 @@ def runHistos(hfile, runs):
     hlivetime.Write()
     hnpostjet.Write()
     hnposttim.Write()
-    for c in range(0,13):
+    hnj50nmo.Write()
+    for c in range(0,nCuts):
         hratecuts[c].Write()
     hbx.Write()
     heta.Write()

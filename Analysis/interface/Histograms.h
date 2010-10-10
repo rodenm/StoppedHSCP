@@ -67,6 +67,7 @@ class Histograms {
   TH2D* hmuetaphi_;
   TH1D* hntowsameiphi_;
   TH2D* htowietaiphi_;
+  TH1D* hhalo_;
   TH1D* hpksample_;
   TH1D* hr1_;
   TH1D* hr2_;
