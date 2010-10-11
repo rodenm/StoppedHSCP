@@ -2,23 +2,23 @@
 
   // plot expected limit for 1e-3s counting expt; plateau
   double exp_effLumi= 1.06116;
-  double exp_mean   = 8.274;  // mean
-  double exp_1qtm   = 4.826;  // 68% quantile
-  double exp_1qtp   = 10.996;
-  double exp_2qtm   = 3.586;
-  double exp_2qtp   = 15.983;
-  
-  // best observed limit - 5.8e-7 s
-  double effLumi_1 = 0.844145;
-  double cl95_1    = 3.879;
+  double exp_mean   = 8.86059;  // mean
+  double exp_1qtm   = 5.34059;  // 68% quantile
+  double exp_1qtp   = 11.539;
+  double exp_2qtm   = 3.77099;
+  double exp_2qtp   = 16.4869;
+
+  // best observed limit - 5.7e-7 s
+  double effLumi_1 = 0.829267;
+  double cl95_1    = 3.07495;
   
   // plateau observed limit - 1e-3 s
   double effLumi_2 = 1.06116;
-  double cl95_2    = 6.05011;
+  double cl95_2    = 4.66095;
   
   // long lifetime observed limit - 1e6 s
   double effLumi_3 =  0.0916525;
-  double cl95_3    = 6.05011;
+  double cl95_3    = 4.66095;
   
   // 1e6 s from lifetime fit
   double Lrec   = 1.3;    // integrated lumi for lifetime fit
@@ -85,7 +85,7 @@
   
   // theoretical cross-section  (pb)
   unsigned ntheory = 5;
-  double theoryUncertainty = 0.15;
+  double theoryUncertainty = 0.0;
   double theoryXS[10] = {
     2.11e4,
     2.82e3,
@@ -144,7 +144,7 @@
   // details
   TPaveText* blurb = new TPaveText(110., 1.e3, 250., 8.e4);
   blurb->AddText("CMS Preliminary 2010");
-  blurb->AddText("#int L dt = 1.3 pb^{-1}");
+  blurb->AddText("#int L dt = 1.5 pb^{-1}");
   blurb->AddText("#sqrt{s} = 7 TeV");
   //  blurb->AddText("Fills 1121,1122");
   //  blurb->AddText("t_{data} = 60 days");
@@ -171,7 +171,7 @@
   leg->AddEntry(graph_exp2, "Expected #pm2#sigma: 100 #mus - 1 hr Counting Exp.", "f");
   leg->AddEntry(graph3, "Obs.: 10^{6} s Counting Exp.", "l");
   leg->AddEntry(graph2, "Obs.: 100 #mus - 1 hr Counting Exp.", "l");
-  leg->AddEntry(graph1, "Obs.: 580 ns Counting Exp.", "l");
+  leg->AddEntry(graph1, "Obs.: 570 ns Counting Exp.", "l");
   leg->AddEntry(graphL, "Obs.: 100 ns Timing Profile", "l");
   leg->Draw();
   

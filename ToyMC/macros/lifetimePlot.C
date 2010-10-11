@@ -19,8 +19,9 @@ TCanvas *makeLifetimePlot(TGraph *g_cl95,
 			  TGraph *g_cl95_nb=NULL,
 			  TGraph *g_cl95_tp=NULL);
 
-
-void lifetimePlot(char* filename, char* filename2) {
+// if 2nd filename provided, read numbers from Fedor's file and my file
+// if only 2 filename provided, use only my file
+void lifetimePlot(char* filename, char* filename2="") {
 
   // which mass point ?
   unsigned massIndex = 0;
@@ -51,43 +52,69 @@ void lifetimePlot(char* filename, char* filename2) {
   file.open(filename);
   std::string line;
   unsigned count =0 ;
-  
-  double t(0.), el(0.), l(0.), s(0.), b(0.), eb(0.), cl(0.);
-  double exmean(0.), lo1sig(0.), hi1sig(0.), lo2sig(0.), hi2sig(0.);
-  unsigned n(0);
-  std::string z;
 
-  while (file >> z >> z >> t >> z >> el >> z >> b >> z >> n >> z >> cl >>
-	 z >> exmean >> z >> z >> z >> z >> z >> z >> z >> z >>
-	 z >> lo1sig >> hi1sig >> z >> lo2sig >> hi2sig) {
-    lifetime[count] = t;
-    expBG[count]    = b;
-    expBG_e[count]  = eb;
-    nObs[count]     = n;
-    cl95[count]     = cl;
-    exp[count]        = exmean;
-    exp_lo1sig[count] = lo1sig;
-    exp_hi1sig[count] = hi1sig;
-    exp_lo2sig[count] = lo2sig;
-    exp_hi2sig[count] = hi2sig;
-   ++count;
-  }
+  // read my file if only one filename provided
+  if (filename2=="") {
 
-  // read effective lumi
-  ifstream file2;
-  file2.open(filename2);
-  unsigned count2 = 0;
-  while (file2 >> t >> l >> s >> b >> eb >> n >> cl) {
-
-    for (unsigned i=0; i<count; ++i) {
-      if (lifetime[i] == t) {
-	effLumi[i] = l;
-      }
+    double t(0.), el(0.), es(0.), b(0.), eb(0.), cl(0.);
+    double exmean(0.), lo1sig(0.), hi1sig(0.), lo2sig(0.), hi2sig(0.);
+    unsigned n(0);
+    std::string z;
+    
+    while (file >> t >> el >> es >> b >> eb >> n >> cl >> exmean >> lo1sig >> hi1sig >> lo2sig >> hi2sig) {
+      lifetime[count] = t;
+      effLumi[count]  = el;
+      expBG[count]    = b;
+      expBG_e[count]  = eb;
+      nObs[count]     = n;
+      cl95[count]     = cl;
+      exp[count]        = exmean;
+      exp_lo1sig[count] = lo1sig;
+      exp_hi1sig[count] = hi1sig;
+      exp_lo2sig[count] = lo2sig;
+      exp_hi2sig[count] = hi2sig;
+      ++count;
     }
-    //   effLumi[count2]=l;
-    ++count2;
   }
+  // read Fedor's & mine if two provided
+  else {
 
+    double t(0.), el(0.), l(0.), s(0.), b(0.), eb(0.), cl(0.);
+    double exmean(0.), lo1sig(0.), hi1sig(0.), lo2sig(0.), hi2sig(0.);
+    unsigned n(0);
+    std::string z;
+    
+    while (file >> z >> z >> t >> z >> el >> z >> b >> z >> n >> z >> cl >>
+	   z >> exmean >> z >> z >> z >> z >> z >> z >> z >> z >>
+	   z >> lo1sig >> hi1sig >> z >> lo2sig >> hi2sig) {
+      lifetime[count] = t;
+      expBG[count]    = b;
+      expBG_e[count]  = eb;
+      nObs[count]     = n;
+      cl95[count]     = cl;
+      exp[count]        = exmean;
+      exp_lo1sig[count] = lo1sig;
+      exp_hi1sig[count] = hi1sig;
+      exp_lo2sig[count] = lo2sig;
+      exp_hi2sig[count] = hi2sig;
+      ++count;
+    }
+
+    // read effective lumi
+    ifstream file2;
+    file2.open(filename2);
+    unsigned count2 = 0;
+    while (file2 >> t >> l >> s >> b >> eb >> n >> cl) {
+      
+      for (unsigned i=0; i<count; ++i) {
+	if (lifetime[i] == t) {
+	  effLumi[i] = l;
+	}
+      }
+      //   effLumi[count2]=l;
+      ++count2;
+    }
+  }
 
   std::cout << "Going to plot " << count << " lifetime points" << std::endl;
 
@@ -170,6 +197,8 @@ void lifetimePlot(char* filename, char* filename2) {
   double xs_exp_hi2sig[100];   // upper 2 sigma band
 
   double xs_tp[100];
+
+  std::cout << std::endl;
 
   for (unsigned l=0; l<count; ++l) {
 
@@ -254,7 +283,7 @@ TCanvas *makeLifetimePlot(TGraph *g_obs,
 
   blurb = new TPaveText(1.05e-8, 8e3, 1e-3, 3e5);
   blurb->AddText("CMS Preliminary 2010");
-  blurb->AddText("#int L dt = 1.3 pb^{-1}");
+  blurb->AddText("#int L dt = 1.5 pb^{-1}");
   blurb->AddText("#sqrt{s} = 7 TeV");
   blurb->AddText("m_{#tilde{g}} = 200 GeV");
   blurb->AddText("M_{#tilde{#chi}^{0}} = 100 GeV");
@@ -353,10 +382,10 @@ TCanvas *makeLifetimePlot(TGraph *g_obs,
   l->Draw();
 
   //uncertainty band
-  TBox *syst = new TBox(1e-8, 515, 1e7, 697);
-  syst->SetFillStyle(3001);
-  syst->SetFillColor(kBlue-4);
-  syst->Draw();
+//   TBox *syst = new TBox(1e-8, 515, 1e7, 697);
+//   syst->SetFillStyle(3001);
+//   syst->SetFillColor(kBlue-4);
+//   syst->Draw();
 
   TText *t1;
   t1 = new TText(1.5e2, 280, "NLO+NLL");
