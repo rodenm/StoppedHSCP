@@ -1,5 +1,7 @@
 {
 
+  // .X massPlot.C
+
   // plot expected limit for 1e-3s counting expt; plateau
   double exp_effLumi= 1.06116;
   double exp_mean   = 8.86059;  // mean
@@ -251,8 +253,8 @@
 
   blurb->Draw();
 
-  canvas->Print("massPlot.pdf");
-  canvas->Print("massPlot.C");
+  canvas->Print("massLimit.pdf");
+  canvas->Print("massLimit.C");
 
   // calculate intercept
   // set which bin to use
