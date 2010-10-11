@@ -30,10 +30,10 @@ class Simulator {
   void setupObservedEvents();
 
   // run MC simulation
-  void simulateSignal();
-  void simulateBackground();
-  void calculateExpectedBG();
-  void calculateObservedEvents();
+  void simulateSignal(unsigned firstFill, unsigned lastFill);
+  void simulateBackground(unsigned firstFill, unsigned lastFill);
+  void calculateExpectedBG(unsigned firstFill, unsigned lastFill);
+  void calculateObservedEvents(unsigned firstFill, unsigned lastFill);
   void calculateLimit();
 
   // make plots for debugging etc
@@ -41,7 +41,7 @@ class Simulator {
 
 
   // print out for debugging
-  void printMaskInfo();
+  void printMaskInfo(unsigned fill);
 
 /*   // not clear what these are for */
 /*   bool collisionHasL1A(double rate); */
@@ -74,8 +74,8 @@ class Simulator {
   Events events_;
 
   // current fill.  stored twice for future compatibility
-  unsigned prodFill_;
-  unsigned decayFill_;
+/*   unsigned prodFill_; */
+/*   unsigned decayFill_; */
 
   // lifetime masking - TODO move to LhcFills class
 /*   unsigned nLifetimeMasks_; */

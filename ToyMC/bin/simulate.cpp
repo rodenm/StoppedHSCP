@@ -43,30 +43,35 @@ int main(int argc, char* argv[]) {
 
   // set up luminosity data
   sim.setupLumi();
-  
-  // set up LHC filling scheme
-  // this just uses first fill in the list!
-  // TODO - something more intelligent
-  std::cout << "Using fill " << e->fills.at(0) << " to set filling scheme" << std::endl;
-  sim.setFillScheme(e->fills.at(0));
 
   // set up lifetime mask
   sim.setupLifetimeMask();
+  
+  // loop over fills
+  for (unsigned f=0; f!=e->fills.size(); ++f) {
 
-  //sim.printMaskInfo();
+    unsigned fill = e->fills.at(f);
+    
+    std::cout << "Simulating fill " << fill << std::endl;
 
-  // expected background
-  sim.calculateExpectedBG();
+    //sim.printMaskInfo(fill);
 
-  // get observed events
-  sim.calculateObservedEvents();
+    // expected background
+    sim.calculateExpectedBG(fill, fill);
 
-  // run MC
-  sim.simulateSignal();
-  //  sim.simulateBackground();
+    // get observed events
+    sim.calculateObservedEvents(fill, fill);
+
+    // run MC
+    sim.simulateSignal(fill, fill);
+
+    std::cout << std::endl;
+  }
 
   // calculate limit
   sim.calculateLimit();
+
+  std::cout << std::endl;
 
   // write results summary
   std::ofstream summaryfile;

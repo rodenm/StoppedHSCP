@@ -9,6 +9,15 @@ class Events {
 
  public:
 
+  struct Event {
+    unsigned long run;
+    unsigned long ls;
+    unsigned long orbit;
+    unsigned bx;
+    unsigned long id;
+
+  };
+
   typedef std::vector<Event>::const_iterator const_iterator;
 
  public:
@@ -25,15 +34,6 @@ class Events {
   void print(std::ostream& o);
 
  private:
-
-  struct Event {
-    unsigned long run;
-    unsigned long ls;
-    unsigned long orbit;
-    unsigned bx;
-    unsigned long id;
-
-  };
 
   std::vector<Event> events_;
 

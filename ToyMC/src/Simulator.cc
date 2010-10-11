@@ -63,20 +63,20 @@ void Simulator::setupLumi() {
 }
 
 
-void Simulator::setFillScheme(unsigned fill) {
+// void Simulator::setFillScheme(unsigned fill) {
 
-  std::cout << "Using filling scheme " << fills_.getFillingScheme(fill) << std::endl;
+//   std::cout << "Using filling scheme " << fills_.getFillingScheme(fill) << std::endl;
 
-  prodFill_ = fill;
-  decayFill_ = fill;
+//   prodFill_ = fill;
+//   decayFill_ = fill;
   
-  // TODO - set BX to be masked because of "L1 gap"
+//   // TODO - set BX to be masked because of "L1 gap"
 
-  std::cout << "N collisions : " << fills_.getCollisions(prodFill_).size() << std::endl;
-  //  std::cout << "N masked BX  : " << fills_.getMask(decayFill_).size() << std::endl;
-  std::cout << std::endl;
+//   std::cout << "N collisions : " << fills_.getCollisions(prodFill_).size() << std::endl;
+//   //  std::cout << "N masked BX  : " << fills_.getMask(decayFill_).size() << std::endl;
+//   std::cout << std::endl;
 
-}
+// }
 
 
 void Simulator::setupLifetimeMask() {
@@ -84,7 +84,7 @@ void Simulator::setupLifetimeMask() {
 }
 
 
-void Simulator::simulateSignal() {
+void Simulator::simulateSignal(unsigned firstFill, unsigned lastFill) {
 
   std::cout << "Simulating signal" << std::endl;
 
@@ -100,6 +100,10 @@ void Simulator::simulateSignal() {
 
     unsigned nEvents=0;
 
+    // dont simulate deacys from fills outside fill range
+    if (fills_.getFillFromRun(prodRun) < firstFill) continue;
+    if (fills_.getFillFromRun(prodRun) > lastFill) break;
+
     // don't simulate decays from lumisections with no luminosity
     if (lumi_.at(i).lumi < Luminosity::THRESHOLD) continue;
 
@@ -108,7 +112,7 @@ void Simulator::simulateSignal() {
 
       // assign production BX and orbit
       // ie. assume productions are evenly distributed within LS
-      unsigned prodBX = fills_.getCollisionsFromRun(prodRun).at((random_.Integer(fills_.getCollisions(prodRun).size())));
+      unsigned prodBX = fills_.getCollisionsFromRun(prodRun).at((random_.Integer(fills_.getCollisionsFromRun(prodRun).size())));
       unsigned prodOrbit = random_.Integer(NORBITS_PER_LS);
       unsigned long prodLSIndex = i;
 
@@ -150,7 +154,7 @@ void Simulator::simulateSignal() {
       // TODO - add interfill expt lifetime mask!!!
       bool passBunchMask   = !(fills_.getMaskFromRun(decayRun).at(decayBX));
       bool passSensitiveLS = (decayLSIndex < lumi_.size()) && lumi_.cmsSensitive(decayLSIndex);
-      bool passLifetimeMask= !(fills_.getLifetimeMask(decayRun).at(decayBX)) || !(expt_->optimizeTimeCut);
+      bool passLifetimeMask= !(fills_.getLifetimeMaskFromRun(decayRun).at(decayBX)) || !(expt_->optimizeTimeCut);
 
       if(passSensitiveLS && passBunchMask && passLifetimeMask) {
 	++nEvents;
@@ -167,62 +171,64 @@ void Simulator::simulateSignal() {
   }
 
   // set expected signal
-  expt_->expSignal   = (nTotalEvents/nTotalDecays)/expt_->signalEff;
-  expt_->expSignal_e = (sqrt(nTotalEvents)/nTotalEvents) * expt_->expSignal;
-  expt_->effLumi     = effLumi;
-  expt_->effLumi_e   = effLumi * (sqrt(nTotalEvents)/nTotalEvents);
+  expt_->nDecays_MC  += nTotalDecays;
+  expt_->nObs_MC     += nTotalEvents;
+  expt_->effLumi     += effLumi;
 
-  std::cout << "Effective lumi  : " << expt_->effLumi << std::endl;
+  expt_->expSignal   = (expt_->nObs_MC/expt_->nDecays_MC) * expt_->signalEff * expt_->effLumi * expt_->crossSection;
+  expt_->expSignal_e = expt_->expSignal * (sqrt(expt_->nObs_MC)/expt_->nDecays_MC);
+  expt_->effLumi_e   = expt_->effLumi * (sqrt(expt_->nObs_MC)/expt_->nDecays_MC);
+
+  std::cout << "Effective lumi  : " << effLumi << std::endl;
   std::cout << "Expected signal : " << expt_->expSignal << std::endl;
   std::cout << "Total N decays  : " << expt_->nDecays_MC << std::endl;
-  std::cout << std::endl;
 
 }
 
 
 /// this method not currently used - probably needs updating
-void Simulator::simulateBackground() {
+// void Simulator::simulateBackground() {
 
-  std::cout << "Simulating background" << std::endl;
+//   std::cout << "Simulating background" << std::endl;
 
-  double nHits =
-    expt_->bgRate * expt_->nTrialsBackground * TIME_PER_LS * lumi_.size();
+//   double nHits =
+//     expt_->bgRate * expt_->nTrialsBackground * TIME_PER_LS * lumi_.size();
 
-  assert (nHits < 4294967296.); // 2^32, too many hits!!
+//   assert (nHits < 4294967296.); // 2^32, too many hits!!
 
-  unsigned int background_events = 0;
+//   unsigned int background_events = 0;
 
-  for (unsigned hit = 1; hit < nHits + 1; hit ++) {
-    // Don't truncate the last fraction of an event:
-    //  Randomly determine whether to use it
-    if (hit > nHits && 
-	(random_.Rndm() < hit-nHits)) break;
+//   for (unsigned hit = 1; hit < nHits + 1; hit ++) {
+//     // Don't truncate the last fraction of an event:
+//     //  Randomly determine whether to use it
+//     if (hit > nHits && 
+// 	(random_.Rndm() < hit-nHits)) break;
     
-    unsigned int lsi   = random_.Integer(lumi_.size());
-    //    unsigned int orbit = random_.Integer(NORBITS_PER_LS);
-    unsigned int bx    = random_.Integer(NBXS_PER_ORBIT);
-    unsigned run = lumi_.at(lsi).run;
+//     unsigned int lsi   = random_.Integer(lumi_.size());
+//     //    unsigned int orbit = random_.Integer(NORBITS_PER_LS);
+//     unsigned int bx    = random_.Integer(NBXS_PER_ORBIT);
+//     unsigned run = lumi_.at(lsi).run;
 
-    // check if event can trigger - assume beamgap for now
-    bool passBunchMask   = !(fills_.getMaskFromRun(run).at(bx));
-    bool passSensitiveLS = (lsi < lumi_.size()) && lumi_.cmsSensitive(lsi);
-    bool passLifetimeMask= !(fills_.getLifetimeMaskFromRun(run).at(bx)) || !(expt_->optimizeTimeCut);
+//     // check if event can trigger - assume beamgap for now
+//     bool passBunchMask   = !(fills_.getMaskFromRun(run).at(bx));
+//     bool passSensitiveLS = (lsi < lumi_.size()) && lumi_.cmsSensitive(lsi);
+//     bool passLifetimeMask= !(fills_.getLifetimeMaskFromRun(run).at(bx)) || !(expt_->optimizeTimeCut);
 
-    if (passBunchMask && passSensitiveLS && passLifetimeMask) {
-      ++background_events;
-    }
+//     if (passBunchMask && passSensitiveLS && passLifetimeMask) {
+//       ++background_events;
+//     }
 
-  }
+//   }
 
-  expt_->nBG_MC = (unsigned int)(background_events / expt_->nTrialsBackground);
+//   expt_->nBG_MC = (unsigned int)(background_events / expt_->nTrialsBackground);
 
-  std::cout << "N background MC : " << expt_->nBG_MC << std::endl;
-  std::cout << std::endl;
+//   std::cout << "N background MC : " << expt_->nBG_MC << std::endl;
+//   std::cout << std::endl;
 
-}
+// }
 
 
-void Simulator::calculateExpectedBG() {
+void Simulator::calculateExpectedBG(unsigned firstFill, unsigned lastFill) {
 
   std::cout << "Calculating expected background" << std::endl;
 
@@ -240,43 +246,47 @@ void Simulator::calculateExpectedBG() {
   // loop over lumi sections, recording how much livetime we had
   for (unsigned long lsi = 0; lsi < lumi_.size(); lsi++) {
 
+    // ignore fills outside fill range
+    if (fills_.getFillFromRun(lumi_.at(lsi).run) < firstFill) continue;
+    if (fills_.getFillFromRun(lumi_.at(lsi).run) > lastFill) break;
+
+    // ignore lumisections with no luminosity
+    //    if (lumi_.at(lsi).lumi < Luminosity::THRESHOLD) continue;    
+
     // ignore lumi-sections where cms not sensitive
-    if (lumi_.cmsSensitive(lsi)) {
+    if (!lumi_.cmsSensitive(lsi)) continue;
 
-      totalTime  += TIME_PER_LS;
-
-      // update number of masked BX if run changed
-      if (lumi_.at(lsi).run != run) {
-	run=lumi_.at(lsi).run;
-	nMaskedBX=0;
-	for (unsigned bx=0; bx<NBXS_PER_ORBIT; ++bx) {
-	  if (fills_.getMaskFromRun(run).at(bx) || fills_.getLifetimeMaskFromRun(run).at(bx)) nMaskedBX++;
-	}
+    // update number of masked BX if run changed
+    if (lumi_.at(lsi).run != run) {
+      run=lumi_.at(lsi).run;
+      nMaskedBX=0;
+      for (unsigned bx=0; bx<NBXS_PER_ORBIT; ++bx) {
+	if (fills_.getMaskFromRun(run).at(bx) || fills_.getLifetimeMaskFromRun(run).at(bx)) nMaskedBX++;
       }
-      
-      double beamgapMaskedFraction = (double)nMaskedBX / (double)NBXS_PER_ORBIT;
-
-      // TODO - check if this lumi-section is beamgap or interfill
-      // for now assume beamgap
-      livetime   += TIME_PER_LS * (1. - beamgapMaskedFraction);
-
     }
+
+    // update total time
+    totalTime  += TIME_PER_LS;
+    
+    // calculate fraction of time available & background contribution from this LS
+    double beamgapMaskedFraction = (double)nMaskedBX / (double)NBXS_PER_ORBIT;
+    livetime   += TIME_PER_LS * (1. - beamgapMaskedFraction);
 
   }
 
-  expt_->livetime = livetime;
-  expt_->expBackground = livetime * expt_->bgRate;
-  expt_->expBackground_e = livetime * expt_->bgRate_e;
+  expt_->livetime        += livetime;
+
+  expt_->expBackground   = expt_->livetime * expt_->bgRate;
+  expt_->expBackground_e = expt_->livetime * expt_->bgRate_e;
 
   std::cout << "Live time              : " << livetime << std::endl;
   std::cout << "Fraction of BX masked  : " << 1. - (livetime/totalTime) << std::endl;
   std::cout << "Expected background    : " << livetime * expt_->bgRate << " +/- " << livetime * expt_->bgRate_e << std::endl;
-  std::cout << std::endl;
 
 }
 
 
-void Simulator::calculateObservedEvents() {
+void Simulator::calculateObservedEvents(unsigned firstFill, unsigned lastFill) {
 
   std::cout << "Getting observed events" << std::endl;
 
@@ -287,15 +297,19 @@ void Simulator::calculateObservedEvents() {
 
     unsigned run = e->run;
     unsigned bx  = e->bx;
+    
+    // ignore events outside fill range
+    if (fills_.getFillFromRun(run) < firstFill) continue;
+    if (fills_.getFillFromRun(run) > lastFill) break; 
+    
     if (!(fills_.getMaskFromRun(run).at(bx)) &&
 	!(fills_.getLifetimeMaskFromRun(run).at(bx)) ) nEvents++;
-
+    
   }
 
   expt_->nObserved = nEvents;
 
   std::cout << "N obs : " << expt_->nObserved << std::endl;
-  std::cout << std::endl;
 
 }
 
@@ -313,22 +327,21 @@ void Simulator::calculateLimit() {
   expt_->limit95cl = ce.cl95limit(expt_->nObserved);
 
   std::cout << "95CL limit : " << ce.cl95limit(expt_->nObserved) << std::endl;
-  std::cout << std::endl;
 
 }
 
 
-void Simulator::printMaskInfo() {
+void Simulator::printMaskInfo(unsigned fill) {
 
   std::cout << "Masked BX :" << std::endl;
   for (unsigned bx=0; bx<NBXS_PER_ORBIT; ++bx) {
-    if (fills_.getMask(prodFill_).at(bx)) std::cout << bx << ",";
+    if (fills_.getMask(fill).at(bx)) std::cout << bx << ",";
   }
   std::cout <<std::endl;
 
   std::cout << "Lifetime masked BX :" << std::endl;
   for (unsigned bx=0; bx<NBXS_PER_ORBIT; ++bx) {
-    if (fills_.getLifetimeMask(prodFill_).at(bx)) std::cout << bx << ",";
+    if (fills_.getLifetimeMask(fill).at(bx)) std::cout << bx << ",";
   }
   std::cout <<std::endl;
 
