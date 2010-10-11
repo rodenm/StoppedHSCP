@@ -183,7 +183,7 @@ void Analyser::loop() {
     if (event_->run != currentRun) {
 
       std::cout << "New run : " << event_->run << std::endl;
-      cuts_.setMaskedBXs(fills_.getBunchesFromRun(event_->run));
+      cuts_.setMaskedBXs(fills_.getMaskFromRun(event_->run));
       currentRun = event_->run;
 
       // write new histograms

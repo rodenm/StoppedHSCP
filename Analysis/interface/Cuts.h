@@ -17,7 +17,7 @@ class Cuts {
   void readMaskedBXs(std::string filename, unsigned run);
 
   // set BX masks from filled bunches and window
-  void setMaskedBXs(std::vector<unsigned> filledBXs);
+  void setMaskedBXs(std::vector<bool> bxMask);
 
   // set current event
   void setEvent(StoppedHSCPEvent* event) {event_ = event; }
@@ -49,9 +49,8 @@ class Cuts {
   // standard HCAL noise cuts
   bool stdHcalCutN(unsigned n) const;
 
-  // event is in masked BX
+  // is event masked
   bool inMaskedBX() const;
-
 
  private:
 
@@ -61,11 +60,8 @@ class Cuts {
   // this is MC data
   bool isMC_;
 
-  // how many BX either side of a bunch to mask
-  int bxWindow_;
-
   // list of BXs to mask
-  std::vector<unsigned> maskedBXs_;
+  std::vector<bool> bxMask_;
 
 
 };

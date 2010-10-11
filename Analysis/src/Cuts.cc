@@ -12,8 +12,7 @@
 Cuts::Cuts(StoppedHSCPEvent* event, bool isMC) :
   event_(event),
   isMC_(isMC),
-  bxWindow_(1),
-  maskedBXs_(0)
+  bxMask_(3564, false)
 {
 
 }
@@ -25,7 +24,7 @@ Cuts::~Cuts() {
 
 void Cuts::readMaskedBXs(std::string filename, unsigned run) {
 
-  maskedBXs_.clear();
+  bxMask_.clear();
 
   // open file
   std::ifstream bxfile(filename.c_str(), ifstream::in);
@@ -43,7 +42,8 @@ void Cuts::readMaskedBXs(std::string filename, unsigned run) {
 	// read BXs to mask from the rest of the line
 	std::cout << "Ignoring BX : ";
 	for (unsigned i=1; i<strs.size(); ++i) {
-	  maskedBXs_.push_back(atoi(strs.at(i).c_str()));
+	  int bx = atoi(strs.at(i).c_str());
+	  if (bx>=0 && bx<3546) bxMask_.at(bx) = true;
 	  std::cout << strs.at(i) << " ";
 	}
 	std::cout << std::endl;
@@ -54,23 +54,13 @@ void Cuts::readMaskedBXs(std::string filename, unsigned run) {
 }
 
 
-void Cuts::setMaskedBXs(std::vector<unsigned> filledBXs) {
+void Cuts::setMaskedBXs(std::vector<bool> bxMask) {
+  bxMask_ = bxMask;
+}
 
-  maskedBXs_.clear();
 
-  // add window either side of bunches
-  for (unsigned i=0; i<filledBXs.size(); ++i) {
-    for (int j=(-1*bxWindow_); j<=bxWindow_; ++j) {
-      maskedBXs_.push_back(filledBXs.at(i) + j);
-    }
-  }
-
-  std::cout << "Updating BX mask : ";
-  for (unsigned i=0; i<maskedBXs_.size(); ++i) {
-    std::cout << maskedBXs_.at(i) << ",";
-  }
-  std::cout << std::endl;
-
+bool Cuts::inMaskedBX() const {
+  return bxMask_.at(event_->bx); 
 }
 
 
@@ -87,7 +77,7 @@ bool Cuts::cutN(unsigned n) const
   case 0:  // trigger
     return !isMC_ || ((((event_->gtAlgoWord0>>16)&1) == 1) && (event_->hltJet_N>0) && (event_->hltJetE[0]> 20.) && (event_->hltJetEta[0]<1.3));
   case 1:  // BX mask
-    return isMC_ || ! inMaskedBX();
+    return isMC_ || ! bxMask_.at(event_->bx);
   case 2:  // BPTX
     return isMC_ || ((event_->gtAlgoWord1>>(81-64)&1) == 0 && (event_->gtAlgoWord1>>(80-64)&1) == 0);
   case 3:  // beam halo
@@ -275,13 +265,4 @@ bool Cuts::stdHcalCutN(unsigned n) const
     break; 
   }
 
-}
- 
-bool Cuts::inMaskedBX() const {
-
-  bool passed=false;
-  for (unsigned i=0; i<maskedBXs_.size(); ++i) {
-    passed |= (event_->bx==maskedBXs_.at(i));
-  }
-  return passed;
 }

@@ -174,6 +174,7 @@ void LhcFills::setupBunches() {
     
     for (unsigned i=0; i<f->bunches.size(); ++i) {
       unsigned bx=f->bunches.at(i);
+      f->mask.at((bx-2)%LhcFills::NBX_PER_ORBIT)=true;
       f->mask.at((bx-1)%LhcFills::NBX_PER_ORBIT)=true;
       f->mask.at((bx)%LhcFills::NBX_PER_ORBIT)=true;
       f->mask.at((bx+1)%LhcFills::NBX_PER_ORBIT)=true;

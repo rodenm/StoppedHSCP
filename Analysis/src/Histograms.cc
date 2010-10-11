@@ -175,7 +175,7 @@ void Histograms::fill(StoppedHSCPEvent& event) {
   hhalo_->Fill(halo.c_str(), 1.);
 
   // fill remaining histograms for events passing BX veto etc.
-  if (!(cuts_->inMaskedBX())) {
+  if (cuts_->cutN(1)) {
 
     if (event.l1Jet_N > 0) {
       hl1et_->Fill(event.l1JetE.at(0));
