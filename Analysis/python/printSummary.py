@@ -4,6 +4,8 @@ import getopt
 import string
 import os
 
+from constants import *
+
 # help message
 def usage():
     print "Usage : printSummary.py [-h] <input dataset>"
@@ -101,4 +103,42 @@ for i in range(0,15):
 
 print '[/TABLE]'
 print
+
+# backgrounds
+n90rate = hcutnmo.GetBinContent(in90+1)/time
+ctrate  = hcutnmo.GetBinContent(iCT+1)/time
+
+# naive method
+bg0  = fall
+ebg0 = efall
+
+# n90 method
+bg1  = fn90*n90rate
+ebg1 = efn90*n90rate
+
+# CT method
+bg2  = fct*ctrate
+ebg2 = efct*ctrate
+
+# combined n90 & CT
+bg3  = (bg1 + bg2) / 2
+ebg3 = 0.
+
+print "N-1 counts :"
+print '  n60    : ' % (hcutnmo.GetBinContent(in90+1))
+print '  CT     : ' % (hcutnmo.GetBinContent(iCT+1))
+print
+
+print "Expected background rates :"
+print '  Simple method : %s +/- %s' % (bg0, ebg0)
+print '  N90 method    : %s +/- %s' % (bg1, ebg1)
+print '  CT method     : %s +/- %s' % (bg2, ebg2)
+print '  N90 & CT      : %s +/- %s' % (bg3, ebg3)
+print
+
+print "Expected background counts :"
+print '  Simple method : %s +/- %s' % (bg0*time, ebg0*time)
+print '  N90 method    : %s +/- %s' % (bg1*time, ebg1*time)
+print '  CT method     : %s +/- %s' % (bg2*time, ebg2*time)
+print '  N90 & CT      : %s +/- %s' % (bg3*time, ebg3*time)
 
