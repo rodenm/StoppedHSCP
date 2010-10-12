@@ -5,7 +5,7 @@ import math
 
 from ROOT import *
 
-lumiBlockLength = 25.e-9 * 3564. * pow(2., 18)
+from constant import *
 
 nCuts   = 15
 nCutJ50 = 7
@@ -85,7 +85,7 @@ def runHistos(hfile, runs):
             hnfin.SetBinError(i+1, sqrt(nevtFinal))
             
             # post jet counst
-            npostjet = hcutcount.GetBinContent(nCutCT+1)
+            npostjet = hcutcount.GetBinContent(iCT+1)
             hnpostjet.Fill(str(run), npostjet)
             hnpostjet.SetBinError(i+1, sqrt(npostjet))
             
