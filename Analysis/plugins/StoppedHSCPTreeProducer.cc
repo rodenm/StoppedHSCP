@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.46 2010/10/05 23:35:30 temple Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.47 2010/10/10 15:20:49 jbrooke Exp $
 //
 //
 
@@ -258,7 +258,7 @@ private:
   bool rbxsMissing_;
   bool hpdsMissing_;
   bool digisMissing_;
-
+  bool verticesMissing_;
 
   std::vector<CaloTowerPtr> jetTowers_;
   std::vector<unsigned> towerJets_;
@@ -313,6 +313,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   noiseSumMissing_(false),
   rbxsMissing_(false),
   hpdsMissing_(false),
+  digisMissing_(false),
   hcalDetIds_(0),
   hcalDetJets_(0)
 {
@@ -404,6 +405,7 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
     doMuons(iEvent);
     doBeamHalo(iEvent);
     doHcalNoise(iEvent);
+    doVertices(iEvent);
     doRecHits(iEvent);
     doTimingFromDigis(iEvent, iSetup);
   }
@@ -820,16 +822,23 @@ void StoppedHSCPTreeProducer::doVertices(const edm::Event& iEvent) {
   iEvent.getByLabel(verticesTag_, recoVertices);
 
   event_->nVtx=0;
-  for(reco::VertexCollection::const_iterator it=recoVertices->begin();
-      it!=recoVertices->end();
-      ++it) {
-    
-    if (!it->isFake()) {
+  if (recoVertices.isValid()) {
+    for(reco::VertexCollection::const_iterator it=recoVertices->begin();
+	it!=recoVertices->end();
+	++it) {
       
-      event_->vtxNDOF.push_back(it->ndof());
-      event_->vtxZ.push_back(it->z());
-      event_->vtxRho.push_back(it->position().rho());
-      event_->nVtx++;
+      if (!it->isFake()) {
+	event_->vtxNDOF.push_back(it->ndof());
+	event_->vtxZ.push_back(it->z());
+	event_->vtxRho.push_back(it->position().rho());
+	event_->nVtx++;
+      }
+    }
+  }
+  else {
+    if (!verticesMissing_) {
+      edm::LogWarning("MissingProduct") << "Vertices not found.  Branch will not be filled" << std::endl;
+      verticesMissing_=true;
     }
   }
 
