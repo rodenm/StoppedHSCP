@@ -66,7 +66,33 @@ int main(int argc, char* argv[]) {
   newRate->addYcut(14);
   newRate->addYcut(15);
   mRates.push_back (newRate);
-  
+
+  newRate  = new RateCalculator ("RateFinalVsMu", filename, ofilename);
+  newRate->addXcut(0);
+  newRate->addXcut(1);
+  newRate->addXcut(2);
+  newRate->addXcut(3);
+  newRate->addXcut(4);
+
+  newRate->addYcut(0);
+  newRate->addYcut(1);
+  newRate->addYcut(2);
+  newRate->addYcut(3);
+  newRate->addYcut(4);
+  newRate->addYcut(5);
+  newRate->addYcut(6);
+  newRate->addYcut(7);
+  newRate->addYcut(8);
+  newRate->addYcut(9);
+  newRate->addYcut(10);
+  newRate->addYcut(11);
+  newRate->addYcut(12);
+  newRate->addYcut(13);
+  newRate->addYcut(14);
+  newRate->addYcut(15);
+  mRates.push_back (newRate);
+
+
 //   newRate  = new RateCalculator ("E50VsNtowersFinal", filename); 
 //   newRate->addXcut(0);
 //   newRate->addXcut(1);

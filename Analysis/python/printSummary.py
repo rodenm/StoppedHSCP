@@ -111,11 +111,11 @@ fincount = hcutcum.GetBinContent(iAllCuts+1)
 
 # n90 method
 bg1  = fn90*n90nmo/time
-ebg1 = efn90*n90nmo/time
+ebg1 = sqrt(pow(efn90/fn90, 2) + 1/n90nmo)/time
 
 # CT method
 bg2  = fct*ctnmo/time
-ebg2 = efct*ctnmo/time
+ebg2 = sqrt(pow(efct/fct, 2) + 1/ctnmo)/time
 
 # combined n90 & CT
 bg3  = (bg1 + bg2) / 2

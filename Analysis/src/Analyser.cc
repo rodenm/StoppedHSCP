@@ -140,6 +140,7 @@ void Analyser::printCutValues(ostream& o) {
   o << "  bx             = " << event_->bx << std::endl;
   o << "  orbit          = " << event_->orbit << std::endl;
   o << "  mu_N           = " << event_->mu_N << std::endl;
+  o << "  nVtx           = " << event_->nVtx << std::endl;
   std::string halo("None");
   if (event_->beamHalo_CSCLoose) halo = "CSCLoose";
   if (event_->beamHalo_CSCTight) halo = "CSCTight";
