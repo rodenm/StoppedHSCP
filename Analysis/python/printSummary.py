@@ -119,6 +119,12 @@ ebg2 = efct*ctnmo/time
 
 # combined n90 & CT
 bg3  = (bg1 + bg2) / 2
+
+# double bkgRateEstimationBothError = 0.5*sqrt (dN90dNtowersBkgStatError*dN90dNtowersBkgStatError +
+#					       rateN90m1e*rateN90m1e + 
+#					       dN90dNtowersBkgStatError*dN90dNtowersBkgStatError +
+#					       rateNtowersm1e*rateNtowersm1e +
+#					       4*rateFinale*rateFinale
 ebg3 = 0.
 
 print "N-1 rates"
@@ -150,4 +156,5 @@ print
 
 print "Final rate : %.2e +/- %.2e" % (fincount/time, sqrt(fincount)/time)
 print
+
 

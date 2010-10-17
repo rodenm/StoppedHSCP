@@ -5,7 +5,7 @@ import math
 
 from ROOT import *
 
-from constant import *
+from constants import *
 
 nCuts   = 15
 nCutJ50 = 7

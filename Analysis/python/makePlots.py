@@ -225,8 +225,7 @@ def fillPlots(file, ofile):
     canvas.Print(ofile+".ps[", "Portrait")
 
     multiPlot([ file.Get("ByFill/hfillrate") ], ["Data"], ofile+".ps", 0., 0., "", "Fill", "Rate (Hz)", 2)
-    multiPlot([ file.Get("ByFill/hfj50nmo") ], ["Data"], ofile+".ps", 0., 0., "", "Fill", "N_{events}", 2)
-    multiPlot([ file.Get("ByFill/hfillcount"), file.Get("ByFill/hbgmean"), file.Get("ByFill/hbgj50") ], ["Data","Exp","J50"], ofile+".ps", 0., 0., "", "Fill", "N_{events}", 2)   
+    multiPlot([ file.Get("ByFill/hfillcount"), file.Get("ByFill/hbgmean") ], ["Data","Exp"], ofile+".ps", 0., 0., "", "Fill", "N_{events}", 2)   
 
     canvas = TCanvas("canvas")
     canvas.Print(ofile+".ps]")

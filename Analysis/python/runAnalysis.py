@@ -84,21 +84,21 @@ if mc:
 
 # make histograms
 print
-print "makeHistograms "+mcFlag+" ntuples/stoppedHSCP_tree_"+dataset+".root "+dataset+" "+runs+" > "+dataset+"/histogrammer.log"
+print "makeHistograms "+mcFlag+" ntuples/stoppedHSCP_tree_"+dataset+".root "+dataset+" "+runs+" > "+dataset+"/log.txt"
 p1 = Popen("makeHistograms "+mcFlag+" ntuples/stoppedHSCP_tree_"+dataset+".root "+dataset+" "+runs+" > "+dataset+"/histogrammer.log", shell=True)
 p1.wait()
 
 # make summary histograms for data
 if not mc:
     print
-    print "python $CMSSW_BASE/src/StoppedHSCP/Analysis/python/summaryHistos.py "+dataset+" "+fillstr+" "+json
-    p3 = Popen("python $CMSSW_BASE/src/StoppedHSCP/Analysis/python/summaryHistos.py "+dataset+" "+fillstr+" "+json, shell=True)
+    print "python $CMSSW_BASE/src/StoppedHSCP/Analysis/python/summaryHistos.py "+dataset+" "+fillstr+" "+json+" >> "+dataset+"/log.txt"
+    p3 = Popen("python $CMSSW_BASE/src/StoppedHSCP/Analysis/python/summaryHistos.py "+dataset+" "+fillstr+" "+json+" >> "+dataset+"/log.txt", shell=True)
     p3.wait()
 
 # make plots
 print
-print "python $CMSSW_BASE/src/StoppedHSCP/Analysis/python/makePlots.py "+dataset
-p2 = Popen("python $CMSSW_BASE/src/StoppedHSCP/Analysis/python/makePlots.py "+dataset, shell=True)
+print "python $CMSSW_BASE/src/StoppedHSCP/Analysis/python/makePlots.py "+dataset+" >> "+dataset+"/log.txt"
+p2 = Popen("python $CMSSW_BASE/src/StoppedHSCP/Analysis/python/makePlots.py "+dataset+" >> "+dataset+"/log.txt", shell=True)
 p2.wait()
 
 # print summary
@@ -108,16 +108,27 @@ p4 = Popen("python $CMSSW_BASE/src/StoppedHSCP/Analysis/python/printSummary.py "
 p4.wait()
 
 # make Toy MC jobs
+print
+print "makeToyJobs.py "+dataset
 if not mc:
     p5 = Popen("makeToyJobs.py "+dataset, shell=True)
     p5.wait()
 
+# run Toy MC
+print
+print "source "+dataset+"/toymc/runAll.sh"
+p6 = Popen("source "+dataset+"/toymc/runAll.sh", shell=True)
+p6.wait()
+
+
 # list files
+print
 ls = Popen("ls -l "+dataset, shell=True)
 ls.wait()
-print
 
 # make tarball
+print
+print "tar -zcvf "+dataset+".tgz "+dataset+"/" 
 tar = tarfile.open(name = dataset+".tgz", mode = 'w:gz')
 tar.add(dataset)
 tar.close()

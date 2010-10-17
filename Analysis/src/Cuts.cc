@@ -65,7 +65,7 @@ bool Cuts::inMaskedBX() const {
 
 
 unsigned Cuts::nCuts() const {
-  return 15;
+  return 16;
 }
 
 
@@ -80,29 +80,31 @@ bool Cuts::cutN(unsigned n) const
     return isMC_ || ! bxMask_.at(event_->bx);
   case 2:  // BPTX
     return isMC_ || ((event_->gtAlgoWord1>>(81-64)&1) == 0 && (event_->gtAlgoWord1>>(80-64)&1) == 0);
-  case 3:  // beam halo
+  case 3:  // vertex veto
+    return (event_->nVtx == 0);
+  case 4:  // beam halo
     return !(event_->beamHalo_CSCLoose);
-  case 4:  // cosmic veto
+  case 5:  // cosmic veto
     return event_->mu_N==0;
-  case 5:  // std HCAL cuts
+  case 6:  // std HCAL cuts
     return event_->noiseFilterResult;
-  case 6:  // jet 30 
+  case 7:  // jet 30 
     return event_->jet_N>0 && event_->jetE[0]>30. && event_->jetEta[0]<1.3;
-  case 7:  // jet 50
+  case 8:  // jet 50
     return event_->jet_N>0 && event_->jetE[0]>50. && event_->jetEta[0]<1.3;
-  case 8:  // jet n60
+  case 9:  // jet n60
     return event_->jet_N>0 && event_->jetN60[0]<6;
-  case 9:  // jet n90
+  case 10:  // jet n90
     return event_->jet_N>0 && event_->jetN90[0]>3;
-  case 10:  // calo towers
+  case 11:  // calo towers
     return event_->nTowerSameiPhi<5;
-  case 11: // R1
+  case 12: // R1
     return (event_->top5DigiR1 > 0.15) && (event_->top5DigiR1 <= 1.0);
-  case 12: // R2
+  case 13: // R2
     return (event_->top5DigiR2 > 0.1) && (event_->top5DigiR2 < 0.5);
-  case 13: // Rpeak
+  case 14: // Rpeak
     return (event_->top5DigiRPeak > 0.4) && (event_->top5DigiRPeak < 0.7) && (event_->top5DigiPeakSample > 0) && (event_->top5DigiPeakSample < 7);
-  case 14: // Router
+  case 15: // Router
     return (event_->top5DigiROuter < 0.1) && (event_->top5DigiROuter >= 0.0) && (event_->top5DigiPeakSample > 0) && (event_->top5DigiPeakSample < 7);
     //  case 13:
     //    return event_->jet_N>0 && (event_->jetEEm[0] / event_->jetE[0]) > 0.05;
@@ -124,28 +126,30 @@ const std::string Cuts::cutName(unsigned n) const {
   case 2:
     return "BPTX cut";
   case 3:
-    return "beam halo veto";
+    return "Vertex veto";
   case 4:
-    return "mu veto";
+    return "Beam halo veto";
   case 5:
-    return "noise filter";
+    return "mu veto";
   case 6:
-    return "jet30";
+    return "Noise filter";
   case 7:
-    return "jet50";
+    return "Jet30";
   case 8:
-    return "n60";
+    return "Jet50";
   case 9:
-    return "n90";
+    return "n60";
   case 10:
-    return "Calo towers";
+    return "n90";
   case 11:
-    return "R1";
+    return "Calo towers";
   case 12:
-    return "R2";
+    return "R1";
   case 13:
-    return "Rpeak";
+    return "R2";
   case 14:
+    return "Rpeak";
+  case 15:
     return "Router";
 //   case 15:
 //     return "jet EMF";

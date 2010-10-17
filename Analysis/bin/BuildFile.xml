@@ -6,3 +6,5 @@
 
 <bin name="makeHistograms" file="MakeHistograms.cpp"/>
 
+<bin name="background" file="background.cpp"/>
+

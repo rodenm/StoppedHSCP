@@ -16,7 +16,9 @@ Analyser::Analyser(std::string ifile, std::string outdir, std::vector<unsigned> 
   fills_(),
   watchedEvents_(0),
   eventFile_(),
-  dumpFile_()
+  pickFile_(),
+  dumpFile_(),
+  lifetimeFile_()
 {
   
   // log files
@@ -28,6 +30,14 @@ Analyser::Analyser(std::string ifile, std::string outdir, std::vector<unsigned> 
   std::string ei(outdir);
   ei+="/eventList.log";
   eventFile_.open(ei.c_str());
+
+  std::string pf(outdir);
+  pf+="/pickEvents.txt";
+  pickFile_.open(pf.c_str());
+
+  std::string lf(outdir);
+  lf+="/lifetimes.txt";
+  lifetimeFile_.open(lf.c_str());
 
   std::cout << "Stopped Gluino Histogrammer" << std::endl;
   std::cout << "Ntuple file       : " << ifile << std::endl;
@@ -201,11 +211,30 @@ void Analyser::loop() {
     // print selected events
     if (cuts_.cut()) {
       printCutValues(dumpFile_);
-      eventFile_ << event_->run << ":" << event_->lb << ":"  << event_->id << std::endl; //<< event_->orbit << ", " << event_->bx << ", " << event_->id << std::endl;
+      eventFile_ << event_->run << "," << event_->lb << "," << event_->orbit << "," << event_->bx << "," << event_->id << std::endl;
+      pickFile_ << event_->run << ":" << event_->lb << ":"  << event_->id << std::endl;
+      lifetimeFile_ << eventLifetime(event_->run, event_->bx-1)/1.256 << std::endl;
+      lifetimeFile_ << eventLifetime(event_->run, event_->bx)/1.256 << std::endl;
     }
 
   }
 
   histogrammer_.save();
+
+}
+
+
+double Analyser::eventLifetime(unsigned run, unsigned bx) {
+  std::vector<unsigned> colls=fills_.getCollisionsFromRun(run);
+  std::vector<unsigned>::const_iterator lastColl;
+
+  // this could fail if there is ever no collision at BX=1
+  lastColl = lower_bound(colls.begin(), colls.end(), bx);
+  if (lastColl==colls.begin()) lastColl=colls.end();
+  int collBx = *(--lastColl);
+
+  double t = (bx - collBx) * LhcFills::TIME_PER_BX;
+  std::cout << "Delta-BX : " << bx << " " << collBx << " " << t << std::endl; 
+  return t;
 
 }

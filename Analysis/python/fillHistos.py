@@ -3,11 +3,7 @@
 
 from ROOT import *
 
-bgest = 5.4E-5
-errbg = 1.2e-5
-
-fj50nmo = 0.489
-ej50nmo = 0.
+from constants import *
 
 def fillHistos(hfile, fills, fillinfo):
 
@@ -15,7 +11,6 @@ def fillHistos(hfile, fills, fillinfo):
     
     hnfin       = hfile.Get("ByRun/hnfin")
     hlivetime   = hfile.Get("ByRun/hlivetime")
-    hnj50nmo    = hfile.Get("ByRun/hnj50nmo")
     nruns = hnfin.GetXaxis().GetNbins()
 
     # book histograms
@@ -27,7 +22,6 @@ def fillHistos(hfile, fills, fillinfo):
     hfcount  = TH1D("hfillcount","",nfills, 0., 0.)
     hftime   = TH1D("hfilltime","",nfills, 0., 0.)
     hfrate   = TH1D("hfillrate","",nfills, 0., 0.)
-    hfj50nmo = TH1D("hfj50nmo","",nfills, 0., 0.)
 
 ##     for f,i in zip(fills, range(1,nfills+1)):
 ##         hfcount.GetXaxis().SetBinLabel(i, str(f))
@@ -38,7 +32,6 @@ def fillHistos(hfile, fills, fillinfo):
     for i in range(0,nruns):
         time   = hlivetime.GetBinContent(i+1)
         counts = hnfin.GetBinContent(i+1)
-        j50nmo = hnj50nmo.GetBinContent(i+1)
         
         binlabel=hnfin.GetXaxis().GetBinLabel(i+1)
         run=0
@@ -52,7 +45,6 @@ def fillHistos(hfile, fills, fillinfo):
                     hftime.Fill(str(fill[0]), time)
                     if (time>0.):
                         hfrate.Fill(str(fill[0]), counts/time)
-                    hfj50nmo.Fill(str(fill[0]), j50nmo)  
 
     # set errors
     for i in range(1,nfills+1):
@@ -71,35 +63,33 @@ def fillHistos(hfile, fills, fillinfo):
         time  = hftime.GetBinContent(i)
 
         poisson = TF1("poisson", "TMath::Poisson(x, [0])", 0., 100.)
-        poisson.SetParameter(0,time * bgest)
+        poisson.SetParameter(0,time * bg)
         mpv = poisson.GetMaximumX()
 
         hbgmpv.Fill(label, mpv)
         hbgmpv.SetBinError(i, 0.)
-        hbgmean.Fill(label, time*bgest)
-        hbgmean.SetBinError(i, time*errbg)
+        hbgmean.Fill(label, time*bg)
+        hbgmean.SetBinError(i, time*ebg)
 
     # N-1 estimate
-    hbgj50 = TH1D("hbgj50", "Expected BG (Jet50N-1);fill;N", nfills, 0., 0.)
-    for i in range(1,nfills+1):
-        label = hftime.GetXaxis().GetBinLabel(i)
-        est   = hfj50nmo.GetBinContent(i) * fj50nmo
-        err2   = 0.
-        if (fj50nmo>0.):
-            err2 += pow(ej50nmo/fj50nmo, 2)
-        if (hfj50nmo.GetBinContent(i)>0.):
-            err2 += pow(hfj50nmo.GetBinError(i)/hfj50nmo.GetBinContent(i), 2)
-        err  = sqrt(err2)
+##     hbgj50 = TH1D("hbgj50", "Expected BG (Jet50N-1);fill;N", nfills, 0., 0.)
+##     for i in range(1,nfills+1):
+##         label = hftime.GetXaxis().GetBinLabel(i)
+##         est   = hfj50nmo.GetBinContent(i) * fj50nmo
+##         err2   = 0.
+##         if (fj50nmo>0.):
+##             err2 += pow(ej50nmo/fj50nmo, 2)
+##         if (hfj50nmo.GetBinContent(i)>0.):
+##             err2 += pow(hfj50nmo.GetBinError(i)/hfj50nmo.GetBinContent(i), 2)
+##         err  = sqrt(err2)
         
-        hbgj50.Fill(label, est)
-        hbgj50.SetBinError(i, err)
+##         hbgj50.Fill(label, est)
+##         hbgj50.SetBinError(i, err)
         
 
     # save histograms
     hfcount.Write()
     hftime.Write()
     hfrate.Write()
-    hfj50nmo.Write()
     hbgmpv.Write()
     hbgmean.Write()
-    hbgj50.Write()

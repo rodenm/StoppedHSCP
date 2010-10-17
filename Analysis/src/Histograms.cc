@@ -31,6 +31,7 @@ void Histograms::book() {
 
   // non-event histograms
   hcoll_ = new TH1D("hcoll", "Collision BX", 3564, 0., 3564.);
+  hmask_ = new TH1D("hmask", "Masked BX", 3564, 0., 3564.);
 
   // time
   hbx_ = new TH1D("hbx", "BX number", 3564, 0., 3564.);
@@ -175,7 +176,7 @@ void Histograms::fill(StoppedHSCPEvent& event) {
   hhalo_->Fill(halo.c_str(), 1.);
 
   // fill remaining histograms for events passing BX veto etc.
-  if (cuts_->cutN(1)) {
+  if (cuts_->cutN(5)) {
 
     if (event.l1Jet_N > 0) {
       hl1et_->Fill(event.l1JetE.at(0));
@@ -213,7 +214,7 @@ void Histograms::fill(StoppedHSCPEvent& event) {
   }
 
   // plots after jet and mu cuts
-  if (cuts_->allCutN(8)) {
+  if (cuts_->allCutN(11)) {
     hpksample_->Fill(event.top5DigiPeakSample);
     hr1_->Fill(event.top5DigiR1);
     hr2_->Fill(event.top5DigiR2);
@@ -289,16 +290,16 @@ void Histograms::fill(StoppedHSCPEvent& event) {
     if (!hcalfail) hhcalcutcum_->Fill(c);  
   }
 
-  if (cuts_->cutNMinusOne(8)) hntowiphi_nmo_->Fill(event.nTowerSameiPhi);
-  if (cuts_->cutNMinusOne(3)) hnmu_nmo_->Fill(event.mu_N);
-  if (cuts_->cutNMinusOne(9)) hr1_nmo_->Fill(event.top5DigiR1);
-  if (cuts_->cutNMinusOne(10)) hr2_nmo_->Fill(event.top5DigiR2);
-  if (cuts_->cutNMinusOne(11)) hrpk_nmo_->Fill(event.top5DigiRPeak);
-  if (cuts_->cutNMinusOne(12)) hrout_nmo_->Fill(event.top5DigiROuter);
+  if (cuts_->cutNMinusOne(10)) hntowiphi_nmo_->Fill(event.nTowerSameiPhi);
+  if (cuts_->cutNMinusOne(5)) hnmu_nmo_->Fill(event.mu_N);
+  if (cuts_->cutNMinusOne(12)) hr1_nmo_->Fill(event.top5DigiR1);
+  if (cuts_->cutNMinusOne(13)) hr2_nmo_->Fill(event.top5DigiR2);
+  if (cuts_->cutNMinusOne(14)) hrpk_nmo_->Fill(event.top5DigiRPeak);
+  if (cuts_->cutNMinusOne(15)) hrout_nmo_->Fill(event.top5DigiROuter);
   if (event.jet_N > 0) {
-    if (cuts_->cutNMinusOne(5)) hjete_nmo_->Fill(event.jetE.at(0));
-    if (cuts_->cutNMinusOne(6)) hjetn60_nmo_->Fill(event.jetN60.at(0));
-    if (cuts_->cutNMinusOne(7)) hjetn90_nmo_->Fill(event.jetN90.at(0));
+    if (cuts_->cutNMinusOne(8)) hjete_nmo_->Fill(event.jetE.at(0));
+    if (cuts_->cutNMinusOne(9)) hjetn60_nmo_->Fill(event.jetN60.at(0));
+    if (cuts_->cutNMinusOne(10)) hjetn90_nmo_->Fill(event.jetN90.at(0));
     if (cuts_->cut()) hjetemf_nmo_->Fill(event.jetEEm.at(0)/event.jetE.at(0));
   }
 
@@ -317,11 +318,19 @@ void Histograms::fillCollisionsHisto(std::vector<unsigned> colls) {
 }
 
 
+void Histograms::fillMaskHisto(std::vector<bool> mask) {
+  for (unsigned bx=0; bx<mask.size(); ++bx) {
+    hmask_->SetBinContent(bx, mask.at(bx) ? 1 : 0 );
+  }
+}
+
+
 void Histograms::save() {
 
   base_->cd("NoCuts");
 
   hcoll_->Write("",TObject::kOverwrite);
+  hmask_->Write("",TObject::kOverwrite);
 
   hbx_->Write("",TObject::kOverwrite);
   horb_->Write("",TObject::kOverwrite);

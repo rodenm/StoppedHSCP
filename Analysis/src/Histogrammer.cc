@@ -42,12 +42,20 @@ void Histogrammer::fill(StoppedHSCPEvent& event) {
 
 void Histogrammer::fillCollisionsHistos(unsigned run, LhcFills* fills) {
 
+  // do collisions histos
   hists_.fillCollisionsHisto(fills->getCollisionsFromRun(run));
-
-  std::vector<Histograms>::iterator hists;
   for (unsigned i=0; i<runs_.size(); ++i) {
     if (runs_.at(i)==run) {
       runHists_.at(i).fillCollisionsHisto(fills->getCollisionsFromRun(run));
+      break;
+    }
+  }
+
+  // do mask histos
+  hists_.fillMaskHisto(fills->getMaskFromRun(run));
+  for (unsigned i=0; i<runs_.size(); ++i) {
+    if (runs_.at(i)==run) {
+      runHists_.at(i).fillMaskHisto(fills->getMaskFromRun(run));
       break;
     }
   }

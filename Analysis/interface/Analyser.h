@@ -55,6 +55,9 @@ class Analyser {
   // loop over events
   void loop();
 
+  // calculate lifetime of an event
+  double eventLifetime(unsigned run, unsigned bx);
+
  private:
 
   bool isMC_;
@@ -74,7 +77,9 @@ class Analyser {
 
   std::vector< std::pair< unsigned, unsigned > > watchedEvents_;
   std::ofstream eventFile_;
+  std::ofstream pickFile_;
   std::ofstream dumpFile_;
+  std::ofstream lifetimeFile_;
 
 
 };

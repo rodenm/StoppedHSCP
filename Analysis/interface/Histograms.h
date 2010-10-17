@@ -25,6 +25,7 @@ class Histograms {
   void fill(StoppedHSCPEvent& event);
 
   void fillCollisionsHisto(std::vector<unsigned> colls);
+  void fillMaskHisto(std::vector<bool> mask);
 
   void save();
 
@@ -38,6 +39,7 @@ class Histograms {
   TDirectory* base_;
 
   TH1D* hcoll_;
+  TH1D* hmask_;
   TH1D* hrun_;
   TH1D* hbx_;
   TH1D* horb_;

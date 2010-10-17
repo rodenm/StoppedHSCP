@@ -3,11 +3,11 @@
 lumiBlockLength = 25.e-9 * 3564. * pow(2., 18)
 
 # cuts
-nCuts    = 13
-iJet50   = 5
-in90     = 7
-iCT      = 8
-iAllCuts = 12
+nCuts    = 16
+iJet50   = 8
+in90     = 10
+iCT      = 11
+iAllCuts = 15
 
 # BG rate estimate (naive)
 bg     = 5.6e-5
