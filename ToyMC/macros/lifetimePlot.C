@@ -1,3 +1,7 @@
+
+// .L lifetimePlot.C+
+// lifetimePlot("limit_summary.txt")
+
 #include <cstdlib>
 #include <fstream>
 #include <iostream> 
@@ -136,48 +140,22 @@ void lifetimePlot(char* filename, char* filename2="") {
   };
 
   double cl95_tp[100] = {
-    7.32544,
-    6.48722,
-    6.26416,
-    8.09525,
-    8.40225,
-    8.78528,
-    9.76259,
-    9.8493,
-    9.61409,
-    9.35052,
-    9.06264,
-    8.92901,
-    8.91043
+    4.81883,
+    4.29962,
+    4.57912,
+    7.18796,
+    7.50529,
+    7.67341,
+    7.79599,
+    7.71286,
+    7.61248,
+    7.46272,
+    7.1168,
+    6.81869,
+    6.76456
   };
 
-  double lumi_tp = 1.3;
-
-//   while (file.is_open() && !file.eof()) {
-//     getline(file, line);
-//     char * str = const_cast<char *>(line.c_str());
-//     char * tok;
-//     tok = strtok(str, " \t\v\f\r");
-//     lifetime[count] = atof(tok);
-//     tok = strtok(str, " \t\v\f\r");
-//     effLumi[count] = atof(tok);
-//     tok = strtok(str, " \t\v\f\r");
-//     tok = strtok(str, " \t\v\f\r");
-//     expBG[count] = atof(tok);
-//     tok = strtok(str, " \t\v\f\r");
-//     expBG_e[count] = atof(tok);
-//     tok = strtok(str, " \t\v\f\r");
-//     cl95[count] = atof(tok);
-    
-//     exp[count]        = expBG[count];
-//     exp_lo1sig[count] = 0.;
-//     exp_hi1sig[count] = 0.;
-//     exp_lo2sig[count] = 0.;
-//     exp_hi2sig[count] = 0.;
-
-//     ++count;
-    
-//   }
+  double lumi_tp = 1.5;
 
   // print out to check
   for (unsigned c=0; c<count; ++c) {
@@ -200,6 +178,7 @@ void lifetimePlot(char* filename, char* filename2="") {
 
   std::cout << std::endl;
 
+  std::cout << "Lifetime,XSlimit,ExpLimit,-1sigma,+1sigma,-2sigma,+2sigma" << std::endl;
   for (unsigned l=0; l<count; ++l) {
 
     // observed limits
@@ -214,11 +193,14 @@ void lifetimePlot(char* filename, char* filename2="") {
     xs_exp_lo2sig[l] = (exp[l]-exp_lo2sig[l]) / (effLumi[l] * stopEff_cm[massIndex] * recoEff[massIndex]);
     xs_exp_hi2sig[l] = (exp_hi2sig[l]-exp[l]) / (effLumi[l] * stopEff_cm[massIndex] * recoEff[massIndex]);
 
-    std::cout << xs_exp[l] << " " << xs_exp_lo1sig[l] << " " << xs_exp_hi1sig[l] << " " << xs_exp_lo2sig[l] << " " << xs_exp_hi2sig[l] << std::endl;
+    std::cout << lifetime[l] << "," << xs_cl95[l] << "," << xs_exp[l] << "," << xs_exp_lo1sig[l] << "," << xs_exp_hi1sig[l] << "," << xs_exp_lo2sig[l] << "," << xs_exp_hi2sig[l] << std::endl;
   }
+  std::cout << std::endl;
 
+  std::cout << "Lifetime, time profile limit" << std::endl;
   for (unsigned i=0; i<13; ++i) {
     xs_tp[i] = cl95_tp[i] / (lumi_tp * stopEff_cm[massIndex] * recoEff[massIndex]);
+    std::cout << lifetime_tp[i] << "," << xs_tp[i] << std::endl;
   }
 
   // graphs - observed
@@ -277,13 +259,14 @@ TCanvas *makeLifetimePlot(TGraph *g_obs,
   TH1 * h;
   TPaveText *blurb;
 
-  h = canvas->DrawFrame(1e-8, 10., 1e7, 5e5);
+  h = canvas->DrawFrame(7.5e-8, 3., 1e7, 5e5);
   //  h->SetTitle("Beamgap Expt;#tau_{#tilde{g}} [s]; #sigma(pp #rightarrow #tilde{g}#tilde{g}) [cm^{2}]");
   h->SetTitle("Beamgap Expt;#tau_{#tilde{g}} [s]; #sigma(pp #rightarrow #tilde{g}#tilde{g}) #times BR(#tilde{g} #rightarrow g#tilde{#chi}^{0}) [pb]");
 
-  blurb = new TPaveText(1.05e-8, 8e3, 1e-3, 3e5);
+  blurb = new TPaveText(8e-8, 2e3, 2e-3, 3e5);
   blurb->AddText("CMS Preliminary 2010");
-  blurb->AddText("#int L dt = 1.5 pb^{-1}");
+  blurb->AddText("#int L dt = 2.9 pb^{-1}");
+  blurb->AddText("L^{max}_{inst} = 5 x 10^{31}");
   blurb->AddText("#sqrt{s} = 7 TeV");
   blurb->AddText("m_{#tilde{g}} = 200 GeV");
   blurb->AddText("M_{#tilde{#chi}^{0}} = 100 GeV");
@@ -295,7 +278,7 @@ TCanvas *makeLifetimePlot(TGraph *g_obs,
   blurb->SetTextSize(0.030);
   blurb->Draw();
 
-  TLegend *leg = new TLegend(1e-4, 4e3 /*4e-30*/, 4e4, 3e5,"95% C.L. Limits:","");
+  TLegend *leg = new TLegend(2e-3, 2e3 /*4e-30*/, 8e4, 3e5,"95% C.L. Limits:","");
   leg->SetTextSize(0.030);
   leg->SetBorderSize(0);
   leg->SetTextFont(42);
@@ -363,7 +346,7 @@ TCanvas *makeLifetimePlot(TGraph *g_obs,
     g_obs_tp->SetLineColor(kRed);
     g_obs_tp->SetLineStyle(3);    
     g_obs_tp->SetLineWidth(3);
-    g_obs_tp->Draw("l3");
+    //    g_obs_tp->Draw("l3");
   }  
 
   // epxected limit
@@ -375,7 +358,7 @@ TCanvas *makeLifetimePlot(TGraph *g_obs,
   }
 
   TLine *l;
-  l = new TLine(1e-8, 606, 1e7, 606);
+  l = new TLine(7.5e-8, 606, 1e7, 606);
   //  l = new TLine(1e-8, 3.75e-34, 1e7, 3.75e-34);
   l->SetLineColor(kBlue);
   l->SetLineWidth(1);
@@ -388,7 +371,7 @@ TCanvas *makeLifetimePlot(TGraph *g_obs,
 //   syst->Draw();
 
   TText *t1;
-  t1 = new TText(1.5e2, 280, "NLO+NLL");
+  t1 = new TText(1.e2, 650., "NLO+NLL");
   t1->SetTextColor(kBlue);
   t1->SetTextFont(42);
   t1->SetTextSize(0.035);

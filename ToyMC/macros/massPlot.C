@@ -1,31 +1,29 @@
 {
-
   // .X massPlot.C
+      
+  // plot expected limit for 1e-3s counting expt; plateau     
+  double exp_effLumi= 2.86665;
+  double exp_mean   = 6.6646;  // mean
+  double exp_1qtm   = 3.95711;  // 68% quantile
+  double exp_1qtp   = 8.4314;
+  double exp_2qtm   = 3.05786;
+  double exp_2qtp   = 12.1473;
 
-  // plot expected limit for 1e-3s counting expt; plateau
-  double exp_effLumi= 1.06116;
-  double exp_mean   = 8.86059;  // mean
-  double exp_1qtm   = 5.34059;  // 68% quantile
-  double exp_1qtp   = 11.539;
-  double exp_2qtm   = 3.77099;
-  double exp_2qtp   = 16.4869;
-
-  // best observed limit - 5.7e-7 s
-  double effLumi_1 = 0.829267;
-  double cl95_1    = 3.07495;
+  // best observed limit - 1e-3 s
+  double effLumi_1 = 2.86665;
+  double cl95_1    = 6.37573;
   
   // plateau observed limit - 1e-3 s
-  double effLumi_2 = 1.06116;
-  double cl95_2    = 4.66095;
+  double effLumi_2 = 2.86665;
+  double cl95_2    = 6.37573;
   
   // long lifetime observed limit - 1e6 s
-  double effLumi_3 =  0.0916525;
-  double cl95_3    = 4.66095;
+  double effLumi_3 =  0.149146;
+  double cl95_3    =  6.37573;
   
-  // 1e6 s from lifetime fit
-  double Lrec   = 1.3;    // integrated lumi for lifetime fit
-  double cl95_L = 6.48722;
-  
+  // 100ns from lifetime fit
+  double Lrec   = 2.9;    // integrated lumi for lifetime fit
+  double cl95_L = 4.29962;
   
   // reco efficiency by mass
   unsigned nmasses=5;
@@ -86,7 +84,7 @@
   
   
   // theoretical cross-section  (pb)
-  unsigned ntheory = 5;
+  unsigned ntheory = 6;
   double theoryUncertainty = 0.0;
   double theoryXS[10] = {
     2.11e4,
@@ -134,25 +132,22 @@
   
   TH1 * h;
   TPaveText *blurb;
-  h = canvas->DrawFrame(100., 10, 500., 1e5);
+  h = canvas->DrawFrame(100., 3, 500., 1e5);
   h->SetTitle("Beamgap Expt;m_{#tilde{g}} [GeV]; #sigma(pp #rightarrow #tilde{g}#tilde{g}) #times BR(#tilde{g} #rightarrow g#tilde{#chi}^{0}) [pb]");
   
   // not covered region
-  TBox nc(100., 10, 150., 1e5);
+  TBox nc(100., 3, 150., 1e5);
   nc->SetFillStyle(3354);
   nc->SetFillColor(kRed-4);
   nc->Draw();
   
   // details
-  TPaveText* blurb = new TPaveText(110., 1.e3, 250., 8.e4);
+  TPaveText* blurb = new TPaveText(101., 1.e3, 220., 0.95e5);
   blurb->AddText("CMS Preliminary 2010");
-  blurb->AddText("#int L dt = 1.5 pb^{-1}");
+  blurb->AddText("#int L dt = 2.9 pb^{-1}");
+  blurb->AddText("L^{max}_{inst} = 5 x 10^{31}");
   blurb->AddText("#sqrt{s} = 7 TeV");
-  //  blurb->AddText("Fills 1121,1122");
-  //  blurb->AddText("t_{data} = 60 days");
-  //  blurb->AddText("m_{#tilde{g}} = 200 GeV");
   blurb->AddText("m_{#tilde{g}} - M_{#tilde{#chi}^{0}} = 100 GeV");
-  //blurb->AddText("Beam: 8hr on / 16hr off");
   blurb->SetTextFont(42);
   blurb->SetBorderSize(0);
   blurb->SetFillColor(0);
@@ -162,18 +157,17 @@
 
   
   // legend
-  TLegend *leg = new TLegend(260., 1.e3, 480., 8.e4,"95% C.L. Limits","");
+  TLegend *leg = new TLegend(220., 1.e3, 480., 8.e4,"95% C.L. Limits","");
   leg->SetTextSize(0.035);
   leg->SetBorderSize(0);
   leg->SetTextFont(42);
   leg->SetFillColor(0);
-  //leg->AddEntry(graph_exp, "95% C.L. Limits", "");
   leg->AddEntry(graph_exp, "Expected: 100 #mus - 1 hr Counting Exp.", "l");
   leg->AddEntry(graph_exp1, "Expected #pm1#sigma: 100 #mus - 1 hr Counting Exp.", "f");
   leg->AddEntry(graph_exp2, "Expected #pm2#sigma: 100 #mus - 1 hr Counting Exp.", "f");
   leg->AddEntry(graph3, "Obs.: 10^{6} s Counting Exp.", "l");
   leg->AddEntry(graph2, "Obs.: 100 #mus - 1 hr Counting Exp.", "l");
-  leg->AddEntry(graph1, "Obs.: 570 ns Counting Exp.", "l");
+  //  leg->AddEntry(graph1, "Obs.: 570 ns Counting Exp.", "l");
   leg->AddEntry(graphL, "Obs.: 100 ns Timing Profile", "l");
   leg->Draw();
   
@@ -193,9 +187,7 @@
   graph_exp1->SetLineWidth(0);
   graph_exp1->SetFillColor(3);
   graph_exp1->SetFillStyle(1001);
-  graph_exp1->Draw("3");
-  //graph_exp1->Draw("lX");
-  
+  graph_exp1->Draw("3");  
   
   // expected line
   graph_exp->SetLineStyle(2);
@@ -206,7 +198,7 @@
   graph1->SetLineColor(kGray+2);
   graph1->SetLineStyle(5);
   graph1->SetLineWidth(2);
-  graph1->Draw("l");
+  //  graph1->Draw("l");
   
   // plateau limit - 1 ms
   graph2->SetLineColor(1);
@@ -221,12 +213,10 @@
   graph3->Draw("l");
   
   // 1 mus lifetime fit limit
-  //   graphL->SetLineColor(kBlue);
-  //   graphL->SetLineStyle(3);
   graphL->SetLineColor(kRed);
   graphL->SetLineStyle(3);
   graphL->SetLineWidth(3);
-  graphL->Draw("l");
+  //graphL->Draw("l");
   
   // theory line
   theory->SetLineColor(kBlue);
@@ -237,14 +227,14 @@
   theory->Draw("l3");
   
   // theory line label
-  th = new TText(290., 1.e-1, "NLO+NLL");
+  th = new TText(290., 80., "NLO+NLL");
   th->SetTextColor(kBlue);
   th->SetTextFont(42);
   th->SetTextSize(0.035);
   th->Draw();
 
   // not explored label
-  ne = new TText(115., 1.1e-1, "Not Sensitive");
+  ne = new TText(115., 11., "Not Sensitive");
   ne->SetTextColor(kRed+1);
   ne->SetTextFont(42);
   ne->SetTextAngle(66);
@@ -258,8 +248,8 @@
 
   // calculate intercept
   // set which bin to use
-  unsigned theoryBin = 2;
-  unsigned dataBin = 1;
+  unsigned theoryBin = 3;
+  unsigned dataBin = 2;
 
   double mt = ( log10(theoryXS[theoryBin+1]-theoryBand[theoryBin+1]) - log10(theoryXS[theoryBin]-theoryBand[theoryBin]) ) / (theoryMass[theoryBin+1]-theoryMass[theoryBin]);
   double ct = log10(theoryXS[theoryBin+1]-theoryBand[theoryBin+1]) - (mt*theoryMass[theoryBin+1]);
