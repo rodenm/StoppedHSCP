@@ -76,13 +76,15 @@ void Analyser::setup() {
 
   cuts_.setEvent(event_);
 
+  readWatchedEvents();
+
 }
 
 
 void Analyser::readWatchedEvents() {
 
   // open file
-  std::string fname("watchedEvents.csv");
+  std::string fname("watchedEvents.txt");
   std::ifstream file(fname.c_str(), ifstream::in);
 
   // read lines until we find the current run
@@ -145,7 +147,7 @@ void Analyser::printCutValues(ostream& o) {
   if (event_->beamHalo_CSCLoose) halo = "CSCLoose";
   if (event_->beamHalo_CSCTight) halo = "CSCTight";
   o << "  beamHalo       = " << halo << std::endl;
-  o << "  HCAL noise     = " << event_->noiseFilterResult << std::endl;
+  o << "  HCAL noise     = " << (event_->noiseFilterResult ? "No" : "Yes") << std::endl;
   o << "  nTowerSameiPhi = " << event_->nTowerSameiPhi << std::endl;
   o << "  jetE[0]        = " << event_->jetE[0] << std::endl;
   o << "  jetEta[0]      = " << event_->jetEta[0] << std::endl;
@@ -179,7 +181,7 @@ bool Analyser::isWatchedEvent() {
 void Analyser::loop() {
 
   reset();
-
+ 
   unsigned currentRun=0;
 
   // run loop
