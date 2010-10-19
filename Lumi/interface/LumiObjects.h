@@ -5,59 +5,75 @@
 #define SHSCP_LUMI_OBJECTS_H
 
 #include <stdint.h>
-
+#include <vector>
 
 namespace shscp {
 
-  struct LumiSectionHeader {
-    uint32_t timestamp;
-    uint32_t timestamp_micros;
-    uint32_t  runNumber;   // Run number
-    uint32_t  sectionNumber; // Section number
-    uint32_t  startOrbit;  // Start orbit of lumi section
-    uint32_t  numOrbits;   // Total number of orbits recorded in lumi section
-    uint16_t  numBunches;  // Total number of bunches (from start of orbit)
-    uint16_t  numUnfilledBunches; // Total number of unfilled bunches
-    uint16_t  numHLXs;     // Number of HLXs in lumi section
-    bool bCMSLive;    // Is CMS taking data?
-    bool bOC0;        // Was section initialised by an OC0?
-  };
-
-  struct LumiSummary {
-    float DeadtimeNormalization; 
-    float LHCNormalization; // recieved from LHC 
-
-    float InstantLumi;
-    float InstantLumiErr;
-    int16_t InstantLumiQlty;
-
-    float InstantETLumi;
-    float InstantETLumiErr;
-    int16_t InstantETLumiQlty;
-    float ETNormalization;  // Calculated
-
-    float InstantOccLumi[2];
-    float InstantOccLumiErr[2];
-    int16_t InstantOccLumiQlty[2];
-    float OccNormalization[2];
-
-    float lumiNoise[2];
-  };
-
   const int MAX_BUNCHES = 4096;
-  struct LumiDetail {
-    float LHCLumi[MAX_BUNCHES]; // Sum of LHC.data over all HLX's
-    
-    float ETLumi[MAX_BUNCHES];
-    float ETLumiErr[MAX_BUNCHES];
-    int16_t ETLumiQlty[MAX_BUNCHES];
-    float ETBXNormalization[MAX_BUNCHES];
-
-    float OccLumi[2][MAX_BUNCHES];
-    float OccLumiErr[2][MAX_BUNCHES];
-    int16_t OccLumiQlty[2][MAX_BUNCHES];
-    float OccBXNormalization[2][MAX_BUNCHES];
+  
+  class LumiFillSummary {
+  public:
+    uint32_t fillNumber;
+    float beamEnergy;
+    void setBX (int bx, bool active=true);
+    bool activeBX (int bx) const;
+    std::vector<int> allActiveBX () const;
+  private:
+    uint32_t beamStructure[MAX_BUNCHES/32];
   };
+
+  struct LumiRunSummary {
+    uint32_t run;
+    uint32_t fillIndex;
+    uint32_t starttime;
+    uint32_t starttime_micros;
+  };
+
+  struct LumiSectionSummary {
+    uint32_t section;
+    uint32_t runIndex;
+    float lumi;
+    float lumiError;
+    float lumiQuality;
+    bool cmsAlive;
+    uint32_t startOrbit;
+    uint32_t numOrbits;
+    uint16_t beamStatus;
+  };
+
+  struct LumiData {
+    std::vector<LumiFillSummary> fills;
+    std::vector<LumiRunSummary> runs;
+    std::vector<LumiSectionSummary> sections;
+  };
+
+  void LumiFillSummary::setBX (int bx, bool active) {
+    int offset = bx % 32;
+    int index = (bx-offset)/32;
+    if (index >= MAX_BUNCHES/32) return;
+    uint32_t mask = 1<<offset;
+    if (active) beamStructure[index] |= mask;
+    else beamStructure[index] &= ~mask;
+  }
+
+  bool LumiFillSummary::activeBX (int bx) const {
+    int offset = bx % 32;
+    int index = (bx-offset)/32;
+    if (index >= MAX_BUNCHES/32) return false;
+    uint32_t mask = 1<<offset;
+    return beamStructure[index] & mask;
+  }
+
+  std::vector<int> LumiFillSummary::allActiveBX () const {
+    std::vector<int> result;
+    for (int index = 0; index < MAX_BUNCHES/32; ++index) {
+      for (int offset = 0; offset < 32; ++offset) {
+	uint32_t mask = 1<<offset;
+	if (beamStructure[index] & mask) result.push_back (index*32+offset);
+      }
+    }
+    return result;
+  }
 }
 
 #endif

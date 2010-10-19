@@ -2,7 +2,4 @@
 <use name="StoppedHSCP/Lumi">
 <use name="root">
 <use name="oracleocci">
-<bin file="importLumi.cc" name="importLumi"></bin>
-<bin file="simulateLumi.cc" name="simulateLumi"></bin>
-<bin file="dumpLumiFile.cc" name="dumpLumiFile"></bin>
 <bin file="getSectionLumi.cc" name="getSectionLumi"></bin>

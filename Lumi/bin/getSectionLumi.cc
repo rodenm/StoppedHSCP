@@ -3,6 +3,7 @@
 #include "StoppedHSCP/Lumi/interface/LumiDBReader.h"
 
 using namespace std;
+using namespace shscp;
 
 int main (int argc, const char* argv[]) {
   if (argc < 2) {
@@ -19,10 +20,9 @@ int main (int argc, const char* argv[]) {
       if (reader.getDetails (summary.id, &details)) {
 	for (int i = 0; i < BXINORBIT; ++i) {
 	  if (details.lumi[i] > 1e-4) {
-	    cout << i << ':' << details.lumi[i] << ' ';
+	    cout << i << ':' << details.lumi[i] << endl;
 	  }
 	}
-	cout << endl;
       }
     }
   }

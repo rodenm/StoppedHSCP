@@ -6,6 +6,8 @@
 using namespace std;
 using namespace oracle::occi;
 
+namespace shscp {
+
 namespace {
   void fillBXValues (Blob& dbData, double data[BXINORBIT]) {
     if (dbData.isNull()) {
@@ -30,6 +32,22 @@ namespace {
       }
       dbData.close();
     }
+  }
+
+  void convertTimestamp (const Timestamp& timestamp, unsigned* utime) {
+    struct tm timeinfo;
+    int t0;
+    unsigned t1,t2,t3,t4;
+    timestamp.getDate(t0, t2, t3);
+    timeinfo.tm_year = t0 - 1900;
+    timeinfo.tm_mon = int(t2) - 1;
+    timeinfo.tm_mday = int(t3);
+    timestamp.getTime (t1, t2, t3, t4);
+    timeinfo.tm_hour = int(t1);
+    timeinfo.tm_min = int(t2);
+    timeinfo.tm_sec = int(t3);
+    timeinfo.tm_isdst = -1;
+    *utime = mktime (&timeinfo);
   }
 }
 
@@ -57,31 +75,63 @@ void LumiDBReader::closeConnection () {
     mConn = 0;
   }
 }
-
-bool LumiDBReader::getSummary (int fRun, int fSection, LumiSummaryRecord* fRecord) {
-  if (!fRecord) return false;
-  openConnection ();
-  char query [4096];
-  sprintf (query, "select LUMISUMMARY_ID, RUNNUM, CMSLSNUM, LUMILSNUM, LUMIVERSION, DTNORM, LHCNORM, INSTLUMI, INSTLUMIERROR, INSTLUMIQUALITY, CMSALIVE, STARTORBIT, NUMORBIT, LUMISECTIONQUALITY, BEAMENERGY, BEAMSTATUS from cms_lumi_prod.LUMISUMMARY where RUNNUM=%d and LUMILSNUM=%d", fRun, fSection);
+  
+  bool LumiDBReader::getRunSummary (int fRun, RunSummaryRecord* fRecord) {
+    if (!fRecord) return false;
+    openConnection ();
+    char query [4096];
+    sprintf (query, "select RUNNUM, HLTKEY, FILLNUM, STARTTIME, STOPTIME from cms_lumi_prod.cmsrunsummary where RUNNUM=%d", fRun);
   Statement *stmt = mConn->createStatement(query);
   ResultSet *rs = stmt->executeQuery();
   if (!rs->next()) return false;
-  fRecord->id = rs->getInt(1);
-  fRecord->run = rs->getInt(2);
-  fRecord->sectionCMS = rs->getInt(3);
-  fRecord->sectionLUMI = rs->getInt(4);
-  fRecord->version = rs->getString(5);
-  fRecord->dtNorm = rs->getDouble(6);
-  fRecord->lhcNorm = rs->getDouble(7);
-  fRecord->instLumi = rs->getDouble(8);
-  fRecord->instLumiError = rs->getDouble(9);
-  fRecord->instLumiQuality = rs->getInt(10);
-  fRecord->cmsAlive = rs->getInt(11);
-  fRecord->startOrbit = rs->getInt(12);
-  fRecord->numOrbits = rs->getInt(13);
-  fRecord->quality = rs->getInt(14);
-  fRecord->beamEnergy = rs->getDouble(15);
-  fRecord->beamStatus = rs->getString(16);
+  fRecord->run = rs->getInt(1);
+  fRecord->hltKey = rs->getString(2);
+  fRecord->fill = rs->getInt(3);
+  unsigned utime = 0;
+  convertTimestamp (rs->getTimestamp(5), &utime);
+  fRecord->startTime = utime;
+  convertTimestamp (rs->getTimestamp(6), &utime);
+  fRecord->stopTime = utime;
+  if (rs->next()) {
+    cout << "LumiDBReader::getRunSummary-> More than one record for run: "
+	 << fRun 
+	 << endl;
+  }
+  stmt->closeResultSet(rs);
+  mConn->terminateStatement(stmt);
+  return true;
+}
+
+bool LumiDBReader::getSummary (int fRun, int fSection, LumiSummaryRecord* fRecord) {
+  openConnection ();
+  char query [4096];
+  if (fRecord) {
+    sprintf (query, "select LUMISUMMARY_ID, RUNNUM, CMSLSNUM, LUMILSNUM, LUMIVERSION, DTNORM, LHCNORM, INSTLUMI, INSTLUMIERROR, INSTLUMIQUALITY, CMSALIVE, STARTORBIT, NUMORBIT, LUMISECTIONQUALITY, BEAMENERGY, BEAMSTATUS from cms_lumi_prod.LUMISUMMARY where RUNNUM=%d and LUMILSNUM=%d", fRun, fSection);
+  }
+  else {
+    sprintf (query, "select RUNNUM,  from cms_lumi_prod.LUMISUMMARY where RUNNUM=%d and LUMILSNUM=%d", fRun, fSection);
+  }
+  Statement *stmt = mConn->createStatement(query);
+  ResultSet *rs = stmt->executeQuery();
+  if (!rs->next()) return false;
+  if (fRecord) {
+    fRecord->id = rs->getInt(1);
+    fRecord->run = rs->getInt(2);
+    fRecord->sectionCMS = rs->getInt(3);
+    fRecord->sectionLUMI = rs->getInt(4);
+    fRecord->version = rs->getString(5);
+    fRecord->dtNorm = rs->getDouble(6);
+    fRecord->lhcNorm = rs->getDouble(7);
+    fRecord->instLumi = rs->getDouble(8);
+    fRecord->instLumiError = rs->getDouble(9);
+    fRecord->instLumiQuality = rs->getInt(10);
+    fRecord->cmsAlive = rs->getInt(11);
+    fRecord->startOrbit = rs->getInt(12);
+    fRecord->numOrbits = rs->getInt(13);
+    fRecord->quality = rs->getInt(14);
+    fRecord->beamEnergy = rs->getDouble(15);
+    fRecord->beamStatus = rs->getString(16);
+  }
   if (rs->next()) {
     cout << "LumiDBReader::getSummary-> More than one record for run/section: "
 	 << fRun << '/' << fSection 
@@ -122,12 +172,28 @@ std::vector<int> LumiDBReader::getAllCMSSections (int fRun) {
   mConn->terminateStatement(stmt);
   return result;
 }
+  std::vector<int> LumiDBReader::getAllRuns (int fFill) {
+    std::vector<int> result;
+    openConnection ();
+    char query [4096];
+    sprintf (query, "select RUNNUM from cms_lumi_prod.cmsrunsummary where FILLNUM=%d ORDER BY RUNNUM", fFill);
+    Statement *stmt = mConn->createStatement(query);
+    ResultSet *rs = stmt->executeQuery();
+    while (rs->next()) {
+      int run = rs->getInt(1);
+      if (run > 0) result.push_back(run);
+    }
+    stmt->closeResultSet(rs);
+    mConn->terminateStatement(stmt);
+    return result;
+  }
 
-bool LumiDBReader::getDetails (int fSummaryId, LumiDetailsRecord* fRecord) {
+
+  bool LumiDBReader::getDetails (int fSummaryId, LumiDetailsRecord* fRecord, const char* fAlgorithm) {
   if (!fRecord) return false;
   openConnection ();
   char query [4096];
-  sprintf (query, "select LUMIDETAIL_ID, LUMISUMMARY_ID, BXLUMIVALUE, BXLUMIERROR, BXLUMIQUALITY, ALGONAME from cms_lumi_prod.LUMIDETAIL where LUMISUMMARY_ID=%d", fSummaryId);
+  sprintf (query, "select LUMIDETAIL_ID, LUMISUMMARY_ID, BXLUMIVALUE, BXLUMIERROR, BXLUMIQUALITY, ALGONAME from cms_lumi_prod.LUMIDETAIL where LUMISUMMARY_ID=%d and ALGONAME='%s'", fSummaryId, fAlgorithm);
   Statement *stmt = mConn->createStatement(query);
   ResultSet *rs = stmt->executeQuery();
   if (!rs->next()) return false;
@@ -150,3 +216,4 @@ bool LumiDBReader::getDetails (int fSummaryId, LumiDetailsRecord* fRecord) {
   return true;
 }
 
+}

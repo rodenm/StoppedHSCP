@@ -1,14 +1,9 @@
 <lcgdict>
 <selection>
-  <class name="shscp::LumiSectionHeader"/>
-  <class name="shscp::LumiSummary"/>
-  <class name="shscp::LumiDetail"/>
-  <class name="HCAL_HLX::LUMI_SECTION_HEADER"/>
-  <class name="HCAL_HLX::LUMI_SUMMARY"/>
-  <class name="HCAL_HLX::LUMI_DETAIL"/>
-  <class name="shscp::LumiRunSection"/>
-  <class name="shscp::LumiReader"/>
-  <class name="shscp::LumiDecayMC"/>
+  <class name="shscp::LumiSummaryRecord"/>
+  <class name="shscp::LumiDetailsRecord"/>
+  <class name="shscp::LumiDBReader"/>
+  <class name="JsonFileReader"/>
 </selection>
 </lcgdict>
 
