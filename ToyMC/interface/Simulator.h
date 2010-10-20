@@ -56,6 +56,8 @@ class Simulator {
 /*   void sendEventToLifetimeFit(unsigned int, unsigned int, unsigned int); */
 /*   void writeOutLifetimeFit(); */
 
+  LhcFills& getLhcFills() { return fills_; }
+
  private:
 
   // random numbers

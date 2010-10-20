@@ -46,6 +46,8 @@ Events::Events(std::string filename) :
     
   }
 
+  std::cout << events_.size() << " events found" << std::endl;
+
 }
 
 Events::~Events() {

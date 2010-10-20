@@ -25,6 +25,7 @@ int main(int argc, char* argv[]) {
   // read parameters from file and create experiment object
   e = new Experiment(paramfile);
   std::cout << "Simulation parameters" << std::endl;
+  std::cout << "From file : " << paramfile << std::endl;
   std::cout << *e << std::endl;
 
   // setup tree to write out
@@ -46,6 +47,8 @@ int main(int argc, char* argv[]) {
 
   // set up lifetime mask
   sim.setupLifetimeMask();
+
+  //  sim.getLhcFills().print(std::cout);
   
   // loop over fills
   for (unsigned f=0; f!=e->fills.size(); ++f) {
@@ -53,6 +56,8 @@ int main(int argc, char* argv[]) {
     unsigned fill = e->fills.at(f);
     
     std::cout << "Simulating fill " << fill << std::endl;
+
+    std::cout << "With filling scheme " << sim.getLhcFills().getFillingScheme(fill) << std::endl;
 
     //sim.printMaskInfo(fill);
 

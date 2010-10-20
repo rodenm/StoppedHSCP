@@ -239,7 +239,7 @@ void Simulator::calculateExpectedBG(unsigned firstFill, unsigned lastFill) {
   unsigned nMaskedBX=0;
   unsigned run=lumi_.at(0).run;
   for (unsigned bx=0; bx<NBXS_PER_ORBIT; ++bx) {
-    if (fills_.getMaskFromRun(run).at(bx) || fills_.getLifetimeMaskFromRun(run).at(bx)) nMaskedBX++;
+    if (fills_.getMaskFromRun(run).at(bx) || fills_.getLifetimeMaskFromRun(run).at(bx)) ++nMaskedBX;
   }
 
 
@@ -258,6 +258,7 @@ void Simulator::calculateExpectedBG(unsigned firstFill, unsigned lastFill) {
 
     // update number of masked BX if run changed
     if (lumi_.at(lsi).run != run) {
+
       run=lumi_.at(lsi).run;
       nMaskedBX=0;
       for (unsigned bx=0; bx<NBXS_PER_ORBIT; ++bx) {
@@ -279,6 +280,7 @@ void Simulator::calculateExpectedBG(unsigned firstFill, unsigned lastFill) {
   expt_->expBackground   = expt_->livetime * expt_->bgRate;
   expt_->expBackground_e = expt_->livetime * expt_->bgRate_e;
 
+  std::cout << "Total time             : " << totalTime << std::endl;
   std::cout << "Live time              : " << livetime << std::endl;
   std::cout << "Fraction of BX masked  : " << 1. - (livetime/totalTime) << std::endl;
   std::cout << "Expected background    : " << livetime * expt_->bgRate << " +/- " << livetime * expt_->bgRate_e << std::endl;
@@ -298,18 +300,24 @@ void Simulator::calculateObservedEvents(unsigned firstFill, unsigned lastFill) {
     unsigned run = e->run;
     unsigned bx  = e->bx;
     
+    //    std::cout <<  "Event : " << fills_.getFillFromRun(run) << " " << e->run << "\t" << e->ls << "\t" << e->bx << "\t" << e->id << std::endl;
+    
+
     // ignore events outside fill range
     if (fills_.getFillFromRun(run) < firstFill) continue;
-    if (fills_.getFillFromRun(run) > lastFill) break; 
-    
+    if (fills_.getFillFromRun(run) > lastFill) continue; 
+
     if (!(fills_.getMaskFromRun(run).at(bx)) &&
-	!(fills_.getLifetimeMaskFromRun(run).at(bx)) ) nEvents++;
+	!(fills_.getLifetimeMaskFromRun(run).at(bx)) ) {
+      nEvents++;
+      std::cout << "Event : " << e->run << "\t" << e->ls << "\t" << e->bx << "\t" << e->id << std::endl;
+    }
     
   }
 
-  expt_->nObserved = nEvents;
+  expt_->nObserved += nEvents;
 
-  std::cout << "N obs : " << expt_->nObserved << std::endl;
+  std::cout << "N obs : " << nEvents << std::endl;
 
 }
 
@@ -317,6 +325,13 @@ void Simulator::calculateObservedEvents(unsigned firstFill, unsigned lastFill) {
 void Simulator::calculateLimit() {
 
   std::cout << "Calculating limits" << std::endl;
+
+  // if no signal or background expected, skip this
+  if (expt_->expBackground == 0. && expt_->effLumi == 0.) {
+    std::cout << "Background and L_eff both zero, skipping limits" << std::endl;
+    std::cout << std::endl;
+    return;
+  }
 
 //   expt_->expBackground = 1.;
 //   expt_->expBackground_e = 1.;
@@ -326,7 +341,30 @@ void Simulator::calculateLimit() {
 
   expt_->limit95cl = ce.cl95limit(expt_->nObserved);
 
-  std::cout << "95CL limit : " << ce.cl95limit(expt_->nObserved) << std::endl;
+  std::vector<double>  expectedLimit = ce.cl95ExpectedLimit ();
+  expt_->expLimit = expectedLimit[5];
+  expt_->expLim1SigLo = expectedLimit[1];
+  expt_->expLim1SigHi = expectedLimit[2];
+  expt_->expLim2SigLo = expectedLimit[3];
+  expt_->expLim2SigHi = expectedLimit[4];
+
+  // code shamelessly copied from StoppedHSCP/Statistics/bin/calculateLimits.cc :
+  //    sprintf (buffer, "%s lifetime: %6.3e lumiEff: %5.4f  bkg: %5.3f observed: %3i limit: %5.3f 
+  // expectedmean: %5.3f rms1sigma:  %5.3f %5.3f rms2sigma: %5.3f %5.3f  
+  // expectedmed: %5.3f qtile1sigma: %5.3f %5.3f qtile2sigma: %5.3f %5.3f", 
+  //         useCLs ? "CLs" : "CL95CMS",
+  //         lifetime, bs.getLumiEfficiency (lifetime), expectedBackground, nObserved, limit,
+  //         expectedLimit[5], expectedLimit[6], expectedLimit[7], expectedLimit[8], expectedLimit[9], 
+  //         expectedLimit[0], expectedLimit[1], expectedLimit[2], expectedLimit[3], expectedLimit[4]); 
+  
+  std::cout << "Observed limit (95CL) : " << expt_->limit95cl << std::endl;
+  std::cout << "Expected limit        : " << expt_->expLimit << std::endl;
+  std::cout << "Expected limit (-1sigma) : " << expt_->expLim1SigLo << std::endl;
+  std::cout << "Expected limit (+1sigma) : " << expt_->expLim1SigHi << std::endl;
+  std::cout << "Expected limit (-2sigma) : " << expt_->expLim2SigLo << std::endl;
+  std::cout << "Expected limit (+2sigma) : " << expt_->expLim2SigHi << std::endl;
+
+  std::cout << std::endl;
 
 }
 

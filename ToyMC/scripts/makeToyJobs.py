@@ -10,7 +10,7 @@ import getopt
 
 # command line arguments
 def usage():
-    print "makeToyJobs.py [-h] <dataset>"
+    print "makeToyJobs.py [-h] <dataset> <parameter file>"
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], "h")
@@ -31,6 +31,10 @@ dataset = args[0]
 ddir = os.environ['PWD']+'/'+dataset
 odir = ddir+'/toymc'
 
+paramfile = os.environ['CMSSW_BASE']+'/src/StoppedHSCP/ToyMC/data/parameters.txt'
+if len(args)>1:
+    paramfile = args[1]
+
 # create output directory
 if not os.path.exists(odir):
     os.makedirs(odir)
@@ -41,6 +45,14 @@ file = open(os.environ['CMSSW_BASE']+'/src/StoppedHSCP/ToyMC/data/lifetimes.txt'
 for line in file:
     lifetimes.append(float(line))
 file.close()
+file = open(ddir+'/lifetimes.txt')
+for line in file:
+    if (float(line)>7.5e-8):
+        lifetimes.append(float(line))
+file.close()
+
+lifetimes.sort()
+
 
 # regexps to replace lifetime in standard parameters file
 p = re.compile(r'(lifetime\s*)(\S*)')
@@ -54,7 +66,7 @@ outfiles=''
 for lifetime in lifetimes:
 
     # open std parameters file
-    f = open(os.environ['CMSSW_BASE']+'/src/StoppedHSCP/ToyMC/data/parameters.txt')
+    f = open(paramfile)
 
     # create output dir
     jobdir=odir+'/job'+str(count)

@@ -45,7 +45,7 @@ void Luminosity::makePlots() const {
        cit != lumis_.end(); cit++) {
     lumi_dist_h->Fill(counter, cit->lumi);
     cms_dist_h->Fill(counter++, (cit->good?
-				 50e27 : 0));
+				 1. : 0));
   }
 
   lumi_dist_h->Draw();
@@ -102,15 +102,20 @@ void Luminosity::buildFromFile(std::vector<unsigned long> runs, bool useHists, s
 
       // split into tokens
       std::vector<std::string> strs;
-      boost::split(strs, line, boost::is_any_of(","));
+      boost::split(strs, line, boost::is_any_of(",\n"));
 
       // convert to lumi block info
-      if (strs.size() > 2) {
+      if (strs.size() > 3) {
 
 	LumiBlock lb;
 	lb.run  = boost::lexical_cast<unsigned long>(strs.at(0));
 	lb.ls   = boost::lexical_cast<unsigned long>(strs.at(1));
+	//	try {
 	lb.lumi = LUMIFILE_TO_PB * boost::lexical_cast<double>(strs.at(2));
+// 	}
+// 	catch(...) {
+// 	  std::cout << strs.at(0) << "," << strs.at(1) << "," << strs.at(2) << "," << strs.at(3) << std::endl;
+// 	}
 	lb.good = false;
 	
 	// ignore anything before the first lumi run
@@ -212,5 +217,7 @@ void Luminosity::dump(ostream& o, bool full) {
 
   std::cout << "Total lumi                 : " << totalLumi << " /pb" << std::endl;
   std::cout << "N lumi sections good/total : " << nGoodLS << "/" << lumis_.size() << std::endl;
+  std::cout << "First run                  : " << lumis_.begin()->run << std::endl;
+  std::cout << "Last tun                   : " << --(lumis_.end())->run << std::endl;
 
 }

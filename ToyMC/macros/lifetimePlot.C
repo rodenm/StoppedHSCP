@@ -3,6 +3,7 @@
 // lifetimePlot("limit_summary.txt")
 
 #include <cstdlib>
+#include <string.h>
 #include <fstream>
 #include <iostream> 
 
@@ -60,7 +61,7 @@ void lifetimePlot(char* filename, char* filename2="", char* filename3="") {
   unsigned count =0 ;
 
   // read my file if only one filename provided
-  if (filename3=="") {
+  if (strcmp(filename3,"")==0) {
 
     double t(0.), el(0.), es(0.), b(0.), eb(0.), cl(0.);
     double exmean(0.), lo1sig(0.), hi1sig(0.), lo2sig(0.), hi2sig(0.);
@@ -68,6 +69,7 @@ void lifetimePlot(char* filename, char* filename2="", char* filename3="") {
     std::string z;
     
     while (file >> t >> el >> es >> b >> eb >> n >> cl >> exmean >> lo1sig >> hi1sig >> lo2sig >> hi2sig) {
+      std::cout << t << std::endl;
       lifetime[count] = t;
       effLumi[count]  = el;
       expBG[count]    = b;
@@ -131,16 +133,24 @@ void lifetimePlot(char* filename, char* filename2="", char* filename3="") {
   double cl95_tp[100];
 
   // read data from file
+  bool doTP=true;
   ifstream file2;
-  file2.open(filename2);
   unsigned count2=0 ;
   double ltp(0.), cltp(0.);
+
+  if (strcmp(filename2,"")!=0) {
+    file2.open(filename2);
+    
     while (file2 >> ltp >> cltp) {
       lifetime_tp[count2] = ltp;
       cl95_tp[count2]     = cltp;
       ++count2;
     }
-
+  }
+  else {
+    doTP = false;
+  }
+  
   std::cout << "Read " << count2 << " lifetime points for time profile fit" << std::endl;
 
 
@@ -188,7 +198,8 @@ void lifetimePlot(char* filename, char* filename2="", char* filename3="") {
   TGraph* g_cl95    = new TGraph(count, lifetime, xs_cl95);
   TGraph* g_cl95_em = new TGraph(count, lifetime, xs_cl95_em);
   TGraph* g_cl95_nb = new TGraph(count, lifetime, xs_cl95_nb);
-  TGraph* g_cl95_tp = new TGraph(13, lifetime_tp, xs_tp);
+  TGraph* g_cl95_tp = 0;
+  if (doTP) g_cl95_tp = new TGraph(13, lifetime_tp, xs_tp);
 
   // graphs - expected
   TGraph* g_exp = new TGraph(count, lifetime, xs_exp);
@@ -246,8 +257,8 @@ TCanvas *makeLifetimePlot(TGraph *g_obs,
 
   blurb = new TPaveText(8e-8, 2e3, 2e-3, 3e5);
   blurb->AddText("CMS Preliminary 2010");
-  blurb->AddText("#int L dt = 3.8 pb^{-1}");
-  blurb->AddText("L^{max}_{inst} = 5 x 10^{31}");
+  blurb->AddText("#int L dt = 12.9 pb^{-1}");
+  blurb->AddText("L^{max}_{inst} = 1 x 10^{32}");
   blurb->AddText("#sqrt{s} = 7 TeV");
   blurb->AddText("m_{#tilde{g}} = 200 GeV");
   blurb->AddText("M_{#tilde{#chi}^{0}} = 100 GeV");

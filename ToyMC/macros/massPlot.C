@@ -19,10 +19,8 @@
 // .L massPlot.C+
 // massPlot("limit_summary.txt", "time_profile_summary.txt");
 
-void massPlot(char* filename, char* filename2) {
-  // .X massPlot.C
+void massPlot(char* filename, char* filename2="") {
 
-  // stuff that has to be set by hand
   // some numbers need to be set buy hand
   double lumi_tp = 3.8;  // lumi figure to use for time-profile fit
 
@@ -30,9 +28,9 @@ void massPlot(char* filename, char* filename2) {
   unsigned theoryBin = 3;
   unsigned dataBin = 2;
 
-  unsigned point1 = 9;
-  unsigned point2 = 27;
-  unsigned point3 = 43;
+  unsigned point1 = 7;
+  unsigned point2 = 21;
+  unsigned point3 = 37;
   unsigned pointtp = 5;
 
   unsigned nmasses=5;
@@ -66,6 +64,26 @@ void massPlot(char* filename, char* filename2) {
     0.216 * 2.,
     0.255 * 2.
   };
+
+  // theoretical cross-section  (pb)
+  unsigned ntheory = 6;
+  double theoryUncertainty = 0.0;
+
+  double theoryMass[10] = { 100., 150., 200., 300., 400., 500., 600., 700., 800., 900. };
+
+  double theoryXS[10] = {
+    2.11e4,
+    2.82e3,
+    6.06e2,
+    5.72e1,
+    8.98e0,
+    1.87e0,
+    4.65e-1,
+    1.30e-1,
+    3.96e-2,
+    1.28e-2
+  };
+  
 
 
   // arrays to fill with data
@@ -121,16 +139,23 @@ void massPlot(char* filename, char* filename2) {
   double cl95_tp[100];
 
   // read data from file
+  bool doTP=true;
   ifstream file2;
-  file2.open(filename2);
   unsigned count2=0 ;
   double ltp(0.), cltp(0.);
+
+  if (strcmp(filename2,"")!=0) {
+    file2.open(filename2);
     while (file2 >> ltp >> cltp) {
       lifetime_tp[count2] = ltp;
       cl95_tp[count2]     = cltp;
       ++count2;
     }
-
+  }
+  else {
+    doTP = false;
+  }
+  
   std::cout << "Read " << count2 << " lifetime points for time profile fit" << std::endl;
   std::cout << "  going to use lifetimes " << lifetime_tp[pointtp] << std::endl;
   
@@ -158,30 +183,13 @@ void massPlot(char* filename, char* filename2) {
     excXSL[im]= cl95_tp[pointtp] / (lumi_tp * stopEff[im] * recoEff[im]);
   }
   
-  
-  // theoretical cross-section  (pb)
-  unsigned ntheory = 6;
-  double theoryUncertainty = 0.0;
-  double theoryXS[10] = {
-    2.11e4,
-    2.82e3,
-    6.06e2,
-    5.72e1,
-    8.98e0,
-    1.87e0,
-    4.65e-1,
-    1.30e-1,
-    3.96e-2,
-    1.28e-2
-  };
-  
+ 
+  // theory uncertainty band
   double theoryBand[10];
   for (unsigned i=0; i<10; ++i) {
     theoryBand[i] = theoryUncertainty*theoryXS[i];
   }
-  
-  double theoryMass[10] = { 100., 150., 200., 300., 400., 500., 600., 700., 800., 900. };
-  
+   
   
   // plotting below
   
@@ -219,8 +227,8 @@ void massPlot(char* filename, char* filename2) {
   // details
   TPaveText* blurb = new TPaveText(101., 1.e3, 220., 0.95e5);
   blurb->AddText("CMS Preliminary 2010");
-  blurb->AddText("#int L dt = 3.8 pb^{-1}");
-  blurb->AddText("L^{max}_{inst} = 5 x 10^{31}");
+  blurb->AddText("#int L dt = 12.9 pb^{-1}");
+  blurb->AddText("L^{max}_{inst} = 1 x 10^{32}");
   blurb->AddText("#sqrt{s} = 7 TeV");
   blurb->AddText("m_{#tilde{g}} - M_{#tilde{#chi}^{0}} = 100 GeV");
   blurb->SetTextFont(42);
