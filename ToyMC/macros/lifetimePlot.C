@@ -23,14 +23,16 @@ TCanvas *makeLifetimePlot(TGraph *g_cl95,
 			  TGraph *g_cl95_nb=NULL,
 			  TGraph *g_cl95_tp=NULL);
 
-// if 2nd filename provided, read numbers from Fedor's file and my file
-// if only 2 filename provided, use only my file
-void lifetimePlot(char* filename, char* filename2="") {
+// filename 1 = counting experiment output
+// filename 2 = time profile fit output (if null do not plot curve)
+// filename 3 = take limits from Fedors file
+void lifetimePlot(char* filename, char* filename2="", char* filename3="") {
 
   // which mass point ?
   unsigned massIndex = 0;
 
   // some numbers need to be set buy hand
+  double lumi_tp = 3.8;  // lumi figure to use for time-profile fit
   double m_g[10]        = { 200., 300., 400., 500. };
   double m_chi[10]      = { 100., 200., 300., 400. };
   double stopEff_cm[10] = { 0.3749, 0., 0., 0. };  // cloud model
@@ -58,7 +60,7 @@ void lifetimePlot(char* filename, char* filename2="") {
   unsigned count =0 ;
 
   // read my file if only one filename provided
-  if (filename2=="") {
+  if (filename3=="") {
 
     double t(0.), el(0.), es(0.), b(0.), eb(0.), cl(0.);
     double exmean(0.), lo1sig(0.), hi1sig(0.), lo2sig(0.), hi2sig(0.);
@@ -105,62 +107,41 @@ void lifetimePlot(char* filename, char* filename2="") {
     }
 
     // read effective lumi
-    ifstream file2;
-    file2.open(filename2);
-    unsigned count2 = 0;
-    while (file2 >> t >> l >> s >> b >> eb >> n >> cl) {
-      
+    ifstream file3;
+    file3.open(filename3);
+    while (file3 >> t >> l >> s >> b >> eb >> n >> cl) {
       for (unsigned i=0; i<count; ++i) {
 	if (lifetime[i] == t) {
 	  effLumi[i] = l;
 	}
       }
-      //   effLumi[count2]=l;
-      ++count2;
     }
   }
 
-  std::cout << "Going to plot " << count << " lifetime points" << std::endl;
-
-  // temporary measure for lifetime fit
-  double lifetime_tp[100] = {
-    7.5e-08,
-    1e-07,  
-    2e-07,  
-    5e-07,  
-    7e-07,  
-    1e-06,  
-    2e-06,  
-    5e-06,  
-    7e-06,  
-    1e-05,  
-    2e-05,  
-    5e-05,  
-    7e-05
-  };
-
-  double cl95_tp[100] = {
-    4.81883,
-    4.29962,
-    4.57912,
-    7.18796,
-    7.50529,
-    7.67341,
-    7.79599,
-    7.71286,
-    7.61248,
-    7.46272,
-    7.1168,
-    6.81869,
-    6.76456
-  };
-
-  double lumi_tp = 1.5;
+  std::cout << "Read " << count << " lifetime points for counting experiment" << std::endl;
 
   // print out to check
   for (unsigned c=0; c<count; ++c) {
     std::cout << lifetime[c] << " " << effLumi[c] << " " << cl95[c] << " " << exp[c] << " " << exp_lo1sig[c] << " " << exp_hi1sig[c] << " " << exp_lo2sig[c] << " " << exp_hi2sig[c] << std::endl;
   }
+
+
+  // lifetime fit
+  double lifetime_tp[100];
+  double cl95_tp[100];
+
+  // read data from file
+  ifstream file2;
+  file2.open(filename2);
+  unsigned count2=0 ;
+  double ltp(0.), cltp(0.);
+    while (file2 >> ltp >> cltp) {
+      lifetime_tp[count2] = ltp;
+      cl95_tp[count2]     = cltp;
+      ++count2;
+    }
+
+  std::cout << "Read " << count2 << " lifetime points for time profile fit" << std::endl;
 
 
   // convert to cross-section limits
@@ -265,7 +246,7 @@ TCanvas *makeLifetimePlot(TGraph *g_obs,
 
   blurb = new TPaveText(8e-8, 2e3, 2e-3, 3e5);
   blurb->AddText("CMS Preliminary 2010");
-  blurb->AddText("#int L dt = 2.9 pb^{-1}");
+  blurb->AddText("#int L dt = 3.8 pb^{-1}");
   blurb->AddText("L^{max}_{inst} = 5 x 10^{31}");
   blurb->AddText("#sqrt{s} = 7 TeV");
   blurb->AddText("m_{#tilde{g}} = 200 GeV");
@@ -346,7 +327,7 @@ TCanvas *makeLifetimePlot(TGraph *g_obs,
     g_obs_tp->SetLineColor(kRed);
     g_obs_tp->SetLineStyle(3);    
     g_obs_tp->SetLineWidth(3);
-    //    g_obs_tp->Draw("l3");
+    g_obs_tp->Draw("l3");
   }  
 
   // epxected limit

@@ -1,31 +1,40 @@
-{
-  // .X massPlot.C
-      
-  // plot expected limit for 1e-3s counting expt; plateau     
-  double exp_effLumi= 2.86665;
-  double exp_mean   = 6.6646;  // mean
-  double exp_1qtm   = 3.95711;  // 68% quantile
-  double exp_1qtp   = 8.4314;
-  double exp_2qtm   = 3.05786;
-  double exp_2qtp   = 12.1473;
+// .L massPlot.C+
+// lifetimePlot("limit_summary.txt", "time_profile_summary.txt")
 
-  // best observed limit - 1e-3 s
-  double effLumi_1 = 2.86665;
-  double cl95_1    = 6.37573;
-  
-  // plateau observed limit - 1e-3 s
-  double effLumi_2 = 2.86665;
-  double cl95_2    = 6.37573;
-  
-  // long lifetime observed limit - 1e6 s
-  double effLumi_3 =  0.149146;
-  double cl95_3    =  6.37573;
-  
-  // 100ns from lifetime fit
-  double Lrec   = 2.9;    // integrated lumi for lifetime fit
-  double cl95_L = 4.29962;
-  
-  // reco efficiency by mass
+#include <cstdlib>
+#include <fstream>
+#include <iostream> 
+
+#include "TGraph.h"
+#include "TGraphErrors.h"
+#include "TGraphAsymmErrors.h"
+#include "TCanvas.h"
+#include "TFile.h"
+#include "TH1.h"
+#include "TH1F.h"
+#include "TLegend.h"
+#include "TPaveText.h"
+#include "TBox.h"
+
+// .L massPlot.C+
+// massPlot("limit_summary.txt", "time_profile_summary.txt");
+
+void massPlot(char* filename, char* filename2) {
+  // .X massPlot.C
+
+  // stuff that has to be set by hand
+  // some numbers need to be set buy hand
+  double lumi_tp = 3.8;  // lumi figure to use for time-profile fit
+
+  // set which bin to use for intercept calculation (mass limit)
+  unsigned theoryBin = 3;
+  unsigned dataBin = 2;
+
+  unsigned point1 = 9;
+  unsigned point2 = 27;
+  unsigned point3 = 43;
+  unsigned pointtp = 5;
+
   unsigned nmasses=5;
   double mass[10] = {
     150.,
@@ -57,6 +66,73 @@
     0.216 * 2.,
     0.255 * 2.
   };
+
+
+  // arrays to fill with data
+  double lifetime[100];
+  double effLumi[100];
+  double expBG[100];
+  double expBG_e[100];
+  unsigned nObs[100];
+  double cl95[100];
+  double exp[100];          // expected
+  double exp_lo1sig[100];   // lower 1 sigma band
+  double exp_hi1sig[100];   // upper 1 sigma band
+  double exp_lo2sig[100];   // lower 2 sigma band
+  double exp_hi2sig[100];   // upper 2 sigma band
+ 
+  // read data from file
+  ifstream file;
+  file.open(filename);
+  std::string line;
+  unsigned count =0 ;
+
+  // read file
+  double t(0.), el(0.), es(0.), b(0.), eb(0.), cl(0.);
+  double exmean(0.), lo1sig(0.), hi1sig(0.), lo2sig(0.), hi2sig(0.);
+  unsigned n(0);
+  std::string z;
+  
+  while (file >> t >> el >> es >> b >> eb >> n >> cl >> exmean >> lo1sig >> hi1sig >> lo2sig >> hi2sig) {
+    lifetime[count] = t;
+    effLumi[count]  = el;
+    expBG[count]    = b;
+    expBG_e[count]  = eb;
+    nObs[count]     = n;
+    cl95[count]     = cl;
+    exp[count]        = exmean;
+    exp_lo1sig[count] = lo1sig;
+    exp_hi1sig[count] = hi1sig;
+    exp_lo2sig[count] = lo2sig;
+    exp_hi2sig[count] = hi2sig;
+    ++count;
+  }
+
+  std::cout << "Read " << count << " lifetime points for counting experiment" << std::endl;
+  std::cout << "  going to use lifetimes " << lifetime[point1] << ", " << lifetime[point2] << ", " << lifetime[point3] << std::endl;
+
+//   // print out to check
+//   for (unsigned c=0; c<count; ++c) {
+//     std::cout << lifetime[c] << " " << effLumi[c] << " " << cl95[c] << " " << exp[c] << " " << exp_lo1sig[c] << " " << exp_hi1sig[c] << " " << exp_lo2sig[c] << " " << exp_hi2sig[c] << std::endl;
+//   }
+
+  // lifetime fit
+  double lifetime_tp[100];
+  double cl95_tp[100];
+
+  // read data from file
+  ifstream file2;
+  file2.open(filename2);
+  unsigned count2=0 ;
+  double ltp(0.), cltp(0.);
+    while (file2 >> ltp >> cltp) {
+      lifetime_tp[count2] = ltp;
+      cl95_tp[count2]     = cltp;
+      ++count2;
+    }
+
+  std::cout << "Read " << count2 << " lifetime points for time profile fit" << std::endl;
+  std::cout << "  going to use lifetimes " << lifetime_tp[pointtp] << std::endl;
   
   double excXS_exp[10];
   double excXS_exp1m[10];
@@ -71,15 +147,15 @@
   double excXSL[10];
   
   for (unsigned im=0; im<nmasses; ++im) {
-    excXS_exp[im]   = exp_mean / (exp_effLumi * stopEff[im] * recoEff[im]);
-    excXS_exp1m[im] = (exp_mean-exp_1qtm) / (exp_effLumi * stopEff[im] * recoEff[im]);
-    excXS_exp1p[im] = (exp_1qtp-exp_mean) / (exp_effLumi * stopEff[im] * recoEff[im]);
-    excXS_exp2m[im] = (exp_mean-exp_2qtm) / (exp_effLumi * stopEff[im] * recoEff[im]);
-    excXS_exp2p[im] = (exp_2qtp-exp_mean) / (exp_effLumi * stopEff[im] * recoEff[im]);
-    excXS1[im]= cl95_1 / (effLumi_1 * stopEff[im] * recoEff[im]);
-    excXS2[im]= cl95_2 / (effLumi_2 * stopEff[im] * recoEff[im]);
-    excXS3[im]= cl95_3 / (effLumi_3 * stopEff[im] * recoEff[im]);
-    excXSL[im]= cl95_L / (Lrec * stopEff[im] * recoEff[im]);
+    excXS_exp[im]   = exp[point2] / (effLumi[point2] * stopEff[im] * recoEff[im]);
+    excXS_exp1m[im] = (exp[point2]-exp_lo1sig[point2]) / (effLumi[point2] * stopEff[im] * recoEff[im]);
+    excXS_exp1p[im] = (exp_hi1sig[point2]-exp[point2]) / (effLumi[point2] * stopEff[im] * recoEff[im]);
+    excXS_exp2m[im] = (exp[point2]-exp_lo2sig[point2]) / (effLumi[point2] * stopEff[im] * recoEff[im]);
+    excXS_exp2p[im] = (exp_hi2sig[point2]-exp[point2]) / (effLumi[point2] * stopEff[im] * recoEff[im]);
+    excXS1[im]= cl95[point1] / (effLumi[point1] * stopEff[im] * recoEff[im]);
+    excXS2[im]= cl95[point2] / (effLumi[point2] * stopEff[im] * recoEff[im]);
+    excXS3[im]= cl95[point3] / (effLumi[point3] * stopEff[im] * recoEff[im]);
+    excXSL[im]= cl95_tp[pointtp] / (lumi_tp * stopEff[im] * recoEff[im]);
   }
   
   
@@ -131,12 +207,11 @@
   canvas->SetLogy();
   
   TH1 * h;
-  TPaveText *blurb;
   h = canvas->DrawFrame(100., 3, 500., 1e5);
   h->SetTitle("Beamgap Expt;m_{#tilde{g}} [GeV]; #sigma(pp #rightarrow #tilde{g}#tilde{g}) #times BR(#tilde{g} #rightarrow g#tilde{#chi}^{0}) [pb]");
   
   // not covered region
-  TBox nc(100., 3, 150., 1e5);
+  TBox* nc = new TBox(100., 3, 150., 1e5);
   nc->SetFillStyle(3354);
   nc->SetFillColor(kRed-4);
   nc->Draw();
@@ -144,7 +219,7 @@
   // details
   TPaveText* blurb = new TPaveText(101., 1.e3, 220., 0.95e5);
   blurb->AddText("CMS Preliminary 2010");
-  blurb->AddText("#int L dt = 2.9 pb^{-1}");
+  blurb->AddText("#int L dt = 3.8 pb^{-1}");
   blurb->AddText("L^{max}_{inst} = 5 x 10^{31}");
   blurb->AddText("#sqrt{s} = 7 TeV");
   blurb->AddText("m_{#tilde{g}} - M_{#tilde{#chi}^{0}} = 100 GeV");
@@ -216,7 +291,7 @@
   graphL->SetLineColor(kRed);
   graphL->SetLineStyle(3);
   graphL->SetLineWidth(3);
-  //graphL->Draw("l");
+  graphL->Draw("l");
   
   // theory line
   theory->SetLineColor(kBlue);
@@ -227,14 +302,14 @@
   theory->Draw("l3");
   
   // theory line label
-  th = new TText(290., 80., "NLO+NLL");
+  TText* th = new TText(290., 80., "NLO+NLL");
   th->SetTextColor(kBlue);
   th->SetTextFont(42);
   th->SetTextSize(0.035);
   th->Draw();
 
   // not explored label
-  ne = new TText(115., 11., "Not Sensitive");
+  TText* ne = new TText(115., 11., "Not Sensitive");
   ne->SetTextColor(kRed+1);
   ne->SetTextFont(42);
   ne->SetTextAngle(66);
@@ -247,9 +322,6 @@
   canvas->Print("massLimit.C");
 
   // calculate intercept
-  // set which bin to use
-  unsigned theoryBin = 3;
-  unsigned dataBin = 2;
 
   double mt = ( log10(theoryXS[theoryBin+1]-theoryBand[theoryBin+1]) - log10(theoryXS[theoryBin]-theoryBand[theoryBin]) ) / (theoryMass[theoryBin+1]-theoryMass[theoryBin]);
   double ct = log10(theoryXS[theoryBin+1]-theoryBand[theoryBin+1]) - (mt*theoryMass[theoryBin+1]);
@@ -267,13 +339,13 @@
   double c2 = log10(excXS2[dataBin+1]) - (m2*mass[dataBin+1]);
 
   // time profile limit
-  double ml = (log10(excXSL[dataBin+1])-log10(excXSL[dataBin])) / (mass[dataBin+1]-mass[dataBin]);
-  double cl = log10(excXSL[dataBin+1]) - (ml*mass[dataBin+1]);
+  double tpml = (log10(excXSL[dataBin+1])-log10(excXSL[dataBin])) / (mass[dataBin+1]-mass[dataBin]);
+  double tpcl = log10(excXSL[dataBin+1]) - (tpml*mass[dataBin+1]);
 
   double mass_excexp = (cexp - ct) / (mt - mexp);
   double mass_exc1 = (c1 - ct) / (mt - m1);
   double mass_exc2 = (c2 - ct) / (mt - m2);
-  double mass_excL = (cl - ct) / (mt - ml);
+  double mass_excL = (tpcl - ct) / (mt - tpml);
 
   cout << "Expected excluded mass (counting expt) = " << mass_excexp << endl;
   cout << "Best excluded mass (counting expt) = " << mass_exc1 << endl;
