@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.26 2010/10/07 16:51:11 temple Exp $
+// $Id: StoppedHSCPEvent.h,v 1.27 2010/10/10 15:20:49 jbrooke Exp $
 //
 //
 
@@ -59,7 +59,7 @@ namespace shscp {
     double eta;
     double phi;
     int ieta;
-    unsigned iphi;
+    int iphi;
     unsigned nJet;
     double eHad;
     double etHad;
@@ -226,8 +226,8 @@ class StoppedHSCPEvent : public TObject {
   double eHadLeadingIPhi;
 
   // digi quantities
-  unsigned leadingDigiIEta;
-  unsigned leadingDigiIPhi;
+  int leadingDigiIEta;
+  int leadingDigiIPhi;
   std::vector<double> leadingDigiTimeSamples;
   unsigned leadingDigiPeakSample;
   double leadingDigiTotal;
@@ -273,8 +273,8 @@ class StoppedHSCPEvent : public TObject {
   std::vector<Double_t> towerEt;
   std::vector<Double_t> towerEta;
   std::vector<Double_t> towerPhi;
-  std::vector<UInt_t> towerIEta;
-  std::vector<UInt_t> towerIPhi;
+  std::vector<Int_t> towerIEta;
+  std::vector<Int_t> towerIPhi;
   std::vector<UInt_t> towerNJet;
   std::vector<Double_t> towerEHad;
   std::vector<Double_t> towerEtHad;
@@ -317,7 +317,7 @@ class StoppedHSCPEvent : public TObject {
   // digis
 
 
-  ClassDef(StoppedHSCPEvent,7);
+  ClassDef(StoppedHSCPEvent,8);
 
 };
 
