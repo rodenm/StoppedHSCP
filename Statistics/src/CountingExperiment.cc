@@ -58,25 +58,43 @@ namespace {
 	if (i == 0) goexit = true;
       }
     }
-    // get integral
-    double integral = 0;
-    for (unsigned i = 0; i < weights.size(); ++i) integral += weights[i];
+    // interpolate (assume size > 1)
+    unsigned nPoints = limits.size();
+    std::vector<double> limits2 (nPoints+1, 0);
+    std::vector<double> weightsSum (nPoints+1, 0);
+    limits2[0] = 0.5*(3*limits[0]-limits[1]);
+    weightsSum[0] = 0;
+    for (unsigned i = 1; i < nPoints; ++i) {
+      limits2[i] = 0.5*(limits[i-1]+limits[i]);
+      weightsSum[i] = weightsSum[i-1] + weights[i-1];
+    }
+    limits2[nPoints] = 0.5*(3*limits[nPoints-1]-limits[nPoints-2]);
+    weightsSum[nPoints] = weightsSum[nPoints-1] + weights[nPoints-1];
+
+    // normalize
+    for (unsigned i = 0; i < weightsSum.size(); ++i) {
+      weightsSum[i] /= weightsSum[nPoints];
+      // cout << "getQuantile-> " << fProbability<<" "<< i << '/' << limits2[i] <<'/'<< weightsSum[i] <<endl;
+    }
     
     // search for quantile
-    double target = integral * fProbability;
-    double sum = 0;
     unsigned iPlus = 0;
-    for (; (iPlus < weights.size()) && ((sum+=weights [iPlus]) < target); ++iPlus) {}
-    if (iPlus == 0) {
+    for (; (iPlus < weightsSum.size()) && (weightsSum[iPlus]<fProbability); ++iPlus) {}
+    // make linear interpolation
+    double limit = limits2[iPlus]-
+      (weightsSum[iPlus]-fProbability)/(weightsSum[iPlus]-weightsSum[iPlus-1])*
+      (limits2[iPlus]-limits2[iPlus-1]);
+    // cout<<"found quantile-> "<<iPlus<<"->"<< weightsSum[iPlus]<<'/'<<fProbability<<'/'
+    // <<" "<<limits2[iPlus-1]<<'/'<<limits2[iPlus]<<" "<<limit << endl;
+    if (limit < limits.front()) {
       std::cout << "Quantile " << fProbability << " is on the low edge" <<  std::endl;
-      return limits[0];
+      return limits.front();
     }
-    if (sum < target) {
+    if (limit > limits.back()) {
       std::cout << "Quantile " << fProbability << " is on the high edge" <<  std::endl;
       return limits.back();
     }
-    // make linear extrapolation
-    return limits[iPlus]-(sum-target)/weights[iPlus]*(limits[iPlus]-limits[iPlus-1]);
+    return limit;
   }
   
 }
