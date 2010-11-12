@@ -48,13 +48,13 @@ process.stoppedHSCPTree.hltPath = cms.untracked.string("HLT_StoppedHSCP*")
 process.ntuple = cms.Path(
 
 # filter on HLT bit
-#    process.hltHighLevel
+    process.hltHighLevel
 
 # filter HCAL noise
     process.HBHENoiseFilterResultProducer
 
 # get hcal digis
-#    +process.hcalDigis
+    +process.hcalDigis
     
 # generate TTree    
     +process.stoppedHSCPTree
