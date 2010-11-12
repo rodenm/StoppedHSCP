@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.27 2010/10/10 15:20:49 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.28 2010/10/28 16:33:22 jbrooke Exp $
 //
 //
 
@@ -296,6 +296,8 @@ class StoppedHSCPEvent : public TObject {
   // Beam Halo data
   bool beamHalo_CSCTight;
   bool beamHalo_CSCLoose;
+  bool beamHalo_HcalTight;
+  bool beamHalo_HcalLoose;
 
   // vertices
   unsigned nVtx;
@@ -317,7 +319,7 @@ class StoppedHSCPEvent : public TObject {
   // digis
 
 
-  ClassDef(StoppedHSCPEvent,8);
+  ClassDef(StoppedHSCPEvent,9);
 
 };
 

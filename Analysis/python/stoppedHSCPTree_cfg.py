@@ -14,6 +14,8 @@ process = cms.Process("SHSCPTree")
 process.load('Configuration/StandardSequences/Services_cff')
 process.load('FWCore/MessageService/MessageLogger_cfi')
 #process.MessageLogger.cerr.INFO.limit = cms.untracked.int32(10)
+process.MessageLogger.cerr.threshold = ''
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 
 # geometry & magnetic field
@@ -52,7 +54,7 @@ process.ntuple = cms.Path(
     process.HBHENoiseFilterResultProducer
 
 # get hcal digis
-    +process.hcalDigis
+#    +process.hcalDigis
     
 # generate TTree    
     +process.stoppedHSCPTree
@@ -72,7 +74,7 @@ process.TFileService = cms.Service("TFileService",
 
 
 # input files
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 readFiles = cms.untracked.vstring()
 secFiles = cms.untracked.vstring()
 process.source = cms.Source ("PoolSource",fileNames = readFiles, secondaryFileNames = secFiles)
@@ -82,7 +84,11 @@ process.source = cms.Source ("PoolSource",fileNames = readFiles, secondaryFileNa
 process.GlobalTag.globaltag = "GR10_P_V10::All"
 
 readFiles.extend( [
-    'file:///tmp/jbrooke/D4EBF75E-14CB-DF11-9404-003048D15DDA.root'
+    'file:///tmp/jbrooke/HLT_StoppedHSCP_148829.root'
+#    'file:///tmp/jbrooke/test2.root'
+#    'file:pickEvents_1375_1400.root',
+#    'file:pickEvents_1408_1424.root',
+#    'file:///tmp/jbrooke/D4EBF75E-14CB-DF11-9404-003048D15DDA.root'
    ] )
 
 

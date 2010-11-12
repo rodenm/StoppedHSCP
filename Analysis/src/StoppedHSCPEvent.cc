@@ -117,6 +117,8 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   noiseFilterResult(0),
   beamHalo_CSCTight(false),
   beamHalo_CSCLoose(false),
+  beamHalo_HcalTight(false),
+  beamHalo_HcalLoose(false),
   nVtx(0),
   vtxNDOF(0),
   vtxZ(0.),

@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.47 2010/10/10 15:20:49 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.48 2010/10/15 14:00:47 jbrooke Exp $
 //
 //
 
@@ -400,13 +400,13 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
   if (doMC_) doMC(iEvent);
   
   if (doReco_) {
-    doCaloTowers(iEvent);
-    doJets(iEvent);
     doMuons(iEvent);
     doBeamHalo(iEvent);
     doHcalNoise(iEvent);
     doVertices(iEvent);
     doRecHits(iEvent);
+    doCaloTowers(iEvent);
+    doJets(iEvent);
     doTimingFromDigis(iEvent, iSetup);
   }
   
@@ -664,33 +664,63 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
 	 jet.n90 = it->n90();
 	 event_->addJet(jet);
 
+// 	 std::cout << "Jet " << std::endl;q
+// 	 std::cout << "   E=" << it->energy() << " eta=" << it->eta() << " phi=" << it->phi() << std::endl;
 	 // get towers
 	 for (int i=0; i<it->nConstituents(); ++i) {
 	   
 	   CaloTowerPtr tower = it->getCaloConstituent(i);
 
-	   // check tower above threshold
-// 	   if (tower->energy() > towerMinEnergy_ &&
-// 	       fabs(tower->eta()) < towerMaxEta_) {
+	   if (tower->energy() > towerMinEnergy_ &&
+	       fabs(tower->eta()) < towerMaxEta_) {
 
-// 	     // write tower
-// 	     shscp::Tower tow;
-// 	     tow.e = tower->energy();
-// 	     tow.et = tower->et();
-// 	     tow.eta = tower->eta();
-// 	     tow.phi = tower->phi();
-// 	     tow.ieta = tower->ieta();
-// 	     tow.iphi = tower->iphi();
-// 	     tow.nJet = njet;
-// 	     tow.eHad = tower->hadEnergy();
-// 	     tow.etHad = tower->hadEt();
-// 	     tow.eEm = tower->emEnergy();
-// 	     tow.etEm = tower->emEt();
-// 	     event_->addTower(tow);
+	     // write tower
+	     shscp::Tower tow;
+	     tow.e = tower->energy();
+	     tow.et = tower->et();
+	     tow.eta = tower->eta();
+	     tow.phi = tower->phi();
+	     tow.ieta = tower->ieta();
+	     tow.iphi = tower->iphi();
+	     tow.nJet = njet;
+	     tow.eHad = tower->hadEnergy();
+	     tow.etHad = tower->hadEt();
+	     tow.eEm = tower->emEnergy();
+	     tow.etEm = tower->emEt();
+	     event_->addTower(tow);
+
+	   }
+
+// 	   std::cout << "  Calo tower" << std::endl;
+// 	   std::cout << "    eta=" << tower->eta() << " phi=" << tower->phi() << std::endl;
+// 	   std::cout << "    ECAL E=" << tower->emEnergy() << " HCAL E=" << tower->hadEnergy() << std::endl;
+// 	   std::cout << "    ECAL time : " << tower->ecalTime() << std::endl;
+// 	   std::cout << "    HCAL time : " << tower->hcalTime() << std::endl;
+
+	   // loop over tower constituents
+// 	   std::vector<DetId>::const_iterator detid;
+// 	   for (detid=tower->constituents().begin();
+// 		detid!=tower->constituents().end();
+// 		++detid) {
+
 	     
+
+// 	     // find HCAL RecHit
+// 	     if (detid->det()==DetId::Hcal) {
+// 	       for(HBHERecHitCollection::const_iterator hit=recHits_.begin();
+// 		   hit!=recHits_.end();
+// 		   ++hit) {
+// 		 if(hit->id() == (*detid)) {
+
+// 		   std::cout << "  HCAL RecHit" << std::endl;
+// 		   std::cout << "    E=" << hit->energy() << " time=" << hit->time() << std::endl;
+
+// 		 }
+// 	       }
+// 	     }
 // 	   }
-	   
-	 }
+
+	 }  
        }
      }
    }
@@ -802,15 +832,21 @@ void StoppedHSCPTreeProducer::doBeamHalo(const edm::Event& iEvent)
   iEvent.getByLabel("BeamHaloSummary",TheBeamHaloSummary);
   bool beamhalo_csctight=false;
   bool beamhalo_cscloose=false;
+  bool beamhalo_hcaltight=false;
+  bool beamhalo_hcalloose=false;
 
   if (TheBeamHaloSummary.isValid())
     {
       const BeamHaloSummary TheSummary = (*TheBeamHaloSummary.product() );
       if (TheSummary.CSCTightHaloId()==true)  beamhalo_csctight = true; 
       if (TheSummary.CSCLooseHaloId()==true)  beamhalo_cscloose = true; 
+      if (TheSummary.HcalTightHaloId()==true)  beamhalo_hcaltight = true; 
+      if (TheSummary.HcalLooseHaloId()==true)  beamhalo_hcalloose = true; 
     }
   event_->beamHalo_CSCTight=beamhalo_csctight;
   event_->beamHalo_CSCLoose=beamhalo_cscloose;
+  event_->beamHalo_HcalTight=beamhalo_hcaltight;
+  event_->beamHalo_HcalLoose=beamhalo_hcalloose;
 
   return;
 } // void StoppedHSCPTreeProducer::doBeamHalo(iEvent)
