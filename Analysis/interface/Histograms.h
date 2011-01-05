@@ -65,6 +65,7 @@ class Histograms {
   TH1D* hjetn90_;
   TH1D* hjetn90hits_;
   TH1D* hjetfhpd_;
+  TH1D* htowiphifrac_;
   TH1D* hnmu_;
   TH2D* hmuetaphi_;
   TH1D* hntowsameiphi_;
@@ -124,6 +125,7 @@ class Histograms {
   std::vector<TH2D*> hmuetaphi_cuts_;
   std::vector<TH1D*> hbx_cuts_;
   std::vector<TH1D*> hjetemf_cuts_;
+  std::vector<TH1D*> hlifetime_cuts_;
 
 };
 

@@ -140,13 +140,16 @@ void Analyser::printCutValues(ostream& o) {
   o << "  lb             = " << event_->lb << std::endl;
   o << "  id             = " << event_->id << std::endl;
   o << "  bx             = " << event_->bx << std::endl;
+  o << "  t since coll   = " << eventLifetime(event_->run, event_->bx) << std::endl;
   o << "  orbit          = " << event_->orbit << std::endl;
-  o << "  mu_N           = " << event_->mu_N << std::endl;
+  o << "  BX veto        = " << cuts_.cutN(1) << std::endl;
+  o << "  BPTX veto      = " << cuts_.cutN(2) << std::endl;
   o << "  nVtx           = " << event_->nVtx << std::endl;
   std::string halo("None");
   if (event_->beamHalo_CSCLoose) halo = "CSCLoose";
   if (event_->beamHalo_CSCTight) halo = "CSCTight";
   o << "  beamHalo       = " << halo << std::endl;
+  o << "  mu_N           = " << event_->mu_N << std::endl;
   o << "  HCAL noise     = " << (event_->noiseFilterResult ? "No" : "Yes") << std::endl;
   o << "  nTowerSameiPhi = " << event_->nTowerSameiPhi << std::endl;
   o << "  jetE[0]        = " << event_->jetE[0] << std::endl;
@@ -237,7 +240,7 @@ double Analyser::eventLifetime(unsigned run, unsigned bx) {
   int collBx = *(--lastColl);
 
   double t = (bx - collBx) * LhcFills::TIME_PER_BX;
-  std::cout << "Delta-BX : " << bx << " " << collBx << " " << t << std::endl; 
+  //  std::cout << "Delta-BX : " << bx << " " << collBx << " " << t << std::endl; 
   return t;
 
 }

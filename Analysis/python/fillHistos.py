@@ -63,13 +63,13 @@ def fillHistos(hfile, fills, fillinfo):
         time  = hftime.GetBinContent(i)
 
         poisson = TF1("poisson", "TMath::Poisson(x, [0])", 0., 100.)
-        poisson.SetParameter(0,time * bg)
+        poisson.SetParameter(0,time * ctrlFinRate)
         mpv = poisson.GetMaximumX()
 
         hbgmpv.Fill(label, mpv)
         hbgmpv.SetBinError(i, 0.)
-        hbgmean.Fill(label, time*bg)
-        hbgmean.SetBinError(i, time*ebg)
+        hbgmean.Fill(label, time*ctrlFinRate)
+        hbgmean.SetBinError(i, time*errCtrlFinRate*ctrlFinRate)
 
     # N-1 estimate
 ##     hbgj50 = TH1D("hbgj50", "Expected BG (Jet50N-1);fill;N", nfills, 0., 0.)

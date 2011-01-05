@@ -14,8 +14,10 @@
 int main(int argc, char* argv[]) {
 
   // arguments
-  std::string filename = std::string(argv[argc-2]);
-  std::string odir = std::string(argv[argc-1]);
+  std::string name = std::string(argv[argc-1]);
+  std::string filename = "ntuples/stoppedHSCP_tree_"+name+".root";
+  std::string ofilename=name+std::string("_background.root");
+
 //   std::string runstr=std::string(argv[argc-1]);
 
 //   // convert run list to vector
@@ -26,8 +28,6 @@ int main(int argc, char* argv[]) {
 //     unsigned run = (unsigned) atoi(strs.at(i).c_str());
 //     if (run > 0) runs.push_back(run);
 //   }
-
-  std::string ofilename=odir+std::string("/background.root");
 
   std::vector<RateCalculator*> mRates;
 
@@ -49,6 +49,7 @@ int main(int argc, char* argv[]) {
   newRate->addXcut(13);
   newRate->addXcut(14);
   newRate->addXcut(15);
+  //  newRate->addXcut(16);
 
   newRate->addYcut(0);
   newRate->addYcut(1);
@@ -65,6 +66,7 @@ int main(int argc, char* argv[]) {
   newRate->addYcut(13);
   newRate->addYcut(14);
   newRate->addYcut(15);
+  //  newRate->addXcut(16);
   mRates.push_back (newRate);
 
   newRate  = new RateCalculator ("RateFinalVsMu", filename, ofilename);
@@ -90,6 +92,7 @@ int main(int argc, char* argv[]) {
   newRate->addYcut(13);
   newRate->addYcut(14);
   newRate->addYcut(15);
+  //  newRate->addXcut(16);
   mRates.push_back (newRate);
 
 

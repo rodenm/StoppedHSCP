@@ -109,16 +109,20 @@ p4.wait()
 
 # make Toy MC jobs
 print
+print "Run background estimator if necessary"
+print "Edit StoppedHSCP/ToyMC/data/parameters.txt"
+print "Then run commands below :"
+print
 print "makeToyJobs.py "+dataset
-if not mc:
-    p5 = Popen("makeToyJobs.py "+dataset, shell=True)
-    p5.wait()
+#if not mc:
+#    p5 = Popen("makeToyJobs.py "+dataset, shell=True)
+#    p5.wait()
 
 # run Toy MC
-print
+#print
 print "source "+dataset+"/toymc/runAll.sh"
-p6 = Popen("source "+dataset+"/toymc/runAll.sh", shell=True)
-p6.wait()
+#p6 = Popen("source "+dataset+"/toymc/runAll.sh", shell=True)
+#p6.wait()
 
 
 # list files

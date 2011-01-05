@@ -52,6 +52,24 @@ class Cuts {
   // is event masked
   bool inMaskedBX() const;
 
+  // jet leading iphi fraction
+  double leadingIPhiFraction() const;
+
+  unsigned jetCaloTowers() const;
+
+ public:
+
+  struct Tower {
+    unsigned iphi;
+    double e;
+  };
+
+  struct tow_gt : public std::binary_function<Tower, Tower, bool> {
+    bool operator()(const Tower& x, const Tower& y) {
+      return x.e > y.e;
+    }
+  };
+
  private:
 
   // poitner to the event

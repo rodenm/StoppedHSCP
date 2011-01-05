@@ -97,7 +97,10 @@ bool Cuts::cutN(unsigned n) const
   case 10:  // jet n90
     return event_->jet_N>0 && event_->jetN90[0]>3;
   case 11:  // calo towers
-    return event_->nTowerSameiPhi<5;
+    //    return event_->nTowerSameiPhi<5;
+    return event_->nTowerSameiPhi<5 && leadingIPhiFraction()<0.95;
+    //return jetCaloTowers()<5;
+    //return event_->nTowerSameiPhi<5 && jetCaloTowers()<5;
   case 12: // R1
     return (event_->top5DigiR1 > 0.15) && (event_->top5DigiR1 <= 1.0);
   case 13: // R2
@@ -108,6 +111,9 @@ bool Cuts::cutN(unsigned n) const
     return (event_->top5DigiROuter < 0.1) && (event_->top5DigiROuter >= 0.0) && (event_->top5DigiPeakSample > 0) && (event_->top5DigiPeakSample < 7);
     //  case 13:
     //    return event_->jet_N>0 && (event_->jetEEm[0] / event_->jetE[0]) > 0.05;
+    //  case 16:
+    //    return leadingIPhiFraction()<0.95;
+    //    return jetCaloTowers()<5;
   default:
     return true;
     
@@ -151,6 +157,8 @@ const std::string Cuts::cutName(unsigned n) const {
     return "Rpeak";
   case 15:
     return "Router";
+  case 16:
+    return "iphi fraction";
 //   case 15:
 //     return "jet EMF";
   default:
@@ -163,7 +171,7 @@ const std::string Cuts::cutName(unsigned n) const {
 bool Cuts::allCutN(unsigned n) const 
 {
   bool pass=true;
-  for (unsigned i=0; i<n; ++i) {
+  for (unsigned i=0; i<n+1; ++i) {
     pass &= cutN(i);
   }
   return pass;
@@ -268,5 +276,51 @@ bool Cuts::stdHcalCutN(unsigned n) const
     return false;
     break; 
   }
+
+}
+
+
+// energy fraction at same iphi
+double Cuts::leadingIPhiFraction() const {
+
+    std::vector<double> tmp(75, 0);
+    for (unsigned i=0; i<event_->tower_N; ++i) {
+      tmp.at(event_->towerIPhi.at(i)) += event_->towerE.at(i);
+    }
+    std::vector<double>::iterator max=max_element(tmp.begin(), tmp.end());
+
+    double frac=0.;
+    if (event_->jet_N>0) frac = (*max)/event_->jetE.at(0);
+    return frac;
+
+}
+
+
+unsigned Cuts::jetCaloTowers() const {
+
+  std::vector<Tower> towers;
+  for (unsigned i=0; i<event_->tower_N; ++i) {
+    if (event_->towerNJet.at(i)==0) {
+      Tower t;
+      t.iphi=event_->towerIPhi.at(i);
+      t.e = event_->towerE.at(i);
+      towers.push_back(t);
+    }
+  }
+
+  sort(towers.begin(), towers.end(), tow_gt());
+
+  unsigned tmp=0;
+
+  if (towers.size() > 0) {
+    unsigned iphiFirst=towers.at(0).iphi;
+    bool keepgoing=true;
+    for (unsigned i=0; i<towers.size() && keepgoing; ++i) {
+      if (towers.at(i).iphi==iphiFirst) tmp++;
+      else keepgoing=false;
+    }
+  }
+
+  return tmp;
 
 }

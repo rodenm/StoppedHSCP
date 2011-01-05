@@ -14,7 +14,7 @@
 const int BX_IN_ORBIT = 3564;
 
 // JsonFileReader* jsonFileReader = 0;
-const double lbSeconds = 98.e-6*double(int(0x40000)); // 98mks*2^18
+const double lbSeconds = 89.1e-6*double(int(0x40000)); // 98mks*2^18
 const char* cutName [] = {"HLT", "BX", "GT", "Nmu", "Jet30",
 			  "Jet50", "N60", "N90", "Nphi", "R1", 
 			    "R2", "Rpeak", "Router", "Emf"}; 

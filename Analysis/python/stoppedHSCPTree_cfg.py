@@ -39,6 +39,7 @@ process.load('CommonTools/RecoAlgos/HBHENoiseFilterResultProducer_cfi')
 
 # get RAW data
 process.load('Configuration/StandardSequences/RawToDigi_Data_cff')
+process.load('Configuration/StandardSequences/L1Extra_cff')
 
 # Ntuple producer
 process.load('StoppedHSCP/Analysis/stoppedHSCPTree_cfi')
@@ -51,9 +52,12 @@ process.ntuple = cms.Path(
     process.hltHighLevel
 
 # filter HCAL noise
-    process.HBHENoiseFilterResultProducer
+    +process.HBHENoiseFilterResultProducer
 
 # get hcal digis
+    +process.gctDigis
+    +process.gtDigis
+    +process.l1extraParticles
     +process.hcalDigis
     
 # generate TTree    

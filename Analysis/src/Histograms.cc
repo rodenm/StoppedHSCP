@@ -69,6 +69,9 @@ void Histograms::book() {
   hjetn90hits_ = new TH1D("hjetn90hits", "Leading jet N90 hits", 50, 0., 50.);
   hjetfhpd_ = new TH1D("hjetfhpd", "Leading jet fHPD", 50, 0., 1.);
   
+  // towers in jets
+  htowiphifrac_ = new TH1D("htowiphifrac", "iphi E fraction", 50, 0., 1.);
+
   // muons
   hnmu_ = new TH1D("hnmu", "N muons", 4, -0.5, 3.5);
   hmuetaphi_ = new TH2D("hmuetaphi", "Muon pos", 70, -3.5, 3.5, 72, -1 * TMath::Pi(),  TMath::Pi());
@@ -146,6 +149,7 @@ void Histograms::book() {
     hmuetaphi_cuts_.push_back(new TH2D((std::string("hmuetaphi")+istr.str()).c_str(), (std::string("#mu pos after ")+cstr).c_str(), 70, -3.5, 3.5, 72, -1 * TMath::Pi(),  TMath::Pi()));
     hbx_cuts_.push_back(new TH1D((std::string("hbx")+istr.str()).c_str(), (std::string("BX after ")+cstr).c_str(), 3564, 0., 3564.));
     hjetemf_cuts_.push_back(new TH1D((std::string("hjetemf")+istr.str()).c_str(), (std::string("Jet EMF after ")+cstr).c_str(), 100, 0., 1.));
+    //    hlifetime_cuts.push_back(new TH1D((std:;string("hlifetime")+istr.str()).c_str(), (std::string("Lifetime after ")+cstr).c_str(), 100, 0., 1.e-3);
   }
 
 }
@@ -176,7 +180,7 @@ void Histograms::fill(StoppedHSCPEvent& event) {
   hhalo_->Fill(halo.c_str(), 1.);
 
   // fill remaining histograms for events passing BX veto etc.
-  if (cuts_->cutN(5)) {
+  if (cuts_->allCutN(5)) {
 
     if (event.l1Jet_N > 0) {
       hl1et_->Fill(event.l1JetE.at(0));
@@ -222,6 +226,18 @@ void Histograms::fill(StoppedHSCPEvent& event) {
     hrout_->Fill(event.top5DigiROuter);
     hr1r2_->Fill(event.top5DigiR1, event.top5DigiR2);
     hpkout_->Fill(event.top5DigiRPeak, event.top5DigiROuter);
+
+    // energy fraction at same iphi
+    std::vector<double> tmp(75, 0);
+    for (unsigned i=0; i<event.tower_N; ++i) {
+      tmp.at(event.towerIPhi.at(i)) += event.towerE.at(i);
+    }
+    std::vector<double>::iterator max=max_element(tmp.begin(), tmp.end());
+
+    if (event.jet_N>0) {
+      htowiphifrac_->Fill((*max)/event.jetE.at(0));
+    }
+    
   }
 
   // loop over cuts
@@ -363,6 +379,8 @@ void Histograms::save() {
   hjetn90_->Write("",TObject::kOverwrite);
   hjetn90hits_->Write("",TObject::kOverwrite);
   hjetfhpd_->Write("",TObject::kOverwrite);
+  htowiphifrac_->Write("",TObject::kOverwrite);
+
   hnmu_->Write("",TObject::kOverwrite);
   hmuetaphi_->Write("",TObject::kOverwrite);
 

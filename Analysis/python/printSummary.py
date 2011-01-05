@@ -104,57 +104,57 @@ for i in range(0,nCuts):
 print '[/TABLE]'
 print
 
+print "Rate coefficients from control sample"
+print "Rate coefficient N90 : ", rateCoeffN90
+print "Rate coefficient CT  : ", rateCoeffCT
+
 # backgrounds
 n90nmo   = int(hcutnmo.GetBinContent(in90+1))
 ctnmo    = int(hcutnmo.GetBinContent(iCT+1))
 fincount = hcutcum.GetBinContent(iAllCuts+1)
 
-# n90 method
-bg1  = fn90*n90nmo/time
-ebg1 = sqrt(pow(efn90/fn90, 2) + 1/n90nmo)/time
-
-# CT method
-bg2  = fct*ctnmo/time
-ebg2 = sqrt(pow(efct/fct, 2) + 1/ctnmo)/time
-
-# combined n90 & CT
-bg3  = (bg1 + bg2) / 2
-
-# double bkgRateEstimationBothError = 0.5*sqrt (dN90dNtowersBkgStatError*dN90dNtowersBkgStatError +
-#					       rateN90m1e*rateN90m1e + 
-#					       dN90dNtowersBkgStatError*dN90dNtowersBkgStatError +
-#					       rateNtowersm1e*rateNtowersm1e +
-#					       4*rateFinale*rateFinale
-ebg3 = 0.
-
 print "N-1 rates"
-print '  n90   : %.2e ' % (n90nmo/time)
-print '  CT    : %.2e ' % (ctnmo/time)
+print '  n90   : %.2e +/- %.2e (stat)' % (n90nmo/time, sqrt(n90nmo)/time)
+print '  CT    : %.2e +/- %.2e (stat)' % (ctnmo/time, sqrt(ctnmo)/time)
 print
 
-print "N-1 rate coefficients"
-print '  n90   : %.3e ' % (fincount/n90nmo)
-print '  ct    : %.3e ' % (fincount/ctnmo)
-print
 
 print "Expected background rates"
-print '  Simple method : %.2e +/- %.2e' % (bg, ebg)
-print '  N90 method    : %.2e +/- %.2e' % (bg1, ebg1)
-print '  CT method     : %.2e +/- %.2e' % (bg2, ebg2)
-print '  N90 & CT      : %.2e +/- %.2e' % (bg3, ebg3)
+
+### all error variables are relative, not absolute ###
+
+# n90 method
+bgRateN90        = rateCoeffN90*n90nmo/time
+errStatBGRateN90 = 1/sqrt(n90nmo)
+errSystBGRateN90 = sqrt(errSystRateCoeff*errSystRateCoeff +
+                        errCtrlN90NM1Rate*errCtrlN90NM1Rate +
+                        errCtrlFinRate*errCtrlFinRate)
+
+print '  N90 method    : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (bgRateN90, bgRateN90*errStatBGRateN90, bgRateN90*errSystBGRateN90)
+
+
+# CT method
+bgRateCT         = rateCoeffCT*ctnmo/time
+errStatBGRateCT  = 1/sqrt(ctnmo)
+errSystBGRateCT  = sqrt(errSystRateCoeff*errSystRateCoeff +
+                        errCtrlCTNM1Rate*errCtrlCTNM1Rate +
+                        errCtrlFinRate*errCtrlFinRate)
+
+print '  CT method     : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (bgRateCT, bgRateCT*errStatBGRateCT, bgRateCT*errSystBGRateCT)
+
+
+# combined n90 & CT
+bgRateEst        = 0.5 * (bgRateN90 + bgRateCT)
+errStatBGRateEst = sqrt(errStatBGRateN90*errStatBGRateN90 +
+                        errStatBGRateCT*errStatBGRateCT)
+errSystBGRateEst = 0.5 * sqrt(2*errSystRateCoeff*errSystRateCoeff +
+                              errCtrlN90NM1Rate*errCtrlN90NM1Rate +
+                              errCtrlCTNM1Rate*errCtrlCTNM1Rate +
+                              4*errCtrlFinRate*errCtrlFinRate)
+
+
+print '  Combined      : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (bgRateEst, bgRateEst*errStatBGRateEst, bgRateEst*errSystBGRateEst)
 print
 
-print "Expected background counts"
-print '  Simple method : %.2e +/- %.2e' % (bg*time, ebg*time)
-print '  N90 method    : %.2e +/- %.2e' % (bg1*time, ebg1*time)
-print '  CT method     : %.2e +/- %.2e' % (bg2*time, ebg2*time)
-print '  N90 & CT      : %.2e +/- %.2e' % (bg3*time, ebg3*time)
-print
-
-print "Final count : %i" % (fincount)
-print
-
-print "Final rate : %.2e +/- %.2e" % (fincount/time, sqrt(fincount)/time)
-print
 
 
