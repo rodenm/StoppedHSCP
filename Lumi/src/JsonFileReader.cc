@@ -16,10 +16,13 @@ JsonFileReader::JsonFileReader (const std::string& fJasonFile) {
   std::cout << dumpCommand << std::endl;
   system (dumpCommand.c_str());
   std::ifstream data (flatName);
-  int run, lsFirst, lsLast;
   while (data) {
+    int run, lsFirst, lsLast;
+    run=lsFirst=lsLast=0;
     data >> run >> lsFirst >> lsLast;
-    mData[run].push_back (std::pair<int, int> (lsFirst, lsLast));
+    if (lsLast > 0) {
+      mData[run].push_back (std::pair<int, int> (lsFirst, lsLast));
+    }
   }
   remove (flatName);
 }

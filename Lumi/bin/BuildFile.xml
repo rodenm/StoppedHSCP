@@ -3,3 +3,4 @@
 <use name="root">
 <use name="oracleocci">
 <bin file="getSectionLumi.cc" name="getSectionLumi"></bin>
+<bin file="plotLumi.cc" name="plotLumi"></bin>

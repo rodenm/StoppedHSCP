@@ -88,9 +88,9 @@ void LumiDBReader::closeConnection () {
   fRecord->hltKey = rs->getString(2);
   fRecord->fill = rs->getInt(3);
   unsigned utime = 0;
-  convertTimestamp (rs->getTimestamp(5), &utime);
+  convertTimestamp (rs->getTimestamp(4), &utime);
   fRecord->startTime = utime;
-  convertTimestamp (rs->getTimestamp(6), &utime);
+  convertTimestamp (rs->getTimestamp(5), &utime);
   fRecord->stopTime = utime;
   if (rs->next()) {
     cout << "LumiDBReader::getRunSummary-> More than one record for run: "
@@ -189,6 +189,22 @@ std::vector<int> LumiDBReader::getAllCMSSections (int fRun) {
   }
 
 
+  std::vector<int> LumiDBReader::getAllFills () {
+    std::vector<int> result;
+    openConnection ();
+    char query [4096];
+    sprintf (query, "select unique FILLNUM from cms_lumi_prod.cmsrunsummary ORDER BY FILLNUM");
+    Statement *stmt = mConn->createStatement(query);
+    ResultSet *rs = stmt->executeQuery();
+    while (rs->next()) {
+      int fill = rs->getInt(1);
+      if (fill > 0) result.push_back(fill);
+    }
+    stmt->closeResultSet(rs);
+    mConn->terminateStatement(stmt);
+    return result;
+  }
+
   bool LumiDBReader::getDetails (int fSummaryId, LumiDetailsRecord* fRecord, const char* fAlgorithm) {
   if (!fRecord) return false;
   openConnection ();
@@ -215,5 +231,70 @@ std::vector<int> LumiDBReader::getAllCMSSections (int fRun) {
   mConn->terminateStatement(stmt);
   return true;
 }
+
+  bool LumiDBReader::getRunSectionData (int fRun, 
+					std::vector<LumiSummaryRecord>* fSummaryRecord,
+					std::vector<LumiDetailsRecord>* fDetailedRecord) {
+    if (!fSummaryRecord) return false;
+    bool getDetails = fDetailedRecord;
+    fSummaryRecord->clear();
+    if (getDetails) fDetailedRecord->clear();
+    openConnection ();
+    char query [4096];
+    if (getDetails) {
+      sprintf (query, "select %s, %s from cms_lumi_prod.lumisummary S join cms_lumi_prod.lumidetail D on S.LUMISUMMARY_ID=D.LUMISUMMARY_ID where S.RUNNUM=%d and D.ALGONAME='OCC1' order by S.LUMILSNUM", 
+	       "S.LUMISUMMARY_ID, S.RUNNUM, S.CMSLSNUM, S.LUMILSNUM, S.LUMIVERSION, S.DTNORM, S.LHCNORM, S.INSTLUMI, S.INSTLUMIERROR, S.INSTLUMIQUALITY, S.CMSALIVE, S.STARTORBIT, S.NUMORBIT, S.LUMISECTIONQUALITY, S.BEAMENERGY, S.BEAMSTATUS",
+	       "D.LUMIDETAIL_ID, D.LUMISUMMARY_ID, D.BXLUMIVALUE, D.BXLUMIERROR, D.BXLUMIQUALITY, D.ALGONAME",
+	       fRun);
+    }
+    else {
+      sprintf (query, "select %s from cms_lumi_prod.lumisummary S where S.RUNNUM=%d order by S.LUMILSNUM", 
+	       "S.LUMISUMMARY_ID, S.RUNNUM, S.CMSLSNUM, S.LUMILSNUM, S.LUMIVERSION, S.DTNORM, S.LHCNORM, S.INSTLUMI, S.INSTLUMIERROR, S.INSTLUMIQUALITY, S.CMSALIVE, S.STARTORBIT, S.NUMORBIT, S.LUMISECTIONQUALITY, S.BEAMENERGY, S.BEAMSTATUS",
+	       fRun);
+    }
+    // cout << "Prepared query: " << query << endl;
+    Statement *stmt = mConn->createStatement(query);
+    ResultSet *rs = stmt->executeQuery();
+    while (rs->next()) {
+      fSummaryRecord->resize (fSummaryRecord->size() + 1);
+      LumiSummaryRecord& sr = fSummaryRecord->back();
+      sr.id = rs->getInt(1);
+      sr.run = rs->getInt(2);
+      sr.sectionCMS = rs->getInt(3);
+      sr.sectionLUMI = rs->getInt(4);
+      sr.version = rs->getString(5);
+      sr.dtNorm = rs->getDouble(6);
+      sr.lhcNorm = rs->getDouble(7);
+      sr.instLumi = rs->getDouble(8);
+      sr.instLumiError = rs->getDouble(9);
+      sr.instLumiQuality = rs->getInt(10);
+      sr.cmsAlive = rs->getInt(11);
+      sr.startOrbit = rs->getInt(12);
+      sr.numOrbits = rs->getInt(13);
+      sr.quality = rs->getInt(14);
+      sr.beamEnergy = rs->getDouble(15);
+      sr.beamStatus = rs->getString(16);
+      int offset = 16;
+
+      if (getDetails) {
+	fDetailedRecord->resize (fDetailedRecord->size()+1);
+	LumiDetailsRecord& dr = fDetailedRecord->back();
+	dr.id = rs->getInt(offset+1);
+	dr.summaryId = rs->getInt(offset+2);
+	Blob lumi = rs->getBlob(offset+3);
+	fillBXValues (lumi, dr.lumi);
+	Blob lumiError = rs->getBlob(offset+4);
+	fillBXValues (lumiError, dr.lumiError);
+	Blob lumiQuality = rs->getBlob(offset+5);
+	fillBXValues (lumiQuality, dr.lumiQuality);
+	dr.algoName = rs->getString(offset+6);
+      }
+      //  cout << "Query processed " << fSummaryRecord->size() << ' ' << sr.sectionLUMI << endl;
+    }
+    stmt->closeResultSet(rs);
+    mConn->terminateStatement(stmt);
+    return fSummaryRecord->size();
+  }
+
 
 }

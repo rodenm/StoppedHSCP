@@ -1,5 +1,7 @@
 <lcgdict>
 <selection>
+  <class name="shscp::DeliveredLumi"/>
+  <class name="shscp::AllLumiData"/>
   <class name="shscp::LumiSummaryRecord"/>
   <class name="shscp::LumiDetailsRecord"/>
   <class name="shscp::LumiDBReader"/>
