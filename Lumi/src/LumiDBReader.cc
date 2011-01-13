@@ -241,6 +241,18 @@ std::vector<int> LumiDBReader::getAllCMSSections (int fRun) {
     if (getDetails) fDetailedRecord->clear();
     openConnection ();
     char query [4096];
+    // grab number of LS   
+    sprintf (query, "select count(*) from cms_lumi_prod.lumisummary where RUNNUM=%d", fRun);
+    Statement *stmt0 = mConn->createStatement(query);
+    ResultSet *rs0 = stmt0->executeQuery();
+    if (!rs0->next()) return false;
+    int nSections = rs0->getInt(1);
+    stmt0->closeResultSet(rs0);
+    mConn->terminateStatement(stmt0);
+
+    *fSummaryRecord =  std::vector<LumiSummaryRecord> (nSections);
+    if (getDetails) *fDetailedRecord = std::vector<LumiDetailsRecord> (nSections);
+
     if (getDetails) {
       sprintf (query, "select %s, %s from cms_lumi_prod.lumisummary S join cms_lumi_prod.lumidetail D on S.LUMISUMMARY_ID=D.LUMISUMMARY_ID where S.RUNNUM=%d and D.ALGONAME='OCC1' order by S.LUMILSNUM", 
 	       "S.LUMISUMMARY_ID, S.RUNNUM, S.CMSLSNUM, S.LUMILSNUM, S.LUMIVERSION, S.DTNORM, S.LHCNORM, S.INSTLUMI, S.INSTLUMIERROR, S.INSTLUMIQUALITY, S.CMSALIVE, S.STARTORBIT, S.NUMORBIT, S.LUMISECTIONQUALITY, S.BEAMENERGY, S.BEAMSTATUS",
@@ -255,9 +267,14 @@ std::vector<int> LumiDBReader::getAllCMSSections (int fRun) {
     // cout << "Prepared query: " << query << endl;
     Statement *stmt = mConn->createStatement(query);
     ResultSet *rs = stmt->executeQuery();
+    int counter = 0;
     while (rs->next()) {
-      fSummaryRecord->resize (fSummaryRecord->size() + 1);
-      LumiSummaryRecord& sr = fSummaryRecord->back();
+      if (counter >= nSections) {
+	cerr << "LumiDBReader::getRunSectionData-> size mismatch: " << nSections << '/' << counter << endl;
+	fSummaryRecord->resize (counter+1);
+	if (getDetails) fDetailedRecord->resize (counter+1);
+      }
+      LumiSummaryRecord& sr = (*fSummaryRecord)[counter];
       sr.id = rs->getInt(1);
       sr.run = rs->getInt(2);
       sr.sectionCMS = rs->getInt(3);
@@ -277,8 +294,7 @@ std::vector<int> LumiDBReader::getAllCMSSections (int fRun) {
       int offset = 16;
 
       if (getDetails) {
-	fDetailedRecord->resize (fDetailedRecord->size()+1);
-	LumiDetailsRecord& dr = fDetailedRecord->back();
+	LumiDetailsRecord& dr = (*fDetailedRecord)[counter];
 	dr.id = rs->getInt(offset+1);
 	dr.summaryId = rs->getInt(offset+2);
 	Blob lumi = rs->getBlob(offset+3);
@@ -290,9 +306,15 @@ std::vector<int> LumiDBReader::getAllCMSSections (int fRun) {
 	dr.algoName = rs->getString(offset+6);
       }
       //  cout << "Query processed " << fSummaryRecord->size() << ' ' << sr.sectionLUMI << endl;
+      ++counter;
     }
     stmt->closeResultSet(rs);
     mConn->terminateStatement(stmt);
+    if (counter != nSections) {
+      cerr << "LumiDBReader::getRunSectionData-> final size mismatch: " << nSections << '/' << counter << endl;
+      fSummaryRecord->resize (counter);
+      if (getDetails) fDetailedRecord->resize (counter);
+    }
     return fSummaryRecord->size();
   }
 

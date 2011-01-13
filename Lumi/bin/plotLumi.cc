@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <iostream>
+#include "StoppedHSCP/Lumi/interface/JsonFileReader.h"
 #include "StoppedHSCP/Lumi/interface/LumiDBReader.h"
 #include "TFile.h"
 #include "TDatime.h"
@@ -13,19 +14,32 @@ using namespace shscp;
 int main (int argc, const char* argv[]) {
   const double ORBITTIME = BXINORBIT/40.08e6;
   const double LSTIME = ORBITTIME * double(0x40000);
+  JsonFileReader jfr ("GoodRuns_2010AB.json");
   TFile file ("plotLumi.root", "RECREATE");
   TDatime startHistTime (2010, 03, 25, 12, 00, 00);
   time_t startHistUTime = startHistTime.Convert();
   TDatime endHistTime (2010, 11, 15, 12, 00, 00);
   time_t totalSeconds = endHistTime.Convert()-startHistTime.Convert();
+
   TH1F hLumiScan ("hLumiScan","",0.1*totalSeconds/LSTIME, 0, totalSeconds);
   hLumiScan.GetXaxis()->SetTimeDisplay(1);
   hLumiScan.GetXaxis()->SetTimeOffset(startHistTime.Convert());
   hLumiScan.SetStats(kFALSE);
+
+  TH1F hLumiScanGood ("hLumiScanGood","",0.1*totalSeconds/LSTIME, 0, totalSeconds);
+  hLumiScanGood.GetXaxis()->SetTimeDisplay(1);
+  hLumiScanGood.GetXaxis()->SetTimeOffset(startHistTime.Convert());
+  hLumiScanGood.SetStats(kFALSE);
+
   TH1F hLumiScanData ("hLumiScanData","",totalSeconds/LSTIME, 0, totalSeconds);
   hLumiScanData.GetXaxis()->SetTimeDisplay(1);
   hLumiScanData.GetXaxis()->SetTimeOffset(startHistTime.Convert());
   hLumiScanData.SetStats(kFALSE);
+
+  TH1F hLumiScanGoodData ("hLumiScanGoodData","",totalSeconds/LSTIME, 0, totalSeconds);
+  hLumiScanGoodData.GetXaxis()->SetTimeDisplay(1);
+  hLumiScanGoodData.GetXaxis()->SetTimeOffset(startHistTime.Convert());
+  hLumiScanGoodData.SetStats(kFALSE);
 
   TH1F hLastSection ("hLastSection","hLastSection",1000, 0, 1000);
   TH1F hLastSectionOffset ("hLastSectionOffset","hLastSectionOffset",1000, 0, 1000);
@@ -79,7 +93,11 @@ int main (int argc, const char* argv[]) {
 	  double instLumi = lumiData.instLumi * 1406 / 60.21 / 1.e-30 / LSTIME; // s^-1*cm^-2
 	  double lumi = lumiData.instLumi*sectionLength;
 	  hLumiScan.Fill (sectionRelativeTime, 0.1 * instLumi);
-	  if (fill >= 1375 && fill <= 1427)  hLumiScanData.Fill (sectionRelativeTime, instLumi);
+	  if (jfr.goodLB (run, section)) hLumiScanGood.Fill (sectionRelativeTime, 0.1 * instLumi);
+	      if (fill >= 1375 && fill <= 1427)  {
+		hLumiScanData.Fill (sectionRelativeTime, instLumi);
+		if (jfr.goodLB (run, section)) 	hLumiScanGoodData.Fill (sectionRelativeTime, instLumi);
+	      }
 // 	  cout << "section/time/lumi: " << section << '/' << sectionRelativeTime << '/' 
 // 	       << lumiData.startOrbit << '/' << sectionStartTime << "/" << sectionStopTime << ' '  
 // 	       << lumi << endl;
@@ -105,6 +123,8 @@ int main (int argc, const char* argv[]) {
   }
   hLumiScan.Write();
   hLumiScanData.Write();
+  hLumiScanGood.Write();
+  hLumiScanGoodData.Write();
   hLastSectionOffset.Write();
   hLastSection.Write();
   file.Close();

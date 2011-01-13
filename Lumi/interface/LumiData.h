@@ -29,7 +29,7 @@ namespace shscp {
     typedef std::map <int, LumiRun> LumiData;
     AllLumiData ();
     AllLumiData (const std::string& fFileName);
-    AllLumiData (LumiDBReader& fDBReader);
+    AllLumiData (LumiDBReader& fDBReader, bool fDetails = true);
     bool dumpToFile (const std::string& fFileName) const;
 
     std::vector<int> getAllSections (int fRun) const;

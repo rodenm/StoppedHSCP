@@ -40,7 +40,7 @@ namespace shscp {
     }
   }
 
-  AllLumiData::AllLumiData (LumiDBReader& fDBReader) {
+  AllLumiData::AllLumiData (LumiDBReader& fDBReader, bool fDetails) {
     vector<int> fills (fDBReader.getAllFills ());
     for (size_t ifill = 0; ifill < fills.size(); ++ifill) {
       int fill = fills[ifill];
@@ -54,26 +54,28 @@ namespace shscp {
 	time_t runStart = rsr.startTime;
 	std::vector<LumiSummaryRecord> summaries;
 	std::vector<LumiDetailsRecord> details;
-	fDBReader.getRunSectionData (run, &summaries, &details);
+	fDBReader.getRunSectionData (run, &summaries, fDetails ? &details : 0);
 	for (size_t isection = 0; isection < summaries.size(); ++isection) {
 	  DeliveredLumi deliveredLumi;
 	  deliveredLumi.sensitiveFraction = 0;
 	  deliveredLumi.status = 0;
 	  const LumiSummaryRecord& lsr = summaries[isection];
-	  const LumiDetailsRecord& ldr = details[isection];
 	  int section = lsr.sectionLUMI;
-	  // check lumi fraction
-	  double maxLumi = ldr.lumi[0];
-	  for (int i = 1; i < BXINORBIT; ++i) if (ldr.lumi[i] > maxLumi) maxLumi = ldr.lumi[i];
-	  for (int i = 1; i < BXINORBIT; ++i) {
-	    if (ldr.lumi[i] > 0.01*maxLumi) {
-	      deliveredLumi.sensitiveFraction += 1.;
-	      if (ldr.lumi[i] < 0.75*maxLumi) {
-		deliveredLumi.status = 1;
-		// 		cout << "UNDERFILLED BUNCH: fill/run/section/bx "
-		// 		     << fill << '/' << run << '/' << section << '/' << i
-		// 		     << " lumi: " << ldr.lumi[i] << ", max: " << maxLumi
-		// 		     << endl;
+	  if (fDetails) {
+	    const LumiDetailsRecord& ldr = details[isection];
+	    // check lumi fraction
+	    double maxLumi = ldr.lumi[0];
+	    for (int i = 1; i < BXINORBIT; ++i) if (ldr.lumi[i] > maxLumi) maxLumi = ldr.lumi[i];
+	    for (int i = 1; i < BXINORBIT; ++i) {
+	      if (ldr.lumi[i] > 0.01*maxLumi) {
+		deliveredLumi.sensitiveFraction += 1.;
+		if (ldr.lumi[i] < 0.75*maxLumi) {
+		  deliveredLumi.status = 1;
+		  // 		cout << "UNDERFILLED BUNCH: fill/run/section/bx "
+		  // 		     << fill << '/' << run << '/' << section << '/' << i
+		  // 		     << " lumi: " << ldr.lumi[i] << ", max: " << maxLumi
+		  // 		     << endl;
+		}
 	      }
 	    }
 	  }
@@ -82,8 +84,8 @@ namespace shscp {
 	  deliveredLumi.fill = fill;
 	  deliveredLumi.run = run;
 	  deliveredLumi.section = section;
-	  deliveredLumi.begin = runStart + time_t(double (BXINORBIT*lsr.startOrbit)/LHCRATE);
-	  deliveredLumi.end = deliveredLumi.begin + time_t (double (BXINORBIT*lsr.numOrbits)/LHCRATE);
+	  deliveredLumi.begin = runStart + time_t(BXINORBIT*double (lsr.startOrbit)/LHCRATE);
+	  deliveredLumi.end = runStart + time_t (BXINORBIT*double(lsr.startOrbit+lsr.numOrbits)/LHCRATE);
 	  deliveredLumi.integratedLumi = lsr.instLumi*lsr.numOrbits;
 	  // fill data
 	  mData[run][section] = deliveredLumi;
@@ -136,12 +138,9 @@ namespace shscp {
   }
 
   std::vector<int> AllLumiData::getAllRuns (int fFill) const {
-    vector<int> result;
-    LumiData::const_iterator iRun = mData.begin();
-    for (; iRun != mData.end(); ++iRun) {
-      result.push_back (iRun->first);
-    }
-    return result;
+    std::map<int,std::vector<int> >::const_iterator iFill = mFills.find (fFill);
+    if (iFill != mFills.end()) return iFill->second;
+    return vector<int> (0);
   }
 
   std::vector<int> AllLumiData::getAllFills () {
