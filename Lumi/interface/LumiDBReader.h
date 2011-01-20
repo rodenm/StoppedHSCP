@@ -42,6 +42,8 @@ namespace shscp {
   
   const int BXINORBIT = 3564;
   const double LHCRATE = 40.08e6; // 40MHz
+  const int ORBITSINLS = 0x40000;
+  const double LSTIME = double (BXINORBIT)*double(ORBITSINLS)/LHCRATE;
   struct LumiDetailsRecord {
     int id;
     int summaryId;

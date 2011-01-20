@@ -34,8 +34,17 @@ namespace {
     }
   }
 
-  void convertTimestamp (const Timestamp& timestamp, unsigned* utime) {
-    struct tm timeinfo;
+  void convertTimestamp (const Timestamp& timestamp, time_t* utime) {
+    struct tm timeinfo,epoch;
+    
+    epoch.tm_year = 1970 - 1900;
+    epoch.tm_mon = 0;
+    epoch.tm_mday = 1;
+    epoch.tm_hour = 0;
+    epoch.tm_min = 0;
+    epoch.tm_sec = 0;
+    epoch.tm_isdst = 0;
+    time_t epochTime = mktime (&epoch);
     int t0;
     unsigned t1,t2,t3,t4;
     timestamp.getDate(t0, t2, t3);
@@ -46,8 +55,9 @@ namespace {
     timeinfo.tm_hour = int(t1);
     timeinfo.tm_min = int(t2);
     timeinfo.tm_sec = int(t3);
-    timeinfo.tm_isdst = -1;
-    *utime = mktime (&timeinfo);
+    timeinfo.tm_isdst = 0;
+    time_t localTime = mktime (&timeinfo);
+    *utime = localTime - epochTime;
   }
 }
 
@@ -87,7 +97,7 @@ void LumiDBReader::closeConnection () {
   fRecord->run = rs->getInt(1);
   fRecord->hltKey = rs->getString(2);
   fRecord->fill = rs->getInt(3);
-  unsigned utime = 0;
+  time_t utime = 0;
   convertTimestamp (rs->getTimestamp(4), &utime);
   fRecord->startTime = utime;
   convertTimestamp (rs->getTimestamp(5), &utime);

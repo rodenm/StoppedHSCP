@@ -5,3 +5,4 @@
 <bin file="getSectionLumi.cc" name="getSectionLumi"></bin>
 <bin file="plotLumi.cc" name="plotLumi"></bin>
 <bin file="plotLumi2.cc" name="plotLumi2"></bin>
+<bin file="getVisibleFraction.cc" name="getVisibleFraction"></bin>
