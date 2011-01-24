@@ -37,6 +37,11 @@ namespace shscp {
     AllLumiData (LumiDBReader& fDBReader, const std::string& fLHCLumiDir
 		 // = "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_GLOBAL/LHCFILES"
 		 );
+
+    void AddRun (int fFill, int fRun, const char* fStart, int fSections, double fLumi = 0);
+    void AddSections (int fRun, int fFirst, int fLast, double fLumi = 0);
+    void AddSection (int fRun, int fSection, double fLumi = 0);
+
     bool dumpToFile (const std::string& fFileName) const;
 
     std::vector<int> getAllSections (int fRun) const;

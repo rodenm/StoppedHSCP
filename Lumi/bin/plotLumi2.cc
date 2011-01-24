@@ -16,8 +16,9 @@ int main (int argc, const char* argv[]) {
   const double ORBITTIME = BXINORBIT/40.08e6;
   const double LSTIME = ORBITTIME * double(0x40000);
 
-  JsonFileReader jfr ("GoodRuns_2010AB.json");
+  JsonFileReader  jfr ("GoodRuns_2010AB.json");
   AllLumiData ald ("allLumiData2.txt");
+  //  AllLumiData ald ("allLumiData_LHC.txt");
 
   TFile file ("plotLumi.root", "RECREATE");
   TDatime startHistTime (2010, 03, 25, 12, 00, 00);
@@ -48,7 +49,7 @@ int main (int argc, const char* argv[]) {
   vector<int> fills = ald.getAllFills ();
   for (unsigned ifill = 0; ifill < fills.size(); ++ifill) {
     int fill = fills[ifill];
-    cout << "Processing fill " << fill << endl;
+    // cout << "Processing fill " << fill << endl;
     vector<int> runs = ald.getAllRuns(fill);
     for (unsigned irun = 0; irun < runs.size(); ++irun) {
       int run = runs[irun];

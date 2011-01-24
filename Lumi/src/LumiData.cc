@@ -39,7 +39,7 @@ namespace shscp {
 	else {
 	  if (dl.section == currentLS+1) {
 	    if (begin + timeOffset < currentLSend) {
-	      timeOffset += currentLSend-begin;
+	      timeOffset = currentLSend-begin;
 	      cerr<<"AllLumiData-> LS reset: " << dl.run<<'/'<<dl.section
  		  <<'/'<<begin
  		  <<" previous LS end: "<<currentLSend
@@ -71,6 +71,7 @@ namespace shscp {
     vector<int> fills (fDBReader.getAllFills ());
     for (size_t ifill = 0; ifill < fills.size(); ++ifill) {
       int fill = fills[ifill];
+      if (fill > 10000) continue;
       cout << "AllLumiData::AllLumiData-> Processing fill " << fill << ' ';
       vector<int> runs (fDBReader.getAllRuns (fill));
       for (size_t irun = 0; irun < runs.size(); ++irun) {
@@ -111,9 +112,13 @@ namespace shscp {
 	  deliveredLumi.fill = fill;
 	  deliveredLumi.run = run;
 	  deliveredLumi.section = section;
-	  deliveredLumi.begin = runStart + time_t(BXINORBIT*double (lsr.startOrbit)/LHCRATE);
-	  deliveredLumi.end = runStart + time_t (BXINORBIT*double(lsr.startOrbit+lsr.numOrbits)/LHCRATE);
-	  deliveredLumi.integratedLumi = lsr.instLumi*lsr.numOrbits;
+// 	  deliveredLumi.begin = runStart + time_t(BXINORBIT*double (lsr.startOrbit)/LHCRATE);
+// 	  deliveredLumi.end = runStart + time_t (BXINORBIT*double(lsr.startOrbit+lsr.numOrbits)/LHCRATE);
+// extract LS offset from LS#
+	  deliveredLumi.begin = runStart + time_t((section-1)*LSTIME);
+	  deliveredLumi.end = runStart + time_t (section*LSTIME);
+	  deliveredLumi.integratedLumi = lsr.instLumi*LSTIME;
+
 	  // fill data
 	  mData[run][section] = deliveredLumi;
 	  std::vector<int>& runsOfFill = mFills[fill];
@@ -135,7 +140,7 @@ namespace shscp {
     // first get all LHC files fills and BXs
     TTimeStamp beginOfAgeStamp (2010, 01, 01, 0, 0, 0, 0, kTRUE, -1*60*60);
     time_t beginOfAge = beginOfAgeStamp.GetSec();
-    typedef map<int, vector<pair<int, string> > > LHCFiles;
+    typedef map<int, string> LHCFiles;
     LHCFiles lhcFiles;
     namespace fs = boost::filesystem;
     fs::path dir (fLHCLumiDir);
@@ -150,15 +155,11 @@ namespace shscp {
       if (pos1 == string::npos) continue;
       string::size_type pos2 = filename.find('_', ++pos1);
       if (pos2 == string::npos) continue;
-      string::size_type pos3 = filename.find('_', ++pos2);
-      if (pos3 == string::npos) continue;
-      ++pos3;
-      if (filename.substr (pos1, pos2-pos1) == "lumi_" && filename.substr (pos3) == "CMS.txt") {
+      ++pos2;
+      if (filename.substr (pos1, pos2-pos1) == "lumi_" && filename.substr (pos2) == "CMS.txt") {
 	int fill = atoi (filename.substr (0, pos1-1).c_str());
 	if (fill <=0) continue;
-	int bx = atoi (filename.substr (pos2, pos3-pos2-1).c_str());
-	if (bx <= 0) continue;
-	lhcFiles[fill].push_back(pair<int,string> (bx,dir_itr->path().string()));
+	lhcFiles[fill]=dir_itr->path().string();
       }
     }
     double allMissingLumi = 0;
@@ -166,6 +167,7 @@ namespace shscp {
     // process fill by fill
     vector<int> allFills = fDBReader.getAllFills ();
     int lastRunPreviousFill = 0;
+    time_t PreviousFillTime = 0;
     for (size_t iFill = 0; iFill < allFills.size(); ++iFill) {
       int fill = allFills[iFill];
       //      cout << "AllLumiData-> processing fill " << fill << endl;
@@ -191,73 +193,77 @@ namespace shscp {
       }
       // get all data from LHC files
       map <time_t, double> lhcLumis;
-      vector<pair<int, string> > fillFiles = lhcData->second;
-      for (size_t iBx = 0; iBx < fillFiles.size(); ++iBx) {
-	const std::string& lhcFile = fillFiles[iBx].second;
-	//	cout << "AllLumiData-> processing LHC file " << lhcFile << endl;
-	ifstream inFile (lhcFile.c_str());
-	while (inFile) {
-	  int i1, i2;
-	  time_t timeStamp0;
-	  double lumi, d1, d2, d3;
-	  inFile >> i1 >> i2 >> timeStamp0 >> lumi >> d1 >> d2 >> d3;
-	  if (timeStamp0 < 7500000) continue;
-	  time_t timeStamp = timeStamp0 + beginOfAge; // UTC
-	  if (timeStamp < beginRuns.begin()->first) { //add artificial run
-	    int extraRun = beginRuns.begin()->second - 1;
-	    if (extraRun > lastRunPreviousFill) {
-	      beginRuns[timeStamp] = extraRun;
-	      cout << "added artificial run " << extraRun << " with timestamp " << timeStamp << " to fill " << fill << " timestamp " << timeStamp0 << '/' << lhcFile << endl;
-	    }
-	    else {
-	      cerr << "AllLumiData-> Can not add artificial run " << extraRun 
-		   << " to fill " << fill << " the run exists in previous fill" << endl; 
-	    }
+      const std::string& lhcFile = lhcData->second;
+      //	cout << "AllLumiData-> processing LHC file " << lhcFile << endl;
+      ifstream inFile (lhcFile.c_str());
+      while (inFile) {
+	int i1, i2;
+	time_t timeStamp0;
+	double lumi, d1, d2, d3;
+	inFile >> i1 >> i2 >> timeStamp0 >> lumi >> d1 >> d2 >> d3;
+	if (timeStamp0 < 7500000) continue;
+	time_t timeStamp = timeStamp0 + beginOfAge; // UTC
+	if (timeStamp < beginRuns.begin()->first) { //add artificial run
+	  int extraRun = beginRuns.begin()->second - 1;
+	  if (extraRun <= lastRunPreviousFill) {
+	    cerr << "AllLumiData-> Can not add artificial run " << extraRun 
+		 << " to fill " << fill << " the run exists in previous fill" << endl; 
+	    continue;
 	  }
-	  map<time_t, int>::iterator iRun = beginRuns.upper_bound (timeStamp);
-	  if (iRun != beginRuns.begin()) {
-	    --iRun;
-	    time_t beginRun = iRun->first;
-	    int run = iRun->second;
-	    if (mData.find (run) == mData.end()) mFills[fill].push_back(run);
-	    LumiRun& lumiRun = mData[run];    
-	    int section = int(floor(double(timeStamp-beginRun)/LSTIME))+1;
-	    time_t sectionBegin = beginRun+time_t(floor((section-1)*LSTIME));
-	    time_t sectionEnd = beginRun+time_t(floor(section*LSTIME));
-	    pair<LumiRun::iterator, bool> isec = lumiRun.insert (pair<int, DeliveredLumi> (section, DeliveredLumi()));
-	    DeliveredLumi& dl = isec.first->second;
-	    if (isec.second) { // new section
-	      dl.fill = fill;
-	      dl.run = run;
-	      dl.section = section;
-	      dl.begin = sectionBegin;
-	      dl.end = sectionEnd;
-	      dl.integratedLumi = lumi*LSTIME;
-	      dl.sensitiveFraction = 1.;
-	      dl.status = 1;
-	    }
-	    else {
-	      if (dl.fill != fill || dl.run != run || dl.section != section ||
-		  dl.begin != sectionBegin || dl.end != sectionEnd) {
-		cerr << "AllLumiData-> unmatched entry in " << lhcFile << ": "  
-		     << fill<<'/'<<run<<'/'<<section<<'/'<<sectionBegin<<'/'<<sectionEnd
-		     << " vs "
-		     << dl.fill<<'/'<<dl.run<<'/'<<dl.section<<'/'<<dl.begin<<'/'<<dl.end
-		     << endl;
-	      }
-	      else {
-		dl.integratedLumi += lumi*LSTIME;
-	      }
-	    }
-	    dl.sensitiveFraction -= 1./double(BXINORBIT);
+	  if (timeStamp < PreviousFillTime) {
+	      cerr << "AllLumiData-> Can not add artificial run " << extraRun 
+		   << " to fill " << fill 
+		   << " timestamp " << timeStamp << " overlaps with previous fill" << endl; 
+	      continue;
+	  }
+	  beginRuns[timeStamp] = extraRun;
+	  cout << "added artificial run " << extraRun << " with timestamp " << timeStamp << " to fill " << fill << " timestamp " << timeStamp0 << '/' << lhcFile << endl;
+	}
+	map<time_t, int>::iterator iRun = beginRuns.upper_bound (timeStamp);
+	if (iRun != beginRuns.begin()) {
+	  --iRun;
+	  time_t beginRun = iRun->first;
+	  int run = iRun->second;
+	  if (mData.find (run) == mData.end()) mFills[fill].push_back(run);
+	  LumiRun& lumiRun = mData[run];    
+	  int section = int(floor(double(timeStamp-beginRun)/LSTIME))+1;
+	  time_t sectionBegin = beginRun+time_t(floor((section-1)*LSTIME));
+	  time_t sectionEnd = beginRun+time_t(floor(section*LSTIME));
+	  pair<LumiRun::iterator, bool> isec = lumiRun.insert (pair<int, DeliveredLumi> (section, DeliveredLumi()));
+	  DeliveredLumi& dl = isec.first->second;
+	  if (isec.second) { // new section
+	    dl.fill = fill;
+	    dl.run = run;
+	    dl.section = section;
+	    dl.begin = sectionBegin;
+	    dl.end = sectionEnd;
+	    dl.integratedLumi = lumi*LSTIME;
+	    dl.sensitiveFraction = 1.;
+	    dl.status = 1;
 	  }
 	  else {
-	    cerr << "AllLumiData->  Missing run for fill " << fill << " timestamp " << timeStamp0<<'/'<<timeStamp << endl; 
+	    if (dl.fill != fill || dl.run != run || dl.section != section ||
+		dl.begin != sectionBegin || dl.end != sectionEnd) {
+	      cerr << "AllLumiData-> unmatched entry in " << lhcFile << ": "  
+		   << fill<<'/'<<run<<'/'<<section<<'/'<<sectionBegin<<'/'<<sectionEnd
+		   << " vs "
+		   << dl.fill<<'/'<<dl.run<<'/'<<dl.section<<'/'<<dl.begin<<'/'<<dl.end
+		   << endl;
+	    }
+	    else {
+	      dl.integratedLumi += lumi*LSTIME;
+	    }
 	  }
+	}
+	else {
+	  cerr << "AllLumiData->  Missing run for fill " << fill << " timestamp " << timeStamp0<<'/'<<timeStamp << endl; 
 	}
       }
       sort (mFills[fill].begin(), mFills[fill].end());
-      if (!mFills[fill].empty()) lastRunPreviousFill = mFills[fill].back();
+      if (!mFills[fill].empty()) {
+	lastRunPreviousFill = mFills[fill].back();
+	PreviousFillTime = mData[lastRunPreviousFill].rbegin()->second.end;
+      }
     }
     cout << "AllLumiData->  Total LUMI missing in LHC files: " << allMissingLumi 
 	 << " of total " << allLumi << " that is " << allMissingLumi/allLumi << endl;
@@ -267,11 +273,11 @@ namespace shscp {
     ofstream out (fFileName.c_str());
     LumiData::const_iterator irun = mData.begin();
     for (; irun != mData.end(); ++irun) {
-      int run = irun->first;
+      //   int run = irun->first;
       const LumiRun& lumiRun = irun->second;
       LumiRun::const_iterator isec = lumiRun.begin();
       for (; isec != lumiRun.end(); ++isec) {
-	int section = isec->first;
+	//	int section = isec->first;
 	const DeliveredLumi& deliveredLumi = isec->second;
 	out << deliveredLumi.fill << ' ' << deliveredLumi.run << ' ' << deliveredLumi.section 
 	    << ' ' << (long)deliveredLumi.begin << ' ' << (long)deliveredLumi.end 
@@ -350,4 +356,63 @@ namespace shscp {
     if (iSection == run.end()) return 0;
     return &iSection->second;
   }
-}
+
+  
+  void AllLumiData::AddRun (int fFill, int fRun, const char* fStart, int fSections, double fLumi) {
+    if (mData.find (fRun) != mData.end()) {
+      cerr << "AllLumiData::AddRun-> run " << fRun << " already exists. Ignore" << endl;
+      return;
+    }
+    // convert time
+    struct tm tm;
+    if (!strptime (fStart, "%d-%m-%y %H:%M:%S", &tm)) {
+      cerr << "AllLumiData::AddRun-> can not convert date string: " << fStart << endl;
+      return;
+    }
+    tm.tm_isdst = -1;
+    time_t runStart = mktime (&tm);
+    
+    DeliveredLumi dl;
+    dl.fill = fFill;
+    dl.run = fRun;
+    dl.integratedLumi = fLumi; 
+    dl.sensitiveFraction = 0;
+    dl.status = 0;
+    for (dl.section = 1; dl.section <= fSections; ++dl.section) {
+      dl.begin = runStart + time_t (floor ((dl.section-1)*LSTIME + 0.5));
+      dl.end = runStart + time_t (floor (dl.section*LSTIME + 0.5));
+      mData[dl.run][dl.section] = dl;
+    }
+    if (find (mFills[dl.fill].begin(), mFills[dl.fill].end(), dl.run) == mFills[dl.fill].end()) {
+      mFills[dl.fill].push_back (dl.run);
+      sort (mFills[dl.fill].begin(), mFills[dl.fill].end()); 
+    }
+  }
+
+  void AllLumiData::AddSections (int fRun, int fFirst, int fLast, double fLumi) {
+    for (int i = fFirst; i <= fLast; ++i) AddSection (fRun, i, fLumi);
+  }
+
+  void AllLumiData::AddSection (int fRun, int fSection, double fLumi) {
+    if (mData.find (fRun) == mData.end() || mData[fRun].empty()) {
+      cerr << "AllLumiData::AddSection-> run " << fRun << " not found. Ignore" << endl;
+      return;
+    }
+    if (mData[fRun].find(fSection) != mData[fRun].end()) {
+      cerr << "AllLumiData::AddSection-> section " << fSection << " is already defined for run " << fRun << ". Ignore" << endl;
+      return;
+    }
+    DeliveredLumi firstSection = mData[fRun].begin()->second;
+    DeliveredLumi dl;
+    dl.fill = firstSection.fill;
+    dl.run = firstSection.run;
+    dl.section = fSection;
+    dl.integratedLumi = fLumi; 
+    dl.sensitiveFraction = 0;
+    dl.status = 0;
+    dl.begin = firstSection.begin + time_t (floor ((dl.section-firstSection.section)*LSTIME + 0.5));
+    dl.end = firstSection.begin + time_t (floor ((dl.section-firstSection.section+1)*LSTIME + 0.5));
+    mData[dl.run][dl.section] = dl;
+  }
+
+} // namespace
