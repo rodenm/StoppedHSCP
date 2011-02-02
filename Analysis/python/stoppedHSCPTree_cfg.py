@@ -88,7 +88,7 @@ process.source = cms.Source ("PoolSource",fileNames = readFiles, secondaryFileNa
 process.GlobalTag.globaltag = "GR10_P_V10::All"
 
 readFiles.extend( [
-    'file:///tmp/jbrooke/HLT_StoppedHSCP_148829.root'
+#    'file:///tmp/jbrooke/HLT_StoppedHSCP_148829.root'
 #    'file:///tmp/jbrooke/test2.root'
 #    'file:pickEvents_1375_1400.root',
 #    'file:pickEvents_1408_1424.root',

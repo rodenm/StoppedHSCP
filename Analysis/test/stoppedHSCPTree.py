@@ -22,9 +22,13 @@ process.GlobalTag.globaltag = 'GR09_R_35X_V2::All'  # collision 09 35X reprocess
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 
 # input files
+readFiles = cms.untracked.vstring()
+secFiles = cms.untracked.vstring()
+process.source = cms.Source ("PoolSource",fileNames = readFiles, secondaryFileNames = secFiles)
 readFiles.extend( [
-
-       '/store/data/BeamCommissioning09/MinimumBias/RAW-RECO/18thFebPreProd_351p1_Skim_StoppedHSCP-v2/0000/F2790389-351E-DF11-B286-00237DA15C66.root'
+    '/store/data/Run2010A/MinimumBias/RAW-RECO/v6/000/144/089/B038D378-60BB-DF11-B8A6-0025B3E066A0.root',
+    '/store/data/Run2010A/MinimumBias/RAW-RECO/v6/000/144/089/442AC975-60BB-DF11-AC02-0025B3E05BFC.root'
+#       '/store/data/BeamCommissioning09/MinimumBias/RAW-RECO/18thFebPreProd_351p1_Skim_StoppedHSCP-v2/0000/F2790389-351E-DF11-B286-00237DA15C66.root'
 #       '/store/data/BeamCommissioning09/MinimumBias/RAW-RECO/18thFebPreProd_351p1_Skim_StoppedHSCP-v2/0000/EE0ADD92-381E-DF11-98C1-001E0B5FE438.root',
 #       '/store/data/BeamCommissioning09/MinimumBias/RAW-RECO/18thFebPreProd_351p1_Skim_StoppedHSCP-v2/0000/B43234C1-511E-DF11-8B0C-00237DA13FB6.root',
 #       '/store/data/BeamCommissioning09/MinimumBias/RAW-RECO/18thFebPreProd_351p1_Skim_StoppedHSCP-v2/0000/A677D2CF-361E-DF11-9841-001F29C4A352.root',
@@ -36,7 +40,6 @@ readFiles.extend( [
 #       '/store/data/BeamCommissioning09/MinimumBias/RAW-RECO/18thFebPreProd_351p1_Skim_StoppedHSCP-v2/0000/8C034D82-511E-DF11-A699-00237DA28240.root',
 #       '/store/data/BeamCommissioning09/MinimumBias/RAW-RECO/18thFebPreProd_351p1_Skim_StoppedHSCP-v2/0000/421E9E83-511E-DF11-B22D-00237DA1A548.root',
 #       '/store/data/BeamCommissioning09/MinimumBias/RAW-RECO/18thFebPreProd_351p1_Skim_StoppedHSCP-v2/0000/4094BC51-3C1E-DF11-96E7-00237DA14FF4.root'
-
        ] );
 
 
