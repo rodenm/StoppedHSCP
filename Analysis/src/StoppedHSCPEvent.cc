@@ -15,6 +15,9 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   time(0), // timestamp from EvF
   time2(0),  // calculated from run start + L1 counters for LS, orbit, BX
   time3(0),  // timestamp from LHC info in L1 data
+  bxAfterCollision(0),
+  bxBeforeCollision(0),
+  bxWrtCollision(-99999),
   gtAlgoWord0(0),
   gtAlgoWord1(0),
   gtTechWord(0),

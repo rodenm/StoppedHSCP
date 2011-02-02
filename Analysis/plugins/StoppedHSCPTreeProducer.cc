@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.48 2010/10/15 14:00:47 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.49 2010/11/12 01:00:43 jbrooke Exp $
 //
 //
 
@@ -104,6 +104,10 @@
 #include "TH1.h"
 #include "TTree.h"
 #include "TF1.h"
+
+// Helper classes
+#include "StoppedHSCP/Analysis/interface/LhcFills.h"
+
 
 // TTree definition
 #include "StoppedHSCP/Analysis/interface/StoppedHSCPEvent.h"
@@ -246,6 +250,10 @@ private:
   int badchannelstatus_;
   std::set<HcalDetId> badChannels_;
 
+  // LHC Fill structure (temporary until this is available through CMSSW)
+  LhcFills fills_;
+  std::vector<unsigned> colls_;
+
   // debug stuff
   bool l1JetsMissing_;
   bool hltJetsMissing_;
@@ -303,6 +311,8 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   doDigis_(iConfig.getUntrackedParameter<bool>("doDigis",false)),
   writeHistos_(iConfig.getUntrackedParameter<bool>("writeHistos",false)),
   badchannelstatus_(iConfig.getUntrackedParameter<int>("badchannelstatus",0)),
+  fills_(),
+  colls_(0),
   l1JetsMissing_(false),
   hltJetsMissing_(false),
   hltMissing_(false),
@@ -380,6 +390,9 @@ StoppedHSCPTreeProducer::beginRun(edm::Run const & run, edm::EventSetup const& i
       badChannels_.insert(id);
     }
   //std::cout <<"bad Channel size = "<<badChannels_.size()<<std::endl;
+
+  colls_ = fills_.getCollisionsFromRun(run.runAuxiliary().run());
+
 }
 
 
@@ -422,8 +435,10 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent){
   unsigned long bxPerOrbit = 3564;
   unsigned nsPerBx = 25;
 
+  unsigned bx = iEvent.bunchCrossing();
+
   event_->id = iEvent.id().event();
-  event_->bx = iEvent.bunchCrossing();
+  event_->bx = bx;
   event_->orbit = iEvent.orbitNumber();
   event_->lb = iEvent.luminosityBlock();
   event_->run = iEvent.id().run();
@@ -433,6 +448,26 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent){
   // calculate event time from run start + LS, orbit, BX
   ULong64_t nBx = ( ( (iEvent.luminosityBlock() * orbitsPerLB ) + iEvent.orbitNumber() ) * bxPerOrbit ) + iEvent.bunchCrossing() ;
   event_->time2 = iEvent.getRun().beginTime().value() + (nBx * nsPerBx);
+
+  // find last collision
+  int lastColl=-1;
+  int nextColl=-1;
+  unsigned c=0;
+  for (c=0; c<colls_.size() && colls_.at(c)<bx; ++c) {
+  }
+  lastColl = colls_.at(c);
+  if (c+1 < colls_.size()) nextColl = colls_.at(c+1);
+  else nextColl = colls_.at(0);
+
+  event_->bxAfterCollision = bx - lastColl;
+  event_->bxBeforeCollision = nextColl - bx;
+
+  if (event_->bxAfterCollision > event_->bxBeforeCollision) {
+    event_->bxWrtCollision = event_->bxAfterCollision;
+  }
+  else {
+    event_->bxWrtCollision = -1 * event_->bxBeforeCollision;
+  }
 
 }
   

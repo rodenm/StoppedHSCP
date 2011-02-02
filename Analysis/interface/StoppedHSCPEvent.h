@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.28 2010/10/28 16:33:22 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.29 2010/11/12 01:00:42 jbrooke Exp $
 //
 //
 
@@ -171,6 +171,9 @@ class StoppedHSCPEvent : public TObject {
   ULong64_t time;   // timestamp from EvF
   ULong64_t time2;  // calculated from run start + L1 counters for LS, orbit, BX
   ULong64_t time3;  // timestamp from LHC info in L1 data
+  ULong_t bxAfterCollision;
+  ULong_t bxBeforeCollision;
+  Long_t bxWrtCollision;
 
   // trigger
   ULong64_t gtAlgoWord0;
@@ -319,7 +322,7 @@ class StoppedHSCPEvent : public TObject {
   // digis
 
 
-  ClassDef(StoppedHSCPEvent,9);
+  ClassDef(StoppedHSCPEvent,10);
 
 };
 
