@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.49 2010/11/12 01:00:43 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.50 2011/02/02 14:04:51 jbrooke Exp $
 //
 //
 
@@ -449,24 +449,43 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent){
   ULong64_t nBx = ( ( (iEvent.luminosityBlock() * orbitsPerLB ) + iEvent.orbitNumber() ) * bxPerOrbit ) + iEvent.bunchCrossing() ;
   event_->time2 = iEvent.getRun().beginTime().value() + (nBx * nsPerBx);
 
-  // find last collision
-  int lastColl=-1;
-  int nextColl=-1;
-  unsigned c=0;
-  for (c=0; c<colls_.size() && colls_.at(c)<bx; ++c) {
-  }
-  lastColl = colls_.at(c);
-  if (c+1 < colls_.size()) nextColl = colls_.at(c+1);
-  else nextColl = colls_.at(0);
+  // find last/next collisions
+  unsigned bxLast=-1;
+  unsigned bxNext=-1;
 
-  event_->bxAfterCollision = bx - lastColl;
-  event_->bxBeforeCollision = nextColl - bx;
+  if (colls_.size() > 0) {
+
+    // special case if event is before first collision
+    if (bx < colls_.at(0)) {
+      bxLast = colls_.at(colls_.size() - 1);
+      bxNext = colls_.at(colls_.at(0));
+    }
+
+    // special case if event is after last collision
+    else if (bx > colls_.at(colls_.size() - 1)) {
+      bxLast = colls_.at(colls_.size() - 1);
+      bxNext = colls_.at(colls_.at(0));
+    }
+
+    // general case
+    else {      
+      for (unsigned c=0; c<(colls_.size()-1) && colls_.at(c)<bx; ++c) {
+	bxLast = colls_.at(c);
+	bxNext = colls_.at(c+1);
+      }
+    }
+
+  }
+
+  // set values in ntuple
+  event_->bxAfterCollision = bx - bxLast;
+  event_->bxBeforeCollision = bxNext - bx;
 
   if (event_->bxAfterCollision > event_->bxBeforeCollision) {
-    event_->bxWrtCollision = event_->bxAfterCollision;
+    event_->bxWrtCollision = event_->bxBeforeCollision;
   }
   else {
-    event_->bxWrtCollision = -1 * event_->bxBeforeCollision;
+    event_->bxWrtCollision = -1 * event_->bxAfterCollision;
   }
 
 }
