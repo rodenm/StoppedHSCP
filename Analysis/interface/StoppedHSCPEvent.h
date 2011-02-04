@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.30 2011/02/02 14:04:51 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.31 2011/02/04 12:30:41 heistera Exp $
 //
 //
 
@@ -74,6 +74,9 @@ namespace shscp {
     double time;
     unsigned flags;
     unsigned aux;
+    unsigned ieta;
+    unsigned iphi;
+    unsigned depth;
     ClassDef(RecHit,1);
   };
 
@@ -300,6 +303,9 @@ class StoppedHSCPEvent : public TObject {
   std::vector<Double_t> rechittime;
   std::vector<UInt_t> rechitflags;
   std::vector<UInt_t> rechitaux;
+  std::vector<UInt_t> rechitieta;
+  std::vector<UInt_t> rechitiphi;
+  std::vector<UInt_t> rechitdepth;
 
   // noise summary data
   double noiseMinE2Over10TS;
