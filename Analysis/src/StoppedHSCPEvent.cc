@@ -108,6 +108,10 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   towerEtHad(0),
   towerEEm(0),
   towerEtEm(0),
+  rechite(0),
+  rechittime(0),
+  rechitflags(0),
+  rechitaux(0),
   noiseMinE2Over10TS(0.),
   noiseMaxE2Over10TS(0.),
   noiseMaxHPDHits(0),
@@ -244,6 +248,13 @@ void StoppedHSCPEvent::addTower(Tower t) {
   ++tower_N;
 }
 
+void StoppedHSCPEvent::addRecHit(RecHit r) {
+  rechite.push_back(r.e);
+  rechittime.push_back(r.time);
+  rechitflags.push_back(r.flags);
+  rechitaux.push_back(r.aux);
+  ++rechit_N;
+}
 
 void StoppedHSCPEvent::addHPD(HPD h) {
   hpdId.push_back(h.id);

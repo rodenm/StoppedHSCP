@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.29 2010/11/12 01:00:42 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.30 2011/02/02 14:04:51 jbrooke Exp $
 //
 //
 
@@ -68,6 +68,15 @@ namespace shscp {
     ClassDef(Tower,1);
   };
   
+  struct RecHit {
+    RecHit() : e(0.),time(0.), flags(0), aux(0) { }
+    double e;
+    double time;
+    unsigned flags;
+    unsigned aux;
+    ClassDef(RecHit,1);
+  };
+
   struct HPD {
   HPD() : id(0),eta(0),phi(0),totalZeros(0),maxZeros(0),nJet(0),
       fc0(0.), fc1(0.), fc2(0.), fc3(0.), fc4(0.), fc5(0.), fc6(0.), fc7(0.), fc8(0.), fc9(0.),
@@ -149,6 +158,7 @@ class StoppedHSCPEvent : public TObject {
   void addJet(shscp::Jet j);
   void addMuon(shscp::Muon m);
   void addTower(shscp::Tower t);
+  void addRecHit(shscp::RecHit r);
   void addHPD(shscp::HPD h);
   //  void addDigi(shscp::HcalDigi d);
   void addMCDecay(shscp::MCDecay d);
@@ -284,6 +294,13 @@ class StoppedHSCPEvent : public TObject {
   std::vector<Double_t> towerEEm;
   std::vector<Double_t> towerEtEm;
 
+  // calo rechits
+  unsigned rechit_N;
+  std::vector<Double_t> rechite;
+  std::vector<Double_t> rechittime;
+  std::vector<UInt_t> rechitflags;
+  std::vector<UInt_t> rechitaux;
+
   // noise summary data
   double noiseMinE2Over10TS;
   double noiseMaxE2Over10TS;
@@ -322,7 +339,7 @@ class StoppedHSCPEvent : public TObject {
   // digis
 
 
-  ClassDef(StoppedHSCPEvent,10);
+  ClassDef(StoppedHSCPEvent,11);
 
 };
 
