@@ -59,7 +59,10 @@ process.ntuple = cms.Path(
     +process.gtDigis
     +process.l1extraParticles
     +process.hcalDigis
-    
+
+# get hcal rechits (do not know if needed ...)
+    +process.hbhereco
+
 # generate TTree    
     +process.stoppedHSCPTree
 )

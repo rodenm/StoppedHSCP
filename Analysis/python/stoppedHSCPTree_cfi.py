@@ -27,6 +27,10 @@ stoppedHSCPTree = cms.EDAnalyzer(
     towerMinEnergy = cms.untracked.double(1.),
     towerMaxEta = cms.untracked.double(1.3),
     
+    # calo rechits
+    caloRecHitTag = cms.untracked.InputTag("hbhereco"),
+    rechitMinEnergy = cms.untracked.double(0.2),
+
     # HCAL digis/noise
     hcalNoiseTag = cms.untracked.InputTag("hcalnoise"),
     hcalNoiseFilterResultTag = cms.untracked.InputTag("HBHENoiseFilterResultProducer:HBHENoiseFilterResult"),

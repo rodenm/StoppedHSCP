@@ -10,6 +10,7 @@ SHSCP_EventContent = cms.PSet(
     'keep L1GlobalTriggerReadoutRecord_gtDigis_*_*',
     'keep *_hcalDigis_*_*',
     'keep *_towerMaker_*_*',
+    'keep *_hbhereco_*_*',
     'keep *_hcalnoise_*_*',
     'keep *_iterativeCone5CaloJets_*_*',
     'keep *_sisCone5CaloJets_*_*',

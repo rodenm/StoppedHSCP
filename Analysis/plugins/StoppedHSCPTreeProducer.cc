@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.50 2011/02/02 14:04:51 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.51 2011/02/02 16:31:33 jbrooke Exp $
 //
 //
 
@@ -65,6 +65,12 @@
 // towers
 #include "DataFormats/CaloTowers/interface/CaloTowerCollection.h"
 #include "DataFormats/CaloTowers/interface/CaloTowerDetId.h"
+
+// rechits
+#include "Geometry/Records/interface/CaloGeometryRecord.h" 
+#include "Geometry/CaloGeometry/interface/CaloGeometry.h" 
+#include "DataFormats/GeometryVector/interface/GlobalPoint.h" 
+#include "DataFormats/HcalRecHit/interface/HcalRecHitCollections.h"
 
 // digis
 #include "CalibFormats/HcalObjects/interface/HcalCoderDb.h"
@@ -136,6 +142,7 @@ private:
   void doTrigger(const edm::Event&, const edm::EventSetup&);
   void doJets(const edm::Event&);
   void doCaloTowers(const edm::Event&);
+  void doCaloRecHits(const edm::Event&);
   void doMuons(const edm::Event&);
   void doHcalNoise(const edm::Event&);
   void doBeamHalo(const edm::Event&);
@@ -220,6 +227,7 @@ private:
   edm::InputTag cosmicMuonTag_;
   edm::InputTag verticesTag_;
   edm::InputTag caloTowerTag_;
+  edm::InputTag caloRecHitTag_;
   edm::InputTag hcalNoiseTag_;
   edm::InputTag hcalNoiseFilterResultTag_;
   edm::InputTag rbxTag_;
@@ -231,12 +239,16 @@ private:
   HLTConfigProvider hltConfig_;
   unsigned hltPathIndex_;
 
+  // HCAL geometry
+  const CaloGeometry* geo;
+
   // cuts
   double towerMinEnergy_;
   double towerMaxEta_;
   double jetMinEnergy_;
   double jetMaxEta_;
   double digiMinFc_;
+  double rechitMinEnergy_;	
 
   // output control
   bool doMC_;
@@ -262,6 +274,7 @@ private:
   bool jetsMissing_;
   bool muonsMissing_;
   bool towersMissing_;
+  bool rechitsMissing_;
   bool noiseSumMissing_;
   bool rbxsMissing_;
   bool hpdsMissing_;
@@ -295,6 +308,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   cosmicMuonTag_(iConfig.getUntrackedParameter<edm::InputTag>("cosmicMuonTag",edm::InputTag("muonsFromCosmics"))),
   verticesTag_(iConfig.getUntrackedParameter("verticesTag",edm::InputTag("offlinePrimaryVertices"))),
   caloTowerTag_(iConfig.getUntrackedParameter<edm::InputTag>("caloTowerTag",edm::InputTag("towerMaker"))),
+  caloRecHitTag_(iConfig.getUntrackedParameter<edm::InputTag>("caloRecHitTag",edm::InputTag("hbhereco"))),
   hcalNoiseTag_(iConfig.getUntrackedParameter<edm::InputTag>("hcalNoiseTag",edm::InputTag("hcalnoise"))),
   hcalNoiseFilterResultTag_(iConfig.getUntrackedParameter<edm::InputTag>("hcalNoiseFilterResultTag",edm::InputTag("HBHENoiseFilterResultProducer"))),
   rbxTag_(iConfig.getUntrackedParameter<edm::InputTag>("rbxTag",edm::InputTag("hcalnoise"))),
@@ -303,6 +317,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   hcalDigiTag_(iConfig.getUntrackedParameter<edm::InputTag>("hcalDigiTag",edm::InputTag("hcalDigis"))),
   towerMinEnergy_(iConfig.getUntrackedParameter<double>("towerMinEnergy", 1.)),
   towerMaxEta_(iConfig.getUntrackedParameter<double>("towerMaxEta", 1.3)),
+  rechitMinEnergy_(iConfig.getUntrackedParameter<double>("rechitMinEnergy", 0.2)),
   jetMinEnergy_(iConfig.getUntrackedParameter<double>("jetMinEnergy", 1.)),
   jetMaxEta_(iConfig.getUntrackedParameter<double>("jetMaxEta", 3.)),
   digiMinFc_(iConfig.getUntrackedParameter<double>("digiMinFc", 30)),
@@ -320,6 +335,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   jetsMissing_(false),
   muonsMissing_(false),
   towersMissing_(false),
+  rechitsMissing_(false),
   noiseSumMissing_(false),
   rbxsMissing_(false),
   hpdsMissing_(false),
@@ -370,6 +386,11 @@ StoppedHSCPTreeProducer::beginRun(edm::Run const & run, edm::EventSetup const& i
   hltConfig_.init(run, iSetup, hltResultsTag_.process(), changed);
   hltPathIndex_ = hltConfig_.triggerIndex(hltPath_);
 
+  // HCAL geometry to calculate eta/phi for CaloRecHits
+  edm::ESHandle<CaloGeometry> pG;
+  iSetup.get<CaloGeometryRecord>().get(pG);
+  geo = pG.product();
+
   // HCAL bad channel removal
   badChannels_.clear();
   edm::ESHandle<HcalChannelQuality> p;
@@ -419,6 +440,7 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
     doVertices(iEvent);
     doRecHits(iEvent);
     doCaloTowers(iEvent);
+    doCaloRecHits(iEvent);
     doJets(iEvent);
     doTimingFromDigis(iEvent, iSetup);
   }
@@ -827,6 +849,48 @@ void StoppedHSCPTreeProducer::doCaloTowers(const edm::Event& iEvent) {
   }
   
 }
+
+// store calo rechits
+void StoppedHSCPTreeProducer::doCaloRecHits(const edm::Event& iEvent) {
+/*
+	// get calo rechits
+	edm::Handle<HBHERecHitCollection> hbhe;
+	iEvent.getByLabel(caloRecHitTag_,hbhe);
+
+	if (hbhe.isValid()) {
+		
+		const HBHERecHitCollection Hithbhe = *(hbhe.product());
+		HBHERecHitCollection::const_iterator hith = (hbhe.product())->begin ();
+		for (; hith != (hbhe.product())->end (); hith++) {
+
+			GlobalPoint pos = geo->getPosition((*hith).detid());
+
+			shscp::RecHit rh;
+
+			rh.e = (*hith).energy();
+
+			if (rh.e > rechitMinEnergy_ ) {
+
+				rh.time  = (*hith).time();
+				rh.flags = (*hith).flags();
+				rh.aux   = (*hith).aux();
+				rh.eta   = pos.eta();
+				rh.phi   = pos.phi();
+				rh.ieta  = (*hith).id().ieta();
+				rh.iphi  = (*hith).id().iphi();
+				rh.depth = (*hith).id().depth();
+
+				event_->addRecHit(rh);
+			}
+		}
+
+
+	} else {
+		if (!rechitsMissing_) edm::LogWarning("MissingProduct") << "CaloRecHits not found.  Branches will not be filled" << std::endl;
+		rechitsMissing_ = true;
+	}
+*/}
+
 
 void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent) {
 
