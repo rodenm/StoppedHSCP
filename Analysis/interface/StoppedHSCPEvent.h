@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.31 2011/02/04 12:30:41 heistera Exp $
+// $Id: StoppedHSCPEvent.h,v 1.32 2011/02/04 14:22:41 heistera Exp $
 //
 //
 
@@ -69,14 +69,16 @@ namespace shscp {
   };
   
   struct RecHit {
-    RecHit() : e(0.),time(0.), flags(0), aux(0) { }
+    RecHit() : e(0.),time(0.), flags(0), aux(0), eta(0.),phi(0.),ieta(0),iphi(0),depth(0) { }
     double e;
     double time;
     unsigned flags;
     unsigned aux;
-    unsigned ieta;
-    unsigned iphi;
-    unsigned depth;
+    double eta;
+    double phi;
+    int ieta;
+    int iphi;
+    int depth;
     ClassDef(RecHit,1);
   };
 
@@ -303,9 +305,11 @@ class StoppedHSCPEvent : public TObject {
   std::vector<Double_t> rechittime;
   std::vector<UInt_t> rechitflags;
   std::vector<UInt_t> rechitaux;
-  std::vector<UInt_t> rechitieta;
-  std::vector<UInt_t> rechitiphi;
-  std::vector<UInt_t> rechitdepth;
+  std::vector<Double_t> rechitEta;
+  std::vector<Double_t> rechitPhi;
+  std::vector<Int_t> rechitIEta;
+  std::vector<Int_t> rechitIPhi;
+  std::vector<Int_t> rechitDepth;
 
   // noise summary data
   double noiseMinE2Over10TS;

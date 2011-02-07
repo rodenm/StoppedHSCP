@@ -112,9 +112,11 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   rechittime(0),
   rechitflags(0),
   rechitaux(0),
-  rechitieta(0),
-  rechitiphi(0),
-  rechitdepth(0),
+  rechitEta(0.),
+  rechitPhi(0.),
+  rechitIEta(0),
+  rechitIPhi(0),
+  rechitDepth(0),
   noiseMinE2Over10TS(0.),
   noiseMaxE2Over10TS(0.),
   noiseMaxHPDHits(0),
@@ -256,9 +258,11 @@ void StoppedHSCPEvent::addRecHit(RecHit r) {
   rechittime.push_back(r.time);
   rechitflags.push_back(r.flags);
   rechitaux.push_back(r.aux);
-  rechitieta.push_back(r.ieta);
-  rechitiphi.push_back(r.iphi);
-  rechitdepth.push_back(r.depth);
+  rechitEta.push_back(r.eta);
+  rechitPhi.push_back(r.phi); 
+  rechitIEta.push_back(r.ieta);
+  rechitIPhi.push_back(r.iphi);
+  rechitDepth.push_back(r.depth);
   ++rechit_N;
 }
 
