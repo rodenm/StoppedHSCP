@@ -82,6 +82,11 @@ if (useCAF):
     scheduler = "caf"
     storage = "T2_CH_CAF"
 
+#storage = "T3_US_UMD"
+#user_remote_dir = HSCP_postrun_files
+
+
+
 string = "[CRAB]\n\
 jobtype = cmssw\n\
 scheduler = "+scheduler+"\n\
@@ -106,7 +111,7 @@ proxy_server = myproxy.cern.ch"
 if (useCAF):
     string += "queue = cmscaf1nd"
 else:
-    string += "#se_black_list = \n\
+    string += "\n#se_black_list = \n\
 #se_white_list = \n\
 #ce_black_list = \n\
 ce_white_list = heplnx206.pp.rl.ac.uk,heplnx207.pp.rl.ac.uk\n\
