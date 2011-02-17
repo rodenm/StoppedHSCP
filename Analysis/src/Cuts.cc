@@ -7,7 +7,7 @@
 #include <fstream>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
-
+#include <math.h>
 
 Cuts::Cuts(StoppedHSCPEvent* event, bool isMC) :
   event_(event),
@@ -72,10 +72,12 @@ unsigned Cuts::nCuts() const {
 // return result of a particular cut
 bool Cuts::cutN(unsigned n) const 
 {
-  
   switch (n) {
   case 0:  // trigger
-    return !isMC_ || ((((event_->gtAlgoWord0>>16)&1) == 1) && (event_->hltJet_N>0) && (event_->hltJetE[0]> 20.) && (event_->hltJetEta[0]<1.3));
+    return !isMC_ || ((((event_->gtAlgoWord0>>16)&1) == 1) // trigger fires
+		      && (event_->hltJet_N>0) // at least one jet
+		      && (event_->hltJetE[0]> 20.)  // greater than 20 GeV
+		      && (fabs(event_->hltJetEta[0])<1.3)); // in HB
   case 1:  // BX mask
     return isMC_ || ! bxMask_.at(event_->bx);
   case 2:  // BPTX
@@ -89,9 +91,9 @@ bool Cuts::cutN(unsigned n) const
   case 6:  // std HCAL cuts
     return event_->noiseFilterResult;
   case 7:  // jet 30 
-    return event_->jet_N>0 && event_->jetE[0]>30. && event_->jetEta[0]<1.3;
+    return event_->jet_N>0 && event_->jetE[0]>30. && fabs(event_->jetEta[0])<1.3;
   case 8:  // jet 50
-    return event_->jet_N>0 && event_->jetE[0]>50. && event_->jetEta[0]<1.3;
+    return event_->jet_N>0 && event_->jetE[0]>50. && fabs(event_->jetEta[0])<1.3;
   case 9:  // jet n60
     return event_->jet_N>0 && event_->jetN60[0]<6;
   case 10:  // jet n90
@@ -167,7 +169,7 @@ const std::string Cuts::cutName(unsigned n) const {
 
 }
 
-
+// Returns true if all cuts up to and including n are passed; returns false otherwise
 bool Cuts::allCutN(unsigned n) const 
 {
   bool pass=true;
@@ -176,6 +178,8 @@ bool Cuts::allCutN(unsigned n) const
   }
   return pass;
 }
+
+
 
 
 // return result of all cuts
@@ -196,6 +200,28 @@ bool Cuts::cutNMinusOne(unsigned n) const {
   for (unsigned i=0; i<nCuts(); ++i) {
     if (i!=n) pass = pass && cutN(i);
   }
+  return pass;
+
+}
+
+// returns combined result of all cuts EXCEPT those specified in 'some' vector
+bool Cuts::cutNMinusSome(std::vector<unsigned int> some) const {
+
+  bool pass=true;
+  for (unsigned i=0; i<nCuts(); ++i) 
+    {
+      bool checkthiscut=true;
+      for (unsigned int n=0;n<some.size();++n) // loop over cuts to be excluded
+	{
+	  if (i==some[n]) // current cut should be excluded; set 'checkthiscut' to false
+	    {
+	      checkthiscut=false;
+	      break;
+	    }
+	}
+      // pass = boolean AND of all cuts to be checked
+      if (checkthiscut==true) pass = pass && cutN(i);
+    }
   return pass;
 
 }
@@ -240,7 +266,7 @@ bool Cuts::stdHcalCutN(unsigned n) const
     return true;
     break;
   case 1:
-    return event_->jet_N>0 && event_->jetE[0]>50. && event_->jetEta[0]<1.3;
+    return event_->jet_N>0 && event_->jetE[0]>50. && fabs(event_->jetEta[0])<1.3;
     break;
   case 2:
     return event_->mu_N==0;

@@ -39,6 +39,7 @@ class Cuts {
 
   // result of n minus one cuts
   bool cutNMinusOne(unsigned n) const;
+  bool cutNMinusSome(std::vector<unsigned int> n) const;
 
   // result of cuts after smearing, for systematics
   bool cutNSyst(unsigned n, double smear) const;
