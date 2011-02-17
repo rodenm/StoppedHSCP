@@ -1,10 +1,13 @@
 <use name="root"/>
 <use name="roofit"/>
 <use name="roostats"/>
+<use name="boost_program_options"/>
 <use name="boost"/>
 <use name="StoppedHSCP/Analysis"/>
 
 <bin name="makeHistograms" file="MakeHistograms.cpp"/>
+<bin name="makeJeffsHistograms" file="MakeJeffsHistograms.cpp"/>
+
 
 <bin name="background" file="background.cpp"/>
 
