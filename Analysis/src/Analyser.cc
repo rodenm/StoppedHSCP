@@ -20,7 +20,6 @@ Analyser::Analyser(std::string ifile, std::string outdir, std::vector<unsigned> 
   dumpFile_(),
   lifetimeFile_()
 {
-  
   // log files
   std::string fd(outdir);
   fd+="/fullDump.log";
@@ -181,14 +180,17 @@ bool Analyser::isWatchedEvent() {
 }
 
 
-void Analyser::loop() {
+void Analyser::loop(Long64_t maxEvents) {
 
   reset();
  
   unsigned currentRun=0;
 
   // run loop
-  for (unsigned long i=0; i<nEvents_; ++i, nextEvent()) {
+
+  if (maxEvents<=0) maxEvents=nEvents_;
+
+  for (unsigned long i=0; i<maxEvents; ++i, nextEvent()) {
     
     if (i%100000==0) {
       std::cout << "Processing " << i << "th event" << std::endl;
@@ -208,7 +210,6 @@ void Analyser::loop() {
 
     // fill histograms
     histogrammer_.fill(*event_);
-    
     // print watched events
     if (isWatchedEvent()) {
       printCutValues(dumpFile_);
