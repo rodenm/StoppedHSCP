@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.32 2011/02/04 14:22:41 heistera Exp $
+// $Id: StoppedHSCPEvent.h,v 1.33 2011/02/07 09:15:01 heistera Exp $
 //
 //
 
@@ -69,7 +69,7 @@ namespace shscp {
   };
   
   struct RecHit {
-    RecHit() : e(0.),time(0.), flags(0), aux(0), eta(0.),phi(0.),ieta(0),iphi(0),depth(0) { }
+    RecHit() : e(0.),time(0.), flags(0), aux(0), eta(0.),phi(0.),ieta(0),iphi(0),depth(0), RBXindex(0), RMindex(0) { }
     double e;
     double time;
     unsigned flags;
@@ -79,6 +79,8 @@ namespace shscp {
     int ieta;
     int iphi;
     int depth;
+    int RBXindex;
+    int RMindex;
     ClassDef(RecHit,1);
   };
 
@@ -310,6 +312,8 @@ class StoppedHSCPEvent : public TObject {
   std::vector<Int_t> rechitIEta;
   std::vector<Int_t> rechitIPhi;
   std::vector<Int_t> rechitDepth;
+  std::vector<Int_t> rechitRBXindex;
+  std::vector<Int_t> rechitRMindex;
 
   // noise summary data
   double noiseMinE2Over10TS;
@@ -322,6 +326,20 @@ class StoppedHSCPEvent : public TObject {
   double noiseMax25GeVHitTime;
   double noiseMinRBXEMF;
   bool noiseFilterResult;
+  
+  float noiseEventEMEnergy;
+  float noiseEventHadEnergy;
+  float noiseEventTrackEnergy;
+  int noiseNumProblematicRBXs;
+
+  // NoiseSummary Calculated Quantities
+  std::vector<double> topHPD5TimeSamples;
+  unsigned topHPD5PeakSample;
+  double   topHPD5Total;
+  double   topHPD5R1;
+  double   topHPD5R2;
+  double   topHPD5RPeak;
+  double   topHPD5ROuter;
 
   // Beam Halo data
   bool beamHalo_CSCTight;

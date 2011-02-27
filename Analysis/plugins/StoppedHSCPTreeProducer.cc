@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.51 2011/02/02 16:31:33 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.52 2011/02/07 11:09:22 heistera Exp $
 //
 //
 
@@ -71,6 +71,8 @@
 #include "Geometry/CaloGeometry/interface/CaloGeometry.h" 
 #include "DataFormats/GeometryVector/interface/GlobalPoint.h" 
 #include "DataFormats/HcalRecHit/interface/HcalRecHitCollections.h"
+#include "CalibCalorimetry/HcalAlgos/interface/HcalLogicalMapGenerator.h"
+#include "CondFormats/HcalObjects/interface/HcalLogicalMap.h"
 
 // digis
 #include "CalibFormats/HcalObjects/interface/HcalCoderDb.h"
@@ -157,6 +159,10 @@ private:
 			   double& r2,
 			   double& rpeak,
 			   double& router);
+
+
+  void FillNoiseObjectTopDigiSamples(shscp::HPD& hpd, std::vector<double>& outvec);
+  void FillNoiseObjectTop5DigiSamples(shscp::HPD& hpd, std::vector<double>& outvec);
 
 public:
   
@@ -256,7 +262,9 @@ private:
   bool doDigis_;
   bool writeHistos_;
 
-
+  // Hcal Logical map (ieta-iphi->hardware) object
+  HcalLogicalMap* logicalMap_;  
+  
   // bad channel status to mask;
   HcalChannelQuality* chanquality_;
   int badchannelstatus_;
@@ -317,10 +325,10 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   hcalDigiTag_(iConfig.getUntrackedParameter<edm::InputTag>("hcalDigiTag",edm::InputTag("hcalDigis"))),
   towerMinEnergy_(iConfig.getUntrackedParameter<double>("towerMinEnergy", 1.)),
   towerMaxEta_(iConfig.getUntrackedParameter<double>("towerMaxEta", 1.3)),
-  rechitMinEnergy_(iConfig.getUntrackedParameter<double>("rechitMinEnergy", 0.2)),
   jetMinEnergy_(iConfig.getUntrackedParameter<double>("jetMinEnergy", 1.)),
   jetMaxEta_(iConfig.getUntrackedParameter<double>("jetMaxEta", 3.)),
   digiMinFc_(iConfig.getUntrackedParameter<double>("digiMinFc", 30)),
+  rechitMinEnergy_(iConfig.getUntrackedParameter<double>("rechitMinEnergy", 0.2)),
   doMC_(iConfig.getUntrackedParameter<bool>("doMC",true)),
   doReco_(iConfig.getUntrackedParameter<bool>("doReco",true)),
   doDigis_(iConfig.getUntrackedParameter<bool>("doDigis",false)),
@@ -356,6 +364,8 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
 
   edm::LogInfo("StoppedHSCPTree") << "Going to fill " << log << std::endl;
 
+  HcalLogicalMapGenerator gen;
+  logicalMap_=new HcalLogicalMap(gen.createMap());
 }
 
 
@@ -414,6 +424,7 @@ StoppedHSCPTreeProducer::beginRun(edm::Run const & run, edm::EventSetup const& i
 
   colls_ = fills_.getCollisionsFromRun(run.runAuxiliary().run());
 
+  //for (uint i=0;i<colls_.size();++i)  std::cout <<"colls "<<i<<"  = "<<colls_[i]<<std::endl;
 }
 
 
@@ -427,7 +438,6 @@ void
 StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   event_ = new StoppedHSCPEvent();
-  
   doEventInfo(iEvent);
   doTrigger(iEvent, iSetup);
   
@@ -452,11 +462,9 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
 }
 
 void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent){ 
-
   unsigned long orbitsPerLB = 1<<18;
   unsigned long bxPerOrbit = 3564;
   unsigned nsPerBx = 25;
-
   unsigned bx = iEvent.bunchCrossing();
 
   event_->id = iEvent.id().event();
@@ -472,23 +480,23 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent){
   event_->time2 = iEvent.getRun().beginTime().value() + (nBx * nsPerBx);
 
   // find last/next collisions
-  unsigned bxLast=-1;
-  unsigned bxNext=-1;
-
+  int bxLast=-1;
+  int bxNext=-1;
   if (colls_.size() > 0) {
-
     // special case if event is before first collision
     if (bx < colls_.at(0)) {
       bxLast = colls_.at(colls_.size() - 1);
       bxNext = colls_.at(colls_.at(0));
     }
-
     // special case if event is after last collision
     else if (bx > colls_.at(colls_.size() - 1)) {
-      bxLast = colls_.at(colls_.size() - 1);
+      bxLast = colls_.at(colls_.size()-1);
+      // For MC, colls_ = [1], so  colls_.at(colls_.at(0)) = colls_.at(1), which doesn't exist.
+      // Protection added here against that case.
+      // JIM -- do you want to use the conditional statement below, or add in a separate "else if" for this circumstance?
+      //if (colls_.size()>colls_.at(0))
       bxNext = colls_.at(colls_.at(0));
     }
-
     // general case
     else {      
       for (unsigned c=0; c<(colls_.size()-1) && colls_.at(c)<bx; ++c) {
@@ -496,20 +504,17 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent){
 	bxNext = colls_.at(c+1);
       }
     }
-
   }
 
   // set values in ntuple
   event_->bxAfterCollision = bx - bxLast;
   event_->bxBeforeCollision = bxNext - bx;
-
   if (event_->bxAfterCollision > event_->bxBeforeCollision) {
     event_->bxWrtCollision = event_->bxBeforeCollision;
   }
   else {
     event_->bxWrtCollision = -1 * event_->bxAfterCollision;
   }
-
 }
   
 
@@ -852,7 +857,7 @@ void StoppedHSCPTreeProducer::doCaloTowers(const edm::Event& iEvent) {
 
 // store calo rechits
 void StoppedHSCPTreeProducer::doCaloRecHits(const edm::Event& iEvent) {
-/*
+  /*
 	// get calo rechits
 	edm::Handle<HBHERecHitCollection> hbhe;
 	iEvent.getByLabel(caloRecHitTag_,hbhe);
@@ -870,7 +875,7 @@ void StoppedHSCPTreeProducer::doCaloRecHits(const edm::Event& iEvent) {
 			rh.e = (*hith).energy();
 
 			if (rh.e > rechitMinEnergy_ ) {
-
+			     
 				rh.time  = (*hith).time();
 				rh.flags = (*hith).flags();
 				rh.aux   = (*hith).aux();
@@ -879,7 +884,8 @@ void StoppedHSCPTreeProducer::doCaloRecHits(const edm::Event& iEvent) {
 				rh.ieta  = (*hith).id().ieta();
 				rh.iphi  = (*hith).id().iphi();
 				rh.depth = (*hith).id().depth();
-
+                                rh.RBXindex = logicalMap_->getHcalFrontEndId(hith->detid()).rbxIndex();
+				rh.RMindex  = logicalMap_->getHcalFrontEndId(hith->detid()).rm();
 				event_->addRecHit(rh);
 			}
 		}
@@ -889,7 +895,8 @@ void StoppedHSCPTreeProducer::doCaloRecHits(const edm::Event& iEvent) {
 		if (!rechitsMissing_) edm::LogWarning("MissingProduct") << "CaloRecHits not found.  Branches will not be filled" << std::endl;
 		rechitsMissing_ = true;
 	}
-*/}
+  */
+} // doCaloRecHits(...)
 
 
 void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent) {
@@ -1016,6 +1023,14 @@ void StoppedHSCPTreeProducer::doHcalNoise(const edm::Event& iEvent) {
     event_->noiseMin25GeVHitTime = summary->min25GeVHitTime();
     event_->noiseMax25GeVHitTime = summary->max25GeVHitTime();
     event_->noiseMinRBXEMF = summary->minRBXEMF();
+
+    event_->noiseEventEMEnergy = summary->eventEMEnergy();
+    event_->noiseEventHadEnergy = summary->eventHadEnergy();
+    event_->noiseEventTrackEnergy = summary->eventTrackEnergy();
+    event_->noiseNumProblematicRBXs = summary->numProblematicRBXs();
+    // The following only work in 3_11_X (?) and above
+    //event_->noiseNumIsolatedNoiseChannels = summary->numIsolatedNoiseChannels();
+    //event_->noiseIsolatedNoiseSumEt = summary->isolatedNoiseSumEt();
   }
   else {
     if (!noiseSumMissing_) edm::LogWarning("MissingProduct") << "HCALNoiseSummary not found.  Branch will not be filled" << std::endl;
@@ -1039,51 +1054,117 @@ void StoppedHSCPTreeProducer::doHcalNoise(const edm::Event& iEvent) {
   edm::Handle<HcalNoiseRBXCollection> rbxs;
   iEvent.getByLabel(rbxTag_,rbxs);
   
-  if (rbxs.isValid()) {
-    for(HcalNoiseRBXCollection::const_iterator it = rbxs->begin(); 
-	it!=rbxs->end();
-	++it) {
-      
-      std::vector<HcalNoiseHPD> hpds = it->HPDs();
-      for (std::vector<HcalNoiseHPD>::const_iterator hpd = hpds.begin();
-	   hpd!=hpds.end();
-	   ++hpd) {
-	
-	shscp::HPD h;
-	h.id = hpd->idnumber();
-	h.totalZeros = hpd->totalZeros();
-	h.maxZeros = hpd->maxZeros();
-	h.nJet = 999;  // TODO - fill nJet
-	h.fc0 = hpd->bigCharge().at(0);
-	h.fc1 = hpd->bigCharge().at(1);
-	h.fc2 = hpd->bigCharge().at(2);
-	h.fc3 = hpd->bigCharge().at(3);
-	h.fc4 = hpd->bigCharge().at(4);
-	h.fc5 = hpd->bigCharge().at(5);
-	h.fc6 = hpd->bigCharge().at(6);
-	h.fc7 = hpd->bigCharge().at(7);
-	h.fc8 = hpd->bigCharge().at(8);
-	h.fc9 = hpd->bigCharge().at(9);
-	h.fc5_0 = hpd->big5Charge().at(0);
-	h.fc5_1 = hpd->big5Charge().at(1);
-	h.fc5_2 = hpd->big5Charge().at(2);
-	h.fc5_3 = hpd->big5Charge().at(3);
-	h.fc5_4 = hpd->big5Charge().at(4);
-	h.fc5_5 = hpd->big5Charge().at(5);
-	h.fc5_6 = hpd->big5Charge().at(6);
-	h.fc5_7 = hpd->big5Charge().at(7);
-	h.fc5_8 = hpd->big5Charge().at(8);
-	h.fc5_9 = hpd->big5Charge().at(9);
-	event_->addHPD(h);
+  if (rbxs.isValid()) 
+    {
+      // Store the HPD object with the largest total Charge; used that for forming noise variables
+      shscp::HPD maxHPD;
+      double maxCharge=0;
 
-      }
+      for(HcalNoiseRBXCollection::const_iterator it = rbxs->begin(); 
+	  it!=rbxs->end();
+	  ++it) {
+	
+	std::vector<HcalNoiseHPD> hpds = it->HPDs();
+	for (std::vector<HcalNoiseHPD>::const_iterator hpd = hpds.begin();
+	     hpd!=hpds.end();
+	     ++hpd) {
+	  
+	  shscp::HPD h;
+	  h.id = hpd->idnumber();
+	  h.totalZeros = hpd->totalZeros();
+	  h.maxZeros = hpd->maxZeros();
+	  h.nJet = 999;  // TODO - fill nJet
+	  h.fc0 = hpd->bigCharge().at(0);
+	  h.fc1 = hpd->bigCharge().at(1);
+	  h.fc2 = hpd->bigCharge().at(2);
+	  h.fc3 = hpd->bigCharge().at(3);
+	  h.fc4 = hpd->bigCharge().at(4);
+	  h.fc5 = hpd->bigCharge().at(5);
+	  h.fc6 = hpd->bigCharge().at(6);
+	  h.fc7 = hpd->bigCharge().at(7);
+	  h.fc8 = hpd->bigCharge().at(8);
+	  h.fc9 = hpd->bigCharge().at(9);
+	  h.fc5_0 = hpd->big5Charge().at(0);
+	  h.fc5_1 = hpd->big5Charge().at(1);
+	  h.fc5_2 = hpd->big5Charge().at(2);
+	  h.fc5_3 = hpd->big5Charge().at(3);
+	  h.fc5_4 = hpd->big5Charge().at(4);
+	  h.fc5_5 = hpd->big5Charge().at(5);
+	  h.fc5_6 = hpd->big5Charge().at(6);
+	  h.fc5_7 = hpd->big5Charge().at(7);
+	  h.fc5_8 = hpd->big5Charge().at(8);
+	  h.fc5_9 = hpd->big5Charge().at(9);
+	  // Compute total charge for the "top5" of this HPD; compare to maxCharge
+	  double totalCharge = 0;
+	  totalCharge+= h.fc5_0+h.fc5_1+h.fc5_2+h.fc5_3+h.fc5_4;
+	  totalCharge+= h.fc5_5+h.fc5_6+h.fc5_7+h.fc5_8+h.fc5_9;
+	  if (totalCharge>maxCharge)
+	    {
+	      maxCharge=totalCharge;
+	      //maxHPD=hpd;
+	      maxHPD=h;
+	    }
+	  event_->addHPD(h);
+	  
+	} // loop on HPDs
+      } // loop on RBXs
+      // One maximum HPD has been found, compute NoiseSummary-based R values
+
+      // Fill event vector "topHPD5TimeSamples" with "top5" charges from max HPD
+      FillNoiseObjectTop5DigiSamples(maxHPD,event_->topHPD5TimeSamples);
+
+      // Compute noise summary versions of R1, R2, etc. variables
+      pulseShapeVariables(event_->topHPD5TimeSamples,
+			  event_->topHPD5PeakSample,
+			  event_->topHPD5Total,
+			  event_->topHPD5R1,
+			  event_->topHPD5R2,
+			  event_->topHPD5RPeak,
+			  event_->topHPD5ROuter);
     }
-  }
   else {
     if (!hpdsMissing_) edm::LogWarning("MissingProduct") << "HCALNoiseRBXCollection not found.  Branch will not be filled" << std::endl;
     hpdsMissing_ = true;
   }
   
+}// doHcalNoise(...)
+
+void StoppedHSCPTreeProducer::FillNoiseObjectTop5DigiSamples(shscp::HPD& hpd, std::vector<double>& outvec)
+{
+  /* Fill a pulse shape vector with values from the "top5" digis in a single HPD.
+     Only positive charge values are allowed; otherwise, the vector entry is 0.
+  */
+  outvec.clear();
+  outvec.push_back(std::max(0.,hpd.fc5_0));
+  outvec.push_back(std::max(0.,hpd.fc5_1));
+  outvec.push_back(std::max(0.,hpd.fc5_2));
+  outvec.push_back(std::max(0.,hpd.fc5_3));
+  outvec.push_back(std::max(0.,hpd.fc5_4));
+  outvec.push_back(std::max(0.,hpd.fc5_5));
+  outvec.push_back(std::max(0.,hpd.fc5_6));
+  outvec.push_back(std::max(0.,hpd.fc5_7));
+  outvec.push_back(std::max(0.,hpd.fc5_8));
+  outvec.push_back(std::max(0.,hpd.fc5_9));
+  return;
+}
+
+void FillNoiseObjectTopDigiSamples(shscp::HPD& hpd, std::vector<double>& outvec)
+{
+  /* Fill a pulse shape vector with values from the digi with the largest charge in a single HPD.
+     Only positive charge values are allowed; otherwise, the vector entry is 0.
+  */
+  outvec.clear();
+  outvec.push_back(std::max(0.,hpd.fc0));
+  outvec.push_back(std::max(0.,hpd.fc1));
+  outvec.push_back(std::max(0.,hpd.fc2));
+  outvec.push_back(std::max(0.,hpd.fc3));
+  outvec.push_back(std::max(0.,hpd.fc4));
+  outvec.push_back(std::max(0.,hpd.fc5));
+  outvec.push_back(std::max(0.,hpd.fc6));
+  outvec.push_back(std::max(0.,hpd.fc7));
+  outvec.push_back(std::max(0.,hpd.fc8));
+  outvec.push_back(std::max(0.,hpd.fc9));
+  return;
 }
 
 
@@ -1168,7 +1249,7 @@ void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent, const 
 			event_->leadingDigiR2,
 			event_->leadingDigiRPeak,
 			event_->leadingDigiROuter);
-    
+
     pulseShapeVariables(event_->top5DigiTimeSamples,
 			event_->top5DigiPeakSample,
 			event_->top5DigiTotal,
@@ -1235,12 +1316,30 @@ void StoppedHSCPTreeProducer::pulseShapeVariables(const std::vector<double>& sam
   // Router - leading digi
   double foursample=0.;
   for (int i=-1; i<3; ++i) {
-    if (ipeak+i > 0 && ipeak+i<(int)HBHEDataFrame::MAXSAMPLES) {
+    if (ipeak+i > 0 && ipeak+i<(int)HBHEDataFrame::MAXSAMPLES) { //JIM:  why is this condition "> 0" and not "> = 0"??
       foursample += samples.at(ipeak+i);
     }
   }
   router = 1. - (foursample / total);
-  
+  /*
+    //  Dump diagnostic information
+  std::cout <<"--------------------"<<std::endl;
+  std::cout <<"NOISE SUMMARY OUTPUT"<<std::endl;
+  for (uint i=0;i<samples.size();++i)
+    std::cout <<samples[i]<<"\t";
+  std::cout<<std::endl;
+  std::cout <<"total = "<<total<<"  foursample = "<<foursample<<std::endl;
+  std::cout <<"ipeak = "<<ipeak<<std::endl;
+  if (ipeak<(int)HBHEDataFrame::MAXSAMPLES)
+    std::cout <<"Peak value = "<<samples.at(ipeak)<<std::endl;
+  else
+    std::cout <<"Peak value = N/A"<<std::endl;
+  std::cout<<std::endl;
+  std::cout <<"R1 = "<<r1<<std::endl;
+  std::cout <<"R2 = "<<r2<<std::endl;
+  std::cout <<"Router = "<<router<<std::endl;
+  std::cout <<"Rpeak = "<<rpeak<<std::endl;
+  */ 
 }
 
 

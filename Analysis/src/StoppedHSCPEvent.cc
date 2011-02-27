@@ -108,6 +108,7 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   towerEtHad(0),
   towerEEm(0),
   towerEtEm(0),
+  rechit_N(0),
   rechite(0),
   rechittime(0),
   rechitflags(0),
@@ -127,6 +128,17 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   noiseMax25GeVHitTime(0.),
   noiseMinRBXEMF(0.),
   noiseFilterResult(0),
+  noiseEventEMEnergy(0.),
+  noiseEventHadEnergy(0.),
+  noiseEventTrackEnergy(0.),
+  noiseNumProblematicRBXs(0.),
+  topHPD5TimeSamples(HBHEDataFrame::MAXSAMPLES),
+  topHPD5PeakSample(0),
+  topHPD5Total(-999.),
+  topHPD5R1(-999.),
+  topHPD5R2(-999.),
+  topHPD5RPeak(-999.),
+  topHPD5ROuter(-999.),
   beamHalo_CSCTight(false),
   beamHalo_CSCLoose(false),
   beamHalo_HcalTight(false),
@@ -167,6 +179,7 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   for (int k=0; k<10; ++k) { 
     leadingDigiTimeSamples.at(k)=0.;
     top5DigiTimeSamples.at(k)=0.; 
+    topHPD5TimeSamples.at(k)=0.;
   }
 
 }
@@ -263,6 +276,8 @@ void StoppedHSCPEvent::addRecHit(RecHit r) {
   rechitIEta.push_back(r.ieta);
   rechitIPhi.push_back(r.iphi);
   rechitDepth.push_back(r.depth);
+  rechitRBXindex.push_back(r.RBXindex);
+  rechitRMindex.push_back(r.RMindex);
   ++rechit_N;
 }
 
