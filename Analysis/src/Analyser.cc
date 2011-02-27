@@ -95,7 +95,7 @@ void Analyser::readWatchedEvents() {
       boost::split(strs, line, boost::is_any_of(":")); 
       if(atoi(strs.at(0).c_str())>0) {
 	unsigned run = (unsigned) atoi(strs.at(0).c_str());
-	unsigned lb  = (unsigned) atoi(strs.at(1).c_str());
+	//unsigned lb  = (unsigned) atoi(strs.at(1).c_str()); // not currently used
 	unsigned id  = (unsigned) atoi(strs.at(2).c_str());
 	watchedEvents_.push_back(std::pair<unsigned, unsigned>(run, id));
       }
