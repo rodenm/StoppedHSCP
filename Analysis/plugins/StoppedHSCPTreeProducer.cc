@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.52 2011/02/07 11:09:22 heistera Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.53 2011/02/27 00:35:16 temple Exp $
 //
 //
 
@@ -140,18 +140,33 @@ private:
   virtual void endJob() ;
   
   void doEventInfo(const edm::Event&);
+
+  /// write MC info
   void doMC(const edm::Event&);
+
+  /// write trigger info
   void doTrigger(const edm::Event&, const edm::EventSetup&);
+
+  // write basic RECO objects
   void doJets(const edm::Event&);
-  void doCaloTowers(const edm::Event&);
-  void doCaloRecHits(const edm::Event&);
+  void doGlobalCalo(const edm::Event&);
   void doMuons(const edm::Event&);
-  void doHcalNoise(const edm::Event&);
   void doBeamHalo(const edm::Event&);
   void doVertices(const edm::Event&);
+
+  // write variables based on HCAL noise summary
+  void doHcalNoise(const edm::Event&);
+  void fillNoiseObjectTopDigiSamples(shscp::HPD& hpd, std::vector<double>& outvec);
+  void fillNoiseObjectTop5DigiSamples(shscp::HPD& hpd, std::vector<double>& outvec);
+
+  // write HCAL RecHits
+  void doHcalRecHits(const edm::Event&);
+
+  // write variables based on digis
   void doRecHits(const edm::Event& iEvent);
   void doTimingFromDigis(const edm::Event&, const edm::EventSetup&);
 
+  // method to calculate pulse shape variables from time samples
   void pulseShapeVariables(const std::vector<double>& samples,
 			   unsigned& ipeak,
 			   double& total,
@@ -161,8 +176,6 @@ private:
 			   double& router);
 
 
-  void FillNoiseObjectTopDigiSamples(shscp::HPD& hpd, std::vector<double>& outvec);
-  void FillNoiseObjectTop5DigiSamples(shscp::HPD& hpd, std::vector<double>& outvec);
 
 public:
   
@@ -258,8 +271,8 @@ private:
 
   // output control
   bool doMC_;
-  bool doReco_;
-  bool doDigis_;
+  bool doCaloTowers_;
+  bool doRecHits_;
   bool writeHistos_;
 
   // Hcal Logical map (ieta-iphi->hardware) object
@@ -330,8 +343,8 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   digiMinFc_(iConfig.getUntrackedParameter<double>("digiMinFc", 30)),
   rechitMinEnergy_(iConfig.getUntrackedParameter<double>("rechitMinEnergy", 0.2)),
   doMC_(iConfig.getUntrackedParameter<bool>("doMC",true)),
-  doReco_(iConfig.getUntrackedParameter<bool>("doReco",true)),
-  doDigis_(iConfig.getUntrackedParameter<bool>("doDigis",false)),
+  doCaloTowers_(iConfig.getUntrackedParameter<bool>("doCaloTowers",true)),
+  doRecHits_(iConfig.getUntrackedParameter<bool>("doRecHits",false)),
   writeHistos_(iConfig.getUntrackedParameter<bool>("writeHistos",false)),
   badchannelstatus_(iConfig.getUntrackedParameter<int>("badchannelstatus",0)),
   fills_(),
@@ -357,10 +370,10 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   tree_->Branch("events", "StoppedHSCPEvent", &event_, 64000, 1);
   
   // log
-  std::string log;
+  std::string log="reco ";
   if (doMC_) log += " mc";
-  if (doReco_) log += " reco";
-  if (doDigis_) log += " digis";
+  if (doCaloTowers_) log += " calotowers";
+  if (doRecHits_) log += " rechits";
 
   edm::LogInfo("StoppedHSCPTree") << "Going to fill " << log << std::endl;
 
@@ -438,28 +451,89 @@ void
 StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   event_ = new StoppedHSCPEvent();
-  doEventInfo(iEvent);
-  doTrigger(iEvent, iSetup);
   
   if (doMC_) doMC(iEvent);
+
+  // event & trigger info
+  doEventInfo(iEvent);
+  doTrigger(iEvent, iSetup);
+
+  // general RECO info
+  doJets(iEvent);
+  doGlobalCalo(iEvent);
+  doMuons(iEvent);
+  doBeamHalo(iEvent);
+  doVertices(iEvent);
+
+  // HCAL noise summary info
+  doHcalNoise(iEvent);
+
+  // HCAL RecHits & flags
+  doHcalRecHits(iEvent);
+
+  // digi based variables
+  doTimingFromDigis(iEvent, iSetup);
   
-  if (doReco_) {
-    doMuons(iEvent);
-    doBeamHalo(iEvent);
-    doHcalNoise(iEvent);
-    doVertices(iEvent);
-    doRecHits(iEvent);
-    doCaloTowers(iEvent);
-    doCaloRecHits(iEvent);
-    doJets(iEvent);
-    doTimingFromDigis(iEvent, iSetup);
-  }
-  
+  // fill TTree
   tree_->Fill();
   
   delete event_;
 
 }
+
+
+
+void StoppedHSCPTreeProducer::doMC(const edm::Event& iEvent) {
+
+  edm::Handle<edm::HepMCProduct> mcHandle;
+  iEvent.getByLabel(mcTag_,mcHandle);
+  
+  if (mcHandle.isValid()) {
+    
+    const edm::HepMCProduct *mcProd = mcHandle.product();
+    const HepMC::GenEvent *evt = mcProd->GetEvent();
+    
+    for(HepMC::GenEvent::vertex_const_iterator pitr = evt->vertices_begin();
+	pitr!= evt->vertices_end();
+	++pitr) {
+      
+      if((*pitr)->barcode()==-1)  {
+
+	event_->rHadVtxX = (*pitr)->point3d().x();
+	event_->rHadVtxY = (*pitr)->point3d().y();
+	event_->rHadVtxZ = (*pitr)->point3d().z();
+	event_->rHadVtxT = (*pitr)->position().t();
+	
+	for(HepMC::GenVertex::particles_out_const_iterator part = (*pitr)->particles_out_const_begin();
+	    part!=(*pitr)->particles_out_const_end(); 
+	    ++part) {
+
+	  if((*part)->pdg_id()>=1000000)
+	    {
+	      event_->rHadPdgId = (*part)->pdg_id();
+	      event_->rHadPx  = (*part)->momentum().x();
+	      event_->rHadPy  = (*part)->momentum().y();
+	      event_->rHadPz  = (*part)->momentum().z();
+	      event_->rHadPt  = (*part)->momentum().perp();
+	      event_->rHadE   = (*part)->momentum().e();
+
+	    }
+	}
+	
+      }
+    }
+    
+  }
+  else {
+    if (!mcMissing_) edm::LogWarning("MissingProduct") << "MC information not found.  Branch will not be filled" << std::endl;
+    mcMissing_ = true;
+    doMC_ = false;
+  }
+
+}
+
+
+
 
 void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent){ 
   unsigned long orbitsPerLB = 1<<18;
@@ -652,70 +726,12 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
 }
 
 
-void StoppedHSCPTreeProducer::doMC(const edm::Event& iEvent) {
-
-  edm::Handle<edm::HepMCProduct> mcHandle;
-  iEvent.getByLabel(mcTag_,mcHandle);
-  
-  if (mcHandle.isValid()) {
-    
-    const edm::HepMCProduct *mcProd = mcHandle.product();
-    const HepMC::GenEvent *evt = mcProd->GetEvent();
-    
-    for(HepMC::GenEvent::vertex_const_iterator pitr = evt->vertices_begin();
-	pitr!= evt->vertices_end();
-	++pitr) {
-      
-      if((*pitr)->barcode()==-1)  {
-
-	event_->rHadVtxX = (*pitr)->point3d().x();
-	event_->rHadVtxY = (*pitr)->point3d().y();
-	event_->rHadVtxZ = (*pitr)->point3d().z();
-	event_->rHadVtxT = (*pitr)->position().t();
-	
-	for(HepMC::GenVertex::particles_out_const_iterator part = (*pitr)->particles_out_const_begin();
-	    part!=(*pitr)->particles_out_const_end(); 
-	    ++part) {
-
-	  if((*part)->pdg_id()>=1000000)
-	    {
-	      event_->rHadPdgId = (*part)->pdg_id();
-	      event_->rHadPx  = (*part)->momentum().x();
-	      event_->rHadPy  = (*part)->momentum().y();
-	      event_->rHadPz  = (*part)->momentum().z();
-	      event_->rHadPt  = (*part)->momentum().perp();
-	      event_->rHadE   = (*part)->momentum().e();
-
-	    }
-	}
-	
-      }
-    }
-    
-  }
-  else {
-    if (!mcMissing_) edm::LogWarning("MissingProduct") << "MC information not found.  Branch will not be filled" << std::endl;
-    mcMissing_ = true;
-    doMC_ = false;
-  }
-
-}
-
 
 void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
 
    edm::Handle<CaloJetCollection> caloJets;
    iEvent.getByLabel(jetTag_, caloJets);
    
-//    edm::Handle<HBHEDigiCollection> hcalDigis;
-//    iEvent.getByLabel(hcalDigiTag_,hcalDigis);
-   
-//    if (doDigis_ && !digisMissing_ && !(hcalDigis.isValid()) ) {
-//      edm::LogWarning("MissingProduct") << "HBHEDigiCollection not found.  Branch will not be filled" << std::endl;
-//      digisMissing_ = true;
-//    }
-
-   // count jets
    unsigned njet=0;
 
    if (caloJets.isValid()) {
@@ -748,60 +764,41 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
 // 	 std::cout << "Jet " << std::endl;q
 // 	 std::cout << "   E=" << it->energy() << " eta=" << it->eta() << " phi=" << it->phi() << std::endl;
 	 // get towers
-	 for (int i=0; i<it->nConstituents(); ++i) {
-	   
-	   CaloTowerPtr tower = it->getCaloConstituent(i);
 
-	   if (tower->energy() > towerMinEnergy_ &&
-	       fabs(tower->eta()) < towerMaxEta_) {
+	 if (doCaloTowers_) {
 
-	     // write tower
-	     shscp::Tower tow;
-	     tow.e = tower->energy();
-	     tow.et = tower->et();
-	     tow.eta = tower->eta();
-	     tow.phi = tower->phi();
-	     tow.ieta = tower->ieta();
-	     tow.iphi = tower->iphi();
-	     tow.nJet = njet;
-	     tow.eHad = tower->hadEnergy();
-	     tow.etHad = tower->hadEt();
-	     tow.eEm = tower->emEnergy();
-	     tow.etEm = tower->emEt();
-	     event_->addTower(tow);
-
-	   }
-
-// 	   std::cout << "  Calo tower" << std::endl;
-// 	   std::cout << "    eta=" << tower->eta() << " phi=" << tower->phi() << std::endl;
-// 	   std::cout << "    ECAL E=" << tower->emEnergy() << " HCAL E=" << tower->hadEnergy() << std::endl;
-// 	   std::cout << "    ECAL time : " << tower->ecalTime() << std::endl;
-// 	   std::cout << "    HCAL time : " << tower->hcalTime() << std::endl;
-
-	   // loop over tower constituents
-// 	   std::vector<DetId>::const_iterator detid;
-// 	   for (detid=tower->constituents().begin();
-// 		detid!=tower->constituents().end();
-// 		++detid) {
-
+	   for (int i=0; i<it->nConstituents(); ++i) {
 	     
+	     CaloTowerPtr tower = it->getCaloConstituent(i);
+	     
+	     if (tower->energy() > towerMinEnergy_ &&
+		 fabs(tower->eta()) < towerMaxEta_) {
+	       
+	       // write tower
+	       shscp::Tower tow;
+	       tow.e = tower->energy();
+	       tow.et = tower->et();
+	       tow.eta = tower->eta();
+	       tow.phi = tower->phi();
+	       tow.ieta = tower->ieta();
+	       tow.iphi = tower->iphi();
+	       tow.nJet = njet;
+	       tow.eHad = tower->hadEnergy();
+	       tow.etHad = tower->hadEt();
+	       tow.eEm = tower->emEnergy();
+	       tow.etEm = tower->emEt();
+	       event_->addTower(tow);
 
-// 	     // find HCAL RecHit
-// 	     if (detid->det()==DetId::Hcal) {
-// 	       for(HBHERecHitCollection::const_iterator hit=recHits_.begin();
-// 		   hit!=recHits_.end();
-// 		   ++hit) {
-// 		 if(hit->id() == (*detid)) {
+	       // 	   std::cout << "  Calo tower" << std::endl;
+	       // 	   std::cout << "    eta=" << tower->eta() << " phi=" << tower->phi() << std::endl;
+	       // 	   std::cout << "    ECAL E=" << tower->emEnergy() << " HCAL E=" << tower->hadEnergy() << std::endl;
+	       // 	   std::cout << "    ECAL time : " << tower->ecalTime() << std::endl;
+	       // 	   std::cout << "    HCAL time : " << tower->hcalTime() << std::endl;
+	       
+	     }
+	   }
+	 } // if (doCaloTowers_)
 
-// 		   std::cout << "  HCAL RecHit" << std::endl;
-// 		   std::cout << "    E=" << hit->energy() << " time=" << hit->time() << std::endl;
-
-// 		 }
-// 	       }
-// 	     }
-// 	   }
-
-	 }  
        }
      }
    }
@@ -812,8 +809,10 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
    
 }
 
+
+
 // global calo based quantities
-void StoppedHSCPTreeProducer::doCaloTowers(const edm::Event& iEvent) {
+void StoppedHSCPTreeProducer::doGlobalCalo(const edm::Event& iEvent) {
 
   event_->nTowerSameiPhi=0;
 
@@ -853,50 +852,8 @@ void StoppedHSCPTreeProducer::doCaloTowers(const edm::Event& iEvent) {
     towersMissing_ = true;
   }
   
-}
+} // void StoppedHSCPTreeProducer::doGlobalCalo(const edm::Event& iEvent)
 
-// store calo rechits
-void StoppedHSCPTreeProducer::doCaloRecHits(const edm::Event& iEvent) {
-  /*
-	// get calo rechits
-	edm::Handle<HBHERecHitCollection> hbhe;
-	iEvent.getByLabel(caloRecHitTag_,hbhe);
-
-	if (hbhe.isValid()) {
-		
-		const HBHERecHitCollection Hithbhe = *(hbhe.product());
-		HBHERecHitCollection::const_iterator hith = (hbhe.product())->begin ();
-		for (; hith != (hbhe.product())->end (); hith++) {
-
-			GlobalPoint pos = geo->getPosition((*hith).detid());
-
-			shscp::RecHit rh;
-
-			rh.e = (*hith).energy();
-
-			if (rh.e > rechitMinEnergy_ ) {
-			     
-				rh.time  = (*hith).time();
-				rh.flags = (*hith).flags();
-				rh.aux   = (*hith).aux();
-				rh.eta   = pos.eta();
-				rh.phi   = pos.phi();
-				rh.ieta  = (*hith).id().ieta();
-				rh.iphi  = (*hith).id().iphi();
-				rh.depth = (*hith).id().depth();
-                                rh.RBXindex = logicalMap_->getHcalFrontEndId(hith->detid()).rbxIndex();
-				rh.RMindex  = logicalMap_->getHcalFrontEndId(hith->detid()).rm();
-				event_->addRecHit(rh);
-			}
-		}
-
-
-	} else {
-		if (!rechitsMissing_) edm::LogWarning("MissingProduct") << "CaloRecHits not found.  Branches will not be filled" << std::endl;
-		rechitsMissing_ = true;
-	}
-  */
-} // doCaloRecHits(...)
 
 
 void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent) {
@@ -947,7 +904,8 @@ void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent) {
     muonsMissing_ = true;
   }
 
-}
+} // void StoppedHSCPTreeProducer::doMuons()
+
 
 
 void StoppedHSCPTreeProducer::doBeamHalo(const edm::Event& iEvent)
@@ -977,6 +935,7 @@ void StoppedHSCPTreeProducer::doBeamHalo(const edm::Event& iEvent)
 } // void StoppedHSCPTreeProducer::doBeamHalo(iEvent)
 
 
+
 void StoppedHSCPTreeProducer::doVertices(const edm::Event& iEvent) {
 
   edm::Handle<reco::VertexCollection> recoVertices;
@@ -1002,9 +961,9 @@ void StoppedHSCPTreeProducer::doVertices(const edm::Event& iEvent) {
       verticesMissing_=true;
     }
   }
-
   
-}
+} // void StoppedHSCPTreeProducer::doVertices(const edm::Event& iEvent)
+
 
 
 void StoppedHSCPTreeProducer::doHcalNoise(const edm::Event& iEvent) {
@@ -1111,7 +1070,7 @@ void StoppedHSCPTreeProducer::doHcalNoise(const edm::Event& iEvent) {
       // One maximum HPD has been found, compute NoiseSummary-based R values
 
       // Fill event vector "topHPD5TimeSamples" with "top5" charges from max HPD
-      FillNoiseObjectTop5DigiSamples(maxHPD,event_->topHPD5TimeSamples);
+      fillNoiseObjectTop5DigiSamples(maxHPD,event_->topHPD5TimeSamples);
 
       // Compute noise summary versions of R1, R2, etc. variables
       pulseShapeVariables(event_->topHPD5TimeSamples,
@@ -1129,7 +1088,8 @@ void StoppedHSCPTreeProducer::doHcalNoise(const edm::Event& iEvent) {
   
 }// doHcalNoise(...)
 
-void StoppedHSCPTreeProducer::FillNoiseObjectTop5DigiSamples(shscp::HPD& hpd, std::vector<double>& outvec)
+
+void StoppedHSCPTreeProducer::fillNoiseObjectTop5DigiSamples(shscp::HPD& hpd, std::vector<double>& outvec)
 {
   /* Fill a pulse shape vector with values from the "top5" digis in a single HPD.
      Only positive charge values are allowed; otherwise, the vector entry is 0.
@@ -1148,7 +1108,9 @@ void StoppedHSCPTreeProducer::FillNoiseObjectTop5DigiSamples(shscp::HPD& hpd, st
   return;
 }
 
-void FillNoiseObjectTopDigiSamples(shscp::HPD& hpd, std::vector<double>& outvec)
+
+
+void StoppedHSCPTreeProducer::fillNoiseObjectTopDigiSamples(shscp::HPD& hpd, std::vector<double>& outvec)
 {
   /* Fill a pulse shape vector with values from the digi with the largest charge in a single HPD.
      Only positive charge values are allowed; otherwise, the vector entry is 0.
@@ -1166,6 +1128,82 @@ void FillNoiseObjectTopDigiSamples(shscp::HPD& hpd, std::vector<double>& outvec)
   outvec.push_back(std::max(0.,hpd.fc9));
   return;
 }
+
+
+
+
+/// fill rec hit 
+void
+StoppedHSCPTreeProducer::doHcalRecHits(const edm::Event& iEvent)
+{
+
+  recHits_.clear();
+
+  // get the rechits (to select digis ordered by energy)
+  edm::Handle<HBHERecHitCollection> recHits;
+  iEvent.getByLabel(hcalRecHitTag_, recHits);
+
+  // copy rechits to internal vector
+  if(recHits.isValid()) {
+    
+    // reject bad status rechits from collection
+    for (HBHERecHitCollection::const_iterator it=recHits->begin();
+	 it!=recHits->end();++it) {
+      
+      if (std::find(badChannels_.begin(),
+		    badChannels_.end(),
+		    it->id())!=badChannels_.end()) {
+	continue;
+      }
+
+      recHits_.push_back(*it);
+      
+    }
+  }
+  else {
+    if (!rechitsMissing_) edm::LogWarning("MissingProduct") << "CaloRecHits not found.  Branches will not be filled" << std::endl;
+    rechitsMissing_ = true;
+  }
+
+  // sort by energy
+  sort(recHits_.begin(), recHits_.end(), rechit_gt());
+  
+  // store to ntuple if required
+  if (doRecHits_) {
+    
+    unsigned count=0;
+
+    for (HBHERecHitCollection::const_iterator hit=recHits_.begin();
+	 hit!=recHits_.end() && count < 6000;
+	 ++hit, ++count) {
+      
+      GlobalPoint pos = geo->getPosition((*hit).detid());
+      
+      shscp::RecHit rh;
+      
+      rh.e = (*hit).energy();
+      
+      if (rh.e > rechitMinEnergy_ ) {
+	
+	rh.time  = (*hit).time();
+	rh.flags = (*hit).flags();
+	rh.aux   = (*hit).aux();
+	rh.eta   = pos.eta();
+	rh.phi   = pos.phi();
+	rh.ieta  = (*hit).id().ieta();
+	rh.iphi  = (*hit).id().iphi();
+	rh.depth = (*hit).id().depth();
+	rh.RBXindex = logicalMap_->getHcalFrontEndId(hit->detid()).rbxIndex();
+	rh.RMindex  = logicalMap_->getHcalFrontEndId(hit->detid()).rm();
+	event_->addRecHit(rh);
+      }
+      
+    }
+    
+  }
+  
+}
+
 
 
 void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
@@ -1266,7 +1304,8 @@ void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent, const 
     }
   }
   
-}
+} // void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+
 
 
 void StoppedHSCPTreeProducer::pulseShapeVariables(const std::vector<double>& samples,
@@ -1342,49 +1381,6 @@ void StoppedHSCPTreeProducer::pulseShapeVariables(const std::vector<double>& sam
   */ 
 }
 
-
-/// fill rec hit 
-void
-StoppedHSCPTreeProducer::doRecHits(const edm::Event& iEvent)
-{
-  recHits_.clear();
-
-  // get the rechits (to select digis ordered by energy)
-  edm::Handle<HBHERecHitCollection> recHits;
-  iEvent.getByLabel(hcalRecHitTag_, recHits);
-  if(!recHits.isValid()) {
-    edm::LogWarning("MissingProduct") << "HBHERecHitCollection not found.  HCAL timing variables will be affected" << std::endl;
-  }
-
-  // reject bad status rechits from collection
-  for (HBHERecHitCollection::const_iterator it=recHits->begin();
-       it!=recHits->end();++it)
-    {
-      if (std::find(badChannels_.begin(),
-		    badChannels_.end(),
-		    it->id())!=badChannels_.end())
-	{
-	  //std::cout <<"REJECTED RECHIT "<<it->id()<<std::endl;
-	  continue;
-	}
-      recHits_.push_back(*it);
-
-    }
-
-  //recHits_.insert(recHits_.end(), recHits->begin(), recHits->end());
-  sort(recHits_.begin(), recHits_.end(), rechit_gt());
-
-  // loop over rechits, print first five
-  /*
-  unsigned count=0;
-  for (HBHERecHitCollection::const_iterator hit=recHits_.begin();
-       hit!=recHits_.end() && count < 6000;
-       ++hit, ++count) {
-    std::cout << "RecHit energy=" << hit->energy() << " id=" << hit->id() << std::endl;
-  }
-  */
-
-}
 
 
 
