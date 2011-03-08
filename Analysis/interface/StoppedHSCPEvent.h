@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.34 2011/02/27 00:35:16 temple Exp $
+// $Id: StoppedHSCPEvent.h,v 1.35 2011/03/08 17:34:12 jbrooke Exp $
 //
 //
 
@@ -133,8 +133,8 @@ namespace shscp {
   };
 
   struct CscSegment {
-    CscSegment() : det(0), nHits(0), phi(0.), z(0.), r(0.), dirPhi(0.), dirTheta(0.) { }
-    unsigned det;
+    CscSegment() : detId(0), nHits(0), phi(0.), z(0.), r(0.), dirPhi(0.), dirTheta(0.) { }
+    unsigned detId;
     unsigned nHits;
     double phi;
     double z;

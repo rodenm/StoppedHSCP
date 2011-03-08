@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.53 2011/02/27 00:35:16 temple Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.54 2011/03/01 14:52:34 jbrooke Exp $
 //
 //
 
@@ -62,28 +62,12 @@
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 
-// towers
-#include "DataFormats/CaloTowers/interface/CaloTowerCollection.h"
-#include "DataFormats/CaloTowers/interface/CaloTowerDetId.h"
+// Vertices
+#include "DataFormats/VertexReco/interface/Vertex.h"
+#include "DataFormats/VertexReco/interface/VertexFwd.h"
 
-// rechits
-#include "Geometry/Records/interface/CaloGeometryRecord.h" 
-#include "Geometry/CaloGeometry/interface/CaloGeometry.h" 
-#include "DataFormats/GeometryVector/interface/GlobalPoint.h" 
-#include "DataFormats/HcalRecHit/interface/HcalRecHitCollections.h"
-#include "CalibCalorimetry/HcalAlgos/interface/HcalLogicalMapGenerator.h"
-#include "CondFormats/HcalObjects/interface/HcalLogicalMap.h"
-
-// digis
-#include "CalibFormats/HcalObjects/interface/HcalCoderDb.h"
-#include "CalibFormats/HcalObjects/interface/HcalCalibrations.h"
-#include "CalibFormats/HcalObjects/interface/HcalDbService.h"
-#include "CalibFormats/HcalObjects/interface/HcalDbRecord.h"
-
-#include "DataFormats/HcalDigi/interface/HBHEDataFrame.h"
-#include "DataFormats/HcalDigi/interface/HcalDigiCollections.h"
-#include "DataFormats/HcalDetId/interface/HcalDetId.h"
-#include "DataFormats/HcalDetId/interface/HcalSubdetector.h"
+// Beam Halo Summary
+#include "DataFormats/METReco/interface/BeamHaloSummary.h"
 
 // HCAL noise
 #include "DataFormats/METReco/interface/HcalNoiseHPD.h"
@@ -99,12 +83,34 @@
 #include "CalibCalorimetry/HcalAlgos/interface/HcalDbASCIIIO.h"
 #include "CalibFormats/HcalObjects/interface/HcalDbRecord.h"
 
-// Beam Halo Summary
-#include "DataFormats/METReco/interface/BeamHaloSummary.h"
+// towers
+#include "DataFormats/CaloTowers/interface/CaloTowerCollection.h"
+#include "DataFormats/CaloTowers/interface/CaloTowerDetId.h"
 
-// Vertices
-#include "DataFormats/VertexReco/interface/Vertex.h"
-#include "DataFormats/VertexReco/interface/VertexFwd.h"
+// rechits
+#include "Geometry/Records/interface/CaloGeometryRecord.h" 
+#include "Geometry/CaloGeometry/interface/CaloGeometry.h" 
+#include "DataFormats/GeometryVector/interface/GlobalPoint.h" 
+#include "DataFormats/HcalRecHit/interface/HcalRecHitCollections.h"
+#include "CalibCalorimetry/HcalAlgos/interface/HcalLogicalMapGenerator.h"
+#include "CondFormats/HcalObjects/interface/HcalLogicalMap.h"
+
+// CSC segments
+#include "DataFormats/CSCRecHit/interface/CSCSegment.h"
+#include "DataFormats/CSCRecHit/interface/CSCSegmentCollection.h"
+
+// digis
+#include "CalibFormats/HcalObjects/interface/HcalCoderDb.h"
+#include "CalibFormats/HcalObjects/interface/HcalCalibrations.h"
+#include "CalibFormats/HcalObjects/interface/HcalDbService.h"
+#include "CalibFormats/HcalObjects/interface/HcalDbRecord.h"
+
+#include "DataFormats/HcalDigi/interface/HBHEDataFrame.h"
+#include "DataFormats/HcalDigi/interface/HcalDigiCollections.h"
+#include "DataFormats/HcalDetId/interface/HcalDetId.h"
+#include "DataFormats/HcalDetId/interface/HcalSubdetector.h"
+
+
 
 // ROOT output stuff
 #include "FWCore/ServiceRegistry/interface/Service.h"
@@ -151,8 +157,8 @@ private:
   void doJets(const edm::Event&);
   void doGlobalCalo(const edm::Event&);
   void doMuons(const edm::Event&);
-  void doBeamHalo(const edm::Event&);
   void doVertices(const edm::Event&);
+  void doBeamHalo(const edm::Event&);
 
   // write variables based on HCAL noise summary
   void doHcalNoise(const edm::Event&);
@@ -162,8 +168,10 @@ private:
   // write HCAL RecHits
   void doHcalRecHits(const edm::Event&);
 
+  // write CSC segments
+  void doCscSegments(const edm::Event&, const edm::EventSetup&);
+
   // write variables based on digis
-  void doRecHits(const edm::Event& iEvent);
   void doTimingFromDigis(const edm::Event&, const edm::EventSetup&);
 
   // method to calculate pulse shape variables from time samples
@@ -253,13 +261,14 @@ private:
   edm::InputTag hpdTag_;
   edm::InputTag hcalRecHitTag_;
   edm::InputTag hcalDigiTag_;
+  edm::InputTag cscSegmentsTag_;
 
   // HLT config helper
   HLTConfigProvider hltConfig_;
   unsigned hltPathIndex_;
 
   // HCAL geometry
-  const CaloGeometry* geo;
+  const CaloGeometry* caloGeom_;
 
   // cuts
   double towerMinEnergy_;
@@ -301,6 +310,7 @@ private:
   bool hpdsMissing_;
   bool digisMissing_;
   bool verticesMissing_;
+  bool cscSegsMissing_;
 
   std::vector<CaloTowerPtr> jetTowers_;
   std::vector<unsigned> towerJets_;
@@ -336,6 +346,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   hpdTag_(iConfig.getUntrackedParameter<edm::InputTag>("hpdTag",edm::InputTag("hcalnoise"))),
   hcalRecHitTag_(iConfig.getUntrackedParameter<edm::InputTag>("hcalRecHitTag",edm::InputTag("hbhereco"))),
   hcalDigiTag_(iConfig.getUntrackedParameter<edm::InputTag>("hcalDigiTag",edm::InputTag("hcalDigis"))),
+  cscSegmentsTag_(iConfig.getUntrackedParameter<edm::InputTag>("cscSegmentsTag",edm::InputTag("cscSegments"))),
   towerMinEnergy_(iConfig.getUntrackedParameter<double>("towerMinEnergy", 1.)),
   towerMaxEta_(iConfig.getUntrackedParameter<double>("towerMaxEta", 1.3)),
   jetMinEnergy_(iConfig.getUntrackedParameter<double>("jetMinEnergy", 1.)),
@@ -404,6 +415,7 @@ StoppedHSCPTreeProducer::beginJob()
 void 
 StoppedHSCPTreeProducer::beginRun(edm::Run const & run, edm::EventSetup const& iSetup)
 {
+
   // HLT setup
   bool changed;
   hltConfig_.init(run, iSetup, hltResultsTag_.process(), changed);
@@ -412,7 +424,7 @@ StoppedHSCPTreeProducer::beginRun(edm::Run const & run, edm::EventSetup const& i
   // HCAL geometry to calculate eta/phi for CaloRecHits
   edm::ESHandle<CaloGeometry> pG;
   iSetup.get<CaloGeometryRecord>().get(pG);
-  geo = pG.product();
+  caloGeom_ = pG.product();
 
   // HCAL bad channel removal
   badChannels_.clear();
@@ -433,11 +445,13 @@ StoppedHSCPTreeProducer::beginRun(edm::Run const & run, edm::EventSetup const& i
       //std::cout <<"\tBAD CHANNEL FOUND!"<<id<<"  STATUS = "<<status<<std::endl;
       badChannels_.insert(id);
     }
-  //std::cout <<"bad Channel size = "<<badChannels_.size()<<std::endl;
 
+  // CSC geometry
+
+
+  // set filling scheme for this run
   colls_ = fills_.getCollisionsFromRun(run.runAuxiliary().run());
 
-  //for (uint i=0;i<colls_.size();++i)  std::cout <<"colls "<<i<<"  = "<<colls_[i]<<std::endl;
 }
 
 
@@ -470,6 +484,9 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
 
   // HCAL RecHits & flags
   doHcalRecHits(iEvent);
+
+  // CSC segments
+  doCscSegments(iEvent, iSetup);
 
   // digi based variables
   doTimingFromDigis(iEvent, iSetup);
@@ -811,51 +828,6 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
 
 
 
-// global calo based quantities
-void StoppedHSCPTreeProducer::doGlobalCalo(const edm::Event& iEvent) {
-
-  event_->nTowerSameiPhi=0;
-
-  // get calo towers
-  edm::Handle<CaloTowerCollection> caloTowers;
-  iEvent.getByLabel(caloTowerTag_,caloTowers);
-
-  if (caloTowers.isValid()) {
-    
-    std::vector<CaloTower> caloTowersTmp;
-    caloTowersTmp.insert(caloTowersTmp.end(), caloTowers->begin(), caloTowers->end());
-    sort(caloTowersTmp.begin(), caloTowersTmp.end(), calotower_gt());
-    
-    int iphiFirst=caloTowersTmp.begin()->iphi();
-    bool keepgoing=true;
-    for(std::vector<CaloTower>::const_iterator twr = caloTowersTmp.begin();
-	twr!=caloTowersTmp.end() && keepgoing;
-	++twr) {
-      
-      if (fabs(twr->eta()) < towerMaxEta_) {	
-
-	// tower same iphi as leading tower
-	if (twr->iphi()==iphiFirst) {
-	  event_->nTowerSameiPhi++;
-	  event_->nTowerLeadingIPhi++;
-	  event_->eHadLeadingIPhi += twr->hadEnergy();
-	}
-	else {
-	  keepgoing=false;
-	}
-      }  
-    } 
-
-  }
-  else {
-    if (!towersMissing_) edm::LogWarning("MissingProduct") << "CaloTowers not found.  Branches will not be filled" << std::endl;
-    towersMissing_ = true;
-  }
-  
-} // void StoppedHSCPTreeProducer::doGlobalCalo(const edm::Event& iEvent)
-
-
-
 void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent) {
 
   // loop over reco muons
@@ -908,6 +880,36 @@ void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent) {
 
 
 
+void StoppedHSCPTreeProducer::doVertices(const edm::Event& iEvent) {
+
+  edm::Handle<reco::VertexCollection> recoVertices;
+  iEvent.getByLabel(verticesTag_, recoVertices);
+
+  event_->nVtx=0;
+  if (recoVertices.isValid()) {
+    for(reco::VertexCollection::const_iterator it=recoVertices->begin();
+	it!=recoVertices->end();
+	++it) {
+      
+      if (!it->isFake()) {
+	event_->vtxNDOF.push_back(it->ndof());
+	event_->vtxZ.push_back(it->z());
+	event_->vtxRho.push_back(it->position().rho());
+	event_->nVtx++;
+      }
+    }
+  }
+  else {
+    if (!verticesMissing_) {
+      edm::LogWarning("MissingProduct") << "Vertices not found.  Branch will not be filled" << std::endl;
+      verticesMissing_=true;
+    }
+  }
+  
+} // void StoppedHSCPTreeProducer::doVertices(const edm::Event& iEvent)
+
+
+
 void StoppedHSCPTreeProducer::doBeamHalo(const edm::Event& iEvent)
 {
     
@@ -936,33 +938,48 @@ void StoppedHSCPTreeProducer::doBeamHalo(const edm::Event& iEvent)
 
 
 
-void StoppedHSCPTreeProducer::doVertices(const edm::Event& iEvent) {
+// global calo based quantities
+void StoppedHSCPTreeProducer::doGlobalCalo(const edm::Event& iEvent) {
 
-  edm::Handle<reco::VertexCollection> recoVertices;
-  iEvent.getByLabel(verticesTag_, recoVertices);
+  event_->nTowerSameiPhi=0;
 
-  event_->nVtx=0;
-  if (recoVertices.isValid()) {
-    for(reco::VertexCollection::const_iterator it=recoVertices->begin();
-	it!=recoVertices->end();
-	++it) {
+  // get calo towers
+  edm::Handle<CaloTowerCollection> caloTowers;
+  iEvent.getByLabel(caloTowerTag_,caloTowers);
+
+  if (caloTowers.isValid()) {
+    
+    std::vector<CaloTower> caloTowersTmp;
+    caloTowersTmp.insert(caloTowersTmp.end(), caloTowers->begin(), caloTowers->end());
+    sort(caloTowersTmp.begin(), caloTowersTmp.end(), calotower_gt());
+    
+    int iphiFirst=caloTowersTmp.begin()->iphi();
+    bool keepgoing=true;
+    for(std::vector<CaloTower>::const_iterator twr = caloTowersTmp.begin();
+	twr!=caloTowersTmp.end() && keepgoing;
+	++twr) {
       
-      if (!it->isFake()) {
-	event_->vtxNDOF.push_back(it->ndof());
-	event_->vtxZ.push_back(it->z());
-	event_->vtxRho.push_back(it->position().rho());
-	event_->nVtx++;
-      }
-    }
+      if (fabs(twr->eta()) < towerMaxEta_) {	
+
+	// tower same iphi as leading tower
+	if (twr->iphi()==iphiFirst) {
+	  event_->nTowerSameiPhi++;
+	  event_->nTowerLeadingIPhi++;
+	  event_->eHadLeadingIPhi += twr->hadEnergy();
+	}
+	else {
+	  keepgoing=false;
+	}
+      }  
+    } 
+
   }
   else {
-    if (!verticesMissing_) {
-      edm::LogWarning("MissingProduct") << "Vertices not found.  Branch will not be filled" << std::endl;
-      verticesMissing_=true;
-    }
+    if (!towersMissing_) edm::LogWarning("MissingProduct") << "CaloTowers not found.  Branches will not be filled" << std::endl;
+    towersMissing_ = true;
   }
   
-} // void StoppedHSCPTreeProducer::doVertices(const edm::Event& iEvent)
+} // void StoppedHSCPTreeProducer::doGlobalCalo(const edm::Event& iEvent)
 
 
 
@@ -1177,7 +1194,7 @@ StoppedHSCPTreeProducer::doHcalRecHits(const edm::Event& iEvent)
 	 hit!=recHits_.end() && count < 6000;
 	 ++hit, ++count) {
       
-      GlobalPoint pos = geo->getPosition((*hit).detid());
+      GlobalPoint pos = caloGeom_->getPosition((*hit).detid());
       
       shscp::RecHit rh;
       
@@ -1196,12 +1213,51 @@ StoppedHSCPTreeProducer::doHcalRecHits(const edm::Event& iEvent)
 	rh.RBXindex = logicalMap_->getHcalFrontEndId(hit->detid()).rbxIndex();
 	rh.RMindex  = logicalMap_->getHcalFrontEndId(hit->detid()).rm();
 	event_->addRecHit(rh);
+
+	count++;
+
       }
       
     }
     
   }
   
+}
+
+
+void StoppedHSCPTreeProducer::doCscSegments(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
+
+  // get the rechits (to select digis ordered by energy)
+  edm::Handle<CSCSegmentCollection> segments;
+  iEvent.getByLabel(cscSegmentsTag_, segments);
+
+  // copy rechits to internal vector
+  if(segments.isValid()) {
+
+    unsigned i=0;
+    for (CSCSegmentCollection::const_iterator seg=segments->begin();
+	 seg!=segments->end() && i<1000;
+	 ++seg, ++i) {
+
+      // use CSC geometry to get segment position
+      //      GlobalPoint pos = 
+
+      shscp::CscSegment s;
+      s.detId = seg->cscDetId();
+      s.nHits = seg->nRecHits();
+//       s.phi = pos.phi();
+//       s.z = pos.z();
+//       s.r = pos.rho();
+      //      s.dirPhi = seg->localDirection().phi();
+      //      s.dirTheta = seg->localDirection().theta();
+    }
+
+  }
+  else {
+    if (!cscSegsMissing_) edm::LogWarning("MissingProduct") << "CSC Segments not found.  Branches will not be filled" << std::endl;
+    cscSegsMissing_ = true;
+  }
+
 }
 
 

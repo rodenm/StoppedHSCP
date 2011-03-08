@@ -6,8 +6,6 @@
 <use name="StoppedHSCP/Analysis"/>
 
 <bin name="makeHistograms" file="MakeHistograms.cpp"/>
-<bin name="makeJeffsHistograms" file="MakeJeffsHistograms.cpp"/>
-
 
 <bin name="background" file="background.cpp"/>
 

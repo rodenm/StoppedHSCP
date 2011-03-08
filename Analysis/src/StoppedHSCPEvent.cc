@@ -320,7 +320,7 @@ void StoppedHSCPEvent::addHPD(HPD h) {
 
 
 void StoppedHSCPEvent::addCscSegment(CscSegment s) {
-  cscSegDetID.push_back(s.det);
+  cscSegDetID.push_back(s.detId);
   cscSegNHits.push_back(s.nHits);
   cscSegPhi.push_back(s.phi);
   cscSegZ.push_back(s.z);
