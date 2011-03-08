@@ -112,7 +112,7 @@ int main(int argc, char* argv[]) {
       std::string runstr=std::string(argv[i]);
       std::vector<std::string> strs;
       // don't need to add 'space' in is_any_of, because space-separated values are automatically treated as new arguments
-      boost::split(strs, runstr, boost::is_any_of(",")); 
+      boost::split(strs, runstr, boost::is_any_of(std::string(","))); 
       for (unsigned i=0; i<strs.size(); ++i) 
 	{
 	  unsigned run = (unsigned) atoi(strs.at(i).c_str());

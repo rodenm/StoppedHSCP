@@ -35,7 +35,7 @@ void Cuts::readMaskedBXs(std::string filename, unsigned run) {
     while (!bxfile.eof()) {
       getline(bxfile, line);
       std::vector<std::string> strs;
-      boost::split(strs, line, boost::is_any_of(","));
+      boost::split(strs, line, boost::is_any_of(std::string(",")));
       
       if (run==(unsigned)atoi(strs.at(0).c_str())) {
 	

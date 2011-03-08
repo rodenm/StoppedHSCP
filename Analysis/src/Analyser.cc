@@ -91,8 +91,8 @@ void Analyser::readWatchedEvents() {
   if (!file.fail()) {
     while (!file.eof()) {
       getline(file, line);
-      std::vector<std::string> strs;
-      boost::split(strs, line, boost::is_any_of(":")); 
+      std::vector<std::string> strs(0);
+      boost::split(strs, line, boost::is_any_of(std::string(":"))); 
       if(atoi(strs.at(0).c_str())>0) {
 	unsigned run = (unsigned) atoi(strs.at(0).c_str());
 	//unsigned lb  = (unsigned) atoi(strs.at(1).c_str()); // not currently used
