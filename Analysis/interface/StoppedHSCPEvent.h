@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.33 2011/02/07 09:15:01 heistera Exp $
+// $Id: StoppedHSCPEvent.h,v 1.34 2011/02/27 00:35:16 temple Exp $
 //
 //
 
@@ -25,17 +25,10 @@
 //#include "boost/cstdint.hpp"
 
 namespace shscp {
-    
-  struct TrigJet {
-  TrigJet() : type(0), e(0.), et(0.), eta(0.), phi(0.) { }
-    unsigned type;   // 0 - L1 jet, 1 - L1 tau, 2, HLT jet
-    double e;
-    double et;
-    double eta;
-    double phi;
-    ClassDef(TrigJet, 1);
-  };
 
+  // structs are not part of persistency layer
+  // just maintained for interface with other code
+    
   struct MCDecay {
   MCDecay() : pdgId(0),vtxX(0.),vtxY(0.),vtxZ(0.),vtxT(0.),e(0.),px(0.),py(0.),pz(0.),pt(0.) { }
     unsigned pdgId;
@@ -49,65 +42,15 @@ namespace shscp {
     double py;
     double pz;
     double pt;
-    ClassDef(MCDecay,1);
   };
   
-  struct Tower {
-  Tower() : e(0.),et(0.),eta(0.),phi(0.),ieta(0),iphi(0),nJet(0),eHad(0.),etHad(0.),eEm(0.),etEm(0.) { }
+  struct TrigJet {
+  TrigJet() : type(0), e(0.), et(0.), eta(0.), phi(0.) { }
+    unsigned type;   // 0 - L1 jet, 1 - L1 tau, 2, HLT jet
     double e;
     double et;
     double eta;
     double phi;
-    int ieta;
-    int iphi;
-    unsigned nJet;
-    double eHad;
-    double etHad;
-    double eEm;
-    double etEm;
-    ClassDef(Tower,1);
-  };
-  
-  struct RecHit {
-    RecHit() : e(0.),time(0.), flags(0), aux(0), eta(0.),phi(0.),ieta(0),iphi(0),depth(0), RBXindex(0), RMindex(0) { }
-    double e;
-    double time;
-    unsigned flags;
-    unsigned aux;
-    double eta;
-    double phi;
-    int ieta;
-    int iphi;
-    int depth;
-    int RBXindex;
-    int RMindex;
-    ClassDef(RecHit,1);
-  };
-
-  struct HPD {
-  HPD() : id(0),eta(0),phi(0),totalZeros(0),maxZeros(0),nJet(0),
-      fc0(0.), fc1(0.), fc2(0.), fc3(0.), fc4(0.), fc5(0.), fc6(0.), fc7(0.), fc8(0.), fc9(0.),
-      fc5_0(0.), fc5_1(0.), fc5_2(0.), fc5_3(0.), fc5_4(0.), fc5_5(0.), fc5_6(0.), fc5_7(0.), fc5_8(0.), fc5_9(0.) { }
-    unsigned id;
-    double eta;
-    double phi;
-    unsigned totalZeros;
-    unsigned maxZeros;
-    unsigned nJet;
-    double fc0, fc1, fc2, fc3, fc4, fc5, fc6, fc7, fc8, fc9;  // ROOT screws up an array :-(
-    double fc5_0, fc5_1, fc5_2, fc5_3, fc5_4, fc5_5, fc5_6, fc5_7, fc5_8, fc5_9;
-    ClassDef(HPD,1);
-  };
-  
-  struct HcalDigi {
-  HcalDigi() : id(0),eta(0),phi(0),nJet(0),
-      fc0(0.), fc1(0.), fc2(0.), fc3(0.), fc4(0.), fc5(0.), fc6(0.), fc7(0.), fc8(0.), fc9(0.) { }
-    unsigned id;
-    double eta;
-    double phi;
-    unsigned nJet;
-    double fc0, fc1, fc2, fc3, fc4, fc5, fc6, fc7, fc8, fc9;  // ROOT screws up an array :-(
-    ClassDef(HcalDigi,1);
   };
 
   struct Jet {
@@ -133,7 +76,6 @@ namespace shscp {
     double r2_top5;
     double rp_top5;
     double ro_top5;
-    ClassDef(Jet,2);
   };
   
   struct Muon {
@@ -144,9 +86,74 @@ namespace shscp {
     double phi;
     double hcalEta;     // track intersection with HCAL front-face (?)
     double hcalPhi;
-    ClassDef(Muon,1);
+  };  
+
+  struct HPD {
+  HPD() : id(0),eta(0),phi(0),totalZeros(0),maxZeros(0),nJet(0),
+      fc0(0.), fc1(0.), fc2(0.), fc3(0.), fc4(0.), fc5(0.), fc6(0.), fc7(0.), fc8(0.), fc9(0.),
+      fc5_0(0.), fc5_1(0.), fc5_2(0.), fc5_3(0.), fc5_4(0.), fc5_5(0.), fc5_6(0.), fc5_7(0.), fc5_8(0.), fc5_9(0.) { }
+    unsigned id;
+    double eta;
+    double phi;
+    unsigned totalZeros;
+    unsigned maxZeros;
+    unsigned nJet;
+    double fc0, fc1, fc2, fc3, fc4, fc5, fc6, fc7, fc8, fc9;  // ROOT screws up an array :-(
+    double fc5_0, fc5_1, fc5_2, fc5_3, fc5_4, fc5_5, fc5_6, fc5_7, fc5_8, fc5_9;
+  };
+
+  struct Tower {
+  Tower() : e(0.),et(0.),eta(0.),phi(0.),ieta(0),iphi(0),nJet(0),eHad(0.),etHad(0.),eEm(0.),etEm(0.) { }
+    double e;
+    double et;
+    double eta;
+    double phi;
+    int ieta;
+    int iphi;
+    unsigned nJet;
+    double eHad;
+    double etHad;
+    double eEm;
+    double etEm;
   };
   
+  struct RecHit {
+    RecHit() : e(0.),time(0.), flags(0), aux(0), eta(0.),phi(0.),ieta(0),iphi(0),depth(0), RBXindex(0), RMindex(0) { }
+    double e;
+    double time;
+    unsigned flags;
+    unsigned aux;
+    double eta;
+    double phi;
+    int ieta;
+    int iphi;
+    int depth;
+    int RBXindex;
+    int RMindex;
+  };
+
+  struct CscSegment {
+    CscSegment() : det(0), nHits(0), phi(0.), z(0.), r(0.), dirPhi(0.), dirTheta(0.) { }
+    unsigned det;
+    unsigned nHits;
+    double phi;
+    double z;
+    double r;
+    double dirPhi;
+    double dirTheta;
+  };
+
+/*   struct HcalDigi { */
+/*   HcalDigi() : id(0),eta(0),phi(0),nJet(0), */
+/*       fc0(0.), fc1(0.), fc2(0.), fc3(0.), fc4(0.), fc5(0.), fc6(0.), fc7(0.), fc8(0.), fc9(0.) { } */
+/*     unsigned id; */
+/*     double eta; */
+/*     double phi; */
+/*     unsigned nJet; */
+/*     double fc0, fc1, fc2, fc3, fc4, fc5, fc6, fc7, fc8, fc9;  // ROOT screws up an array :-( */
+/*     ClassDef(HcalDigi,1); */
+/*   }; */
+
 }
 
 class StoppedHSCPEvent : public TObject {
@@ -154,29 +161,53 @@ class StoppedHSCPEvent : public TObject {
   
   enum { MAX_N_TOWERS=100 };
   enum { MAX_N_HPDS=10 };
-  enum { MAX_N_DIGIS=100 };
+  //  enum { MAX_N_DIGIS=100 };
 
  public:
   StoppedHSCPEvent();
   ~StoppedHSCPEvent();
 
+  void addMCDecay(shscp::MCDecay d);
   void addL1Jet(shscp::TrigJet j);
   void addHltJet(shscp::TrigJet j);
   void addJet(shscp::Jet j);
   void addMuon(shscp::Muon m);
+  void addHPD(shscp::HPD h);
   void addTower(shscp::Tower t);
   void addRecHit(shscp::RecHit r);
-  void addHPD(shscp::HPD h);
-  //  void addDigi(shscp::HcalDigi d);
-  void addMCDecay(shscp::MCDecay d);
-
-  // getters
-
+  void addCscSegment(shscp::CscSegment s);
 
   // utils
   void Dump();
 
  public:  // data
+
+  //MC
+  unsigned rHadPdgId;
+  double rHadVtxX;
+  double rHadVtxY;
+  double rHadVtxZ;
+  double rHadVtxR;
+  double rHadVtxT;
+  double rHadE;
+  double rHadPx;
+  double rHadPy;
+  double rHadPz;
+  double rHadPt;
+
+  // MC decay products
+  unsigned mc_N;
+  std::vector<UInt_t> mcPDGid;
+  std::vector<Double_t> mcVtxX;
+  std::vector<Double_t> mcVtxY;
+  std::vector<Double_t> mcVtxZ;
+  std::vector<Double_t> mcVtxR;
+  std::vector<Double_t> mcVtxT;
+  std::vector<Double_t> mcE;
+  std::vector<Double_t> mcPx;
+  std::vector<Double_t> mcPy;
+  std::vector<Double_t> mcPz;
+  std::vector<Double_t> mcPt;
 
   // event
   ULong_t id;
@@ -213,57 +244,7 @@ class StoppedHSCPEvent : public TObject {
   std::vector<Double_t> hltJetEta;
   std::vector<Double_t> hltJetPhi;
 
-  //MC
-  unsigned rHadPdgId;
-  double rHadVtxX;
-  double rHadVtxY;
-  double rHadVtxZ;
-  double rHadVtxR;
-  double rHadVtxT;
-  double rHadE;
-  double rHadPx;
-  double rHadPy;
-  double rHadPz;
-  double rHadPt;
-
-  // MC decay products
-  unsigned mc_N;
-  std::vector<UInt_t> mcPDGid;
-  std::vector<Double_t> mcVtxX;
-  std::vector<Double_t> mcVtxY;
-  std::vector<Double_t> mcVtxZ;
-  std::vector<Double_t> mcVtxR;
-  std::vector<Double_t> mcVtxT;
-  std::vector<Double_t> mcE;
-  std::vector<Double_t> mcPx;
-  std::vector<Double_t> mcPy;
-  std::vector<Double_t> mcPz;
-  std::vector<Double_t> mcPt;
-
-  // global calo quantities
-  unsigned nTowerSameiPhi;
-  unsigned nTowerLeadingIPhi;
-  double eHadLeadingIPhi;
-
-  // digi quantities
-  int leadingDigiIEta;
-  int leadingDigiIPhi;
-  std::vector<double> leadingDigiTimeSamples;
-  unsigned leadingDigiPeakSample;
-  double leadingDigiTotal;
-  double leadingDigiR1;
-  double leadingDigiR2;
-  double leadingDigiRPeak;
-  double leadingDigiROuter;
-  std::vector<double> top5DigiTimeSamples;
-  unsigned top5DigiPeakSample;
-  double top5DigiTotal;
-  double top5DigiR1;
-  double top5DigiR2;
-  double top5DigiRPeak;
-  double top5DigiROuter;
-
-  // jets
+  // reco jets
   unsigned jet_N;
   std::vector<Double_t> jetE;
   std::vector<Double_t> jetEt;
@@ -278,7 +259,7 @@ class StoppedHSCPEvent : public TObject {
   std::vector<Double_t> jetFHPD;
   std::vector<UInt_t> jetN90Hits;
 
-  // muons
+  // reco muons
   unsigned mu_N;
   std::vector<UInt_t> muType;        // type of muon (standalone/global/cosmic/regular)
   std::vector<Double_t> muPt;
@@ -287,7 +268,61 @@ class StoppedHSCPEvent : public TObject {
   std::vector<Double_t> muHcalEta;     // track intersection with HCAL front-face (?)
   std::vector<Double_t> muHcalPhi;
 
-  // towers
+  // vertices
+  unsigned nVtx;
+  std::vector<UInt_t> vtxNDOF;
+  std::vector<Double_t> vtxZ;
+  std::vector<Double_t> vtxRho;
+
+  // Beam Halo data
+  bool beamHalo_CSCTight;
+  bool beamHalo_CSCLoose;
+  bool beamHalo_HcalTight;
+  bool beamHalo_HcalLoose;
+
+  // global calo quantities
+  unsigned nTowerSameiPhi;
+  unsigned nTowerLeadingIPhi;
+  double eHadLeadingIPhi;
+
+  // noise summary data
+  double noiseMinE2Over10TS;
+  double noiseMaxE2Over10TS;
+  int noiseMaxHPDHits;
+  int noiseMaxRBXHits;
+  int noiseMaxHPDNoOtherHits;
+  int noiseMaxZeros;
+  double noiseMin25GeVHitTime;
+  double noiseMax25GeVHitTime;
+  double noiseMinRBXEMF;
+  bool noiseFilterResult;
+  
+  float noiseEventEMEnergy;
+  float noiseEventHadEnergy;
+  float noiseEventTrackEnergy;
+  int noiseNumProblematicRBXs;
+
+  // NoiseSummary pulse shape variables
+  std::vector<double> topHPD5TimeSamples;
+  unsigned topHPD5PeakSample;
+  double   topHPD5Total;
+  double   topHPD5R1;
+  double   topHPD5R2;
+  double   topHPD5RPeak;
+  double   topHPD5ROuter;
+
+  // HPDs identified by noise summary algos
+  unsigned hpd_N;
+  std::vector<UInt_t> hpdId;
+  std::vector<Double_t> hpdEta;
+  std::vector<Double_t> hpdPhi;
+  std::vector<UInt_t> hpdTotalZeros;
+  std::vector<UInt_t> hpdMaxZeros;
+  std::vector<UInt_t> hpdNJet;
+  std::vector<Double_t> hpdFc0, hpdFc1, hpdFc2, hpdFc3, hpdFc4, hpdFc5, hpdFc6, hpdFc7, hpdFc8, hpdFc9;
+  std::vector<Double_t> hpdFc5_0, hpdFc5_1, hpdFc5_2, hpdFc5_3, hpdFc5_4, hpdFc5_5, hpdFc5_6, hpdFc5_7, hpdFc5_8, hpdFc5_9;
+
+  // calo towers
   unsigned tower_N;
   std::vector<Double_t> towerE;
   std::vector<Double_t> towerEt;
@@ -315,59 +350,34 @@ class StoppedHSCPEvent : public TObject {
   std::vector<Int_t> rechitRBXindex;
   std::vector<Int_t> rechitRMindex;
 
-  // noise summary data
-  double noiseMinE2Over10TS;
-  double noiseMaxE2Over10TS;
-  int noiseMaxHPDHits;
-  int noiseMaxRBXHits;
-  int noiseMaxHPDNoOtherHits;
-  int noiseMaxZeros;
-  double noiseMin25GeVHitTime;
-  double noiseMax25GeVHitTime;
-  double noiseMinRBXEMF;
-  bool noiseFilterResult;
-  
-  float noiseEventEMEnergy;
-  float noiseEventHadEnergy;
-  float noiseEventTrackEnergy;
-  int noiseNumProblematicRBXs;
+  // CSC segments
+  std::vector<UInt_t> cscSegDetID;
+  std::vector<UInt_t> cscSegNHits;
+  std::vector<Double_t> cscSegPhi;
+  std::vector<Double_t> cscSegZ;
+  std::vector<Double_t> cscSegR;
+  std::vector<Double_t> cscSegDirPhi;
+  std::vector<Double_t> cscSegDirTheta;
 
-  // NoiseSummary Calculated Quantities
-  std::vector<double> topHPD5TimeSamples;
-  unsigned topHPD5PeakSample;
-  double   topHPD5Total;
-  double   topHPD5R1;
-  double   topHPD5R2;
-  double   topHPD5RPeak;
-  double   topHPD5ROuter;
+  // digi pulse shape variables
+  int leadingDigiIEta;
+  int leadingDigiIPhi;
+  std::vector<double> leadingDigiTimeSamples;
+  unsigned leadingDigiPeakSample;
+  double leadingDigiTotal;
+  double leadingDigiR1;
+  double leadingDigiR2;
+  double leadingDigiRPeak;
+  double leadingDigiROuter;
+  std::vector<double> top5DigiTimeSamples;
+  unsigned top5DigiPeakSample;
+  double top5DigiTotal;
+  double top5DigiR1;
+  double top5DigiR2;
+  double top5DigiRPeak;
+  double top5DigiROuter;
 
-  // Beam Halo data
-  bool beamHalo_CSCTight;
-  bool beamHalo_CSCLoose;
-  bool beamHalo_HcalTight;
-  bool beamHalo_HcalLoose;
-
-  // vertices
-  unsigned nVtx;
-  std::vector<UInt_t> vtxNDOF;
-  std::vector<Double_t> vtxZ;
-  std::vector<Double_t> vtxRho;
-
-  // HPDs identified by noise summary algos
-  unsigned hpd_N;
-  std::vector<UInt_t> hpdId;
-  std::vector<Double_t> hpdEta;
-  std::vector<Double_t> hpdPhi;
-  std::vector<UInt_t> hpdTotalZeros;
-  std::vector<UInt_t> hpdMaxZeros;
-  std::vector<UInt_t> hpdNJet;
-  std::vector<Double_t> hpdFc0, hpdFc1, hpdFc2, hpdFc3, hpdFc4, hpdFc5, hpdFc6, hpdFc7, hpdFc8, hpdFc9;
-  std::vector<Double_t> hpdFc5_0, hpdFc5_1, hpdFc5_2, hpdFc5_3, hpdFc5_4, hpdFc5_5, hpdFc5_6, hpdFc5_7, hpdFc5_8, hpdFc5_9;
-
-  // digis
-
-
-  ClassDef(StoppedHSCPEvent,11);
+  ClassDef(StoppedHSCPEvent,12);
 
 };
 
