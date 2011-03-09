@@ -32,18 +32,14 @@ int main(int argc, char* argv[]) {
 
 
   struct stat st;
-  std::string filename="";
+  // Store list of input files
+  std::vector<std::string> filenames;
+  filenames.clear();
+
+  // Use string to specify output directory
   std::string outdir="";
 
-  for (int i=1;i<argc;++i)
-    {
-      stat(argv[i],&st);
-      if (S_ISREG(st.st_mode) && !(S_ISDIR(st.st_mode)))
-	{
-	  filename=string(argv[i]);
-	  break;
-	}
-    }
+  // identify output directory from command line
   for (int i=1;i<argc;++i)
     {
       if (stat(argv[i],&st)==0 && S_ISDIR(st.st_mode) )
@@ -52,12 +48,30 @@ int main(int argc, char* argv[]) {
 	  break;
 	}
     }
+
+  // identify input file(s) from command line
+  for (int i=1;i<argc;++i)
+    {
+      if (strncmp(argv[i],"-",1)==0)
+	continue;
+      stat(argv[i],&st);
+
+      // Check if file ends in .root 
+      if (((string)argv[i]).find(".root")!=string::npos // file ends with root
+	  && !(S_ISDIR(st.st_mode)) // not a directory (sanity check)
+	  && S_ISREG(st.st_mode)    // regular file
+	  )
+	{
+	  filenames.push_back(string(argv[i]));
+	}
+    }
   
   // options
   Long64_t nlimit=-1;
   bool dump=false;
   bool doByRun=true;
   bool isMC=false;
+  bool useDigiCuts=true; // set to 'false' once noise summary objects are used by default
 
   po::options_description desc("Allowed options");
   po::positional_options_description poptd;
@@ -74,6 +88,14 @@ int main(int argc, char* argv[]) {
      "Sets doByRun value to false")
     ("isMC,m",
      "Turn on MC running")
+    /*
+    // enable this once NoiseSummaryObjects are the default
+    ("useDigiCuts,c",
+    "Use Digis (rather than NoiseSummaryObject) for noise ratio cuts")
+    */
+    // Disable this once noisesummary cuts are the default
+    ("useNoiseObjectCuts,c",
+     "Use NoiseSummaryObjectCuts (rather than Digi Cuts) for noise ratio cuts")
      ;
   
   po::variables_map vm;
@@ -90,6 +112,17 @@ int main(int argc, char* argv[]) {
     doByRun=false;
   if (vm.count("isMC"))
     isMC=true;
+  /* 
+     //enable this once noise summary cuts are the default
+     if (vm.count("useDigiCuts"))
+     useDigiCuts=true;
+     else useDigiCuts=false;
+  */
+  // Disable this once noise object cuts used by default
+  if (vm.count("useNoiseObjectCuts"))
+    useDigiCuts=false;
+  else
+    useDigiCuts=true;
 
 
   // convert run list to vector
@@ -105,9 +138,18 @@ int main(int argc, char* argv[]) {
 	continue;
 
       // Skip args that have already been assigned to filename or outdir
-      if ((filename.size()>0 && strncmp(argv[i],filename.c_str(),filename.size())==0) ||
-	  (outdir.size()>0 && strncmp(argv[i],outdir.c_str(),outdir.size())==0))
+      if (outdir.size()>0 && strncmp(argv[i],outdir.c_str(),outdir.size())==0)
 	continue;
+      bool isfile=false;
+      for (uint fs=0;fs<filenames.size();++fs)
+	{
+	  if (filenames[fs].size()>0 && strncmp(argv[i],filenames[fs].c_str(),filenames[fs].size())==0)
+	    {
+	      isfile=true;
+	      break;
+	    }
+	}
+      if (isfile==true) continue;
 
       std::string runstr=std::string(argv[i]);
       std::vector<std::string> strs;
@@ -133,7 +175,12 @@ int main(int argc, char* argv[]) {
       cout <<"dump = "<<dump<<endl;
       cout <<"doByRun = "<<doByRun<<endl;
       cout <<"isMC = "<<isMC<<endl;
-      cout <<"INPUT FILE = '"<<filename<<"'"<<endl;
+      cout <<"useDigiCuts = "<<useDigiCuts<<endl;
+      cout <<"INPUT FILE(S) = ";
+      for (uint fs=0;fs<filenames.size();++fs)
+	cout<<"\t"<<filenames[fs]<<endl;
+      if (filenames.size()==0)
+	cout <<"No input files specified!"<<endl;
       cout <<"OUTPUT DIRECTORY = '"<<outdir<<"'"<<endl;
       if (runs.size()>0)
 	{
@@ -145,14 +192,16 @@ int main(int argc, char* argv[]) {
     }
 
 
-  if (filename=="")
+  // Error condition 1:  No files found on command line
+  if (filenames.size()==0)
     {
       std::cout <<"<MakeHistograms:ERROR>  No valid input file can be found on command line!"<<std::endl;
       return -1;
     }
+  // Error condition 2:  No output directory specified on command line
   if (outdir =="")
     {
-      std::cout <<"<MakeHistograms:ERRO>  No valid output directory can be found on command line!"<<std::endl;
+      std::cout <<"<MakeHistograms:ERROR>  No valid output directory can be found on command line!"<<std::endl;
       return -1;
     }
 
@@ -163,7 +212,7 @@ int main(int argc, char* argv[]) {
   TH1D::SetDefaultSumw2();
 
   // create analysis
-  Analyser analyser(filename, outdir, runs, isMC);
+  Analyser analyser(filenames, outdir, runs, isMC, useDigiCuts);
 
   analyser.setup();
 
