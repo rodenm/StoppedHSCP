@@ -10,6 +10,7 @@
 
 #include "TFile.h"
 #include "TTree.h"
+#include "TChain.h"
 
 #include <string>
 #include <vector>
@@ -19,7 +20,7 @@ class Analyser {
  
  public:
 
-  Analyser(std::string ifile, std::string ofile, std::vector<unsigned> runs, bool isMC);
+  Analyser(std::vector<std::string> ifiles, std::string ofile, std::vector<unsigned> runs, bool isMC, bool useDigiCuts=false);
   ~Analyser();
 
   // get TTree from file
@@ -62,8 +63,11 @@ class Analyser {
 
   bool isMC_;
 
-  TFile file_;
-  TTree* tree_;
+  std::vector<std::string> ifiles_;
+  //TFile file_;
+  //TTree* tree_;
+  TChain* ch_;
+
   StoppedHSCPEvent* event_;
 
   Long64_t nEvents_;
