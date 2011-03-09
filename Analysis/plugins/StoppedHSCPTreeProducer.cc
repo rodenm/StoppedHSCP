@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.54 2011/03/01 14:52:34 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.55 2011/03/08 18:01:19 jbrooke Exp $
 //
 //
 
@@ -98,6 +98,8 @@
 // CSC segments
 #include "DataFormats/CSCRecHit/interface/CSCSegment.h"
 #include "DataFormats/CSCRecHit/interface/CSCSegmentCollection.h"
+#include "Geometry/Records/interface/MuonGeometryRecord.h"
+#include "Geometry/MuonGeometry/interface/MuonGeometry.h"
 
 // digis
 #include "CalibFormats/HcalObjects/interface/HcalCoderDb.h"
@@ -267,8 +269,9 @@ private:
   HLTConfigProvider hltConfig_;
   unsigned hltPathIndex_;
 
-  // HCAL geometry
-  const CaloGeometry* caloGeom_;
+  // geometry
+  CaloGeometry* caloGeom_;
+  MuonGeometry
 
   // cuts
   double towerMinEnergy_;
@@ -422,9 +425,9 @@ StoppedHSCPTreeProducer::beginRun(edm::Run const & run, edm::EventSetup const& i
   hltPathIndex_ = hltConfig_.triggerIndex(hltPath_);
 
   // HCAL geometry to calculate eta/phi for CaloRecHits
-  edm::ESHandle<CaloGeometry> pG;
-  iSetup.get<CaloGeometryRecord>().get(pG);
-  caloGeom_ = pG.product();
+  edm::ESHandle<CaloGeometry> caloGeomRec;
+  iSetup.get<CaloGeometryRecord>().get(caloGeomRec);
+  caloGeom_ = caloGeomRec.product();
 
   // HCAL bad channel removal
   badChannels_.clear();
@@ -447,7 +450,9 @@ StoppedHSCPTreeProducer::beginRun(edm::Run const & run, edm::EventSetup const& i
     }
 
   // CSC geometry
-
+  edm::ESHandle<CSCGeometry> cscGeomRec;
+  iSetup.get<MuonGeometryRecord>().get(cscGeomRec);
+  cscGeom_ = cscGeomRec.product();
 
   // set filling scheme for this run
   colls_ = fills_.getCollisionsFromRun(run.runAuxiliary().run());
@@ -1240,7 +1245,7 @@ void StoppedHSCPTreeProducer::doCscSegments(const edm::Event& iEvent, const edm:
 	 ++seg, ++i) {
 
       // use CSC geometry to get segment position
-      //      GlobalPoint pos = 
+      //GlobalPoint pos = ????
 
       shscp::CscSegment s;
       s.detId = seg->cscDetId();
@@ -1248,8 +1253,6 @@ void StoppedHSCPTreeProducer::doCscSegments(const edm::Event& iEvent, const edm:
 //       s.phi = pos.phi();
 //       s.z = pos.z();
 //       s.r = pos.rho();
-      //      s.dirPhi = seg->localDirection().phi();
-      //      s.dirTheta = seg->localDirection().theta();
     }
 
   }
