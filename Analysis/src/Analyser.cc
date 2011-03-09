@@ -4,14 +4,14 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
-Analyser::Analyser(std::string ifile, std::string outdir, std::vector<unsigned> runs, bool isMC) :
+Analyser::Analyser(std::vector<std::string> ifiles, std::string outdir, std::vector<unsigned> runs, bool isMC, bool useDigiCuts) :
   isMC_(isMC),
-  file_(ifile.c_str()),
-  tree_(0),
+  //file_(ifile.c_str()),
+  //tree_(0),
   event_(0),
   nEvents_(0),
   iEvent_(0),
-  cuts_(0, isMC),
+  cuts_(0, isMC, useDigiCuts),
   histogrammer_(outdir+std::string("/histograms.root"), runs, &cuts_),
   fills_(),
   watchedEvents_(0),
@@ -20,6 +20,9 @@ Analyser::Analyser(std::string ifile, std::string outdir, std::vector<unsigned> 
   dumpFile_(),
   lifetimeFile_()
 {
+  ifiles_.clear();
+  for (uint i=0;i<ifiles.size();++i)
+    ifiles_.push_back(ifiles[i]);
   // log files
   std::string fd(outdir);
   fd+="/fullDump.log";
@@ -39,7 +42,9 @@ Analyser::Analyser(std::string ifile, std::string outdir, std::vector<unsigned> 
   lifetimeFile_.open(lf.c_str());
 
   std::cout << "Stopped Gluino Histogrammer" << std::endl;
-  std::cout << "Ntuple file       : " << ifile << std::endl;
+  std::cout << "Ntuple files       : " <<std::endl;
+  for (uint zz=0;zz<ifiles.size();++zz)
+    std::cout <<"\t\t"<<ifiles[zz] << std::endl;
   std::cout << "Output file       : " << outdir+std::string("/histograms.root") << std::endl;
   std::cout << "Run list          : ";
   for (unsigned i=0; i<runs.size(); ++i) {
@@ -63,20 +68,52 @@ Analyser::~Analyser() {
 
 
 void Analyser::setup() {
+  
+  ch_=new TChain("stoppedHSCPTree/StoppedHSCPTree");
 
-  // TTree
+  for (uint i=0;i<ifiles_.size();++i)
+    ch_->Add(ifiles_[i].c_str());
+
+  ch_->SetBranchAddress("events",&event_);
+  Int_t nentries = Int_t(ch_->GetEntries());
+  nEvents_=nentries;
+  //Int_t nbytes=0, nb=0;
+  iEvent_ = 0;
+  /*
+  for (Int_t jentry=0;jentry<nentries;++jentry)
+    {
+      nb=ch.GetEntry(jentry);
+      ch.SetBranchAddress("events",&event_);
+      nbytes+=nb;
+      std::cout <<"event = "<<event_<<std::endl;
+    }
+  */
+  cuts_.setEvent(event_);
+  readWatchedEvents();
+
+ /*
+  for (Int_t jentry=0;jentry<nentries;++jentry)
+    {
+      nb=ch.GetEntry(jentry);
+      ch.SetBranchAddress("events",&event_);
+      nbytes+=nb;
+      std::cout <<"event = "<<event_<<std::endl;
+    }
+  */
+
+  /*
   tree_ = (TTree*) file_.Get("stoppedHSCPTree/StoppedHSCPTree");
   tree_->SetBranchAddress("events",&event_);
-
+  std::cout <<"TREE EVENT = "<<event_<<std::endl;
   nEvents_ = tree_->GetEntriesFast();
   iEvent_ = 0;
 
   std::cout << "Input file contains " << nEvents_ << " events" << std::endl;
-
+  std::cout <<"EVENT = "<<event_<<std::endl;
   cuts_.setEvent(event_);
 
   readWatchedEvents();
-
+  */
 }
 
 
@@ -119,7 +156,8 @@ void Analyser::nextEvent() {
 
   if (iEvent_ < nEvents_-1) {
     int nb=0;
-    nb = tree_->GetEntry(iEvent_);
+    //nb = tree_->GetEntry(iEvent_);
+    nb=ch_->GetEntry(iEvent_);
     iEvent_++;
     if (nb == 0) {  std::cout << "TTree GetEntry() failed" << std::endl; }
   }
@@ -128,7 +166,8 @@ void Analyser::nextEvent() {
 
 
 void Analyser::printEvent() {
-  tree_->Show();
+  //tree_->Show();
+  ch_->Show();
 }
 
 
@@ -191,15 +230,13 @@ void Analyser::loop(Long64_t maxEvents) {
   if (maxEvents<=0) maxEvents=nEvents_;
 
   for (unsigned long i=0; i<maxEvents; ++i, nextEvent()) {
-    
     if (i%100000==0) {
-      std::cout << "Processing " << i << "th event" << std::endl;
+      std::cout << "Processing " << i << "th event of " <<maxEvents<< std::endl;
     }
     
     // check to see if the run number changed
     // update fill structure if so
     if (event_->run != currentRun) {
-
       std::cout << "New run : " << event_->run << std::endl;
       cuts_.setMaskedBXs(fills_.getMaskFromRun(event_->run));
       currentRun = event_->run;
@@ -214,7 +251,7 @@ void Analyser::loop(Long64_t maxEvents) {
     if (isWatchedEvent()) {
       printCutValues(dumpFile_);
     }
-    
+
     // print selected events
     if (cuts_.cut()) {
       printCutValues(dumpFile_);
@@ -223,8 +260,7 @@ void Analyser::loop(Long64_t maxEvents) {
       lifetimeFile_ << eventLifetime(event_->run, event_->bx-1)/1.256 << std::endl;
       lifetimeFile_ << eventLifetime(event_->run, event_->bx)/1.256 << std::endl;
     }
-
-  }
+  } // for (unsigned long i=0;...)
 
   histogrammer_.save();
 
