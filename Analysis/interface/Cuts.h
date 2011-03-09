@@ -10,7 +10,7 @@ class StoppedHSCPEvent;
 
 class Cuts {
  public:
-  Cuts(StoppedHSCPEvent* event, bool isMC);
+  Cuts(StoppedHSCPEvent* event, bool isMC, bool useDigiCuts=false);
   ~Cuts();
 
   // read BX masks form file - old method
@@ -21,6 +21,10 @@ class Cuts {
 
   // set current event
   void setEvent(StoppedHSCPEvent* event) {event_ = event; }
+
+  // turn on/off digi-based cuts
+
+  void setDigiCuts(bool digicut=false){useDigiCuts_=digicut;}
 
   // number of cuts
   unsigned nCuts() const;
@@ -39,6 +43,7 @@ class Cuts {
 
   // result of n minus one cuts
   bool cutNMinusOne(unsigned n) const;
+
   bool cutNMinusSome(std::vector<unsigned int> n) const;
 
   // result of cuts after smearing, for systematics
@@ -73,7 +78,7 @@ class Cuts {
 
  private:
 
-  // poitner to the event
+  // pointer to the event
   StoppedHSCPEvent* event_;
 
   // this is MC data
@@ -82,6 +87,8 @@ class Cuts {
   // list of BXs to mask
   std::vector<bool> bxMask_;
 
+  // if enabled, will use digi-based noise cuts
+  bool useDigiCuts_;
 
 };
 

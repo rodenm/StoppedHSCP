@@ -9,10 +9,11 @@
 #include <boost/lexical_cast.hpp>
 #include <math.h>
 
-Cuts::Cuts(StoppedHSCPEvent* event, bool isMC) :
+Cuts::Cuts(StoppedHSCPEvent* event, bool isMC, bool useDigiCuts) :
   event_(event),
   isMC_(isMC),
-  bxMask_(3564, false)
+  bxMask_(3564, false),
+  useDigiCuts_(useDigiCuts)
 {
 
 }
@@ -69,6 +70,8 @@ unsigned Cuts::nCuts() const {
 }
 
 
+
+
 // return result of a particular cut
 bool Cuts::cutN(unsigned n) const 
 {
@@ -79,6 +82,7 @@ bool Cuts::cutN(unsigned n) const
 		      && (event_->hltJetE[0]> 20.)  // greater than 20 GeV
 		      && (fabs(event_->hltJetEta[0])<1.3)); // in HB
   case 1:  // BX mask
+
     return isMC_ || ! bxMask_.at(event_->bx);
   case 2:  // BPTX
     return isMC_ || ((event_->gtAlgoWord1>>(81-64)&1) == 0 && (event_->gtAlgoWord1>>(80-64)&1) == 0);
@@ -104,13 +108,25 @@ bool Cuts::cutN(unsigned n) const
     //return jetCaloTowers()<5;
     //return event_->nTowerSameiPhi<5 && jetCaloTowers()<5;
   case 12: // R1
-    return (event_->top5DigiR1 > 0.15) && (event_->top5DigiR1 <= 1.0);
+    if (useDigiCuts_)
+      return (event_->top5DigiR1 > 0.15) && (event_->top5DigiR1 <= 1.0);
+    else
+      return (event_->topHPD5R1 > 0.15) && (event_->topHPD5R1 <= 1.0);
   case 13: // R2
-    return (event_->top5DigiR2 > 0.1) && (event_->top5DigiR2 < 0.5);
+    if (useDigiCuts_)
+      return (event_->top5DigiR2 > 0.1) && (event_->top5DigiR2 < 0.5);
+    else
+      return (event_->topHPD5R2 > 0.1) && (event_->topHPD5R2 < 0.5);
   case 14: // Rpeak
-    return (event_->top5DigiRPeak > 0.4) && (event_->top5DigiRPeak < 0.7) && (event_->top5DigiPeakSample > 0) && (event_->top5DigiPeakSample < 7);
+    if (useDigiCuts_)
+      return (event_->top5DigiRPeak > 0.4) && (event_->top5DigiRPeak < 0.7) && (event_->top5DigiPeakSample > 0) && (event_->top5DigiPeakSample < 7);
+    else
+      return (event_->topHPD5RPeak > 0.4) && (event_->topHPD5RPeak < 0.7) && (event_->topHPD5PeakSample > 0) && (event_->topHPD5PeakSample < 7);
   case 15: // Router
-    return (event_->top5DigiROuter < 0.1) && (event_->top5DigiROuter >= 0.0) && (event_->top5DigiPeakSample > 0) && (event_->top5DigiPeakSample < 7);
+    if (useDigiCuts_)
+      return (event_->top5DigiROuter < 0.1) && (event_->top5DigiROuter >= 0.0) && (event_->top5DigiPeakSample > 0) && (event_->top5DigiPeakSample < 7);
+    else
+      return (event_->topHPD5ROuter < 0.1) && (event_->topHPD5ROuter >= 0.0) && (event_->topHPD5PeakSample > 0) && (event_->topHPD5PeakSample < 7);
     //  case 13:
     //    return event_->jet_N>0 && (event_->jetEEm[0] / event_->jetE[0]) > 0.05;
     //  case 16:
@@ -204,6 +220,7 @@ bool Cuts::cutNMinusOne(unsigned n) const {
 
 }
 
+
 // returns combined result of all cuts EXCEPT those specified in 'some' vector
 bool Cuts::cutNMinusSome(std::vector<unsigned int> some) const {
 
@@ -266,8 +283,10 @@ bool Cuts::stdHcalCutN(unsigned n) const
     return true;
     break;
   case 1:
-    return event_->jet_N>0 && event_->jetE[0]>50. && fabs(event_->jetEta[0])<1.3;
-    break;
+    {
+      return event_->jet_N>0 && event_->jetE[0]>50. && fabs(event_->jetEta[0])<1.3;
+      break;
+    }
   case 2:
     return event_->mu_N==0;
     break;
