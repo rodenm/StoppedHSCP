@@ -29,7 +29,7 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 # HLT bit filter
 process.load('HLTrigger.HLTfilters.hltHighLevel_cfi')
 process.hltHighLevel.TriggerResultsTag = cms.InputTag("TriggerResults","","HLT")
-process.hltHighLevel.HLTPaths = cms.vstring("HLT_StoppedHSCP*")
+process.hltHighLevel.HLTPaths = cms.vstring("HLT_*")
 
 # HCAL noise filter
 process.load('CommonTools/RecoAlgos/HBHENoiseFilter_cfi')
@@ -43,22 +43,22 @@ process.load('Configuration/StandardSequences/L1Extra_cff')
 
 # Ntuple producer
 process.load('StoppedHSCP/Analysis/stoppedHSCPTree_cfi')
-process.stoppedHSCPTree.hltPath = cms.untracked.string("HLT_StoppedHSCP*")
+#process.stoppedHSCPTree.hltPath = cms.untracked.string("HLT_StoppedHSCP*")
 
 # path
 process.ntuple = cms.Path(
 
 # filter on HLT bit
-    process.hltHighLevel
+#    process.hltHighLevel
 
 # filter HCAL noise
-    +process.HBHENoiseFilterResultProducer
+    process.HBHENoiseFilterResultProducer
 
 # get hcal digis
-    +process.gctDigis
-    +process.gtDigis
-    +process.l1extraParticles
-    +process.hcalDigis
+#    +process.gctDigis
+#    +process.gtDigis
+#    +process.l1extraParticles
+#    +process.hcalDigis
 
 # generate TTree    
     +process.stoppedHSCPTree

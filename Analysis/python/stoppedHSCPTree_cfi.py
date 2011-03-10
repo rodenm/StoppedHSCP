@@ -40,9 +40,10 @@ stoppedHSCPTree = cms.EDAnalyzer(
     digiMinFc = cms.untracked.double(30.),
     
     # content controls
-    doMC = cms.untracked.bool(True),
+    isMC = cms.untracked.bool(True),
     doCaloTowers = cms.untracked.bool(True),
     doRecHits = cms.untracked.bool(False),
+    doDigis = cms.untracked.bool(False),
     writeHistos = cms.untracked.bool(False),
 
     # bit 0:  off;

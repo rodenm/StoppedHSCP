@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.35 2011/03/08 17:34:12 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.36 2011/03/08 18:01:19 jbrooke Exp $
 //
 //
 
@@ -133,9 +133,12 @@ namespace shscp {
   };
 
   struct CscSegment {
-    CscSegment() : detId(0), nHits(0), phi(0.), z(0.), r(0.), dirPhi(0.), dirTheta(0.) { }
-    unsigned detId;
-    unsigned nHits;
+    CscSegment() : endcap(0), ring(0), station(0), chamber(0), nHits(0), phi(0.), z(0.), r(0.), dirPhi(0.), dirTheta(0.) { }
+    int endcap;
+    int ring;
+    int station;
+    int chamber;
+    int nHits;
     double phi;
     double z;
     double r;
@@ -270,6 +273,7 @@ class StoppedHSCPEvent : public TObject {
 
   // vertices
   unsigned nVtx;
+  unsigned vtx_N;
   std::vector<UInt_t> vtxNDOF;
   std::vector<Double_t> vtxZ;
   std::vector<Double_t> vtxRho;
@@ -351,7 +355,11 @@ class StoppedHSCPEvent : public TObject {
   std::vector<Int_t> rechitRMindex;
 
   // CSC segments
-  std::vector<UInt_t> cscSegDetID;
+  unsigned cscSeg_N;
+  std::vector<Int_t> cscSegEndcap;
+  std::vector<Int_t> cscSegRing;
+  std::vector<Int_t> cscSegStation;
+  std::vector<Int_t> cscSegChamber;
   std::vector<UInt_t> cscSegNHits;
   std::vector<Double_t> cscSegPhi;
   std::vector<Double_t> cscSegZ;

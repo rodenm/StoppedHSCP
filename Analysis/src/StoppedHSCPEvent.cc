@@ -78,6 +78,7 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   muHcalEta(0),
   muHcalPhi(0),
   nVtx(0),
+  vtx_N(0),
   vtxNDOF(0),
   vtxZ(0.),
   vtxRho(0.),
@@ -158,7 +159,11 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   rechitIEta(0),
   rechitIPhi(0),
   rechitDepth(0),
-  cscSegDetID(0),
+  cscSeg_N(0),
+  cscSegEndcap(0),
+  cscSegRing(0),
+  cscSegStation(0),
+  cscSegChamber(0),
   cscSegNHits(0),
   cscSegPhi(0),
   cscSegZ(0),
@@ -183,7 +188,7 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   top5DigiROuter(-999.)
 {
   
-  for (int k=0; k<10; ++k) { 
+  for (int k=0; k<HBHEDataFrame::MAXSAMPLES; ++k) { 
     leadingDigiTimeSamples.at(k)=0.;
     top5DigiTimeSamples.at(k)=0.; 
     topHPD5TimeSamples.at(k)=0.;
@@ -320,13 +325,17 @@ void StoppedHSCPEvent::addHPD(HPD h) {
 
 
 void StoppedHSCPEvent::addCscSegment(CscSegment s) {
-  cscSegDetID.push_back(s.detId);
+  cscSegEndcap.push_back(s.endcap);
+  cscSegRing.push_back(s.ring);
+  cscSegStation.push_back(s.station);
+  cscSegChamber.push_back(s.chamber);
   cscSegNHits.push_back(s.nHits);
   cscSegPhi.push_back(s.phi);
   cscSegZ.push_back(s.z);
   cscSegR.push_back(s.r);
   cscSegDirPhi.push_back(s.dirPhi);
   cscSegDirTheta.push_back(s.dirTheta);
+  ++cscSeg_N;
 }
 
 void StoppedHSCPEvent::Dump() {

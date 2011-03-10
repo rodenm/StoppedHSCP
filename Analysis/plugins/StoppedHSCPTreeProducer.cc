@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.55 2011/03/08 18:01:19 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.56 2011/03/09 13:57:04 jbrooke Exp $
 //
 //
 
@@ -33,6 +33,9 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
+
+#include "DataFormats/Common/interface/ConditionsInEdm.h"
+
 
 // L1
 #include "CondFormats/L1TObjects/interface/L1GtTriggerMenu.h"
@@ -99,7 +102,10 @@
 #include "DataFormats/CSCRecHit/interface/CSCSegment.h"
 #include "DataFormats/CSCRecHit/interface/CSCSegmentCollection.h"
 #include "Geometry/Records/interface/MuonGeometryRecord.h"
-#include "Geometry/MuonGeometry/interface/MuonGeometry.h"
+#include "Geometry/CSCGeometry/interface/CSCGeometry.h"
+#include "Geometry/CSCGeometry/interface/CSCChamber.h"
+#include "Geometry/CSCGeometry/interface/CSCLayer.h"
+#include "Geometry/CSCGeometry/interface/CSCLayerGeometry.h"
 
 // digis
 #include "CalibFormats/HcalObjects/interface/HcalCoderDb.h"
@@ -243,7 +249,16 @@ private:
   TTree * tree_;
   StoppedHSCPEvent* event_;
 
+  // job control
+  bool isMC_;
+  bool doCaloTowers_;
+  bool doRecHits_;
+  bool doDigis_;
+  bool doHltBit_;
+  bool writeHistos_;
+
   // EDM input tags
+  edm::InputTag condInEdmTag_;
   std::string l1JetsTag_;
   edm::InputTag l1BitsTag_;
   edm::InputTag hltResultsTag_;
@@ -270,8 +285,7 @@ private:
   unsigned hltPathIndex_;
 
   // geometry
-  CaloGeometry* caloGeom_;
-  MuonGeometry
+  const CaloGeometry* caloGeom_;
 
   // cuts
   double towerMinEnergy_;
@@ -280,12 +294,6 @@ private:
   double jetMaxEta_;
   double digiMinFc_;
   double rechitMinEnergy_;	
-
-  // output control
-  bool doMC_;
-  bool doCaloTowers_;
-  bool doRecHits_;
-  bool writeHistos_;
 
   // Hcal Logical map (ieta-iphi->hardware) object
   HcalLogicalMap* logicalMap_;  
@@ -297,7 +305,8 @@ private:
 
   // LHC Fill structure (temporary until this is available through CMSSW)
   LhcFills fills_;
-  std::vector<unsigned> colls_;
+  unsigned currentFill_;
+  std::vector<unsigned> currentColls_;
 
   // debug stuff
   bool l1JetsMissing_;
@@ -330,6 +339,13 @@ private:
 StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfig):
   tree_(0),
   event_(0),
+  isMC_(iConfig.getUntrackedParameter<bool>("isMC",false)),
+  doCaloTowers_(iConfig.getUntrackedParameter<bool>("doCaloTowers",true)),
+  doRecHits_(iConfig.getUntrackedParameter<bool>("doRecHits",false)),
+  doDigis_(iConfig.getUntrackedParameter<bool>("doDigis",false)),
+  doHltBit_(true),
+  writeHistos_(iConfig.getUntrackedParameter<bool>("writeHistos",false)),
+  condInEdmTag_(iConfig.getUntrackedParameter<edm::InputTag>("condInEdmTag",std::string("CondInEdmInputTag"))),
   l1JetsTag_(iConfig.getUntrackedParameter<std::string>("l1JetsTag",std::string("l1extraParticles"))),
   l1BitsTag_(iConfig.getUntrackedParameter<edm::InputTag>("l1BitsTag",edm::InputTag("gtDigis"))),
   hltResultsTag_(iConfig.getUntrackedParameter<edm::InputTag>("hltResultsTag",edm::InputTag("TriggerResults","","HLT"))),
@@ -340,7 +356,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   jetTag_(iConfig.getUntrackedParameter<edm::InputTag>("jetTag",edm::InputTag("sisCone5CaloJets"))),
   muonTag_(iConfig.getUntrackedParameter<edm::InputTag>("muonTag",edm::InputTag("muons"))),
   cosmicMuonTag_(iConfig.getUntrackedParameter<edm::InputTag>("cosmicMuonTag",edm::InputTag("muonsFromCosmics"))),
-  verticesTag_(iConfig.getUntrackedParameter("verticesTag",edm::InputTag("offlinePrimaryVertices"))),
+  verticesTag_(iConfig.getUntrackedParameter<edm::InputTag>("verticesTag", edm::InputTag("offlinePrimaryVertices"))),
   caloTowerTag_(iConfig.getUntrackedParameter<edm::InputTag>("caloTowerTag",edm::InputTag("towerMaker"))),
   caloRecHitTag_(iConfig.getUntrackedParameter<edm::InputTag>("caloRecHitTag",edm::InputTag("hbhereco"))),
   hcalNoiseTag_(iConfig.getUntrackedParameter<edm::InputTag>("hcalNoiseTag",edm::InputTag("hcalnoise"))),
@@ -356,13 +372,9 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   jetMaxEta_(iConfig.getUntrackedParameter<double>("jetMaxEta", 3.)),
   digiMinFc_(iConfig.getUntrackedParameter<double>("digiMinFc", 30)),
   rechitMinEnergy_(iConfig.getUntrackedParameter<double>("rechitMinEnergy", 0.2)),
-  doMC_(iConfig.getUntrackedParameter<bool>("doMC",true)),
-  doCaloTowers_(iConfig.getUntrackedParameter<bool>("doCaloTowers",true)),
-  doRecHits_(iConfig.getUntrackedParameter<bool>("doRecHits",false)),
-  writeHistos_(iConfig.getUntrackedParameter<bool>("writeHistos",false)),
   badchannelstatus_(iConfig.getUntrackedParameter<int>("badchannelstatus",0)),
-  fills_(),
-  colls_(0),
+  currentFill_(0),
+  currentColls_(0),
   l1JetsMissing_(false),
   hltJetsMissing_(false),
   hltMissing_(false),
@@ -378,14 +390,14 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   hcalDetIds_(0),
   hcalDetJets_(0)
 {
-
+  
   // set up output
   tree_=fs_->make<TTree>("StoppedHSCPTree", "");
   tree_->Branch("events", "StoppedHSCPEvent", &event_, 64000, 1);
   
   // log
   std::string log="reco ";
-  if (doMC_) log += " mc";
+  if (isMC_) log += " mc";
   if (doCaloTowers_) log += " calotowers";
   if (doRecHits_) log += " rechits";
 
@@ -393,6 +405,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
 
   HcalLogicalMapGenerator gen;
   logicalMap_=new HcalLogicalMap(gen.createMap());
+
 }
 
 
@@ -416,13 +429,19 @@ StoppedHSCPTreeProducer::beginJob()
 
 // -- called once per run
 void 
-StoppedHSCPTreeProducer::beginRun(edm::Run const & run, edm::EventSetup const& iSetup)
+StoppedHSCPTreeProducer::beginRun(edm::Run const & iRun, edm::EventSetup const& iSetup)
 {
 
   // HLT setup
   bool changed;
-  hltConfig_.init(run, iSetup, hltResultsTag_.process(), changed);
-  hltPathIndex_ = hltConfig_.triggerIndex(hltPath_);
+  hltConfig_.init(iRun, iSetup, hltResultsTag_.process(), changed);
+  try {
+       hltPathIndex_ = hltConfig_.triggerIndex(hltPath_);
+  }
+  catch (cms::Exception e) {
+    edm::LogWarning("StoppedHSCPTree") << "Could not find an HLT path matching " << hltPath_ << ".  Branch will not be filled" << std::endl;
+    doHltBit_ = false;
+  }
 
   // HCAL geometry to calculate eta/phi for CaloRecHits
   edm::ESHandle<CaloGeometry> caloGeomRec;
@@ -449,13 +468,16 @@ StoppedHSCPTreeProducer::beginRun(edm::Run const & run, edm::EventSetup const& i
       badChannels_.insert(id);
     }
 
-  // CSC geometry
-  edm::ESHandle<CSCGeometry> cscGeomRec;
-  iSetup.get<MuonGeometryRecord>().get(cscGeomRec);
-  cscGeom_ = cscGeomRec.product();
+  // get ConditionsInRun block
+  edm::Handle<edm::ConditionsInRunBlock> condInRunBlock;
+  iRun.getByLabel(condInEdmTag_, condInRunBlock);
+
+  if (condInRunBlock.isValid()) {
+    currentFill_ = condInRunBlock->lhcFillNumber;
+  }
 
   // set filling scheme for this run
-  colls_ = fills_.getCollisionsFromRun(run.runAuxiliary().run());
+  currentColls_ = fills_.getCollisionsFromRun(iRun.runAuxiliary().run());
 
 }
 
@@ -471,7 +493,7 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
 {
   event_ = new StoppedHSCPEvent();
   
-  if (doMC_) doMC(iEvent);
+  if (isMC_) doMC(iEvent);
 
   // event & trigger info
   doEventInfo(iEvent);
@@ -488,14 +510,18 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
   doHcalNoise(iEvent);
 
   // HCAL RecHits & flags
-  doHcalRecHits(iEvent);
+  if (doRecHits_) {
+    doHcalRecHits(iEvent);
+  }
 
   // CSC segments
   doCscSegments(iEvent, iSetup);
 
   // digi based variables
-  doTimingFromDigis(iEvent, iSetup);
-  
+  if (doDigis_) {
+    doTimingFromDigis(iEvent, iSetup);
+  }
+ 
   // fill TTree
   tree_->Fill();
   
@@ -549,7 +575,6 @@ void StoppedHSCPTreeProducer::doMC(const edm::Event& iEvent) {
   else {
     if (!mcMissing_) edm::LogWarning("MissingProduct") << "MC information not found.  Branch will not be filled" << std::endl;
     mcMissing_ = true;
-    doMC_ = false;
   }
 
 }
@@ -568,7 +593,7 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent){
   event_->orbit = iEvent.orbitNumber();
   event_->lb = iEvent.luminosityBlock();
   event_->run = iEvent.id().run();
-  event_->fill = iEvent.eventAuxiliary().storeNumber();
+  event_->fill = currentFill_;  // set in beginRun()
   event_->time = iEvent.time().value();
 
   // calculate event time from run start + LS, orbit, BX
@@ -576,41 +601,48 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent){
   event_->time2 = iEvent.getRun().beginTime().value() + (nBx * nsPerBx);
 
   // find last/next collisions
-  int bxLast=-1;
-  int bxNext=-1;
-  if (colls_.size() > 0) {
-    // special case if event is before first collision
-    if (bx < colls_.at(0)) {
-      bxLast = colls_.at(colls_.size() - 1);
-      bxNext = colls_.at(colls_.at(0));
-    }
-    // special case if event is after last collision
-    else if (bx > colls_.at(colls_.size() - 1)) {
-      bxLast = colls_.at(colls_.size()-1);
-      // For MC, colls_ = [1], so  colls_.at(colls_.at(0)) = colls_.at(1), which doesn't exist.
-      // Protection added here against that case.
-      // JIM -- do you want to use the conditional statement below, or add in a separate "else if" for this circumstance?
-      //if (colls_.size()>colls_.at(0))
-      bxNext = colls_.at(colls_.at(0));
-    }
-    // general case
-    else {      
-      for (unsigned c=0; c<(colls_.size()-1) && colls_.at(c)<bx; ++c) {
-	bxLast = colls_.at(c);
-	bxNext = colls_.at(c+1);
+  if (isMC_) {
+    event_->bxAfterCollision = 999;
+    event_->bxBeforeCollision = 999;
+  }
+  else {
+    int bxLast=-1;
+    int bxNext=-1;
+    if (currentColls_.size() > 0) {
+      // special case if event is before first collision
+      if (bx < currentColls_.at(0)) {
+	bxLast = currentColls_.at(currentColls_.size() - 1);
+	bxNext = currentColls_.at(currentColls_.at(0));
       }
+      // special case if event is after last collision
+      else if (bx > currentColls_.at(currentColls_.size() - 1)) {
+	bxLast = currentColls_.at(currentColls_.size()-1);
+	// For MC, currentColls_ = [1], so  currentColls_.at(currentColls_.at(0)) = currentColls_.at(1), which doesn't exist.
+	// Protection added here against that case.
+	// JIM -- do you want to use the conditional statement below, or add in a separate "else if" for this circumstance?
+	//if (currentColls_.size()>currentColls_.at(0))
+	bxNext = currentColls_.at(currentColls_.at(0));
+      }
+      // general case
+      else {      
+	for (unsigned c=0; c<(currentColls_.size()-1) && currentColls_.at(c)<bx; ++c) {
+	  bxLast = currentColls_.at(c);
+	  bxNext = currentColls_.at(c+1);
+	}
+      }
+    }
+    
+    // set values in ntuple
+    event_->bxAfterCollision = bx - bxLast;
+    event_->bxBeforeCollision = bxNext - bx;
+    if (event_->bxAfterCollision > event_->bxBeforeCollision) {
+      event_->bxWrtCollision = event_->bxBeforeCollision;
+    }
+    else {
+      event_->bxWrtCollision = -1 * event_->bxAfterCollision;
     }
   }
 
-  // set values in ntuple
-  event_->bxAfterCollision = bx - bxLast;
-  event_->bxBeforeCollision = bxNext - bx;
-  if (event_->bxAfterCollision > event_->bxBeforeCollision) {
-    event_->bxWrtCollision = event_->bxBeforeCollision;
-  }
-  else {
-    event_->bxWrtCollision = -1 * event_->bxAfterCollision;
-  }
 }
   
 
@@ -660,7 +692,7 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
 
   if (HLTR.isValid()) {
     // triggerIndex must be less than the size of HLTR or you get a CMSException: _M_range_check
-    if (hltPathIndex_ < HLTR->size()) hltBit = HLTR->accept(hltPathIndex_); 
+    if (doHltBit_ && hltPathIndex_ < HLTR->size()) hltBit = HLTR->accept(hltPathIndex_); 
   }
 
   // store bits
@@ -1232,11 +1264,15 @@ StoppedHSCPTreeProducer::doHcalRecHits(const edm::Event& iEvent)
 
 void StoppedHSCPTreeProducer::doCscSegments(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
-  // get the rechits (to select digis ordered by energy)
+  // get the segments
   edm::Handle<CSCSegmentCollection> segments;
   iEvent.getByLabel(cscSegmentsTag_, segments);
 
-  // copy rechits to internal vector
+  // Get the geometry :
+  edm::ESHandle<CSCGeometry> cscGeom;
+  iSetup.get<MuonGeometryRecord>().get(cscGeom);
+  
+  // write segment info to ntuple
   if(segments.isValid()) {
 
     unsigned i=0;
@@ -1244,15 +1280,33 @@ void StoppedHSCPTreeProducer::doCscSegments(const edm::Event& iEvent, const edm:
 	 seg!=segments->end() && i<1000;
 	 ++seg, ++i) {
 
-      // use CSC geometry to get segment position
-      //GlobalPoint pos = ????
+      /// code taken from RecoLocalMuon/CSCValidation/src/CSCValidation.cc
+      CSCDetId id  = (CSCDetId)seg->cscDetId();
+      LocalPoint localPos = seg->localPosition();
+      LocalVector segDir = seg->localDirection();
+      GlobalPoint globalPos = cscGeom->chamber(id)->toGlobal(localPos);
+      GlobalVector globalVec = cscGeom->chamber(id)->toGlobal(segDir);
 
+      //float chisq    = seg->chi2();
+      //int nDOF       = 2*nhits-4;
+      //double chisqProb = ChiSquaredProbability( (double)chisq, nDOF );
+      //float segX     = localPos.x();
+      //float segY     = localPos.y();
+      //double theta   = segDir.theta();
+      
       shscp::CscSegment s;
-      s.detId = seg->cscDetId();
+      s.endcap = id.endcap();
+      s.ring = id.ring();
+      s.station = id.station();
+      s.chamber = id.chamber();
       s.nHits = seg->nRecHits();
-//       s.phi = pos.phi();
-//       s.z = pos.z();
-//       s.r = pos.rho();
+      s.phi = globalPos.phi();
+      s.z = globalPos.z();
+      s.r = sqrt((globalPos.x()*globalPos.x()) + (globalPos.y()*globalPos.y()));
+      s.dirTheta = globalVec.theta();
+      s.dirPhi = globalVec.phi();
+
+      event_->addCscSegment(s);
     }
 
   }

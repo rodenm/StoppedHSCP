@@ -35,6 +35,8 @@ LhcFills::LhcFills() {
   setupCollisions();
   setupBunches();
 
+  printSummary(std::cout);
+
 }
 
 
@@ -73,7 +75,7 @@ void LhcFills::readFiles() {
       std::vector<std::string> strs;
       boost::split(strs, line, boost::is_any_of("\t\v\f\r \n"));
 
-      if (atoi(strs.at(0).c_str()) > 0) {
+      if (strs.size()>0 && atoi(strs.at(0).c_str()) > 0) {
 
 // 	for (std::vector<std::string>::iterator itr=strs.begin(); itr!=strs.end();) {
 // 	  if (itr->length()==0) strs.erase(itr);
@@ -288,12 +290,24 @@ std::vector<bool> LhcFills::getLifetimeMaskFromRun(unsigned run) {
 
 
 unsigned LhcFills::getIndexFromFill(unsigned fill) {
-  return lookupFillIndex_.at(fill);
+  if (fill < lookupFillIndex_.size()) {
+    return lookupFillIndex_.at(fill);
+  }
+  else {
+    std::cerr << "ERROR : non existent fill, #" << fill << std::endl;
+    return 0;
+  }
 }
 
 
 unsigned LhcFills::getIndexFromRun(unsigned run) {
-  return lookupRunIndex_.at(run);
+  if (run < lookupRunIndex_.size()) {
+    return lookupRunIndex_.at(run);
+  }
+  else {
+    std::cerr << "ERROR : non existent run, #" << run << std::endl;
+    return 0;
+  }
 }
 
 
