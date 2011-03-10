@@ -49,16 +49,16 @@ process.load('StoppedHSCP/Analysis/stoppedHSCPTree_cfi')
 process.ntuple = cms.Path(
 
 # filter on HLT bit
-#    process.hltHighLevel
+    process.hltHighLevel
 
 # filter HCAL noise
     process.HBHENoiseFilterResultProducer
 
 # get hcal digis
-#    +process.gctDigis
-#    +process.gtDigis
-#    +process.l1extraParticles
-#    +process.hcalDigis
+    +process.gctDigis
+    +process.gtDigis
+    +process.l1extraParticles
+    +process.hcalDigis
 
 # generate TTree    
     +process.stoppedHSCPTree
