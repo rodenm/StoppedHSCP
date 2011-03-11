@@ -1,6 +1,8 @@
 
 <use name="root"/>
 <use name="boost"/>
+<use name="CalibFormats/HcalObjects"/>
+<use name="CalibCalorimetry/HcalAlgos"/>
 
 <export>
   <use name="root"/>
