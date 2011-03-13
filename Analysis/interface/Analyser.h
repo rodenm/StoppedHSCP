@@ -54,7 +54,7 @@ class Analyser {
   bool isWatchedEvent();
   
   // loop over events
-  void loop(Long64_t maxEvents_=-1);
+  void loop(ULong64_t maxEvents_=0);
 
   // calculate lifetime of an event
   double eventLifetime(unsigned run, unsigned bx);

@@ -238,7 +238,7 @@ void RateCalculator::loop() {
   reset();
 
   // run loop
-  for (unsigned long i=0; i<nEvents_; ++i, nextEvent()) {
+  for (long int i=0; i<nEvents_; ++i, nextEvent()) {
     
     if (i%100000==0) {
       std::cout << "Processing " << i << "th event" << std::endl;

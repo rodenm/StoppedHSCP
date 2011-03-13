@@ -219,7 +219,7 @@ bool Analyser::isWatchedEvent() {
 }
 
 
-void Analyser::loop(Long64_t maxEvents) {
+void Analyser::loop(ULong64_t maxEvents) {
 
   reset();
  
@@ -227,7 +227,7 @@ void Analyser::loop(Long64_t maxEvents) {
 
   // run loop
 
-  if (maxEvents<=0) maxEvents=nEvents_;
+  if (maxEvents==0) maxEvents=nEvents_;
 
   for (unsigned long i=0; i<maxEvents; ++i, nextEvent()) {
     if (i%100000==0) {
