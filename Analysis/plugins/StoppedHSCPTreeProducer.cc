@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.58 2011/03/15 00:52:29 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.59 2011/03/15 15:03:24 jbrooke Exp $
 //
 //
 
@@ -1344,7 +1344,7 @@ StoppedHSCPTreeProducer::doHFRecHits(const edm::Event& iEvent)
 	rh.ieta  = it->id().ieta();
 	rh.iphi  = it->id().iphi();
 	rh.depth = it->id().depth();
-	event_->addRecHit(rh);
+	event_->addHFRecHit(rh);
 
 	count++;
 
