@@ -149,16 +149,16 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   towerEtHad(0),
   towerEEm(0),
   towerEtEm(0),
-  rechit_N(0),
-  rechite(0),
-  rechittime(0),
-  rechitflags(0),
-  rechitaux(0),
-  rechitEta(0.),
-  rechitPhi(0.),
-  rechitIEta(0),
-  rechitIPhi(0),
-  rechitDepth(0),
+  recHit_N(0),
+  recHitE(0),
+  recHitTime(0),
+  recHitFlags(0),
+  recHitAux(0),
+  recHitEta(0.),
+  recHitPhi(0.),
+  recHitIEta(0),
+  recHitIPhi(0),
+  recHitDepth(0),
   cscSeg_N(0),
   cscSegEndcap(0),
   cscSegRing(0),
@@ -279,18 +279,29 @@ void StoppedHSCPEvent::addTower(Tower t) {
 }
 
 void StoppedHSCPEvent::addRecHit(RecHit r) {
-  rechite.push_back(r.e);
-  rechittime.push_back(r.time);
-  rechitflags.push_back(r.flags);
-  rechitaux.push_back(r.aux);
-  rechitEta.push_back(r.eta);
-  rechitPhi.push_back(r.phi); 
-  rechitIEta.push_back(r.ieta);
-  rechitIPhi.push_back(r.iphi);
-  rechitDepth.push_back(r.depth);
-  rechitRBXindex.push_back(r.RBXindex);
-  rechitRMindex.push_back(r.RMindex);
-  ++rechit_N;
+  recHitE.push_back(r.e);
+  recHitTime.push_back(r.time);
+  recHitFlags.push_back(r.flags);
+  recHitAux.push_back(r.aux);
+  recHitEta.push_back(r.eta);
+  recHitPhi.push_back(r.phi); 
+  recHitIEta.push_back(r.ieta);
+  recHitIPhi.push_back(r.iphi);
+  recHitDepth.push_back(r.depth);
+  recHitRBXindex.push_back(r.RBXindex);
+  recHitRMindex.push_back(r.RMindex);
+  ++recHit_N;
+}
+
+void StoppedHSCPEvent::addHFRecHit(RecHit r) {
+  hfRecHitE.push_back(r.e);
+  hfRecHitTime.push_back(r.time);
+  hfRecHitEta.push_back(r.eta);
+  hfRecHitPhi.push_back(r.phi); 
+  hfRecHitIEta.push_back(r.ieta);
+  hfRecHitIPhi.push_back(r.iphi);
+  hfRecHitDepth.push_back(r.depth);
+  ++hfRecHit_N;
 }
 
 void StoppedHSCPEvent::addHPD(HPD h) {

@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.56 2011/03/09 13:57:04 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.57 2011/03/10 17:27:59 jbrooke Exp $
 //
 //
 
@@ -175,6 +175,7 @@ private:
 
   // write HCAL RecHits
   void doHcalRecHits(const edm::Event&);
+  void doHFRecHits(const edm::Event&);
 
   // write CSC segments
   void doCscSegments(const edm::Event&, const edm::EventSetup&);
@@ -277,6 +278,7 @@ private:
   edm::InputTag rbxTag_;
   edm::InputTag hpdTag_;
   edm::InputTag hcalRecHitTag_;
+  edm::InputTag hfRecHitTag_;
   edm::InputTag hcalDigiTag_;
   edm::InputTag cscSegmentsTag_;
 
@@ -364,6 +366,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   rbxTag_(iConfig.getUntrackedParameter<edm::InputTag>("rbxTag",edm::InputTag("hcalnoise"))),
   hpdTag_(iConfig.getUntrackedParameter<edm::InputTag>("hpdTag",edm::InputTag("hcalnoise"))),
   hcalRecHitTag_(iConfig.getUntrackedParameter<edm::InputTag>("hcalRecHitTag",edm::InputTag("hbhereco"))),
+  hfRecHitTag_(iConfig.getUntrackedParameter<edm::InputTag>("hfRecHitTag",edm::InputTag("hfreco"))),
   hcalDigiTag_(iConfig.getUntrackedParameter<edm::InputTag>("hcalDigiTag",edm::InputTag("hcalDigis"))),
   cscSegmentsTag_(iConfig.getUntrackedParameter<edm::InputTag>("cscSegmentsTag",edm::InputTag("cscSegments"))),
   towerMinEnergy_(iConfig.getUntrackedParameter<double>("towerMinEnergy", 1.)),
@@ -1249,7 +1252,7 @@ StoppedHSCPTreeProducer::doHcalRecHits(const edm::Event& iEvent)
 	rh.depth = (*hit).id().depth();
 	rh.RBXindex = logicalMap_->getHcalFrontEndId(hit->detid()).rbxIndex();
 	rh.RMindex  = logicalMap_->getHcalFrontEndId(hit->detid()).rm();
-	event_->addRecHit(rh);
+	event_->addHFRecHit(rh);
 
 	count++;
 
@@ -1259,6 +1262,61 @@ StoppedHSCPTreeProducer::doHcalRecHits(const edm::Event& iEvent)
     
   }
   
+}
+
+
+/// fill rec hit 
+void
+StoppedHSCPTreeProducer::doHFRecHits(const edm::Event& iEvent)
+{
+
+  // get the rechits (to select digis ordered by energy)
+  edm::Handle<HFRecHitCollection> recHits;
+  iEvent.getByLabel(hfRecHitTag_, recHits);
+
+  // copy rechits to internal vector
+  if(recHits.isValid()) {
+
+    unsigned count=0;
+    
+    for (HFRecHitCollection::const_iterator it=recHits->begin();
+	 it!=recHits->end() && count<1000;
+	 ++it) {
+
+      // reject bad status rechits from collection      
+//       if (std::find(badChannels_.begin(),
+// 		    badChannels_.end(),
+// 		    it->id())!=badChannels_.end()) {
+// 	continue;
+//       }
+
+      GlobalPoint pos = caloGeom_->getPosition(it->detid());
+      
+      shscp::RecHit rh;
+      
+      rh.e = it->energy();
+
+      if (rh.e > rechitMinEnergy_ ) {
+	
+	rh.time  = it->time();
+	rh.eta   = pos.eta();
+	rh.phi   = pos.phi();
+	rh.ieta  = it->id().ieta();
+	rh.iphi  = it->id().iphi();
+	rh.depth = it->id().depth();
+	event_->addRecHit(rh);
+
+	count++;
+
+      }      
+    }
+
+  }
+  else {
+    if (!rechitsMissing_) edm::LogWarning("MissingProduct") << "CaloRecHits not found.  Branches will not be filled" << std::endl;
+    rechitsMissing_ = true;
+  }
+
 }
 
 

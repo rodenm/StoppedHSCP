@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.36 2011/03/08 18:01:19 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.37 2011/03/10 17:27:59 jbrooke Exp $
 //
 //
 
@@ -178,6 +178,7 @@ class StoppedHSCPEvent : public TObject {
   void addHPD(shscp::HPD h);
   void addTower(shscp::Tower t);
   void addRecHit(shscp::RecHit r);
+  void addHFRecHit(shscp::RecHit r);
   void addCscSegment(shscp::CscSegment s);
 
   // utils
@@ -288,6 +289,8 @@ class StoppedHSCPEvent : public TObject {
   unsigned nTowerSameiPhi;
   unsigned nTowerLeadingIPhi;
   double eHadLeadingIPhi;
+  double hfPlusTotalE;
+  double hfMinusTotalE;
 
   // noise summary data
   double noiseMinE2Over10TS;
@@ -341,18 +344,28 @@ class StoppedHSCPEvent : public TObject {
   std::vector<Double_t> towerEtEm;
 
   // calo rechits
-  unsigned rechit_N;
-  std::vector<Double_t> rechite;
-  std::vector<Double_t> rechittime;
-  std::vector<UInt_t> rechitflags;
-  std::vector<UInt_t> rechitaux;
-  std::vector<Double_t> rechitEta;
-  std::vector<Double_t> rechitPhi;
-  std::vector<Int_t> rechitIEta;
-  std::vector<Int_t> rechitIPhi;
-  std::vector<Int_t> rechitDepth;
-  std::vector<Int_t> rechitRBXindex;
-  std::vector<Int_t> rechitRMindex;
+  unsigned recHit_N;
+  std::vector<Double_t> recHitE;
+  std::vector<Double_t> recHitTime;
+  std::vector<UInt_t> recHitFlags;
+  std::vector<UInt_t> recHitAux;
+  std::vector<Double_t> recHitEta;
+  std::vector<Double_t> recHitPhi;
+  std::vector<Int_t> recHitIEta;
+  std::vector<Int_t> recHitIPhi;
+  std::vector<Int_t> recHitDepth;
+  std::vector<Int_t> recHitRBXindex;
+  std::vector<Int_t> recHitRMindex;
+
+  // HF Rec Hits
+  unsigned hfRecHit_N;
+  std::vector<Double_t> hfRecHitE;
+  std::vector<Double_t> hfRecHitTime;
+  std::vector<Double_t> hfRecHitEta;
+  std::vector<Double_t> hfRecHitPhi;
+  std::vector<Int_t> hfRecHitIEta;
+  std::vector<Int_t> hfRecHitIPhi;
+  std::vector<Int_t> hfRecHitDepth;
 
   // CSC segments
   unsigned cscSeg_N;

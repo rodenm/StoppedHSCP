@@ -29,17 +29,12 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 # HLT bit filter
 process.load('HLTrigger.HLTfilters.hltHighLevel_cfi')
 process.hltHighLevel.TriggerResultsTag = cms.InputTag("TriggerResults","","HLT")
-process.hltHighLevel.HLTPaths = cms.vstring("HLT_*")
+process.hltHighLevel.HLTPaths = cms.vstring(
+    "HLT_StoppedHSCP_*",
+    "HLT_JetE_*")
 
-# HCAL noise filter
-process.load('CommonTools/RecoAlgos/HBHENoiseFilter_cfi')
-
-# Instead of rejecting the event, add a flag indicating the HBHE noise 
+# add a flag indicating the HBHE noise 
 process.load('CommonTools/RecoAlgos/HBHENoiseFilterResultProducer_cfi')
-
-# get RAW data
-process.load('Configuration/StandardSequences/RawToDigi_Data_cff')
-process.load('Configuration/StandardSequences/L1Extra_cff')
 
 # Ntuple producer
 process.load('StoppedHSCP/Analysis/stoppedHSCPTree_cfi')
@@ -49,16 +44,10 @@ process.load('StoppedHSCP/Analysis/stoppedHSCPTree_cfi')
 process.ntuple = cms.Path(
 
 # filter on HLT bit
-    process.hltHighLevel
+    #process.hltHighLevel
 
 # filter HCAL noise
     process.HBHENoiseFilterResultProducer
-
-# get hcal digis
-    +process.gctDigis
-    +process.gtDigis
-    +process.l1extraParticles
-    +process.hcalDigis
 
 # generate TTree    
     +process.stoppedHSCPTree

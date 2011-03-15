@@ -5,7 +5,7 @@
 #
 import FWCore.ParameterSet.Config as cms
 
-from StoppedHSCP.Analysis.stoppedHSCPTree_cfg import *
+from StoppedHSCP.Analysis.stoppedHSCPTree_RECO_cfg import *
 
 #process.MessageLogger.cerr.threshold = ''
 #process.MessageLogger.cerr.FwkReport.reportEvery = 1000
