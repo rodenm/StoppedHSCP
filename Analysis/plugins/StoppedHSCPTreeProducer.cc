@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.57 2011/03/10 17:27:59 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.58 2011/03/15 00:52:29 jbrooke Exp $
 //
 //
 
@@ -252,6 +252,7 @@ private:
 
   // job control
   bool isMC_;
+  bool doAK5_;
   bool doCaloTowers_;
   bool doRecHits_;
   bool doDigis_;
@@ -268,6 +269,7 @@ private:
   edm::InputTag hltL3Tag_;
   edm::InputTag mcTag_;
   edm::InputTag jetTag_;
+  edm::InputTag jetAK5Tag_;
   edm::InputTag muonTag_;
   edm::InputTag cosmicMuonTag_;
   edm::InputTag verticesTag_;
@@ -342,6 +344,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   tree_(0),
   event_(0),
   isMC_(iConfig.getUntrackedParameter<bool>("isMC",false)),
+  doAK5_(iConfig.getUntrackedParameter<bool>("doAK5",false)),
   doCaloTowers_(iConfig.getUntrackedParameter<bool>("doCaloTowers",true)),
   doRecHits_(iConfig.getUntrackedParameter<bool>("doRecHits",false)),
   doDigis_(iConfig.getUntrackedParameter<bool>("doDigis",false)),
@@ -355,7 +358,8 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   hltPath_(iConfig.getUntrackedParameter<std::string>("hltPath",std::string("HLT_StoppedHSCP"))),
   hltL3Tag_(iConfig.getUntrackedParameter<edm::InputTag>("hltL3Tag",edm::InputTag("hltStoppedHSCP1CaloJetEnergy","","HLT"))),
   mcTag_(iConfig.getUntrackedParameter<edm::InputTag>("mcTag",edm::InputTag("generator"))),
-  jetTag_(iConfig.getUntrackedParameter<edm::InputTag>("jetTag",edm::InputTag("sisCone5CaloJets"))),
+  jetTag_(iConfig.getUntrackedParameter<edm::InputTag>("jetTag",edm::InputTag("iterativeCone5CaloJets"))),
+  jetAK5Tag_(iConfig.getUntrackedParameter<edm::InputTag>("jetAK5Tag",edm::InputTag("ak5CaloJets"))),
   muonTag_(iConfig.getUntrackedParameter<edm::InputTag>("muonTag",edm::InputTag("muons"))),
   cosmicMuonTag_(iConfig.getUntrackedParameter<edm::InputTag>("cosmicMuonTag",edm::InputTag("muonsFromCosmics"))),
   verticesTag_(iConfig.getUntrackedParameter<edm::InputTag>("verticesTag", edm::InputTag("offlinePrimaryVertices"))),
@@ -863,7 +867,43 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
      if (!jetsMissing_) edm::LogWarning("MissingProduct") << "CaloJets not found.  Branch will not be filled" << std::endl;
      jetsMissing_ = true;
    }
+ 
+   edm::Handle<CaloJetCollection> ak5Jets;
+   iEvent.getByLabel(jetAK5Tag_, ak5Jets);
    
+   if (ak5Jets.isValid()) {
+
+     // sort jets by energy
+     std::vector<CaloJet> jets;
+     jets.insert(jets.end(), ak5Jets->begin(), ak5Jets->end());
+     std::sort(jets.begin(), jets.end(), jete_gt() );
+
+     for(CaloJetCollection::const_iterator it=jets.begin(); 
+	 it!=jets.end();
+	 ++it) {
+       if (it->energy() > jetMinEnergy_ &&
+	   fabs(it->eta()) < jetMaxEta_) {
+	 
+	 // store jet in TTree
+	 shscp::Jet jet;
+	 jet.et = it->et();
+	 jet.eta = it->eta();
+	 jet.phi = it->phi();
+	 jet.e = it->energy();
+	 jet.eEm = it->emEnergyInEB();
+	 jet.eHad = it->hadEnergyInHB();
+	 jet.eMaxEcalTow = it->maxEInEmTowers();
+	 jet.eMaxHcalTow = it->maxEInHadTowers();
+	 jet.n60 = it->n60();
+	 jet.n90 = it->n90();
+	 event_->addAK5Jet(jet);
+
+       }
+     }
+
+   }
+
+  
 }
 
 

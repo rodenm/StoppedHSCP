@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.37 2011/03/10 17:27:59 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.38 2011/03/15 00:52:29 jbrooke Exp $
 //
 //
 
@@ -162,6 +162,7 @@ namespace shscp {
 class StoppedHSCPEvent : public TObject {
  public:
   
+  enum { MAX_N_JETS=20 };
   enum { MAX_N_TOWERS=100 };
   enum { MAX_N_HPDS=10 };
   //  enum { MAX_N_DIGIS=100 };
@@ -174,6 +175,7 @@ class StoppedHSCPEvent : public TObject {
   void addL1Jet(shscp::TrigJet j);
   void addHltJet(shscp::TrigJet j);
   void addJet(shscp::Jet j);
+  void addAK5Jet(shscp::Jet j);
   void addMuon(shscp::Muon m);
   void addHPD(shscp::HPD h);
   void addTower(shscp::Tower t);
@@ -262,6 +264,21 @@ class StoppedHSCPEvent : public TObject {
   std::vector<UInt_t> jetN90;
   std::vector<Double_t> jetFHPD;
   std::vector<UInt_t> jetN90Hits;
+
+  // AK5 jets
+  unsigned jetAK5_N;
+  std::vector<Double_t> jetAK5E;
+  std::vector<Double_t> jetAK5Et;
+  std::vector<Double_t> jetAK5Eta;
+  std::vector<Double_t> jetAK5Phi;
+  std::vector<Double_t> jetAK5EHad;
+  std::vector<Double_t> jetAK5EEm;
+  std::vector<Double_t> jetAK5EMaxEcalTow;
+  std::vector<Double_t> jetAK5EMaxHcalTow;
+  std::vector<UInt_t> jetAK5N60;
+  std::vector<UInt_t> jetAK5N90;
+  std::vector<Double_t> jetAK5FHPD;
+  std::vector<UInt_t> jetAK5N90Hits;
 
   // reco muons
   unsigned mu_N;
