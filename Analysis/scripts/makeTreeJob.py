@@ -126,7 +126,7 @@ crab.close()
 # create CMSSW variables
 cmsswStr="import FWCore.ParameterSet.Config as cms\n\
 \n\
-from StoppedHSCP.Analysis.stoppedHSCPTree_cfg import *\n\
+from StoppedHSCP.Analysis.stoppedHSCPTree_RECO_cfg import *\n\
 \n\
 process.MessageLogger.cerr.threshold = ''\n\
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000\n\
@@ -137,9 +137,9 @@ readFiles.extend( [\n\
 "
 if useMC:
     cmsswStr+="\n\
-process.gctDigis.inputLabel = 'rawDataCollector' \n\
-process.gtDigis.DaqGtInputTag = 'rawDataCollector' \n\
-process.hcalDigis.InputLabel = 'rawDataCollector' \n\
+#process.gctDigis.inputLabel = 'rawDataCollector' \n\
+#process.gtDigis.DaqGtInputTag = 'rawDataCollector' \n\
+#process.hcalDigis.InputLabel = 'rawDataCollector' \n\
 process.ntuple.remove(process.hltHighLevel) \n\
 \n\
 "
