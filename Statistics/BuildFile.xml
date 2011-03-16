@@ -1,7 +1,9 @@
-<use   name="rootrflx"/>
-<use   name="root"/>
-<use   name="rootcore"/>
-<use   name="roofit"/>
+<use name="rootrflx"/>
+<use name="root"/>
+<use name="rootcore"/>
+<use name="roofit"/>
+<use name="roostats"/>
+
 <export>
-  <lib   name="1"/>
+  <lib name="StoppedHSCPStatistics"/>
 </export>
