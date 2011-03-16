@@ -1,0 +1,7 @@
+<use   name="rootrflx"/>
+<use   name="root"/>
+<use   name="rootcore"/>
+<use   name="roofit"/>
+<export>
+  <lib   name="1"/>
+</export>
