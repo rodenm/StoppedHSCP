@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.60 2011/03/15 16:43:37 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.61 2011/03/21 02:08:32 jbrooke Exp $
 //
 //
 
@@ -685,9 +685,6 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent){
 
 void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
-  // trigger bits
-  uint64_t gtAlgoWord0(0), gtAlgoWord1(0), gtTechWord(0);
-
   // get GT data
 //   edm::ESHandle<L1GtTriggerMenu> menuRcd;
 //   iSetup.get<L1GtTriggerMenuRcd>().get(menuRcd) ;
@@ -696,28 +693,38 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
   edm::Handle<L1GlobalTriggerReadoutRecord> gtReadoutRecord;
   iEvent.getByLabel(l1BitsTag_, gtReadoutRecord);
 
-  // L1 trigger bits
-  DecisionWord gtDecisionWord = gtReadoutRecord->decisionWord();
-  unsigned i=0;
-  for(DecisionWord::const_iterator itr=gtDecisionWord.begin();
-      itr != gtDecisionWord.end();
-      itr++, i++) {
-    if (*itr) {
-      if(i<64) { gtAlgoWord0 |= (1LL<<i); }
-      else { gtAlgoWord1 |= (1LL<<(i-64)); }
-    } 
-  }
+  //loop over BX stored by GT
+  for (int bx=-2; bx<3; ++bx) {
 
-  TechnicalTriggerWord gtTechDecisionWord = gtReadoutRecord->technicalTriggerWord();    
-  i=0;
-  for(TechnicalTriggerWord::const_iterator itr=gtDecisionWord.begin();
-      itr != gtDecisionWord.end();
-      itr++, i++) {
-    if (*itr) {
-      gtTechWord |= (1LL<<i);
-    } 
+    uint64_t gtAlgoWord0(0), gtAlgoWord1(0), gtTechWord(0);
+
+    // L1 trigger bits
+    DecisionWord gtDecisionWord = gtReadoutRecord->decisionWord(bx);
+    unsigned i=0;
+    for(DecisionWord::const_iterator itr=gtDecisionWord.begin();
+	itr != gtDecisionWord.end();
+	itr++, i++) {
+      if (*itr) {
+	if(i<64) { gtAlgoWord0 |= (1LL<<i); }
+	else { gtAlgoWord1 |= (1LL<<(i-64)); }
+      } 
+    }
+    
+    TechnicalTriggerWord gtTechDecisionWord = gtReadoutRecord->technicalTriggerWord(bx);    
+    i=0;
+    for(TechnicalTriggerWord::const_iterator itr=gtDecisionWord.begin();
+	itr != gtDecisionWord.end();
+	itr++, i++) {
+      if (*itr) {
+	gtTechWord |= (1LL<<i);
+      } 
+    }
+
+    event_->gtAlgoWord0.push_back(gtAlgoWord0);
+    event_->gtAlgoWord1.push_back(gtAlgoWord1);
+    event_->gtTechWord.push_back(gtTechWord);
+
   }
- 
 
   // HLT config setup
   // moved to beginRun()
@@ -735,9 +742,6 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
   }
 
   // store bits
-  event_->gtAlgoWord0 = gtAlgoWord0;
-  event_->gtAlgoWord1 = gtAlgoWord1;
-  event_->gtTechWord = gtTechWord;
   event_->hlt_Jet_NoBptx = hltBitJetNoBptx;
   event_->hlt_Jet_NoBptx_NoHalo = hltBitJetNoBptxNoHalo;
   event_->hlt_Jet_NoBptx3BX_NoHalo = hltBitJetNoBptx3BXNoHalo;
@@ -1366,12 +1370,19 @@ StoppedHSCPTreeProducer::doHFRecHits(const edm::Event& iEvent)
 
       GlobalPoint pos = caloGeom_->getPosition(it->detid());
       
-      shscp::RecHit rh;
-      
-      rh.e = it->energy();
+      // store E sums for HF+ and HF-
+      if (pos.eta()> 0.) {
+	event_->hfPlusTotalE += it->energy();
+      }
+      if (pos.eta()<0.) {
+	event_->hfMinusTotalE += it->energy();
+      }
 
-      if (doHFRecHits_ && rh.e > rechitMinEnergy_ ) {
+      if (doHFRecHits_ && it->energy() > rechitMinEnergy_ ) {
+
+	shscp::RecHit rh;
 	
+	rh.e = it->energy();
 	rh.time  = it->time();
 	rh.eta   = pos.eta();
 	rh.phi   = pos.phi();

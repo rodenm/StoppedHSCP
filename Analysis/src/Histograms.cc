@@ -162,15 +162,15 @@ void Histograms::fill(StoppedHSCPEvent& event) {
   hlb_->Fill(event.lb);
   htime_->Fill(event.time);
   hlblive_->SetBinContent(event.lb, 1.);
-  hl1bits_->Fill("L1_SingleJet10_NotBptxC", (event.gtAlgoWord1>>(88-64))&0x1);
-  hl1bits_->Fill("L1Tech_BPTX_plus_AND_minus", (event.gtTechWord)&0x1);
-  hl1bits_->Fill("L1_BptxMinus", (event.gtAlgoWord1>>(81-64))&0x1);
-  hl1bits_->Fill("L1_BptxPlus", (event.gtAlgoWord1>>(80-64))&0x1);
-  hl1bits_->Fill("L1_SingleJet10U", (event.gtAlgoWord0>>16)&0x1);
-  hl1bits_->Fill("L1_SingleMuOpen", (event.gtAlgoWord0>>55)&0x1);
-  hl1bits_->Fill("L1Tech_BSC_minBias_thresh1", (event.gtTechWord>>40)&0x1);
+  hl1bits_->Fill("L1_SingleJet10_NotBptxC", (event.gtAlgoWord1[2]>>(88-64))&0x1);
+  hl1bits_->Fill("L1Tech_BPTX_plus_AND_minus", (event.gtTechWord[2])&0x1);
+  hl1bits_->Fill("L1_BptxMinus", (event.gtAlgoWord1[2]>>(81-64))&0x1);
+  hl1bits_->Fill("L1_BptxPlus", (event.gtAlgoWord1[2]>>(80-64))&0x1);
+  hl1bits_->Fill("L1_SingleJet10U", (event.gtAlgoWord0[2]>>16)&0x1);
+  hl1bits_->Fill("L1_SingleMuOpen", (event.gtAlgoWord0[2]>>55)&0x1);
+  hl1bits_->Fill("L1Tech_BSC_minBias_thresh1", (event.gtTechWord[2]>>40)&0x1);
 
-  if ( ((event.gtAlgoWord1>>(80-64))&0x1)>0 || ((event.gtAlgoWord1>>(81-64))&0x1)>0) {
+  if ( ((event.gtAlgoWord1[2]>>(80-64))&0x1)>0 || ((event.gtAlgoWord1[2]>>(81-64))&0x1)>0) {
     hbxup_->Fill(event.bx);
   }
 

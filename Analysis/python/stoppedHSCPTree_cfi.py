@@ -8,8 +8,8 @@ stoppedHSCPTree = cms.EDAnalyzer(
     hltResultsTag = cms.untracked.InputTag("TriggerResults","","HLT"),
     hltEventTag = cms.untracked.InputTag("hltTriggerSummaryAOD","","HLT"),
     hltPathJetNoBptx = cms.untracked.string("HLT_JetE30_NoBPTX_v1"),
-    hltPathJetNoBptxNoHalo = cms.untracked.string("HLT_JetE30_NoBPTX_NoHalo_v1"),
-    hltPathJetNoBptx3BXNoHalo = cms.untracked.string("HLT_JetE30_NoBPTX3BX_NoHalo_v1"),
+    hltPathJetNoBptxNoHalo = cms.untracked.string("HLT_JetE30_NoBPTX_NoHalo_v2"),
+    hltPathJetNoBptx3BXNoHalo = cms.untracked.string("HLT_JetE30_NoBPTX3BX_NoHalo_v2"),
     hltL3Tag = cms.untracked.InputTag("hltStoppedHSCPTight1CaloJetEnergy30","","HLT"),
 
     # MC

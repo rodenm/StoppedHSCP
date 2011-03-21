@@ -13,7 +13,7 @@ process = cms.Process("SHSCPTree")
 
 process.load('Configuration/StandardSequences/Services_cff')
 process.load('FWCore/MessageService/MessageLogger_cfi')
-process.MessageLogger.cerr.INFO.limit = cms.untracked.int32(10)
+#process.MessageLogger.cerr.INFO.limit = cms.untracked.int32(10)
 process.MessageLogger.cerr.threshold = ''
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
@@ -30,9 +30,9 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 process.load('HLTrigger.HLTfilters.hltHighLevel_cfi')
 process.hltHighLevel.TriggerResultsTag = cms.InputTag("TriggerResults","","HLT")
 process.hltHighLevel.HLTPaths = cms.vstring(
-    "HLT_JetE30_NoBPTX_v*",
-    "HLT_JetE30_NoBPTX_NoHalo_v*",
-    "HLT_JetE30_NoBPTX3BX_NoHalo_v*"
+    "HLT_JetE30_NoBPTX_v1",
+    "HLT_JetE30_NoBPTX_NoHalo_v2",
+    "HLT_JetE30_NoBPTX3BX_NoHalo_v2"
 )
 
 # add a flag indicating the HBHE noise 

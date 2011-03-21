@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.39 2011/03/15 15:03:24 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.40 2011/03/21 02:08:32 jbrooke Exp $
 //
 //
 
@@ -230,9 +230,9 @@ class StoppedHSCPEvent : public TObject {
   Long_t bxWrtCollision;
 
   // trigger
-  ULong64_t gtAlgoWord0;
-  ULong64_t gtAlgoWord1;
-  ULong64_t gtTechWord;
+  std::vector<ULong64_t> gtAlgoWord0;
+  std::vector<ULong64_t> gtAlgoWord1;
+  std::vector<ULong64_t> gtTechWord;
   bool hlt_Jet_NoBptx;
   bool hlt_Jet_NoBptx_NoHalo;
   bool hlt_Jet_NoBptx3BX_NoHalo;

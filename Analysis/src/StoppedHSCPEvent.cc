@@ -104,6 +104,8 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   nTowerSameiPhi(0),
   nTowerLeadingIPhi(0),
   eHadLeadingIPhi(0.),
+  hfPlusTotalE(0.),
+  hfMinusTotalE(0.),
   noiseMinE2Over10TS(0.),
   noiseMaxE2Over10TS(0.),
   noiseMaxHPDHits(0),
