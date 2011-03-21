@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.59 2011/03/15 15:03:24 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.60 2011/03/15 16:43:37 jbrooke Exp $
 //
 //
 
@@ -255,8 +255,12 @@ private:
   bool doAK5_;
   bool doCaloTowers_;
   bool doRecHits_;
+  bool doHFRecHits_;
+  bool doCscSegments_;
   bool doDigis_;
-  bool doHltBit_;
+  bool doHltBit1_;
+  bool doHltBit2_;
+  bool doHltBit3_;
   bool writeHistos_;
 
   // EDM input tags
@@ -265,7 +269,9 @@ private:
   edm::InputTag l1BitsTag_;
   edm::InputTag hltResultsTag_;
   edm::InputTag hltEventTag_;
-  std::string hltPath_;
+  std::string hltPathJetNoBptx_;
+  std::string hltPathJetNoBptxNoHalo_;
+  std::string hltPathJetNoBptx3BXNoHalo_;
   edm::InputTag hltL3Tag_;
   edm::InputTag mcTag_;
   edm::InputTag jetTag_;
@@ -286,7 +292,9 @@ private:
 
   // HLT config helper
   HLTConfigProvider hltConfig_;
-  unsigned hltPathIndex_;
+  unsigned hltPathIndexJetNoBptx_;
+  unsigned hltPathIndexJetNoBptxNoHalo_;
+  unsigned hltPathIndexJetNoBptx3BXNoHalo_;
 
   // geometry
   const CaloGeometry* caloGeom_;
@@ -347,15 +355,21 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   doAK5_(iConfig.getUntrackedParameter<bool>("doAK5",false)),
   doCaloTowers_(iConfig.getUntrackedParameter<bool>("doCaloTowers",true)),
   doRecHits_(iConfig.getUntrackedParameter<bool>("doRecHits",false)),
+  doHFRecHits_(iConfig.getUntrackedParameter<bool>("doHFRecHits",false)),
+  doCscSegments_(iConfig.getUntrackedParameter<bool>("doCsc",false)),
   doDigis_(iConfig.getUntrackedParameter<bool>("doDigis",false)),
-  doHltBit_(true),
+  doHltBit1_(true),
+  doHltBit2_(true),
+  doHltBit3_(true),
   writeHistos_(iConfig.getUntrackedParameter<bool>("writeHistos",false)),
   condInEdmTag_(iConfig.getUntrackedParameter<edm::InputTag>("condInEdmTag",std::string("CondInEdmInputTag"))),
   l1JetsTag_(iConfig.getUntrackedParameter<std::string>("l1JetsTag",std::string("l1extraParticles"))),
   l1BitsTag_(iConfig.getUntrackedParameter<edm::InputTag>("l1BitsTag",edm::InputTag("gtDigis"))),
   hltResultsTag_(iConfig.getUntrackedParameter<edm::InputTag>("hltResultsTag",edm::InputTag("TriggerResults","","HLT"))),
   hltEventTag_(iConfig.getUntrackedParameter<edm::InputTag>("hltEventTag",edm::InputTag("hltTriggerSummaryAOD","","HLT"))),
-  hltPath_(iConfig.getUntrackedParameter<std::string>("hltPath",std::string("HLT_StoppedHSCP"))),
+  hltPathJetNoBptx_(iConfig.getUntrackedParameter<std::string>("hltPathJetNoBptx",std::string("HLT_JetE30_NoBPTX_v1"))),
+  hltPathJetNoBptxNoHalo_(iConfig.getUntrackedParameter<std::string>("hltPathJetNoBptxNoHalo",std::string("HLT_JetE30_NoBPTX_NoHalo_v1"))),
+  hltPathJetNoBptx3BXNoHalo_(iConfig.getUntrackedParameter<std::string>("hltPathJetNoBptx3BXNoHalo",std::string("HLT_JetE30_NoBPTX3BX_NoHalo_v1"))),
   hltL3Tag_(iConfig.getUntrackedParameter<edm::InputTag>("hltL3Tag",edm::InputTag("hltStoppedHSCP1CaloJetEnergy","","HLT"))),
   mcTag_(iConfig.getUntrackedParameter<edm::InputTag>("mcTag",edm::InputTag("generator"))),
   jetTag_(iConfig.getUntrackedParameter<edm::InputTag>("jetTag",edm::InputTag("iterativeCone5CaloJets"))),
@@ -443,12 +457,30 @@ StoppedHSCPTreeProducer::beginRun(edm::Run const & iRun, edm::EventSetup const& 
   bool changed;
   hltConfig_.init(iRun, iSetup, hltResultsTag_.process(), changed);
   try {
-       hltPathIndex_ = hltConfig_.triggerIndex(hltPath_);
+       hltPathIndexJetNoBptx_ = hltConfig_.triggerIndex(hltPathJetNoBptx_);
+       edm::LogInfo("StoppedHSCPTree") << hltPathJetNoBptx_ << " index is " << hltPathIndexJetNoBptx_ << std::endl;
   }
   catch (cms::Exception e) {
-    edm::LogWarning("StoppedHSCPTree") << "Could not find an HLT path matching " << hltPath_ << ".  Branch will not be filled" << std::endl;
-    doHltBit_ = false;
+    edm::LogWarning("StoppedHSCPTree") << "Could not find an HLT path matching " << hltPathJetNoBptx_ << ".  Branch will not be filled" << std::endl;
+    doHltBit1_ = false;
   }
+  try {
+    hltPathIndexJetNoBptxNoHalo_ = hltConfig_.triggerIndex(hltPathJetNoBptxNoHalo_);
+    edm::LogInfo("StoppedHSCPTree") << hltPathJetNoBptxNoHalo_ << " index is " << hltPathIndexJetNoBptxNoHalo_ << std::endl;
+  }
+  catch (cms::Exception e) {
+    edm::LogWarning("StoppedHSCPTree") << "Could not find an HLT path matching " << hltPathJetNoBptxNoHalo_ << ".  Branch will not be filled" << std::endl;
+    doHltBit2_ = false;
+  }
+  try {
+    hltPathIndexJetNoBptx3BXNoHalo_ = hltConfig_.triggerIndex(hltPathJetNoBptx3BXNoHalo_);
+    edm::LogInfo("StoppedHSCPTree") << hltPathJetNoBptx3BXNoHalo_ << " index is " << hltPathIndexJetNoBptx3BXNoHalo_ << std::endl;
+  }
+  catch (cms::Exception e) {
+    edm::LogWarning("StoppedHSCPTree") << "Could not find an HLT path matching " << hltPathJetNoBptx3BXNoHalo_ << ".  Branch will not be filled" << std::endl;
+    doHltBit3_ = false;
+  }
+
 
   // HCAL geometry to calculate eta/phi for CaloRecHits
   edm::ESHandle<CaloGeometry> caloGeomRec;
@@ -517,9 +549,7 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
   doHcalNoise(iEvent);
 
   // HCAL RecHits & flags
-  if (doRecHits_) {
-    doHcalRecHits(iEvent);
-  }
+  doHcalRecHits(iEvent);
 
   // CSC segments
   doCscSegments(iEvent, iSetup);
@@ -628,7 +658,7 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent){
 	// Protection added here against that case.
 	// JIM -- do you want to use the conditional statement below, or add in a separate "else if" for this circumstance?
 	//if (currentColls_.size()>currentColls_.at(0))
-	bxNext = currentColls_.at(currentColls_.at(0));
+	bxNext = currentColls_.at(0);
       }
       // general case
       else {      
@@ -657,7 +687,6 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
 
   // trigger bits
   uint64_t gtAlgoWord0(0), gtAlgoWord1(0), gtTechWord(0);
-  bool hltBit(false);
 
   // get GT data
 //   edm::ESHandle<L1GtTriggerMenu> menuRcd;
@@ -692,6 +721,7 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
 
   // HLT config setup
   // moved to beginRun()
+  bool hltBitJetNoBptx(false), hltBitJetNoBptxNoHalo(false), hltBitJetNoBptx3BXNoHalo(false);
 
   // get HLT results
   edm::Handle<edm::TriggerResults> HLTR;
@@ -699,14 +729,18 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
 
   if (HLTR.isValid()) {
     // triggerIndex must be less than the size of HLTR or you get a CMSException: _M_range_check
-    if (doHltBit_ && hltPathIndex_ < HLTR->size()) hltBit = HLTR->accept(hltPathIndex_); 
+    if (doHltBit1_ && hltPathIndexJetNoBptx_ < HLTR->size()) hltBitJetNoBptx = HLTR->accept(hltPathIndexJetNoBptx_); 
+    if (doHltBit2_ && hltPathIndexJetNoBptxNoHalo_ < HLTR->size()) hltBitJetNoBptxNoHalo = HLTR->accept(hltPathIndexJetNoBptxNoHalo_); 
+    if (doHltBit3_ && hltPathIndexJetNoBptx3BXNoHalo_ < HLTR->size()) hltBitJetNoBptx3BXNoHalo = HLTR->accept(hltPathIndexJetNoBptx3BXNoHalo_); 
   }
 
   // store bits
   event_->gtAlgoWord0 = gtAlgoWord0;
   event_->gtAlgoWord1 = gtAlgoWord1;
   event_->gtTechWord = gtTechWord;
-  event_->hltBit = hltBit;
+  event_->hlt_Jet_NoBptx = hltBitJetNoBptx;
+  event_->hlt_Jet_NoBptx_NoHalo = hltBitJetNoBptxNoHalo;
+  event_->hlt_Jet_NoBptx3BX_NoHalo = hltBitJetNoBptx3BXNoHalo;
 
   // L1 jets
   edm::Handle<l1extra::L1JetParticleCollection> l1CenJets;
@@ -1336,7 +1370,7 @@ StoppedHSCPTreeProducer::doHFRecHits(const edm::Event& iEvent)
       
       rh.e = it->energy();
 
-      if (rh.e > rechitMinEnergy_ ) {
+      if (doHFRecHits_ && rh.e > rechitMinEnergy_ ) {
 	
 	rh.time  = it->time();
 	rh.eta   = pos.eta();
@@ -1369,48 +1403,51 @@ void StoppedHSCPTreeProducer::doCscSegments(const edm::Event& iEvent, const edm:
   // Get the geometry :
   edm::ESHandle<CSCGeometry> cscGeom;
   iSetup.get<MuonGeometryRecord>().get(cscGeom);
-  
-  // write segment info to ntuple
-  if(segments.isValid()) {
 
-    unsigned i=0;
-    for (CSCSegmentCollection::const_iterator seg=segments->begin();
-	 seg!=segments->end() && i<1000;
-	 ++seg, ++i) {
+  if (doCscSegments_) {
 
-      /// code taken from RecoLocalMuon/CSCValidation/src/CSCValidation.cc
-      CSCDetId id  = (CSCDetId)seg->cscDetId();
-      LocalPoint localPos = seg->localPosition();
-      LocalVector segDir = seg->localDirection();
-      GlobalPoint globalPos = cscGeom->chamber(id)->toGlobal(localPos);
-      GlobalVector globalVec = cscGeom->chamber(id)->toGlobal(segDir);
-
-      //float chisq    = seg->chi2();
-      //int nDOF       = 2*nhits-4;
-      //double chisqProb = ChiSquaredProbability( (double)chisq, nDOF );
-      //float segX     = localPos.x();
-      //float segY     = localPos.y();
-      //double theta   = segDir.theta();
+    // write segment info to ntuple
+    if(segments.isValid()) {
       
-      shscp::CscSegment s;
-      s.endcap = id.endcap();
-      s.ring = id.ring();
-      s.station = id.station();
-      s.chamber = id.chamber();
-      s.nHits = seg->nRecHits();
-      s.phi = globalPos.phi();
-      s.z = globalPos.z();
-      s.r = sqrt((globalPos.x()*globalPos.x()) + (globalPos.y()*globalPos.y()));
-      s.dirTheta = globalVec.theta();
-      s.dirPhi = globalVec.phi();
-
-      event_->addCscSegment(s);
+      unsigned i=0;
+      for (CSCSegmentCollection::const_iterator seg=segments->begin();
+	   seg!=segments->end() && i<1000;
+	   ++seg, ++i) {
+	
+	/// code taken from RecoLocalMuon/CSCValidation/src/CSCValidation.cc
+	CSCDetId id  = (CSCDetId)seg->cscDetId();
+	LocalPoint localPos = seg->localPosition();
+	LocalVector segDir = seg->localDirection();
+	GlobalPoint globalPos = cscGeom->chamber(id)->toGlobal(localPos);
+	GlobalVector globalVec = cscGeom->chamber(id)->toGlobal(segDir);
+	
+	//float chisq    = seg->chi2();
+	//int nDOF       = 2*nhits-4;
+	//double chisqProb = ChiSquaredProbability( (double)chisq, nDOF );
+	//float segX     = localPos.x();
+	//float segY     = localPos.y();
+	//double theta   = segDir.theta();
+	
+	shscp::CscSegment s;
+	s.endcap = id.endcap();
+	s.ring = id.ring();
+	s.station = id.station();
+	s.chamber = id.chamber();
+	s.nHits = seg->nRecHits();
+	s.phi = globalPos.phi();
+	s.z = globalPos.z();
+	s.r = sqrt((globalPos.x()*globalPos.x()) + (globalPos.y()*globalPos.y()));
+	s.dirTheta = globalVec.theta();
+	s.dirPhi = globalVec.phi();
+	
+	event_->addCscSegment(s);
+      }
+      
     }
-
-  }
-  else {
-    if (!cscSegsMissing_) edm::LogWarning("MissingProduct") << "CSC Segments not found.  Branches will not be filled" << std::endl;
-    cscSegsMissing_ = true;
+    else {
+      if (!cscSegsMissing_) edm::LogWarning("MissingProduct") << "CSC Segments not found.  Branches will not be filled" << std::endl;
+      cscSegsMissing_ = true;
+    }
   }
 
 }

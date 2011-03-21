@@ -29,9 +29,6 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 # HLT bit filter
 process.load('HLTrigger.HLTfilters.hltHighLevel_cfi')
 process.hltHighLevel.TriggerResultsTag = cms.InputTag("TriggerResults","","HLT")
-process.hltHighLevel.HLTPaths = cms.vstring(
-    "HLT_StoppedHSCP_*",
-    "HLT_JetE_*")
 
 # HCAL noise filter
 process.load('CommonTools/RecoAlgos/HBHENoiseFilter_cfi')
@@ -45,7 +42,13 @@ process.load('Configuration/StandardSequences/L1Extra_cff')
 
 # Ntuple producer
 process.load('StoppedHSCP/Analysis/stoppedHSCPTree_cfi')
-#process.stoppedHSCPTree.hltPath = cms.untracked.string("HLT_StoppedHSCP*")
+
+# 2010 trigger
+process.hltHighLevel.HLTPaths = cms.vstring("HLT_StoppedHSCP_*",)
+process.stoppedHSCPTree.hltPathJetNoBptx = cms.untracked.string("HLT_StoppedHSCP_*"),
+process.stoppedHSCPTree.hltPathJetNoBptxNoHalo = cms.untracked.string(""),
+process.stoppedHSCPTree.hltPathJetNoBptx3BXNoHalo = cms.untracked.string(""),
+process.stoppedHSCPTree.hltL3Tag = cms.untracked.InputTag("hltStoppedHSCP1CaloJetEnergy30","","HLT"),
 
 # path
 process.ntuple = cms.Path(

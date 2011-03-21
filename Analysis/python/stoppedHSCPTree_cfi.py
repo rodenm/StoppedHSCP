@@ -7,8 +7,10 @@ stoppedHSCPTree = cms.EDAnalyzer(
     l1JetsTag = cms.untracked.string("l1extraParticles"),
     hltResultsTag = cms.untracked.InputTag("TriggerResults","","HLT"),
     hltEventTag = cms.untracked.InputTag("hltTriggerSummaryAOD","","HLT"),
-    hltPath = cms.untracked.string("HLT_StoppedHSCP"),
-    hltL3Tag = cms.untracked.InputTag("hltStoppedHSCP1CaloJetEnergy","","HLT"),
+    hltPathJetNoBptx = cms.untracked.string("HLT_JetE30_NoBPTX_v1"),
+    hltPathJetNoBptxNoHalo = cms.untracked.string("HLT_JetE30_NoBPTX_NoHalo_v1"),
+    hltPathJetNoBptx3BXNoHalo = cms.untracked.string("HLT_JetE30_NoBPTX3BX_NoHalo_v1"),
+    hltL3Tag = cms.untracked.InputTag("hltStoppedHSCPTight1CaloJetEnergy30","","HLT"),
 
     # MC
     mcTag = cms.untracked.InputTag("generator"),

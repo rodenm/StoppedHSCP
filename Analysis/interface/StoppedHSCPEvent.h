@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.38 2011/03/15 00:52:29 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.39 2011/03/15 15:03:24 jbrooke Exp $
 //
 //
 
@@ -233,7 +233,9 @@ class StoppedHSCPEvent : public TObject {
   ULong64_t gtAlgoWord0;
   ULong64_t gtAlgoWord1;
   ULong64_t gtTechWord;
-  bool hltBit;
+  bool hlt_Jet_NoBptx;
+  bool hlt_Jet_NoBptx_NoHalo;
+  bool hlt_Jet_NoBptx3BX_NoHalo;
 
   // trigger jets
   unsigned l1Jet_N;
@@ -415,7 +417,7 @@ class StoppedHSCPEvent : public TObject {
   double top5DigiRPeak;
   double top5DigiROuter;
 
-  ClassDef(StoppedHSCPEvent,12);
+  ClassDef(StoppedHSCPEvent,13);
 
 };
 
