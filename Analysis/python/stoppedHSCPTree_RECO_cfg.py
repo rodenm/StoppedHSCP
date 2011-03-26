@@ -35,18 +35,36 @@ process.hltHighLevel.HLTPaths = cms.vstring(
     "HLT_JetE30_NoBPTX3BX_NoHalo_v2"
 )
 
+process.hltStoppedHSCPHpdFilter = cms.EDFilter( "HLTHPDFilter",
+    inputTag = cms.InputTag( "hbhereco" ),
+    energy = cms.double( -99.0 ),
+    hpdSpikeEnergy = cms.double( 10.0 ),
+    hpdSpikeIsolationEnergy = cms.double( 1.0 ),
+    rbxSpikeEnergy = cms.double( 50.0 ),
+    rbxSpikeUnbalance = cms.double( 0.2 )
+)
+
+process.load("CommonTools.RecoAlgos.HBHENoiseFilter_cfi")
+process.HBHENoiseFilter.minNumIsolatedNoiseChannels = cms.int32(999999)
+process.HBHENoiseFilter.minIsolatedNoiseSumE = cms.double(999999.)
+process.HBHENoiseFilter.minIsolatedNoiseSumEt = cms.double(999999.)
+
 # add a flag indicating the HBHE noise 
 process.load('CommonTools/RecoAlgos/HBHENoiseFilterResultProducer_cfi')
 
 # Ntuple producer
 process.load('StoppedHSCP/Analysis/stoppedHSCPTree_cfi')
 #process.stoppedHSCPTree.hltPath = cms.untracked.string("HLT_StoppedHSCP*")
+#process.stoppedHSCPTree.l1BitsTag = "hltGtDigis"
 
 # path
 process.ntuple = cms.Path(
 
 # filter on HLT bit
     process.hltHighLevel
+
+    +process.hltStoppedHSCPHpdFilter
+#    +process.HBHENoiseFilter
 
 # filter HCAL noise
     +process.HBHENoiseFilterResultProducer
