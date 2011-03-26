@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.62 2011/03/21 15:24:00 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.63 2011/03/26 09:46:37 jbrooke Exp $
 //
 //
 
@@ -650,15 +650,11 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent){
       // special case if event is before first collision
       if (bx < currentColls_.at(0)) {
 	bxLast = currentColls_.at(currentColls_.size() - 1);
-	bxNext = currentColls_.at(currentColls_.at(0));
+	bxNext = currentColls_.at(0);
       }
       // special case if event is after last collision
       else if (bx > currentColls_.at(currentColls_.size() - 1)) {
 	bxLast = currentColls_.at(currentColls_.size()-1);
-	// For MC, currentColls_ = [1], so  currentColls_.at(currentColls_.at(0)) = currentColls_.at(1), which doesn't exist.
-	// Protection added here against that case.
-	// JIM -- do you want to use the conditional statement below, or add in a separate "else if" for this circumstance?
-	//if (currentColls_.size()>currentColls_.at(0))
 	bxNext = currentColls_.at(0);
       }
       // general case
