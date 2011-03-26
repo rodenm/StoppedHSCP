@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.61 2011/03/21 02:08:32 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.62 2011/03/21 15:24:00 jbrooke Exp $
 //
 //
 
@@ -550,6 +550,7 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
 
   // HCAL RecHits & flags
   doHcalRecHits(iEvent);
+  doHFRecHits(iEvent);
 
   // CSC segments
   doCscSegments(iEvent, iSetup);
@@ -1371,10 +1372,10 @@ StoppedHSCPTreeProducer::doHFRecHits(const edm::Event& iEvent)
       GlobalPoint pos = caloGeom_->getPosition(it->detid());
       
       // store E sums for HF+ and HF-
-      if (pos.eta()> 0.) {
+      if (pos.eta()> 0. && it->energy() > rechitMinEnergy_ ) {
 	event_->hfPlusTotalE += it->energy();
       }
-      if (pos.eta()<0.) {
+      if (pos.eta()<0. && it->energy() > rechitMinEnergy_ ) {
 	event_->hfMinusTotalE += it->energy();
       }
 
