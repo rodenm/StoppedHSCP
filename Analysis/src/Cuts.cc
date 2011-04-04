@@ -116,17 +116,17 @@ bool Cuts::cutN(unsigned n) const
     if (useDigiCuts_)
       return (event_->top5DigiR2 > 0.1) && (event_->top5DigiR2 < 0.5);
     else
-      return (event_->topHPD5R2 > 0.1) && (event_->topHPD5R2 < 0.5);
+      return (event_->topHPD5R2 > 0.1) && (event_->topHPD5R2 < 0.8);
   case 14: // Rpeak
     if (useDigiCuts_)
       return (event_->top5DigiRPeak > 0.4) && (event_->top5DigiRPeak < 0.7) && (event_->top5DigiPeakSample > 0) && (event_->top5DigiPeakSample < 7);
     else
-      return (event_->topHPD5RPeak > 0.4) && (event_->topHPD5RPeak < 0.7) && (event_->topHPD5PeakSample > 0) && (event_->topHPD5PeakSample < 7);
+      return (event_->topHPD5RPeak > 0.3) && (event_->topHPD5RPeak < 0.7) && (event_->topHPD5PeakSample > 0) && (event_->topHPD5PeakSample < 7);
   case 15: // Router
     if (useDigiCuts_)
       return (event_->top5DigiROuter < 0.1) && (event_->top5DigiROuter >= 0.0) && (event_->top5DigiPeakSample > 0) && (event_->top5DigiPeakSample < 7);
     else
-      return (event_->topHPD5ROuter < 0.1) && (event_->topHPD5ROuter >= 0.0) && (event_->topHPD5PeakSample > 0) && (event_->topHPD5PeakSample < 7);
+      return (event_->topHPD5ROuter < 0.3) && (event_->topHPD5ROuter >= 0.0) && (event_->topHPD5PeakSample > 0) && (event_->topHPD5PeakSample < 7);
     //  case 13:
     //    return event_->jet_N>0 && (event_->jetEEm[0] / event_->jetE[0]) > 0.05;
     //  case 16:
