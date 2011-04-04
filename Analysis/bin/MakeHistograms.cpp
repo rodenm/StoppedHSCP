@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
     }
   
   // options
-  Long64_t nlimit=-1;
+  ULong64_t nlimit=0;
   bool dump=false;
   bool doByRun=true;
   bool isMC=false;
@@ -105,7 +105,7 @@ int main(int argc, char* argv[]) {
   if (vm.count("nlimit"))
     nlimit=1000;
   if (vm.count("num") && vm["num"].as<int>()>-1) // overrides nlimit
-    nlimit=vm["num"].as<int>();
+    nlimit=ULong64_t(vm["num"].as<int>());
   if (vm.count("dump"))
     dump=true;
   if (vm.count("dontDoByRun"))
@@ -205,7 +205,7 @@ int main(int argc, char* argv[]) {
       return -1;
     }
 
-  if (nlimit>-1) std::cout << "Running on " << nlimit << " events per run" << std::endl;
+  if (nlimit>0) std::cout << "Running on " << nlimit << " events per run" << std::endl;
 
 
   // sum of squares error info for histograms
