@@ -85,7 +85,7 @@ bool Cuts::cutN(unsigned n) const
 
     return isMC_ || ! bxMask_.at(event_->bx);
   case 2:  // BPTX
-    return isMC_ || ((event_->gtAlgoWord1[2]>>(81-64)&1) == 0 && (event_->gtAlgoWord1[2]>>(80-64)&1) == 0);
+    return isMC_ || true;//((event_->gtAlgoWord1[2]>>(81-64)&1) == 0 && (event_->gtAlgoWord1[2]>>(80-64)&1) == 0);
   case 3:  // vertex veto
     return (event_->nVtx == 0);
   case 4:  // beam halo
