@@ -15,7 +15,7 @@ process.stoppedHSCPTree.isMC = cms.untracked.bool(False)
 # change Global Tag
 process.GlobalTag.globaltag = 'GR10_P_V12::All'
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
 
 # input files
 readFiles = cms.untracked.vstring()

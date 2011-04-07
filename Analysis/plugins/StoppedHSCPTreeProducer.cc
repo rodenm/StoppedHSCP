@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.64 2011/03/26 11:25:20 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.65 2011/04/07 16:01:18 jbrooke Exp $
 //
 //
 
@@ -370,11 +370,11 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   l1JetsTag_(iConfig.getUntrackedParameter<std::string>("l1JetsTag",std::string("l1extraParticles"))),
   l1BitsTag_(iConfig.getUntrackedParameter<edm::InputTag>("l1BitsTag",edm::InputTag("gtDigis"))),
   l1JetNoBptxName_(iConfig.getUntrackedParameter<std::string>("l1JetNoBptxName",std::string("L1_SingleJet20_NotBptxOR"))),  
-  l1JetNoBptxNoHaloName_(iConfig.getUntrackedParameter<std::string>("l1JetNoBptxName",std::string("L1_SingleJet20_NotBptxOR_NotBeamHalo"))),  
-  //  l1BptxPlusName_(iConfig.getUntrackedParameter<std::string>("l1JetNoBptxName",std::string(""))),  
-  //  l1BptxMinusName_(iConfig.getUntrackedParameter<std::string>("l1JetNoBptxName",std::string(""))),  
-  l1BptxName_(iConfig.getUntrackedParameter<std::string>("l1JetNoBptxName",std::string("L1Tech_BPTX_plus_AND_minus.v0"))),  
-  l1MuBeamHaloName_(iConfig.getUntrackedParameter<std::string>("l1JetNoBptxName",std::string("L1_SingleMuBeamHalo"))),  
+  l1JetNoBptxNoHaloName_(iConfig.getUntrackedParameter<std::string>("l1JetNoBptxNoHaloName",std::string("L1_SingleJet20_NotBptxOR_NotBeamHalo"))),  
+  //  l1BptxPlusName_(iConfig.getUntrackedParameter<std::string>("l1BptxPlusName",std::string(""))),  
+  //  l1BptxMinusName_(iConfig.getUntrackedParameter<std::string>("l1BptxMinusName",std::string(""))),  
+  l1BptxName_(iConfig.getUntrackedParameter<std::string>("l1BptxName",std::string("L1Tech_BPTX_plus_AND_minus.v0"))),  
+  l1MuBeamHaloName_(iConfig.getUntrackedParameter<std::string>("l1MuBeamHaloName",std::string("L1_SingleMuBeamHalo"))),  
   hltResultsTag_(iConfig.getUntrackedParameter<edm::InputTag>("hltResultsTag",edm::InputTag("TriggerResults","","HLT"))),
   hltEventTag_(iConfig.getUntrackedParameter<edm::InputTag>("hltEventTag",edm::InputTag("hltTriggerSummaryAOD","","HLT"))),
   hltPathJetNoBptx_(iConfig.getUntrackedParameter<std::string>("hltPathJetNoBptx",std::string("HLT_JetE30_NoBPTX_v1"))),
