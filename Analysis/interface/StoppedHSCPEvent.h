@@ -15,13 +15,15 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.40 2011/03/21 02:08:32 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.41 2011/03/21 15:24:00 jbrooke Exp $
 //
 //
 
+#include "TObject.h"
 
 #include <vector>
-#include "TObject.h"
+#include <functional>
+
 //#include "boost/cstdint.hpp"
 
 namespace shscp {
@@ -146,16 +148,12 @@ namespace shscp {
     double dirTheta;
   };
 
-/*   struct HcalDigi { */
-/*   HcalDigi() : id(0),eta(0),phi(0),nJet(0), */
-/*       fc0(0.), fc1(0.), fc2(0.), fc3(0.), fc4(0.), fc5(0.), fc6(0.), fc7(0.), fc8(0.), fc9(0.) { } */
-/*     unsigned id; */
-/*     double eta; */
-/*     double phi; */
-/*     unsigned nJet; */
-/*     double fc0, fc1, fc2, fc3, fc4, fc5, fc6, fc7, fc8, fc9;  // ROOT screws up an array :-( */
-/*     ClassDef(HcalDigi,1); */
-/*   }; */
+  // functor for ordering towers
+  struct tow_gt : public std::binary_function<shscp::Tower, shscp::Tower, bool> {
+    bool operator()(const shscp::Tower& x, const shscp::Tower& y) {
+      return x.e > y.e;
+    }
+  };
 
 }
 
@@ -168,6 +166,7 @@ class StoppedHSCPEvent : public TObject {
   //  enum { MAX_N_DIGIS=100 };
 
  public:
+
   StoppedHSCPEvent();
   ~StoppedHSCPEvent();
 
@@ -185,9 +184,16 @@ class StoppedHSCPEvent : public TObject {
 
   // utils
   void Dump();
-
+  
+  // jet leading iphi fraction
+  double leadingIPhiFraction() const;
+  
+  // 
+  unsigned jetCaloTowers() const;
+    
+  
  public:  // data
-
+  
   //MC
   unsigned rHadPdgId;
   double rHadVtxX;
@@ -230,12 +236,18 @@ class StoppedHSCPEvent : public TObject {
   Long_t bxWrtCollision;
 
   // trigger
-  std::vector<ULong64_t> gtAlgoWord0;
-  std::vector<ULong64_t> gtAlgoWord1;
-  std::vector<ULong64_t> gtTechWord;
-  bool hlt_Jet_NoBptx;
-  bool hlt_Jet_NoBptx_NoHalo;
-  bool hlt_Jet_NoBptx3BX_NoHalo;
+  ULong64_t gtAlgoWord0;
+  ULong64_t gtAlgoWord1;
+  ULong64_t gtTechWord;
+  std::vector<bool> l1JetNoBptx;
+  std::vector<bool> l1JetNoBptxNoHalo;
+  std::vector<bool> l1BptxPlus;
+  std::vector<bool> l1BptxMinus;
+  std::vector<bool> l1Bptx;
+  std::vector<bool> l1MuBeamHalo;
+  bool hltJetNoBptx;
+  bool hltJetNoBptxNoHalo;
+  bool hltJetNoBptx3BXNoHalo;
 
   // trigger jets
   unsigned l1Jet_N;
@@ -417,7 +429,8 @@ class StoppedHSCPEvent : public TObject {
   double top5DigiRPeak;
   double top5DigiROuter;
 
-  ClassDef(StoppedHSCPEvent,13);
+
+  ClassDef(StoppedHSCPEvent,14);
 
 };
 

@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.63 2011/03/26 09:46:37 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.64 2011/03/26 11:25:20 jbrooke Exp $
 //
 //
 
@@ -267,6 +267,10 @@ private:
   edm::InputTag condInEdmTag_;
   std::string l1JetsTag_;
   edm::InputTag l1BitsTag_;
+  std::string l1JetNoBptxName_;
+  std::string l1JetNoBptxNoHaloName_;
+  std::string l1BptxName_;
+  std::string l1MuBeamHaloName_;
   edm::InputTag hltResultsTag_;
   edm::InputTag hltEventTag_;
   std::string hltPathJetNoBptx_;
@@ -365,6 +369,12 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   condInEdmTag_(iConfig.getUntrackedParameter<edm::InputTag>("condInEdmTag",std::string("CondInEdmInputTag"))),
   l1JetsTag_(iConfig.getUntrackedParameter<std::string>("l1JetsTag",std::string("l1extraParticles"))),
   l1BitsTag_(iConfig.getUntrackedParameter<edm::InputTag>("l1BitsTag",edm::InputTag("gtDigis"))),
+  l1JetNoBptxName_(iConfig.getUntrackedParameter<std::string>("l1JetNoBptxName",std::string("L1_SingleJet20_NotBptxOR"))),  
+  l1JetNoBptxNoHaloName_(iConfig.getUntrackedParameter<std::string>("l1JetNoBptxName",std::string("L1_SingleJet20_NotBptxOR_NotBeamHalo"))),  
+  //  l1BptxPlusName_(iConfig.getUntrackedParameter<std::string>("l1JetNoBptxName",std::string(""))),  
+  //  l1BptxMinusName_(iConfig.getUntrackedParameter<std::string>("l1JetNoBptxName",std::string(""))),  
+  l1BptxName_(iConfig.getUntrackedParameter<std::string>("l1JetNoBptxName",std::string("L1Tech_BPTX_plus_AND_minus.v0"))),  
+  l1MuBeamHaloName_(iConfig.getUntrackedParameter<std::string>("l1JetNoBptxName",std::string("L1_SingleMuBeamHalo"))),  
   hltResultsTag_(iConfig.getUntrackedParameter<edm::InputTag>("hltResultsTag",edm::InputTag("TriggerResults","","HLT"))),
   hltEventTag_(iConfig.getUntrackedParameter<edm::InputTag>("hltEventTag",edm::InputTag("hltTriggerSummaryAOD","","HLT"))),
   hltPathJetNoBptx_(iConfig.getUntrackedParameter<std::string>("hltPathJetNoBptx",std::string("HLT_JetE30_NoBPTX_v1"))),
@@ -683,46 +693,63 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent){
 void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
   // get GT data
-//   edm::ESHandle<L1GtTriggerMenu> menuRcd;
-//   iSetup.get<L1GtTriggerMenuRcd>().get(menuRcd) ;
-//   const L1GtTriggerMenu* menu = menuRcd.product();
-
+  edm::ESHandle<L1GtTriggerMenu> menuRcd;
+  iSetup.get<L1GtTriggerMenuRcd>().get(menuRcd) ;
+  const L1GtTriggerMenu* menu = menuRcd.product();
+  
   edm::Handle<L1GlobalTriggerReadoutRecord> gtReadoutRecord;
   iEvent.getByLabel(l1BitsTag_, gtReadoutRecord);
 
-  //loop over BX stored by GT
+  // L1 trigger bits (for triggered BX)
+  uint64_t gtAlgoWord0(0), gtAlgoWord1(0), gtTechWord(0);
+
+  DecisionWord gtDecisionWord = gtReadoutRecord->decisionWord();
+  unsigned i=0;
+  for(DecisionWord::const_iterator itr=gtDecisionWord.begin();
+      itr != gtDecisionWord.end();
+      itr++, i++) {
+    if (*itr) {
+      if(i<64) { gtAlgoWord0 |= (1LL<<i); }
+      else { gtAlgoWord1 |= (1LL<<(i-64)); }
+    } 
+  }
+  
+  TechnicalTriggerWord gtTechDecisionWord = gtReadoutRecord->technicalTriggerWord();    
+  i=0;
+  for(TechnicalTriggerWord::const_iterator itr=gtDecisionWord.begin();
+      itr != gtDecisionWord.end();
+      itr++, i++) {
+    if (*itr) {
+      gtTechWord |= (1LL<<i);
+    } 
+  }
+  
+  event_->gtAlgoWord0 = gtAlgoWord0;
+  event_->gtAlgoWord1 = gtAlgoWord1;
+  event_->gtTechWord = gtTechWord;
+  
+  // L1 trigger bits for -2..+2 BX
   for (int bx=-2; bx<3; ++bx) {
 
-    uint64_t gtAlgoWord0(0), gtAlgoWord1(0), gtTechWord(0);
+    const DecisionWord decisionWord = gtReadoutRecord->decisionWord(bx);
+    const TechnicalTriggerWord technicalWord = gtReadoutRecord->technicalTriggerWord(bx);
 
-    // L1 trigger bits
-    DecisionWord gtDecisionWord = gtReadoutRecord->decisionWord(bx);
-    unsigned i=0;
-    for(DecisionWord::const_iterator itr=gtDecisionWord.begin();
-	itr != gtDecisionWord.end();
-	itr++, i++) {
-      if (*itr) {
-	if(i<64) { gtAlgoWord0 |= (1LL<<i); }
-	else { gtAlgoWord1 |= (1LL<<(i-64)); }
-      } 
-    }
+    bool l1JetNoBptx       = menu->gtAlgorithmResult(l1JetNoBptxName_,       decisionWord);
+    bool l1JetNoBptxNoHalo = menu->gtAlgorithmResult(l1JetNoBptxNoHaloName_, decisionWord);
+    //     bool l1BptxPlus        = menu->gtAlgorithmResult(l1BptxPlusName_,        technicalWord);
+    //     bool l1BptxMinus       = menu->gtAlgorithmResult(l1BptxMinusName_,       technicalWord);
+    bool l1Bptx            = menu->gtAlgorithmResult(l1BptxName_,            technicalWord);
+    bool l1MuBeamHalo      = menu->gtAlgorithmResult(l1MuBeamHaloName_,      decisionWord);
+
+    event_->l1JetNoBptx.at(bx+2)       = l1JetNoBptx;
+    event_->l1JetNoBptxNoHalo.at(bx+2) = l1JetNoBptxNoHalo;
+//     event_->l1BptxPlus.at(bx+2)        = l1BptxPlus;
+//     event_->l1BptxMinus.at(bx+2)       = l1BptxMinus;
+    event_->l1Bptx.at(bx+2)            = l1Bptx;
+    event_->l1MuBeamHalo.at(bx+2)      = l1MuBeamHalo;
     
-    TechnicalTriggerWord gtTechDecisionWord = gtReadoutRecord->technicalTriggerWord(bx);    
-    i=0;
-    for(TechnicalTriggerWord::const_iterator itr=gtDecisionWord.begin();
-	itr != gtDecisionWord.end();
-	itr++, i++) {
-      if (*itr) {
-	gtTechWord |= (1LL<<i);
-      } 
-    }
-
-    event_->gtAlgoWord0.push_back(gtAlgoWord0);
-    event_->gtAlgoWord1.push_back(gtAlgoWord1);
-    event_->gtTechWord.push_back(gtTechWord);
-
   }
-
+  
   // HLT config setup
   // moved to beginRun()
   bool hltBitJetNoBptx(false), hltBitJetNoBptxNoHalo(false), hltBitJetNoBptx3BXNoHalo(false);
@@ -739,9 +766,9 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
   }
 
   // store bits
-  event_->hlt_Jet_NoBptx = hltBitJetNoBptx;
-  event_->hlt_Jet_NoBptx_NoHalo = hltBitJetNoBptxNoHalo;
-  event_->hlt_Jet_NoBptx3BX_NoHalo = hltBitJetNoBptx3BXNoHalo;
+  event_->hltJetNoBptx = hltBitJetNoBptx;
+  event_->hltJetNoBptxNoHalo = hltBitJetNoBptxNoHalo;
+  event_->hltJetNoBptx3BXNoHalo = hltBitJetNoBptx3BXNoHalo;
 
   // L1 jets
   edm::Handle<l1extra::L1JetParticleCollection> l1CenJets;

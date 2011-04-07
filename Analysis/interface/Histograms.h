@@ -17,15 +17,12 @@ class Histograms {
 
  public:
 
-  Histograms(Cuts* cuts, TFile* file, std::string name);
+  Histograms(TFile* file, std::string name, Cuts* cuts);
   ~Histograms();
 
   void book();
 
   void fill(StoppedHSCPEvent& event);
-
-  void fillCollisionsHisto(std::vector<unsigned> colls);
-  void fillMaskHisto(std::vector<bool> mask);
 
   void save();
 

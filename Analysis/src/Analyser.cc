@@ -4,15 +4,20 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
-Analyser::Analyser(std::vector<std::string> ifiles, std::string outdir, std::vector<unsigned> runs, bool isMC, bool useDigiCuts) :
+Analyser::Analyser(std::vector<std::string> ifiles, 
+		   std::string outdir, 
+		   std::vector<unsigned> runs, 
+		   bool isMC,
+		   unsigned cutVersion) :
   isMC_(isMC),
-  //file_(ifile.c_str()),
-  //tree_(0),
-  event_(0),
   nEvents_(0),
   iEvent_(0),
-  cuts_(0, isMC, useDigiCuts),
-  histogrammer_(outdir+std::string("/histograms.root"), runs, &cuts_),
+  ofile_((outdir+std::string("/histograms.root")).c_str(), "RECREATE"),
+  event_(0),
+  cuts_(0, isMC, cutVersion),
+  histograms_(&ofile_, std::string("histograms"), &cuts_),
+  runHistos_(&ofile_, std::string("runs"), &cuts_),
+  fillHistos_(&ofile_, std::string("fills"), &cuts_),
   fills_(),
   watchedEvents_(0),
   eventFile_(),
@@ -20,10 +25,13 @@ Analyser::Analyser(std::vector<std::string> ifiles, std::string outdir, std::vec
   dumpFile_(),
   lifetimeFile_()
 {
+
+  // input files
   ifiles_.clear();
   for (uint i=0;i<ifiles.size();++i)
     ifiles_.push_back(ifiles[i]);
-  // log files
+
+  // setup log files
   std::string fd(outdir);
   fd+="/fullDump.log";
   dumpFile_.open(fd.c_str());
@@ -53,13 +61,15 @@ Analyser::Analyser(std::vector<std::string> ifiles, std::string outdir, std::vec
   std::cout << std::endl;
 
   // for backwards compatibility with old versions of the analysis
-  fills_.writeBunchMaskFile();
+  //fills_.writeBunchMaskFile();
 
 }
 
 Analyser::~Analyser() {
 
-  histogrammer_.save();
+  histograms_.save();
+  runHistos_.save();
+  fillHistos_.save();
 
   dumpFile_.close();
   eventFile_.close();
@@ -68,52 +78,24 @@ Analyser::~Analyser() {
 
 
 void Analyser::setup() {
+
+  // set up the TChain
+  chain_=new TChain("stoppedHSCPTree/StoppedHSCPTree");
+
+  for (unsigned i=0;i<ifiles_.size();++i)
+    chain_->Add(ifiles_[i].c_str());
   
-  ch_=new TChain("stoppedHSCPTree/StoppedHSCPTree");
-
-  for (uint i=0;i<ifiles_.size();++i)
-    ch_->Add(ifiles_[i].c_str());
-
-  ch_->SetBranchAddress("events",&event_);
-  Int_t nentries = Int_t(ch_->GetEntries());
-  nEvents_=nentries;
-  //Int_t nbytes=0, nb=0;
-  iEvent_ = 0;
-  /*
-  for (Int_t jentry=0;jentry<nentries;++jentry)
-    {
-      nb=ch.GetEntry(jentry);
-      ch.SetBranchAddress("events",&event_);
-      nbytes+=nb;
-      std::cout <<"event = "<<event_<<std::endl;
-    }
-  */
-  cuts_.setEvent(event_);
-  readWatchedEvents();
-
- /*
-  for (Int_t jentry=0;jentry<nentries;++jentry)
-    {
-      nb=ch.GetEntry(jentry);
-      ch.SetBranchAddress("events",&event_);
-      nbytes+=nb;
-      std::cout <<"event = "<<event_<<std::endl;
-    }
-  */
-
-  /*
-  tree_ = (TTree*) file_.Get("stoppedHSCPTree/StoppedHSCPTree");
-  tree_->SetBranchAddress("events",&event_);
-  std::cout <<"TREE EVENT = "<<event_<<std::endl;
-  nEvents_ = tree_->GetEntriesFast();
+  chain_->SetBranchAddress("events",&event_);
+  Int_t nentries = Int_t(chain_->GetEntries());
+  if (nentries>-1) nEvents_=nentries;
   iEvent_ = 0;
 
-  std::cout << "Input file contains " << nEvents_ << " events" << std::endl;
-  std::cout <<"EVENT = "<<event_<<std::endl;
+  // setup the cuts
   cuts_.setEvent(event_);
 
+  // setup the watched event list
   readWatchedEvents();
-  */
+
 }
 
 
@@ -131,16 +113,16 @@ void Analyser::readWatchedEvents() {
       std::vector<std::string> strs(0);
       boost::split(strs, line, boost::is_any_of(std::string(":"))); 
       if(atoi(strs.at(0).c_str())>0) {
-	unsigned run = (unsigned) atoi(strs.at(0).c_str());
+	unsigned long run = (unsigned long) atoi(strs.at(0).c_str());
 	//unsigned lb  = (unsigned) atoi(strs.at(1).c_str()); // not currently used
-	unsigned id  = (unsigned) atoi(strs.at(2).c_str());
-	watchedEvents_.push_back(std::pair<unsigned, unsigned>(run, id));
+	unsigned long id  = (unsigned long) atoi(strs.at(2).c_str());
+	watchedEvents_.push_back(std::pair<unsigned long, unsigned long>(run, id));
       }
     }
   }
 
   std::cout << "Watching for " << watchedEvents_.size() << " events" << std::endl;
-  for (unsigned i=0; i<watchedEvents_.size(); ++i) {
+  for (unsigned long i=0; i<watchedEvents_.size(); ++i) {
     std::cout << watchedEvents_.at(i).first << ", " << watchedEvents_.at(i).second << std::endl;
   }
  
@@ -156,18 +138,16 @@ void Analyser::nextEvent() {
 
   if (iEvent_ < nEvents_-1) {
     int nb=0;
-    //nb = tree_->GetEntry(iEvent_);
-    nb=ch_->GetEntry(iEvent_);
+    nb=chain_->GetEntry(iEvent_);
     iEvent_++;
-    if (nb == 0) {  std::cout << "TTree GetEntry() failed" << std::endl; }
+    if (nb == 0) {  std::cout << "TChain::GetEntry() failed" << std::endl; }
   }
 
 }
 
 
 void Analyser::printEvent() {
-  //tree_->Show();
-  ch_->Show();
+  chain_->Show();
 }
 
 
@@ -178,7 +158,7 @@ void Analyser::printCutValues(ostream& o) {
   o << "  lb             = " << event_->lb << std::endl;
   o << "  id             = " << event_->id << std::endl;
   o << "  bx             = " << event_->bx << std::endl;
-  o << "  t since coll   = " << eventLifetime(event_->run, event_->bx) << std::endl;
+  o << "  t since coll   = " << event_->bxAfterCollision * 25e-9 << std::endl;
   o << "  orbit          = " << event_->orbit << std::endl;
   o << "  BX veto        = " << cuts_.cutN(1) << std::endl;
   o << "  BPTX veto      = " << cuts_.cutN(2) << std::endl;
@@ -223,61 +203,44 @@ void Analyser::loop(ULong64_t maxEvents) {
 
   reset();
  
-  unsigned currentRun=0;
+  unsigned long currentRun=0;
 
   // run loop
 
   if (maxEvents==0) maxEvents=nEvents_;
 
+  nextEvent();
+
   for (unsigned long i=0; i<maxEvents; ++i, nextEvent()) {
+
+    // occasional print out
     if (i%100000==0) {
       std::cout << "Processing " << i << "th event of " <<maxEvents<< std::endl;
     }
     
-    // check to see if the run number changed
-    // update fill structure if so
-    if (event_->run != currentRun) {
-      std::cout << "New run : " << event_->run << std::endl;
-      cuts_.setMaskedBXs(fills_.getMaskFromRun(event_->run));
-      currentRun = event_->run;
-
-      // write new histograms
-      histogrammer_.fillCollisionsHistos(currentRun, &fills_);
-    }
-
-    // fill histograms
-    histogrammer_.fill(*event_);
-    // print watched events
+    // pass event to histogrammers
+    histograms_.fill(*event_);
+    runHistos_.fill(*event_);
+    fillHistos_.fill(*event_);
+    
+    // check if this is an event we're watching for and do something if so
     if (isWatchedEvent()) {
       printCutValues(dumpFile_);
     }
 
-    // print selected events
+    // check if this event passes all cuts and do something if so
     if (cuts_.cut()) {
       printCutValues(dumpFile_);
       eventFile_ << event_->run << "," << event_->lb << "," << event_->orbit << "," << event_->bx << "," << event_->id << std::endl;
       pickFile_ << event_->run << ":" << event_->lb << ":"  << event_->id << std::endl;
-      lifetimeFile_ << eventLifetime(event_->run, event_->bx-1)/1.256 << std::endl;
-      lifetimeFile_ << eventLifetime(event_->run, event_->bx)/1.256 << std::endl;
+      lifetimeFile_ << (event_->bxAfterCollision * 25e-9)/1.256 << std::endl;
+      lifetimeFile_ << (event_->bxAfterCollision * 25e-9)/1.256 << std::endl;
     }
   } // for (unsigned long i=0;...)
 
-  histogrammer_.save();
-
-}
-
-
-double Analyser::eventLifetime(unsigned run, unsigned bx) {
-  std::vector<unsigned> colls=fills_.getCollisionsFromRun(run);
-  std::vector<unsigned>::const_iterator lastColl;
-
-  // this could fail if there is ever no collision at BX=1
-  lastColl = lower_bound(colls.begin(), colls.end(), bx);
-  if (lastColl==colls.begin()) lastColl=colls.end();
-  int collBx = *(--lastColl);
-
-  double t = (bx - collBx) * LhcFills::TIME_PER_BX;
-  //  std::cout << "Delta-BX : " << bx << " " << collBx << " " << t << std::endl; 
-  return t;
+  // save the histograms
+  histograms_.save();
+  runHistos_.save();
+  fillHistos_.save();
 
 }

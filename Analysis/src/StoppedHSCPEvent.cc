@@ -2,6 +2,7 @@
 #include "DataFormats/HcalDigi/interface/HBHEDataFrame.h"
 
 #include <iostream>
+#include <algorithm>
 
 using namespace shscp;
 
@@ -44,9 +45,15 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   gtAlgoWord0(0),
   gtAlgoWord1(0),
   gtTechWord(0),
-  hlt_Jet_NoBptx(false),
-  hlt_Jet_NoBptx_NoHalo(false),
-  hlt_Jet_NoBptx3BX_NoHalo(false),
+  l1JetNoBptx(5),
+  l1JetNoBptxNoHalo(5),
+  l1BptxPlus(5),
+  l1BptxMinus(5),
+  l1Bptx(5),
+  l1MuBeamHalo(5),
+  hltJetNoBptx(false),
+  hltJetNoBptxNoHalo(false),
+  hltJetNoBptx3BXNoHalo(false),
   l1Jet_N(0),
   l1JetType(0),
   l1JetE(0),
@@ -212,6 +219,15 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   top5DigiRPeak(-999.),
   top5DigiROuter(-999.)
 {
+
+  for (int k=0; k<5; ++k) {
+    l1JetNoBptx.at(k) = false;
+    l1JetNoBptxNoHalo.at(k) = false;
+    l1BptxPlus.at(k) = false;
+    l1BptxMinus.at(k) = false;
+    l1Bptx.at(k) = false;
+    l1MuBeamHalo.at(k) = false;
+  }
   
   for (int k=0; k<HBHEDataFrame::MAXSAMPLES; ++k) { 
     leadingDigiTimeSamples.at(k)=0.;
@@ -415,6 +431,52 @@ void StoppedHSCPEvent::Dump() {
   cout << "BeamHalo     " << beamHalo_CSCLoose << " " << beamHalo_CSCTight << std::endl;
 
 }
+
+// energy fraction at same iphi
+double StoppedHSCPEvent::leadingIPhiFraction() const {
+
+    std::vector<double> tmp(75, 0);
+    for (unsigned i=0; i<tower_N; ++i) {
+      tmp.at(towerIPhi.at(i)) += towerE.at(i);
+    }
+    std::vector<double>::iterator max=max_element(tmp.begin(), tmp.end());
+
+    double frac=0.;
+    if (jet_N>0) frac = (*max)/jetE.at(0);
+    return frac;
+
+}
+
+
+unsigned StoppedHSCPEvent::jetCaloTowers() const {
+
+  std::vector<shscp::Tower> towers;
+  for (unsigned i=0; i<tower_N; ++i) {
+    if (towerNJet.at(i)==0) {
+      Tower t;
+      t.iphi=towerIPhi.at(i);
+      t.e = towerE.at(i);
+      towers.push_back(t);
+    }
+  }
+
+  std::sort(towers.begin(), towers.end(), shscp::tow_gt());
+
+  unsigned tmp=0;
+
+  if (towers.size() > 0) {
+    int iphiFirst=towers.at(0).iphi;
+    bool keepgoing=true;
+    for (unsigned i=0; i<towers.size() && keepgoing; ++i) {
+      if (towers.at(i).iphi==iphiFirst) tmp++;
+      else keepgoing=false;
+    }
+  }
+
+  return tmp;
+
+}
+
 
 #if !defined(__CINT__)
   ClassImp(StoppedHSCPEvent)

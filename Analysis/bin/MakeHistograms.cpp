@@ -69,67 +69,37 @@ int main(int argc, char* argv[]) {
   // options
   ULong64_t nlimit=0;
   bool dump=false;
-  bool doByRun=true;
   bool isMC=false;
-  bool useDigiCuts=true; // set to 'false' once noise summary objects are used by default
+  unsigned cutVer=0;
 
   po::options_description desc("Allowed options");
   po::positional_options_description poptd;
 
   desc.add_options()
     ("help,h", "Display this message")
-    ("num,n",po::value<int>()->default_value(-1),
+    ("num,n",po::value<unsigned long long>()->default_value(0),
      "<integer> Number of events to process")
     ("dump,p",
      "Dump out information (default is false)")
-    ("nlimit,d",
-     "Set limit of number of events to 1000.  Overridden by -n option")
-    ("dontDoByRun,q",
-     "Sets doByRun value to false")
     ("isMC,m",
      "Turn on MC running")
-    /*
-    // enable this once NoiseSummaryObjects are the default
-    ("useDigiCuts,c",
-    "Use Digis (rather than NoiseSummaryObject) for noise ratio cuts")
-    */
-    // Disable this once noisesummary cuts are the default
-    ("useNoiseObjectCuts,c",
-     "Use NoiseSummaryObjectCuts (rather than Digi Cuts) for noise ratio cuts")
-     ;
-  
+    ("cuts,c",po::value<unsigned>()->default_value(0),
+     "Set cuts version to apply");
+
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv,desc), vm);
   po::notify(vm);    
-
-  if (vm.count("nlimit"))
-    nlimit=1000;
-  if (vm.count("num") && vm["num"].as<int>()>-1) // overrides nlimit
-    nlimit=ULong64_t(vm["num"].as<int>());
-  if (vm.count("dump"))
-    dump=true;
-  if (vm.count("dontDoByRun"))
-    doByRun=false;
+  
+  if (vm.count("num") && vm["num"].as<unsigned long long>()>0) // overrides nlimit
+    nlimit=ULong64_t(vm["num"].as<unsigned long long>());
   if (vm.count("isMC"))
     isMC=true;
-  /* 
-     //enable this once noise summary cuts are the default
-     if (vm.count("useDigiCuts"))
-     useDigiCuts=true;
-     else useDigiCuts=false;
-  */
-  // Disable this once noise object cuts used by default
-  if (vm.count("useNoiseObjectCuts"))
-    useDigiCuts=false;
-  else
-    useDigiCuts=true;
-
-
+  if (vm.count("cuts"))
+    cutVer=vm["cuts"].as<unsigned>();
+      
   // convert run list to vector
   std::vector<unsigned> runs(0);
-  
 
-  // Allow for runs that are separate by either commas or spaces
   for (int i=1;i<argc;++i)
     {
       // Don't count arguments that come directly after a command-line option.
@@ -172,10 +142,7 @@ int main(int argc, char* argv[]) {
 	       << vm["num"].as<int>() <<endl;
 	}
       cout <<"Max # of events = "<<nlimit<<endl;
-      cout <<"dump = "<<dump<<endl;
-      cout <<"doByRun = "<<doByRun<<endl;
       cout <<"isMC = "<<isMC<<endl;
-      cout <<"useDigiCuts = "<<useDigiCuts<<endl;
       cout <<"INPUT FILE(S) = ";
       for (uint fs=0;fs<filenames.size();++fs)
 	cout<<"\t"<<filenames[fs]<<endl;
@@ -205,6 +172,8 @@ int main(int argc, char* argv[]) {
       return -1;
     }
 
+
+  // start print out
   if (nlimit>0) std::cout << "Running on " << nlimit << " events per run" << std::endl;
 
 
@@ -212,7 +181,7 @@ int main(int argc, char* argv[]) {
   TH1D::SetDefaultSumw2();
 
   // create analysis
-  Analyser analyser(filenames, outdir, runs, isMC, useDigiCuts);
+  Analyser analyser(filenames, outdir, runs, isMC, cutVer);
 
   analyser.setup();
 

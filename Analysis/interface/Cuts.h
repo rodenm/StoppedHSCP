@@ -10,21 +10,27 @@ class StoppedHSCPEvent;
 
 class Cuts {
  public:
-  Cuts(StoppedHSCPEvent* event, bool isMC, bool useDigiCuts=false);
+
+  Cuts(StoppedHSCPEvent* event,
+       bool isMC, 
+       unsigned version);
+
   ~Cuts();
 
+  unsigned cutVersion() const;
+
   // read BX masks form file - old method
-  void readMaskedBXs(std::string filename, unsigned run);
+  //  void readMaskedBXs(std::string filename, unsigned run);
 
   // set BX masks from filled bunches and window
-  void setMaskedBXs(std::vector<bool> bxMask);
+  //  void setMaskedBXs(std::vector<bool> bxMask);
 
   // set current event
   void setEvent(StoppedHSCPEvent* event) {event_ = event; }
 
   // turn on/off digi-based cuts
 
-  void setDigiCuts(bool digicut=false){useDigiCuts_=digicut;}
+  //  void setDigiCuts(bool digicut=false){useDigiCuts_=digicut;}
 
   // number of cuts
   unsigned nCuts() const;
@@ -44,37 +50,11 @@ class Cuts {
   // result of n minus one cuts
   bool cutNMinusOne(unsigned n) const;
 
+  // result after selected cuts
   bool cutNMinusSome(std::vector<unsigned int> n) const;
 
   // result of cuts after smearing, for systematics
   bool cutNSyst(unsigned n, double smear) const;
-
-  // number of std HCAL noise cuts
-  unsigned nHcalCuts() const;
-
-  // standard HCAL noise cuts
-  bool stdHcalCutN(unsigned n) const;
-
-  // is event masked
-  bool inMaskedBX() const;
-
-  // jet leading iphi fraction
-  double leadingIPhiFraction() const;
-
-  unsigned jetCaloTowers() const;
-
- public:
-
-  struct Tower {
-    unsigned iphi;
-    double e;
-  };
-
-  struct tow_gt : public std::binary_function<Tower, Tower, bool> {
-    bool operator()(const Tower& x, const Tower& y) {
-      return x.e > y.e;
-    }
-  };
 
  private:
 
@@ -84,11 +64,14 @@ class Cuts {
   // this is MC data
   bool isMC_;
 
+  // cuts version
+  unsigned version_;
+
   // list of BXs to mask
-  std::vector<bool> bxMask_;
+  //  std::vector<bool> bxMask_;
 
   // if enabled, will use digi-based noise cuts
-  bool useDigiCuts_;
+  //  bool useDigiCuts_;
 
 };
 

@@ -11,7 +11,7 @@ BasicAnalyser::BasicAnalyser(const std::string& ifile, const bool isMC) :
   event_(0),
   nEvents_(0),
   iEvent_(0),
-  cuts_(0, isMC),
+  cuts_(0, isMC, 0),
   fills_()
 {
   
@@ -34,7 +34,7 @@ void BasicAnalyser::setup() {
   std::cout << "Input file contains " << nEvents_ << " events" << std::endl;
 
   cuts_.setEvent(event_);
-  cuts_.setMaskedBXs(fills_.getMaskFromRun(event_->run));
+  //  cuts_.setMaskedBXs(fills_.getMaskFromRun(event_->run));
 
 }
 
@@ -57,10 +57,10 @@ void BasicAnalyser::nextEvent() {
   }
 
   // update stuff if run changed
-  if (event_->run != currRun) {
-    std::cout << "New run : " << event_->run << std::endl;
-    cuts_.setMaskedBXs(fills_.getMaskFromRun(event_->run));
-  }
+//   if (event_->run != currRun) {
+//     std::cout << "New run : " << event_->run << std::endl;
+//     cuts_.setMaskedBXs(fills_.getMaskFromRun(event_->run));
+//   }
 
 }
 

@@ -6,7 +6,7 @@
 #include <sstream>
 #include <iostream>
 
-Histograms::Histograms(Cuts* cuts, TFile* file, std::string name) :
+Histograms::Histograms(TFile* file, std::string name, Cuts* cuts) :
   cuts_(cuts),
   base_()
 {
@@ -16,6 +16,8 @@ Histograms::Histograms(Cuts* cuts, TFile* file, std::string name) :
   base_ = file->GetDirectory(name.c_str());
   base_->mkdir("NoCuts");  
   base_->mkdir("Cuts");
+
+  book();
 
 }
 
@@ -162,15 +164,15 @@ void Histograms::fill(StoppedHSCPEvent& event) {
   hlb_->Fill(event.lb);
   htime_->Fill(event.time);
   hlblive_->SetBinContent(event.lb, 1.);
-//   hl1bits_->Fill("L1_SingleJet10_NotBptxC", (event.gtAlgoWord1[2]>>(88-64))&0x1);
-//   hl1bits_->Fill("L1Tech_BPTX_plus_AND_minus", (event.gtTechWord[2])&0x1);
-//   hl1bits_->Fill("L1_BptxMinus", (event.gtAlgoWord1[2]>>(81-64))&0x1);
-//   hl1bits_->Fill("L1_BptxPlus", (event.gtAlgoWord1[2]>>(80-64))&0x1);
-//   hl1bits_->Fill("L1_SingleJet10U", (event.gtAlgoWord0[2]>>16)&0x1);
-//   hl1bits_->Fill("L1_SingleMuOpen", (event.gtAlgoWord0[2]>>55)&0x1);
-//   hl1bits_->Fill("L1Tech_BSC_minBias_thresh1", (event.gtTechWord[2]>>40)&0x1);
+//   hl1bits_->Fill("L1_SingleJet10_NotBptxC", (event.gtAlgoWord1>>(88-64))&0x1);
+//   hl1bits_->Fill("L1Tech_BPTX_plus_AND_minus", (event.gtTechWord)&0x1);
+//   hl1bits_->Fill("L1_BptxMinus", (event.gtAlgoWord1>>(81-64))&0x1);
+//   hl1bits_->Fill("L1_BptxPlus", (event.gtAlgoWord1>>(80-64))&0x1);
+//   hl1bits_->Fill("L1_SingleJet10U", (event.gtAlgoWord0>>16)&0x1);
+//   hl1bits_->Fill("L1_SingleMuOpen", (event.gtAlgoWord0>>55)&0x1);
+//   hl1bits_->Fill("L1Tech_BSC_minBias_thresh1", (event.gtTechWord>>40)&0x1);
 
-//   if ( ((event.gtAlgoWord1[2]>>(80-64))&0x1)>0 || ((event.gtAlgoWord1[2]>>(81-64))&0x1)>0) {
+//   if ( ((event.gtAlgoWord1>>(80-64))&0x1)>0 || ((event.gtAlgoWord1>>(81-64))&0x1)>0) {
 //     hbxup_->Fill(event.bx);
 //   }
 
@@ -299,12 +301,12 @@ void Histograms::fill(StoppedHSCPEvent& event) {
 
 
   // loop over HCAL noise cuts
-  bool hcalfail=false;
-  for (unsigned c=0; c<cuts_->nHcalCuts(); c++) {
-    if (cuts_->stdHcalCutN(c)) hhcalcutind_->Fill(c);
-    else hcalfail |= true;
-    if (!hcalfail) hhcalcutcum_->Fill(c);  
-  }
+//   bool hcalfail=false;
+//   for (unsigned c=0; c<cuts_->nHcalCuts(); c++) {
+//     if (cuts_->stdHcalCutN(c)) hhcalcutind_->Fill(c);
+//     else hcalfail |= true;
+//     if (!hcalfail) hhcalcutcum_->Fill(c);  
+//   }
 
   if (cuts_->cutNMinusOne(10)) hntowiphi_nmo_->Fill(event.nTowerSameiPhi);
   if (cuts_->cutNMinusOne(5)) hnmu_nmo_->Fill(event.mu_N);
@@ -322,23 +324,23 @@ void Histograms::fill(StoppedHSCPEvent& event) {
 }
 
 
-void Histograms::fillCollisionsHisto(std::vector<unsigned> colls) {
+// void Histograms::fillCollisionsHisto(std::vector<unsigned> colls) {
 
-  std::cout << "Filling colls " << colls.size() << " : " << std::endl;
-  for (unsigned i=0; i<colls.size(); ++i) {
-    std::cout << " " << colls.at(i);
-    hcoll_->SetBinContent(colls.at(i), 1);
-  }
-  std::cout << std::endl;
+//   std::cout << "Filling colls " << colls.size() << " : " << std::endl;
+//   for (unsigned i=0; i<colls.size(); ++i) {
+//     std::cout << " " << colls.at(i);
+//     hcoll_->SetBinContent(colls.at(i), 1);
+//   }
+//   std::cout << std::endl;
 
-}
+// }
 
 
-void Histograms::fillMaskHisto(std::vector<bool> mask) {
-  for (unsigned bx=0; bx<mask.size(); ++bx) {
-    hmask_->SetBinContent(bx, mask.at(bx) ? 1 : 0 );
-  }
-}
+// void Histograms::fillMaskHisto(std::vector<bool> mask) {
+//   for (unsigned bx=0; bx<mask.size(); ++bx) {
+//     hmask_->SetBinContent(bx, mask.at(bx) ? 1 : 0 );
+//   }
+// }
 
 
 void Histograms::save() {
