@@ -6,14 +6,14 @@
 #include <sstream>
 #include <iostream>
 
-Histograms::Histograms(TFile* file, std::string name, Cuts* cuts) :
+Histograms::Histograms(TFile* file, Cuts* cuts) :
   cuts_(cuts),
   base_()
 {
  
   // create directory structure
-  file->mkdir(name.c_str());
-  base_ = file->GetDirectory(name.c_str());
+  file->mkdir("histograms");
+  base_ = file->GetDirectory("histograms");
   base_->mkdir("NoCuts");  
   base_->mkdir("Cuts");
 
@@ -31,16 +31,10 @@ void Histograms::book() {
 
   base_->cd("NoCuts");
 
-  // non-event histograms
-  hcoll_ = new TH1D("hcoll", "Collision BX", 3564, 0., 3564.);
-  hmask_ = new TH1D("hmask", "Masked BX", 3564, 0., 3564.);
-
   // time
   hbx_ = new TH1D("hbx", "BX number", 3564, 0., 3564.);
   horb_ = new TH1D("horb", "Orbit number", 100, 0., 10000.);
-  hlb_ = new TH1D("hlb", "Lumi block", 5000, 0., 5000.);
   htime_ = new TH1D("htime", "Event time", 100, 0., 1.E8);
-  hlblive_ = new TH1D("hlblive", "Live lumi blocks", 5000, 0., 5000.);
  
   // L1
   hl1bits_ = new TH1D("hl1bits", "L1 trigger bits", 10, 0., 20.);
@@ -161,20 +155,19 @@ void Histograms::fill(StoppedHSCPEvent& event) {
 
   hbx_->Fill(event.bx);
   horb_->Fill(event.orbit);
-  hlb_->Fill(event.lb);
   htime_->Fill(event.time);
-  hlblive_->SetBinContent(event.lb, 1.);
-//   hl1bits_->Fill("L1_SingleJet10_NotBptxC", (event.gtAlgoWord1>>(88-64))&0x1);
-//   hl1bits_->Fill("L1Tech_BPTX_plus_AND_minus", (event.gtTechWord)&0x1);
-//   hl1bits_->Fill("L1_BptxMinus", (event.gtAlgoWord1>>(81-64))&0x1);
-//   hl1bits_->Fill("L1_BptxPlus", (event.gtAlgoWord1>>(80-64))&0x1);
-//   hl1bits_->Fill("L1_SingleJet10U", (event.gtAlgoWord0>>16)&0x1);
-//   hl1bits_->Fill("L1_SingleMuOpen", (event.gtAlgoWord0>>55)&0x1);
-//   hl1bits_->Fill("L1Tech_BSC_minBias_thresh1", (event.gtTechWord>>40)&0x1);
 
-//   if ( ((event.gtAlgoWord1>>(80-64))&0x1)>0 || ((event.gtAlgoWord1>>(81-64))&0x1)>0) {
-//     hbxup_->Fill(event.bx);
-//   }
+  hl1bits_->Fill("L1_SingleJet10_NotBptxC", (event.gtAlgoWord1>>(88-64))&0x1);
+  hl1bits_->Fill("L1Tech_BPTX_plus_AND_minus", (event.gtTechWord)&0x1);
+  hl1bits_->Fill("L1_BptxMinus", (event.gtAlgoWord1>>(81-64))&0x1);
+  hl1bits_->Fill("L1_BptxPlus", (event.gtAlgoWord1>>(80-64))&0x1);
+  hl1bits_->Fill("L1_SingleJet10U", (event.gtAlgoWord0>>16)&0x1);
+  hl1bits_->Fill("L1_SingleMuOpen", (event.gtAlgoWord0>>55)&0x1);
+  hl1bits_->Fill("L1Tech_BSC_minBias_thresh1", (event.gtTechWord>>40)&0x1);
+
+  if ( ((event.gtAlgoWord1>>(80-64))&0x1)>0 || ((event.gtAlgoWord1>>(81-64))&0x1)>0) {
+    hbxup_->Fill(event.bx);
+  }
 
   std::string halo("None");
   if (event.beamHalo_CSCLoose) halo = "CSCLoose";
@@ -324,40 +317,12 @@ void Histograms::fill(StoppedHSCPEvent& event) {
 }
 
 
-// void Histograms::fillCollisionsHisto(std::vector<unsigned> colls) {
-
-//   std::cout << "Filling colls " << colls.size() << " : " << std::endl;
-//   for (unsigned i=0; i<colls.size(); ++i) {
-//     std::cout << " " << colls.at(i);
-//     hcoll_->SetBinContent(colls.at(i), 1);
-//   }
-//   std::cout << std::endl;
-
-// }
-
-
-// void Histograms::fillMaskHisto(std::vector<bool> mask) {
-//   for (unsigned bx=0; bx<mask.size(); ++bx) {
-//     hmask_->SetBinContent(bx, mask.at(bx) ? 1 : 0 );
-//   }
-// }
-
-
 void Histograms::save() {
 
   base_->cd("NoCuts");
 
-  hcoll_->Write("",TObject::kOverwrite);
-  hmask_->Write("",TObject::kOverwrite);
-
-  hbx_->Write("",TObject::kOverwrite);
   horb_->Write("",TObject::kOverwrite);
-  hlb_->Write("",TObject::kOverwrite);
-
-  rateDist(*hlb_, 100);
-
   htime_->Write("",TObject::kOverwrite);
-  hlblive_->Write("",TObject::kOverwrite);
   hl1bits_->Write("",TObject::kOverwrite);
   hbxup_->Write("",TObject::kOverwrite);
 
@@ -439,6 +404,12 @@ void Histograms::save() {
 }
 
 
+void Histograms::summarise() {
+
+
+}
+
+
 void Histograms::cutAxisLabels(TH1D* h) {
 
   for (unsigned i=0; i<cuts_->nCuts(); ++i) {
@@ -449,23 +420,23 @@ void Histograms::cutAxisLabels(TH1D* h) {
 
 
 // make a histogram of means of bins of existing histogram
-TH1D Histograms::rateDist(TH1D& hist, unsigned nbins) {
+// TH1D Histograms::rateDist(TH1D& hist, unsigned nbins) {
 
-  std::string name=std::string(hist.GetName())+"dist";
-  TH1D h(name.c_str(), "Rate", nbins, hist.GetMinimum()*0.8, hist.GetMaximum()*1.25);
+//   std::string name=std::string(hist.GetName())+"dist";
+//   TH1D h(name.c_str(), "Rate", nbins, hist.GetMinimum()*0.8, hist.GetMaximum()*1.25);
 
-  // fill histogram
-  for (int i=0; i<hist.GetNbinsX(); ++i) {
-    unsigned r=hist.GetBinContent(i);
-    if (r>0.) h.Fill(r);
-  }
+//   // fill histogram
+//   for (int i=0; i<hist.GetNbinsX(); ++i) {
+//     unsigned r=hist.GetBinContent(i);
+//     if (r>0.) h.Fill(r);
+//   }
   
-  // do fit
-  //  TF1 f("fit", "gaus");
-  //  h.Fit("fit", "");    
+//   // do fit
+//   //  TF1 f("fit", "gaus");
+//   //  h.Fit("fit", "");    
 	
-  h.Write();
+//   h.Write();
 
-  return h;
+//   return h;
 
-}
+// }

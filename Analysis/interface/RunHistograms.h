@@ -19,28 +19,31 @@ class RunHistograms {
 
  public:
 
-  RunHistograms(TFile* file, std::string name, Cuts* cuts);
+  RunHistograms(TFile* file, Cuts* cuts);
   ~RunHistograms();
 
-  void book();
+  // book the per-run histograms
+  void book(unsigned long run);
 
+  // fill them
   void fill(StoppedHSCPEvent& event);
 
-  void fillCollisionsHisto(std::vector<unsigned> colls);
-  void fillMaskHisto(std::vector<bool> mask);
-
+  // save them
   void save();
 
-  void cutAxisLabels(TH1D* h);
-
-  TH1D rateDist(TH1D&, unsigned nbins);
+  // summarise
+  void summarise();
 
  private:
 
   Cuts* cuts_;
   TDirectory* base_;
 
-  TH1D* hjete_;
+  std::vector<unsigned long> runs_;
+
+  std::vector<TH1D*> hbx_;
+  std::vector<TH1D*> horb_;
+  std::vector<TH1D*> hlb_;
 
 };
 

@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.65 2011/04/07 16:01:18 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.66 2011/04/07 16:13:20 jbrooke Exp $
 //
 //
 
@@ -635,13 +635,17 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent){
   unsigned long bxPerOrbit = 3564;
   unsigned nsPerBx = 25;
   unsigned bx = iEvent.bunchCrossing();
+  unsigned long run = iEvent.id().run();
+  unsigned long fill = fills_.getFillFromRun(iEvent.id().run());
+
+  std::cout << run << "  " << fill << std::endl;
 
   event_->id = iEvent.id().event();
   event_->bx = bx;
   event_->orbit = iEvent.orbitNumber();
   event_->lb = iEvent.luminosityBlock();
-  event_->run = iEvent.id().run();
-  event_->fill = currentFill_;  // set in beginRun()
+  event_->run = run;
+  event_->fill = fill;
   event_->time = iEvent.time().value();
 
   // calculate event time from run start + LS, orbit, BX

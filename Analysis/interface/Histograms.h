@@ -17,7 +17,7 @@ class Histograms {
 
  public:
 
-  Histograms(TFile* file, std::string name, Cuts* cuts);
+  Histograms(TFile* file, Cuts* cuts);
   ~Histograms();
 
   void book();
@@ -26,23 +26,20 @@ class Histograms {
 
   void save();
 
+  void summarise();
+
   void cutAxisLabels(TH1D* h);
 
-  TH1D rateDist(TH1D&, unsigned nbins);
+  //  TH1D rateDist(TH1D&, unsigned nbins);
 
  private:
 
   Cuts* cuts_;
   TDirectory* base_;
 
-  TH1D* hcoll_;
-  TH1D* hmask_;
-  TH1D* hrun_;
   TH1D* hbx_;
   TH1D* horb_;
-  TH1D* hlb_;
   TH1D* htime_;
-  TH1D* hlblive_;
   TH1D* hl1bits_;
   TH1D* hl1et_;
   TH1D* hl1eta_;

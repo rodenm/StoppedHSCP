@@ -6,7 +6,6 @@
 
 Analyser::Analyser(std::vector<std::string> ifiles, 
 		   std::string outdir, 
-		   std::vector<unsigned> runs, 
 		   bool isMC,
 		   unsigned cutVersion) :
   isMC_(isMC),
@@ -15,9 +14,9 @@ Analyser::Analyser(std::vector<std::string> ifiles,
   ofile_((outdir+std::string("/histograms.root")).c_str(), "RECREATE"),
   event_(0),
   cuts_(0, isMC, cutVersion),
-  histograms_(&ofile_, std::string("histograms"), &cuts_),
-  runHistos_(&ofile_, std::string("runs"), &cuts_),
-  fillHistos_(&ofile_, std::string("fills"), &cuts_),
+  histograms_(&ofile_, &cuts_),
+  runHistos_(&ofile_, &cuts_),
+  fillHistos_(&ofile_, &cuts_),
   fills_(),
   watchedEvents_(0),
   eventFile_(),
@@ -54,11 +53,11 @@ Analyser::Analyser(std::vector<std::string> ifiles,
   for (uint zz=0;zz<ifiles.size();++zz)
     std::cout <<"\t\t"<<ifiles[zz] << std::endl;
   std::cout << "Output file       : " << outdir+std::string("/histograms.root") << std::endl;
-  std::cout << "Run list          : ";
-  for (unsigned i=0; i<runs.size(); ++i) {
-    std::cout << runs.at(i) << ",";
-  }
-  std::cout << std::endl;
+//   std::cout << "Run list          : ";
+//   for (unsigned i=0; i<runs.size(); ++i) {
+//     std::cout << runs.at(i) << ",";
+//   }
+//   std::cout << std::endl;
 
   // for backwards compatibility with old versions of the analysis
   //fills_.writeBunchMaskFile();
@@ -70,6 +69,10 @@ Analyser::~Analyser() {
   histograms_.save();
   runHistos_.save();
   fillHistos_.save();
+
+  histograms_.summarise();
+  runHistos_.summarise();
+  fillHistos_.summarise();
 
   dumpFile_.close();
   eventFile_.close();

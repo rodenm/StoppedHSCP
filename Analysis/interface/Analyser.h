@@ -24,7 +24,6 @@ class Analyser {
 
   Analyser(std::vector<std::string> ifiles, 
 	   std::string ofile, 
-	   std::vector<unsigned> runs, 
 	   bool isMC,
 	   unsigned cutVersion);
 

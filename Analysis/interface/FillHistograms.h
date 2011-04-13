@@ -19,10 +19,10 @@ class FillHistograms {
 
  public:
 
-  FillHistograms(TFile* file, std::string name, Cuts* cuts);
+  FillHistograms(TFile* file, Cuts* cuts);
   ~FillHistograms();
 
-  void book();
+  void book(unsigned long fill);
 
   void fill(StoppedHSCPEvent& event);
 
@@ -31,14 +31,18 @@ class FillHistograms {
 
   void save();
 
-  void cutAxisLabels(TH1D* h);
-
-  TH1D rateDist(TH1D&, unsigned nbins);
+  void summarise();
 
  private:
 
   Cuts* cuts_;
   TDirectory* base_;
+
+  std::vector<unsigned long> fills_;
+
+  std::vector<TH1D*> hbx_;
+  std::vector<TH1D*> horb_;
+  std::vector<TH1D*> hlb_;
 
   TH1D* hjete_;
 

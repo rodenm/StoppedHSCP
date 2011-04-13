@@ -97,40 +97,40 @@ int main(int argc, char* argv[]) {
   if (vm.count("cuts"))
     cutVer=vm["cuts"].as<unsigned>();
       
-  // convert run list to vector
-  std::vector<unsigned> runs(0);
+//   // convert run list to vector
+//   std::vector<unsigned> runs(0);
 
-  for (int i=1;i<argc;++i)
-    {
-      // Don't count arguments that come directly after a command-line option.
-      // This isn't the optimal solution, but it should do the trick for now.
-      if (strncmp(argv[i-1],"-",1)==0)
-	continue;
+//   for (int i=1;i<argc;++i)
+//     {
+//       // Don't count arguments that come directly after a command-line option.
+//       // This isn't the optimal solution, but it should do the trick for now.
+//       if (strncmp(argv[i-1],"-",1)==0)
+// 	continue;
 
-      // Skip args that have already been assigned to filename or outdir
-      if (outdir.size()>0 && strncmp(argv[i],outdir.c_str(),outdir.size())==0)
-	continue;
-      bool isfile=false;
-      for (uint fs=0;fs<filenames.size();++fs)
-	{
-	  if (filenames[fs].size()>0 && strncmp(argv[i],filenames[fs].c_str(),filenames[fs].size())==0)
-	    {
-	      isfile=true;
-	      break;
-	    }
-	}
-      if (isfile==true) continue;
+//       // Skip args that have already been assigned to filename or outdir
+//       if (outdir.size()>0 && strncmp(argv[i],outdir.c_str(),outdir.size())==0)
+// 	continue;
+//       bool isfile=false;
+//       for (uint fs=0;fs<filenames.size();++fs)
+// 	{
+// 	  if (filenames[fs].size()>0 && strncmp(argv[i],filenames[fs].c_str(),filenames[fs].size())==0)
+// 	    {
+// 	      isfile=true;
+// 	      break;
+// 	    }
+// 	}
+//       if (isfile==true) continue;
 
-      std::string runstr=std::string(argv[i]);
-      std::vector<std::string> strs;
-      // don't need to add 'space' in is_any_of, because space-separated values are automatically treated as new arguments
-      boost::split(strs, runstr, boost::is_any_of(std::string(","))); 
-      for (unsigned i=0; i<strs.size(); ++i) 
-	{
-	  unsigned run = (unsigned) atoi(strs.at(i).c_str());
-	  if (run > 0) runs.push_back(run);
-	}
-    }
+//       std::string runstr=std::string(argv[i]);
+//       std::vector<std::string> strs;
+//       // don't need to add 'space' in is_any_of, because space-separated values are automatically treated as new arguments
+//       boost::split(strs, runstr, boost::is_any_of(std::string(","))); 
+//       for (unsigned i=0; i<strs.size(); ++i) 
+// 	{
+// 	  unsigned run = (unsigned) atoi(strs.at(i).c_str());
+// 	  if (run > 0) runs.push_back(run);
+// 	}
+//     }
   
   if (vm.count("help")) 
     {
@@ -149,12 +149,12 @@ int main(int argc, char* argv[]) {
       if (filenames.size()==0)
 	cout <<"No input files specified!"<<endl;
       cout <<"OUTPUT DIRECTORY = '"<<outdir<<"'"<<endl;
-      if (runs.size()>0)
-	{
-	  cout <<"A total of "<<runs.size()<<" individual runs will be processed:"<<endl;
-	  for (unsigned int i=0;i<runs.size();++i)
-	    std::cout << "Run = "<<runs[i]<<std::endl;
-	}
+//       if (runs.size()>0)
+// 	{
+// 	  cout <<"A total of "<<runs.size()<<" individual runs will be processed:"<<endl;
+// 	  for (unsigned int i=0;i<runs.size();++i)
+// 	    std::cout << "Run = "<<runs[i]<<std::endl;
+// 	}
       return 1;
     }
 
@@ -181,7 +181,7 @@ int main(int argc, char* argv[]) {
   TH1D::SetDefaultSumw2();
 
   // create analysis
-  Analyser analyser(filenames, outdir, runs, isMC, cutVer);
+  Analyser analyser(filenames, outdir, isMC, cutVer);
 
   analyser.setup();
 
