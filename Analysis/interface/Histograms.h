@@ -40,6 +40,7 @@ class Histograms {
   TH1D* hbx_;
   TH1D* horb_;
   TH1D* htime_;
+  TH1D* hrelbx_;
   TH1D* hl1bits_;
   TH1D* hl1et_;
   TH1D* hl1eta_;

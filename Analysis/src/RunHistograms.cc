@@ -137,13 +137,15 @@ void RunHistograms::summarise() {
     if (nhlt>0) hnhlt->Fill(runstr.c_str(), nhlt);
     else hnhlt->Fill(runstr.c_str(), 0);
 
-    // livetime
+    // number LS
     unsigned long nlb=0;
     for (int i=0; i<hlb_.at(*itr)->GetNbinsX(); ++i) {
       if (hlb_.at(*itr)->GetBinContent(i) > 0) ++nlb;
     }
+    hnlb->Fill(runstr.c_str(), nlb);
+
+    // live time
     hlivetime->Fill(runstr.c_str(), nlb*TIME_PER_LS);
-    
     
   }
 
@@ -153,6 +155,7 @@ void RunHistograms::summarise() {
 
   hnhlt->Write("",TObject::kOverwrite);
   hlivetime->Write("",TObject::kOverwrite);
+  hnlb->Write("",TObject::kOverwrite);
 
 }
 

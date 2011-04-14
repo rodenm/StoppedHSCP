@@ -44,8 +44,8 @@ hfile=TFile(dataset+"/histograms.root")
 # run info
 time=0
 if (not isMC):
-    htime=hfile.Get("ByRun/hlivetime")
-    hnlb=hfile.Get("ByRun/hnlb")
+    htime=hfile.Get("runs/hlivetime")
+    hnlb=hfile.Get("runs/hnlb")
     
     print "Run\tLS\tLivetime"
     for i in range(1,htime.GetNbinsX()+1):
@@ -57,10 +57,10 @@ if (not isMC):
     print "Total live time : "+str(time)+" s"
 
 
-hcutcum=hfile.Get("All/Cuts/hncutcum")
-hcutind=hfile.Get("All/Cuts/hncutind")
-hcutnmo=hfile.Get("All/Cuts/hnminus1cut")
-hnmu=hfile.Get("All/NoCuts/hnmu")
+hcutcum=hfile.Get("histograms/Cuts/hncutcum")
+hcutind=hfile.Get("histograms/Cuts/hncutind")
+hcutnmo=hfile.Get("histograms/Cuts/hnminus1cut")
+hnmu=hfile.Get("histograms/NoCuts/hnmu")
 
 ## cutnames=["HLT\t",
 ##           "BX veto\t",

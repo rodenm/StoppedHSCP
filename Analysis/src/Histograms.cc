@@ -35,6 +35,7 @@ void Histograms::book() {
   hbx_ = new TH1D("hbx", "BX number", 3564, 0., 3564.);
   horb_ = new TH1D("horb", "Orbit number", 100, 0., 10000.);
   htime_ = new TH1D("htime", "Event time", 100, 0., 1.E8);
+  hrelbx_ = new TH1D("hrelbx", "BX wrt coll", 5, -2.5, +2.5);
  
   // L1
   hl1bits_ = new TH1D("hl1bits", "L1 trigger bits", 10, 0., 20.);
@@ -156,6 +157,8 @@ void Histograms::fill(StoppedHSCPEvent& event) {
   hbx_->Fill(event.bx);
   horb_->Fill(event.orbit);
   htime_->Fill(event.time);
+
+  hrelbx_->Fill(event.bxWrtCollision);
 
   hl1bits_->Fill("L1_SingleJet10_NotBptxC", (event.gtAlgoWord1>>(88-64))&0x1);
   hl1bits_->Fill("L1Tech_BPTX_plus_AND_minus", (event.gtTechWord)&0x1);
@@ -321,8 +324,10 @@ void Histograms::save() {
 
   base_->cd("NoCuts");
 
+  hbx_->Write("",TObject::kOverwrite);
   horb_->Write("",TObject::kOverwrite);
   htime_->Write("",TObject::kOverwrite);
+  hrelbx_->Write("",TObject::kOverwrite);
   hl1bits_->Write("",TObject::kOverwrite);
   hbxup_->Write("",TObject::kOverwrite);
 

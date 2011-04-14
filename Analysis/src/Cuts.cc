@@ -79,13 +79,14 @@ bool Cuts::cutN(unsigned n) const
   switch (n) {
 
   case 0:  // trigger
-    return !isMC_ || ((((event_->gtAlgoWord0>>16)&1) == 1) // trigger fires
+    if (isMC_) return ((((event_->gtAlgoWord0>>16)&1) == 1) // trigger fires
 		      && (event_->hltJet_N>0) // at least one jet
 		      && (event_->hltJetE[0]> 20.)  // greater than 20 GeV
 		      && (fabs(event_->hltJetEta[0])<1.3)); // in HB
+    else return event_->hltJetNoBptx3BXNoHalo;
 
   case 1:  // BX mask
-    return isMC_ || ! (event_->bxAfterCollision > 1 && event_->bxBeforeCollision > 2);
+    return isMC_ || true;//! (event_->bxAfterCollision > 1 && event_->bxBeforeCollision > 2);
 
   case 2:  // BPTX
     return isMC_ || ((event_->gtAlgoWord1>>(81-64)&1) == 0 && (event_->gtAlgoWord1>>(80-64)&1) == 0);

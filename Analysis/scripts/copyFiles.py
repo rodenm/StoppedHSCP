@@ -15,11 +15,11 @@ from optparse import OptionParser
 #    print "copyFiles.py [-c] <dataset>"
 #    sys.exit()
 
-try:
-    opts, args = getopt.getopt(sys.argv[1:], "c")
-except getopt.GetoptError:
-    usage()
-    sys.exit(2)
+#try:
+#    opts, args = getopt.getopt(sys.argv[1:], "c")
+#except getopt.GetoptError:
+#    usage()
+#    sys.exit(2)
 
 def CopyFiles(user="jbrooke",
               gridroot="srm://heplnx204.pp.rl.ac.uk:8443/srm/managerv2?SFN=",
