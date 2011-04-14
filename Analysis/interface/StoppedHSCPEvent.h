@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.41 2011/03/21 15:24:00 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.42 2011/04/07 16:01:18 jbrooke Exp $
 //
 //
 
@@ -231,8 +231,8 @@ class StoppedHSCPEvent : public TObject {
   ULong64_t time;   // timestamp from EvF
   ULong64_t time2;  // calculated from run start + L1 counters for LS, orbit, BX
   ULong64_t time3;  // timestamp from LHC info in L1 data
-  ULong_t bxAfterCollision;
-  ULong_t bxBeforeCollision;
+  Long_t bxAfterCollision;
+  Long_t bxBeforeCollision;
   Long_t bxWrtCollision;
 
   // trigger
@@ -309,6 +309,9 @@ class StoppedHSCPEvent : public TObject {
   std::vector<UInt_t> vtxNDOF;
   std::vector<Double_t> vtxZ;
   std::vector<Double_t> vtxRho;
+
+  // tracks
+  unsigned track_N;
 
   // Beam Halo data
   bool beamHalo_CSCTight;
@@ -430,7 +433,7 @@ class StoppedHSCPEvent : public TObject {
   double top5DigiROuter;
 
 
-  ClassDef(StoppedHSCPEvent,14);
+  ClassDef(StoppedHSCPEvent,15);
 
 };
 

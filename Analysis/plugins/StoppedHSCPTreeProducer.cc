@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.66 2011/04/07 16:13:20 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.67 2011/04/13 12:39:02 jbrooke Exp $
 //
 //
 
@@ -166,6 +166,7 @@ private:
   void doGlobalCalo(const edm::Event&);
   void doMuons(const edm::Event&);
   void doVertices(const edm::Event&);
+  void doTracks(const edm::Event&);
   void doBeamHalo(const edm::Event&);
 
   // write variables based on HCAL noise summary
@@ -283,6 +284,7 @@ private:
   edm::InputTag muonTag_;
   edm::InputTag cosmicMuonTag_;
   edm::InputTag verticesTag_;
+  edm::InputTag tracksTag_;
   edm::InputTag caloTowerTag_;
   edm::InputTag caloRecHitTag_;
   edm::InputTag hcalNoiseTag_;
@@ -338,6 +340,7 @@ private:
   bool hpdsMissing_;
   bool digisMissing_;
   bool verticesMissing_;
+  bool tracksMissing_;
   bool cscSegsMissing_;
 
   std::vector<CaloTowerPtr> jetTowers_;
@@ -387,6 +390,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   muonTag_(iConfig.getUntrackedParameter<edm::InputTag>("muonTag",edm::InputTag("muons"))),
   cosmicMuonTag_(iConfig.getUntrackedParameter<edm::InputTag>("cosmicMuonTag",edm::InputTag("muonsFromCosmics"))),
   verticesTag_(iConfig.getUntrackedParameter<edm::InputTag>("verticesTag", edm::InputTag("offlinePrimaryVertices"))),
+  tracksTag_(iConfig.getUntrackedParameter<edm::InputTag>("tracksTag", edm::InputTag("generalTracks"))),
   caloTowerTag_(iConfig.getUntrackedParameter<edm::InputTag>("caloTowerTag",edm::InputTag("towerMaker"))),
   caloRecHitTag_(iConfig.getUntrackedParameter<edm::InputTag>("caloRecHitTag",edm::InputTag("hbhereco"))),
   hcalNoiseTag_(iConfig.getUntrackedParameter<edm::InputTag>("hcalNoiseTag",edm::InputTag("hcalnoise"))),
@@ -554,6 +558,7 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
   doMuons(iEvent);
   doBeamHalo(iEvent);
   doVertices(iEvent);
+  doTracks(iEvent);
 
   // HCAL noise summary info
   doHcalNoise(iEvent);
@@ -630,7 +635,8 @@ void StoppedHSCPTreeProducer::doMC(const edm::Event& iEvent) {
 
 
 
-void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent){ 
+void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent) {
+
   unsigned long orbitsPerLB = 1<<18;
   unsigned long bxPerOrbit = 3564;
   unsigned nsPerBx = 25;
@@ -680,15 +686,16 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent){
       }
     }
     
-    // set values in ntuple
-    event_->bxAfterCollision = bx - bxLast;
-    event_->bxBeforeCollision = bxNext - bx;
-    if (event_->bxAfterCollision > event_->bxBeforeCollision) {
-      event_->bxWrtCollision = event_->bxBeforeCollision;
-    }
-    else {
-      event_->bxWrtCollision = -1 * event_->bxAfterCollision;
-    }
+    // compute relative BX
+    int bxAfter  = bx - bxLast;
+    int bxBefore = bx - bxNext;
+    int bxWrt    = ( abs(bxAfter) <= abs(bxBefore) ? bxAfter : bxBefore );
+
+    // set variables in ntuple
+    event_->bxAfterCollision = bxAfter;
+    event_->bxBeforeCollision = bxBefore;
+    event_->bxWrtCollision = bxWrt;
+
   }
 
 }
