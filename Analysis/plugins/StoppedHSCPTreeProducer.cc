@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.68 2011/04/14 15:40:20 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.69 2011/04/18 20:07:08 jbrooke Exp $
 //
 //
 
@@ -374,10 +374,10 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   l1JetsTag_(iConfig.getUntrackedParameter<std::string>("l1JetsTag",std::string("l1extraParticles"))),
   l1BitsTag_(iConfig.getUntrackedParameter<edm::InputTag>("l1BitsTag",edm::InputTag("gtDigis"))),
   l1JetNoBptxName_(iConfig.getUntrackedParameter<std::string>("l1JetNoBptxName",std::string("L1_SingleJet20_NotBptxOR"))),  
-  l1JetNoBptxNoHaloName_(iConfig.getUntrackedParameter<std::string>("l1JetNoBptxNoHaloName",std::string("L1_SingleJet20_NotBptxOR_NotBeamHalo"))),  
+  l1JetNoBptxNoHaloName_(iConfig.getUntrackedParameter<std::string>("l1JetNoBptxNoHaloName",std::string("L1_SingleJet20_NotBptxOR_NotMuBeamHalo"))),  
   //  l1BptxPlusName_(iConfig.getUntrackedParameter<std::string>("l1BptxPlusName",std::string(""))),  
   //  l1BptxMinusName_(iConfig.getUntrackedParameter<std::string>("l1BptxMinusName",std::string(""))),  
-  l1BptxName_(iConfig.getUntrackedParameter<std::string>("l1BptxName",std::string("L1Tech_BPTX_plus_AND_minus.v0"))),  
+  l1BptxName_(iConfig.getUntrackedParameter<std::string>("l1BptxName",std::string("L1Tech_BPTX_plus_AND_minus"))),  
   l1MuBeamHaloName_(iConfig.getUntrackedParameter<std::string>("l1MuBeamHaloName",std::string("L1_SingleMuBeamHalo"))),  
   hltResultsTag_(iConfig.getUntrackedParameter<edm::InputTag>("hltResultsTag",edm::InputTag("TriggerResults","","HLT"))),
   hltEventTag_(iConfig.getUntrackedParameter<edm::InputTag>("hltEventTag",edm::InputTag("hltTriggerSummaryAOD","","HLT"))),
@@ -678,7 +678,7 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent) {
 	bxAfter  = (bx + bxPerOrbit) - bxLast;
 	bxBefore = bx - bxNext;
 	
-	std::cout << bx << " : " << bxLast << " : " << bxNext << " : " << bxAfter << " : " << bxBefore << std::endl;
+	//	std::cout << bx << " : " << bxLast << " : " << bxNext << " : " << bxAfter << " : " << bxBefore << std::endl;
 
       }
       // special case if event is after last collision
@@ -688,7 +688,7 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent) {
 	bxAfter  = bx - bxLast;
 	bxBefore = (bx - bxPerOrbit) - bxNext;
 
-	std::cout << bx << " : " << bxLast << " : " << bxNext << " : " << bxAfter << " : " << bxBefore << std::endl;
+	//	std::cout << bx << " : " << bxLast << " : " << bxNext << " : " << bxAfter << " : " << bxBefore << std::endl;
       }
       // general case
       else {      
@@ -769,17 +769,15 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
 
     bool l1JetNoBptx       = menu->gtAlgorithmResult(l1JetNoBptxName_,       decisionWord);
     bool l1JetNoBptxNoHalo = menu->gtAlgorithmResult(l1JetNoBptxNoHaloName_, decisionWord);
-    //     bool l1BptxPlus        = menu->gtAlgorithmResult(l1BptxPlusName_,        technicalWord);
-    //     bool l1BptxMinus       = menu->gtAlgorithmResult(l1BptxMinusName_,       technicalWord);
-    bool l1Bptx            = menu->gtAlgorithmResult(l1BptxName_,            technicalWord);
+    bool l1Bptx            = technicalWord.at(1);
     bool l1MuBeamHalo      = menu->gtAlgorithmResult(l1MuBeamHaloName_,      decisionWord);
 
-    event_->l1JetNoBptx.at(bx+2)       = l1JetNoBptx;
-    event_->l1JetNoBptxNoHalo.at(bx+2) = l1JetNoBptxNoHalo;
+    event_->l1JetNoBptx.at(bx+2)       = (l1JetNoBptx ? 1 : 0);
+    event_->l1JetNoBptxNoHalo.at(bx+2) = (l1JetNoBptxNoHalo ? 1 : 0);
 //     event_->l1BptxPlus.at(bx+2)        = l1BptxPlus;
 //     event_->l1BptxMinus.at(bx+2)       = l1BptxMinus;
-    event_->l1Bptx.at(bx+2)            = l1Bptx;
-    event_->l1MuBeamHalo.at(bx+2)      = l1MuBeamHalo;
+    event_->l1Bptx.at(bx+2)            = (l1Bptx ? 1 : 0);
+    event_->l1MuBeamHalo.at(bx+2)      = (l1MuBeamHalo ? 1 : 0);
     
   }
   

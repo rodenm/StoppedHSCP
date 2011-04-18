@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.43 2011/04/14 15:40:20 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.44 2011/04/18 20:07:07 jbrooke Exp $
 //
 //
 
@@ -240,12 +240,10 @@ class StoppedHSCPEvent : public TObject {
   ULong64_t gtAlgoWord0;
   ULong64_t gtAlgoWord1;
   ULong64_t gtTechWord;
-  std::vector<bool> l1JetNoBptx;
-  std::vector<bool> l1JetNoBptxNoHalo;
-  std::vector<bool> l1BptxPlus;
-  std::vector<bool> l1BptxMinus;
-  std::vector<bool> l1Bptx;
-  std::vector<bool> l1MuBeamHalo;
+  std::vector<UInt_t> l1JetNoBptx;
+  std::vector<UInt_t> l1JetNoBptxNoHalo;
+  std::vector<UInt_t> l1Bptx;
+  std::vector<UInt_t> l1MuBeamHalo;
   bool hltJetNoBptx;
   bool hltJetNoBptxNoHalo;
   bool hltJetNoBptx3BXNoHalo;

@@ -43,6 +43,8 @@ void Histograms::book() {
   hl1eta_ = new TH1D("hl1eta", "Leading L1 jet #eta", 70, -3.5, 3.5);
   hl1phi_ = new TH1D("hl1phi", "Leading L1 jet #phi", 72, -1 * TMath::Pi(),  TMath::Pi());
   hl1type_ = new TH1D("hl1type",  "Leading L1 jet type", 3, 0., 3.);
+
+  hbptx_ = new TH1D("hbptx", "BPTX BX", 5, -2.5, 2.5);
   
   // HLT
   hhlte_ = new TH1D("hhlte",  "Leading HLT jet E", 100, 0., 200.);
@@ -167,6 +169,10 @@ void Histograms::fill(StoppedHSCPEvent& event) {
   hl1bits_->Fill("L1_SingleJet10U", (event.gtAlgoWord0>>16)&0x1);
   hl1bits_->Fill("L1_SingleMuOpen", (event.gtAlgoWord0>>55)&0x1);
   hl1bits_->Fill("L1Tech_BSC_minBias_thresh1", (event.gtTechWord>>40)&0x1);
+
+  for (unsigned bx=0; bx<5; ++bx) {
+    if (event.l1JetNoBptx.at(bx)>0) hbptx_->Fill(bx-2);
+  }
 
   if ( ((event.gtAlgoWord1>>(80-64))&0x1)>0 || ((event.gtAlgoWord1>>(81-64))&0x1)>0) {
     hbxup_->Fill(event.bx);
@@ -335,6 +341,7 @@ void Histograms::save() {
   hl1eta_->Write("",TObject::kOverwrite);
   hl1phi_->Write("",TObject::kOverwrite);
   hl1type_->Write("",TObject::kOverwrite);
+  hbptx_->Write("",TObject::kOverwrite);
   hhlte_->Write("",TObject::kOverwrite);
   hhlteta_->Write("",TObject::kOverwrite);
   hhltphi_->Write("",TObject::kOverwrite);

@@ -48,8 +48,6 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   gtTechWord(0),
   l1JetNoBptx(5),
   l1JetNoBptxNoHalo(5),
-  l1BptxPlus(5),
-  l1BptxMinus(5),
   l1Bptx(5),
   l1MuBeamHalo(5),
   hltJetNoBptx(false),
@@ -222,12 +220,10 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
 {
 
   for (int k=0; k<5; ++k) {
-    l1JetNoBptx.at(k) = false;
-    l1JetNoBptxNoHalo.at(k) = false;
-    l1BptxPlus.at(k) = false;
-    l1BptxMinus.at(k) = false;
-    l1Bptx.at(k) = false;
-    l1MuBeamHalo.at(k) = false;
+    l1JetNoBptx.at(k) = 0;//false;
+    l1JetNoBptxNoHalo.at(k) = 0;//false;
+    l1Bptx.at(k) = 0;//false;
+    l1MuBeamHalo.at(k) = 0;//false;
   }
   
   for (int k=0; k<HBHEDataFrame::MAXSAMPLES; ++k) { 
