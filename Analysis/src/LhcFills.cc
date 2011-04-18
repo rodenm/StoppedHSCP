@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <boost/algorithm/string.hpp>
+#include <boost/bind.hpp>
 //#include <boost/lexical_cast.hpp>
 
 const unsigned LhcFills::NBX_PER_ORBIT = 3564;
@@ -73,7 +74,9 @@ void LhcFills::readFiles() {
       
       getline(fills, line);
       std::vector<std::string> strs;
-      boost::split(strs, line, boost::is_any_of("\t\v\f\r \n"));
+      boost::split(strs, line, boost::is_any_of("\t\v\f\r "));
+
+      strs.erase( std::remove_if( strs.begin(), strs.end(), boost::bind( &std::string::empty, _1 ) ), strs.end() );
 
       if (strs.size()>0 && atoi(strs.at(0).c_str()) > 0) {
 
@@ -215,7 +218,7 @@ void LhcFills::setupLifetimeMask(double lifetime) {
 
 
 
-std::vector<unsigned long> LhcFills::getRuns(unsigned fill) {
+std::vector<unsigned long> LhcFills::getRuns(unsigned long fill) {
 
   for (unsigned f=0; f<fills_.size(); ++f) {
     if (fills_.at(f).number == fill) return fills_.at(f).runs;
@@ -225,7 +228,7 @@ std::vector<unsigned long> LhcFills::getRuns(unsigned fill) {
 }
 
 
-std::string LhcFills::getFillingScheme(unsigned fill) {
+std::string LhcFills::getFillingScheme(unsigned long fill) {
 
   for (unsigned f=0; f<fills_.size(); ++f) {
     if (fills_.at(f).number == fill) return fills_.at(f).scheme;
@@ -235,21 +238,21 @@ std::string LhcFills::getFillingScheme(unsigned fill) {
 }
 
 
-std::vector<unsigned> LhcFills::getCollisions(unsigned fill) {
+std::vector<unsigned long> LhcFills::getCollisions(unsigned long fill) {
   return fills_.at(getIndexFromFill(fill)).collisions;
 }
 
 
-std::vector<unsigned> LhcFills::getBunches(unsigned fill) {
+std::vector<unsigned long> LhcFills::getBunches(unsigned long fill) {
   return fills_.at(getIndexFromFill(fill)).bunches;
 }
 
 
-std::vector<bool> LhcFills::getMask(unsigned fill) {
+std::vector<bool> LhcFills::getMask(unsigned long fill) {
   return fills_.at(getIndexFromFill(fill)).mask;
 }
 
-std::vector<bool> LhcFills::getLifetimeMask(unsigned fill) {
+std::vector<bool> LhcFills::getLifetimeMask(unsigned long fill) {
   return fills_.at(getIndexFromFill(fill)).lifetimeMask;
 }
 
@@ -270,26 +273,26 @@ std::string LhcFills::getFillingSchemeFromRun(unsigned long run) {
 }
 
 
-std::vector<unsigned> LhcFills::getCollisionsFromRun(unsigned long run) {
+std::vector<unsigned long> LhcFills::getCollisionsFromRun(unsigned long run) {
   return getCollisions(getFillFromRun(run));
 }
 
 
-std::vector<unsigned> LhcFills::getBunchesFromRun(unsigned long run) {
+std::vector<unsigned long> LhcFills::getBunchesFromRun(unsigned long run) {
   return getBunches(getFillFromRun(run));
 }
 
 
-std::vector<bool> LhcFills::getMaskFromRun(unsigned run) {
+std::vector<bool> LhcFills::getMaskFromRun(unsigned long run) {
   return getMask(getFillFromRun(run));
 }
 
-std::vector<bool> LhcFills::getLifetimeMaskFromRun(unsigned run) {
+std::vector<bool> LhcFills::getLifetimeMaskFromRun(unsigned long run) {
   return getLifetimeMask(getFillFromRun(run));
 }
 
 
-unsigned LhcFills::getIndexFromFill(unsigned fill) {
+unsigned long LhcFills::getIndexFromFill(unsigned long fill) {
   if (fill < lookupFillIndex_.size()) {
     return lookupFillIndex_.at(fill);
   }
@@ -300,7 +303,7 @@ unsigned LhcFills::getIndexFromFill(unsigned fill) {
 }
 
 
-unsigned LhcFills::getIndexFromRun(unsigned run) {
+unsigned long LhcFills::getIndexFromRun(unsigned long run) {
   if (run < lookupRunIndex_.size()) {
     return lookupRunIndex_.at(run);
   }
@@ -314,7 +317,7 @@ unsigned LhcFills::getIndexFromRun(unsigned run) {
 void LhcFills::printSummary(std::ostream& o) {
   o << "Fill Summary" << std::endl;
   for (unsigned i=0; i<fills_.size(); ++i) {
-    o << fills_.at(i).number << "\t" << fills_.at(i).scheme << std::endl;
+    o << fills_.at(i).number << "\t: " << fills_.at(i).scheme << "\t: " << fills_.at(i).runs.size() << " runs" << std::endl;
   }
   o << std::endl;
 }

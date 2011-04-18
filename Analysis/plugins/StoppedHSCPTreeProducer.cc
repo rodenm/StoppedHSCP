@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.67 2011/04/13 12:39:02 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.68 2011/04/14 15:40:20 jbrooke Exp $
 //
 //
 
@@ -324,7 +324,8 @@ private:
   // LHC Fill structure (temporary until this is available through CMSSW)
   LhcFills fills_;
   unsigned currentFill_;
-  std::vector<unsigned> currentColls_;
+  unsigned currentFillL1_;
+  std::vector<unsigned long> currentColls_;
 
   // debug stuff
   bool l1JetsMissing_;
@@ -369,7 +370,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   doHltBit2_(true),
   doHltBit3_(true),
   writeHistos_(iConfig.getUntrackedParameter<bool>("writeHistos",false)),
-  condInEdmTag_(iConfig.getUntrackedParameter<edm::InputTag>("condInEdmTag",std::string("CondInEdmInputTag"))),
+  condInEdmTag_(iConfig.getUntrackedParameter<edm::InputTag>("conditionsInEdm",std::string("CondInEdmInputTag"))),
   l1JetsTag_(iConfig.getUntrackedParameter<std::string>("l1JetsTag",std::string("l1extraParticles"))),
   l1BitsTag_(iConfig.getUntrackedParameter<edm::InputTag>("l1BitsTag",edm::InputTag("gtDigis"))),
   l1JetNoBptxName_(iConfig.getUntrackedParameter<std::string>("l1JetNoBptxName",std::string("L1_SingleJet20_NotBptxOR"))),  
@@ -409,6 +410,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   rechitMinEnergy_(iConfig.getUntrackedParameter<double>("rechitMinEnergy", 0.2)),
   badchannelstatus_(iConfig.getUntrackedParameter<int>("badchannelstatus",0)),
   currentFill_(0),
+  currentFillL1_(0),
   currentColls_(0),
   l1JetsMissing_(false),
   hltJetsMissing_(false),
@@ -440,6 +442,8 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
 
   HcalLogicalMapGenerator gen;
   logicalMap_=new HcalLogicalMap(gen.createMap());
+
+  //  fills_.print(std::cout);
 
 }
 
@@ -526,11 +530,12 @@ StoppedHSCPTreeProducer::beginRun(edm::Run const & iRun, edm::EventSetup const& 
   iRun.getByLabel(condInEdmTag_, condInRunBlock);
 
   if (condInRunBlock.isValid()) {
-    currentFill_ = condInRunBlock->lhcFillNumber;
+    currentFillL1_ = condInRunBlock->lhcFillNumber;
   }
 
   // set filling scheme for this run
   currentColls_ = fills_.getCollisionsFromRun(iRun.runAuxiliary().run());
+  currentFill_  = fills_.getFillFromRun(iRun.runAuxiliary().run());
 
 }
 
@@ -638,25 +643,22 @@ void StoppedHSCPTreeProducer::doMC(const edm::Event& iEvent) {
 void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent) {
 
   unsigned long orbitsPerLB = 1<<18;
-  unsigned long bxPerOrbit = 3564;
-  unsigned nsPerBx = 25;
-  unsigned bx = iEvent.bunchCrossing();
-  unsigned long run = iEvent.id().run();
-  unsigned long fill = fills_.getFillFromRun(iEvent.id().run());
+  unsigned long bxPerOrbit  = 3564;
+  unsigned long nsPerBx     = 25;
 
-  std::cout << run << "  " << fill << std::endl;
+  unsigned long id          = iEvent.id().event();
+  unsigned long bx          = iEvent.bunchCrossing();
+  unsigned long orbit       = iEvent.orbitNumber();
+  unsigned long lb          = iEvent.luminosityBlock();
+  unsigned long run         = iEvent.id().run();
+  unsigned long fill        = fills_.getFillFromRun(run);
 
-  event_->id = iEvent.id().event();
-  event_->bx = bx;
-  event_->orbit = iEvent.orbitNumber();
-  event_->lb = iEvent.luminosityBlock();
-  event_->run = run;
-  event_->fill = fill;
-  event_->time = iEvent.time().value();
+  double time               = iEvent.time().value();
+
 
   // calculate event time from run start + LS, orbit, BX
-  ULong64_t nBx = ( ( (iEvent.luminosityBlock() * orbitsPerLB ) + iEvent.orbitNumber() ) * bxPerOrbit ) + iEvent.bunchCrossing() ;
-  event_->time2 = iEvent.getRun().beginTime().value() + (nBx * nsPerBx);
+  ULong64_t bxSinceRunStart = (((lb * orbitsPerLB) + orbit) * bxPerOrbit) + bx;
+  
 
   // find last/next collisions
   if (isMC_) {
@@ -666,32 +668,52 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent) {
   else {
     int bxLast=-1;
     int bxNext=-1;
+    int bxAfter  = 9999;
+    int bxBefore = -9999;
     if (currentColls_.size() > 0) {
       // special case if event is before first collision
       if (bx < currentColls_.at(0)) {
-	bxLast = currentColls_.at(currentColls_.size() - 1);
-	bxNext = currentColls_.at(0);
+	bxLast   = currentColls_.at(currentColls_.size() - 1);
+	bxNext   = currentColls_.at(0);
+	bxAfter  = (bx + bxPerOrbit) - bxLast;
+	bxBefore = bx - bxNext;
+	
+	std::cout << bx << " : " << bxLast << " : " << bxNext << " : " << bxAfter << " : " << bxBefore << std::endl;
+
       }
       // special case if event is after last collision
       else if (bx > currentColls_.at(currentColls_.size() - 1)) {
-	bxLast = currentColls_.at(currentColls_.size()-1);
-	bxNext = currentColls_.at(0);
+	bxLast   = currentColls_.at(currentColls_.size()-1);
+	bxNext   = currentColls_.at(0);
+	bxAfter  = bx - bxLast;
+	bxBefore = (bx - bxPerOrbit) - bxNext;
+
+	std::cout << bx << " : " << bxLast << " : " << bxNext << " : " << bxAfter << " : " << bxBefore << std::endl;
       }
       // general case
       else {      
 	for (unsigned c=0; c<(currentColls_.size()-1) && currentColls_.at(c)<bx; ++c) {
 	  bxLast = currentColls_.at(c);
 	  bxNext = currentColls_.at(c+1);
+	  bxAfter = bx - bxLast;
+	  bxBefore = bx - bxNext;
 	}
       }
     }
     
     // compute relative BX
-    int bxAfter  = bx - bxLast;
-    int bxBefore = bx - bxNext;
     int bxWrt    = ( abs(bxAfter) <= abs(bxBefore) ? bxAfter : bxBefore );
 
     // set variables in ntuple
+    event_->id = id;
+    event_->bx = bx;
+    event_->orbit = orbit;
+    event_->lb = lb;
+    event_->run = run;
+    event_->fill = fill;
+    event_->fillFromL1 = currentFillL1_;
+    event_->time = time;
+    event_->time2 = iEvent.getRun().beginTime().value() + (bxSinceRunStart * nsPerBx);  // value() in nanoseconds!?!
     event_->bxAfterCollision = bxAfter;
     event_->bxBeforeCollision = bxBefore;
     event_->bxWrtCollision = bxWrt;
@@ -1060,6 +1082,17 @@ void StoppedHSCPTreeProducer::doVertices(const edm::Event& iEvent) {
   }
   
 } // void StoppedHSCPTreeProducer::doVertices(const edm::Event& iEvent)
+
+
+
+void StoppedHSCPTreeProducer::doTracks(const edm::Event& iEvent) {
+
+  edm::Handle<reco::TrackCollection> recoTracks;
+  iEvent.getByLabel(tracksTag_, recoTracks);
+ 
+  event_->track_N = recoTracks->size();
+  
+}
 
 
 

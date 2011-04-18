@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.42 2011/04/07 16:01:18 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.43 2011/04/14 15:40:20 jbrooke Exp $
 //
 //
 
@@ -228,6 +228,7 @@ class StoppedHSCPEvent : public TObject {
   ULong_t lb;
   ULong_t run;
   ULong_t fill;
+  ULong_t fillFromL1;
   ULong64_t time;   // timestamp from EvF
   ULong64_t time2;  // calculated from run start + L1 counters for LS, orbit, BX
   ULong64_t time3;  // timestamp from LHC info in L1 data
