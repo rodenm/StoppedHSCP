@@ -12,9 +12,9 @@ stoppedHSCPTree = cms.EDAnalyzer(
     l1MuBeamHaloName = cms.untracked.string("L1_SingleMuBeamHalo"),
     hltResultsTag = cms.untracked.InputTag("TriggerResults","","HLT"),
     hltEventTag = cms.untracked.InputTag("hltTriggerSummaryAOD","","HLT"),
-    hltPathJetNoBptx = cms.untracked.string("HLT_JetE30_NoBPTX_v1"),
-    hltPathJetNoBptxNoHalo = cms.untracked.string("HLT_JetE30_NoBPTX_NoHalo_v2"),
-    hltPathJetNoBptx3BXNoHalo = cms.untracked.string("HLT_JetE30_NoBPTX3BX_NoHalo_v2"),
+    hltPathJetNoBptx = cms.untracked.string("HLT_JetE30_NoBPTX_*"),
+    hltPathJetNoBptxNoHalo = cms.untracked.string("HLT_JetE30_NoBPTX_NoHalo_*"),
+    hltPathJetNoBptx3BXNoHalo = cms.untracked.string("HLT_JetE30_NoBPTX3BX_NoHalo_*"),
     hltL3Tag = cms.untracked.InputTag("hltStoppedHSCPTight1CaloJetEnergy30","","HLT"),
 
     # MC
