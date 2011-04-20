@@ -22,22 +22,23 @@ readFiles = cms.untracked.vstring()
 secFiles = cms.untracked.vstring()
 process.source = cms.Source ("PoolSource",fileNames = readFiles, secondaryFileNames = secFiles)
 readFiles.extend( [
-    '/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/224/343051B9-B756-E011-A0D5-001D09F2512C.root',
-    '/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/222/EC327C19-AE56-E011-8F3C-003048F118DE.root',
-    '/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/222/D419650E-BB56-E011-802A-003048F11DE2.root',
-    '/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/222/C2CA0659-BC56-E011-AEF0-001617DBD316.root',
-    '/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/222/B8176219-AE56-E011-871E-003048F118C4.root',
-    '/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/222/4E9E4519-AE56-E011-BA26-003048F118D2.root',
-    '/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/222/3A9E33D0-AE56-E011-9DF1-001617C3B778.root',
-    '/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/216/EEEE5DF8-6656-E011-BF30-003048F11C5C.root',
-    '/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/216/C8BF839F-6C56-E011-9402-001D09F24664.root',
-    '/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/216/B65BB2D8-6B56-E011-9BD8-0016177CA778.root',
-    '/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/216/92EFDE9A-6C56-E011-AF96-001D09F29524.root',
-    '/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/216/88E71E5D-6856-E011-A3CC-001617E30D4A.root',
-    '/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/216/848682A0-6756-E011-9AA7-001617E30D00.root',
-    '/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/216/6C0AFA9E-6C56-E011-AB7E-001D09F28F0C.root',
-    '/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/216/44498CA0-6C56-E011-9C60-001D09F28755.root'
-    
+    '/store/data/Run2011A/MinimumBias/RECO/PromptReco-v2/000/162/826/0211C136-8B69-E011-82D8-001D09F251BD.root',
+    #'/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/224/343051B9-B756-E011-A0D5-001D09F2512C.root',
+    #'/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/222/EC327C19-AE56-E011-8F3C-003048F118DE.root',
+    #'/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/222/D419650E-BB56-E011-802A-003048F11DE2.root',
+    #'/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/222/C2CA0659-BC56-E011-AEF0-001617DBD316.root',
+    #'/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/222/B8176219-AE56-E011-871E-003048F118C4.root',
+    #'/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/222/4E9E4519-AE56-E011-BA26-003048F118D2.root',
+    #'/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/222/3A9E33D0-AE56-E011-9DF1-001617C3B778.root',
+    #'/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/216/EEEE5DF8-6656-E011-BF30-003048F11C5C.root',
+    #'/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/216/C8BF839F-6C56-E011-9402-001D09F24664.root',
+    #'/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/216/B65BB2D8-6B56-E011-9BD8-0016177CA778.root',
+    #'/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/216/92EFDE9A-6C56-E011-AF96-001D09F29524.root',
+    #'/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/216/88E71E5D-6856-E011-A3CC-001617E30D4A.root',
+    #'/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/216/848682A0-6756-E011-9AA7-001617E30D00.root',
+    #'/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/216/6C0AFA9E-6C56-E011-AB7E-001D09F28F0C.root',
+    #'/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/216/44498CA0-6C56-E011-9C60-001D09F28755.root'
+   # 
 #    '/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/016/F075D60E-AA55-E011-B704-0030487CD6DA.root',
 #    '/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/016/EE2FEB4C-A955-E011-8A94-001D09F2983F.root',
 #    '/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/016/DEBD5509-AA55-E011-B110-001617E30D0A.root',
