@@ -42,15 +42,15 @@ for opt, arg in opts:
     if opt=='-h':
         usage()
         sys.exit()
-    if opt=='-2010':
+    if opt=='--2010':
         trigger = '2010'
-    if opt=='-2011':
+    if opt=='--2011':
         trigger = '2011'
-    if opt=='-raw':
-        datatype = 'RAW-RECO'
-    if opt=='-reco':
+    if opt=='--raw':
+        datatype = 'RAWRECO'
+    if opt=='--reco':
         datatype = 'RECO'
-    if opt=='-mc':
+    if opt=='--mc':
         datatype = 'MC'
     if opt=='-m':
         datatype = 'MC'
