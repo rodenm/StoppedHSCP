@@ -5,15 +5,10 @@
 #
 import FWCore.ParameterSet.Config as cms
 
-from StoppedHSCP.Analysis.stoppedHSCPTree_RECO_cfg import *
-
-#process.MessageLogger.cerr.threshold = ''
-#process.MessageLogger.cerr.FwkReport.reportEvery = 1000
-
-process.stoppedHSCPTree.isMC = cms.untracked.bool(False)
+from StoppedHSCP.Analysis.stoppedHSCPTree_RECO_2011_cfg import *
 
 # change Global Tag
-process.GlobalTag.globaltag = 'GR10_P_V12::All'
+process.GlobalTag.globaltag = 'GR10_P_V17::All'
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
 
