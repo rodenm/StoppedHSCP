@@ -7,21 +7,21 @@ import sys
 import getopt
 
 def usage():
-    print "makeTreeJob.py [-hjlcm] <era> <label> <dataset> <global tag> <runlist|JSON file>"
+    print "makeTreeJob.py [-hjlc] [-raw|-reco|-mc] [-2010|-2011] <era> <label> <dataset> <global tag> <runlist|JSON file>"
     print " Options   :"
     print "   -h      : prints this message"
     print "   -l      : use local DBS (http://cmsdbsprod.cern.ch/cms_dbs_ph_analysis_02/servlet/DBSServlet)"
     print "   -j      : use JSON file to run on good LS"
     print "   -c      : use CAF"
-    print "   -2010   : use 2010 trigger config"
-    print "   -2011   : use 2011 trigger config (default)"
-    print "   -raw    : use RAW+RECO config"
-    print "   -reco   : use RECO config (default)"
-    print "   -m      : run on MC sample"
+    print "   --2010  : use 2010 trigger config"
+    print "   --2011  : use 2011 trigger config (default)"
+    print "   --raw   : use RAW+RECO config"
+    print "   --reco  : use RECO config (default)"
+    print "   --mc    : use MC config"
     print
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "hjlcm")
+    opts, args = getopt.getopt(sys.argv[1:], "hjlcm", ['2010','2011','raw','reco','mc'])
 except getopt.GetoptError:
     usage()
     sys.exit(2)
@@ -29,7 +29,6 @@ except getopt.GetoptError:
 useLocalDBS = False
 useJSON = False
 useCAF = False
-useMC = False
 trigger = '2011'
 datatype = 'RECO'
 
@@ -51,6 +50,8 @@ for opt, arg in opts:
         datatype = 'RAW-RECO'
     if opt=='-reco':
         datatype = 'RECO'
+    if opt=='-mc':
+        datatype = 'MC'
     if opt=='-m':
         datatype = 'MC'
 
@@ -140,7 +141,7 @@ crab.close()
 # create CMSSW variables
 cmsswStr="import FWCore.ParameterSet.Config as cms\n\
 \n\
-from StoppedHSCP.Analysis.stoppedHSCPTree_'"+datatype"'_'"+trigger+"'_cfg import *\n\
+from StoppedHSCP.Analysis.stoppedHSCPTree_"+datatype+"_"+trigger+"_cfg import *\n\
 \n\
 process.MessageLogger.cerr.threshold = ''\n\
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000\n\
