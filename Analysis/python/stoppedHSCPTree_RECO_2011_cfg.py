@@ -10,7 +10,9 @@ process.ntuple.remove(process.gtDigis)
 process.ntuple.remove(process.l1extraParticles)
 process.ntuple.remove(process.hcalDigis)
 
-from StoppedHSCP.Analysis.stoppedHSCP_Trigger2011_cff import *
+# 2011 trigger config
+
+from StoppedHSCP.Analysis.StoppedHSCP_Trigger2011_cff import *
 
 process.hltHighLevel.HLTPaths = HLTPaths
 process.stoppedHSCPTree.hltPathJetNoBptx = hltPathJetNoBptx

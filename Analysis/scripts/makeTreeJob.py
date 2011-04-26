@@ -13,6 +13,10 @@ def usage():
     print "   -l      : use local DBS (http://cmsdbsprod.cern.ch/cms_dbs_ph_analysis_02/servlet/DBSServlet)"
     print "   -j      : use JSON file to run on good LS"
     print "   -c      : use CAF"
+    print "   -2010   : use 2010 trigger config"
+    print "   -2011   : use 2011 trigger config (default)"
+    print "   -raw    : use RAW+RECO config"
+    print "   -reco   : use RECO config (default)"
     print "   -m      : run on MC sample"
     print
 
@@ -26,6 +30,8 @@ useLocalDBS = False
 useJSON = False
 useCAF = False
 useMC = False
+trigger = '2011'
+datatype = 'RECO'
 
 for opt, arg in opts:
     if opt=='-l':
@@ -34,11 +40,19 @@ for opt, arg in opts:
         useJSON = True
     if opt=='-c':
         useCAF = True
-    if opt=='-m':
-        useMC = True
     if opt=='-h':
         usage()
         sys.exit()
+    if opt=='-2010':
+        trigger = '2010'
+    if opt=='-2011':
+        trigger = '2011'
+    if opt=='-raw':
+        datatype = 'RAW-RECO'
+    if opt=='-reco':
+        datatype = 'RECO'
+    if opt=='-m':
+        datatype = 'MC'
 
 # arguments
 if (len(args)!=5):
@@ -126,7 +140,7 @@ crab.close()
 # create CMSSW variables
 cmsswStr="import FWCore.ParameterSet.Config as cms\n\
 \n\
-from StoppedHSCP.Analysis.stoppedHSCPTree_RECO_cfg import *\n\
+from StoppedHSCP.Analysis.stoppedHSCPTree_'"+datatype"'_'"+trigger+"'_cfg import *\n\
 \n\
 process.MessageLogger.cerr.threshold = ''\n\
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000\n\
@@ -134,14 +148,6 @@ process.GlobalTag.globaltag = '"+gtag+"'\n\
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )\n\
 readFiles.extend( [\n\
 ] )\n\
-"
-if useMC:
-    cmsswStr+="\n\
-#process.gctDigis.inputLabel = 'rawDataCollector' \n\
-#process.gtDigis.DaqGtInputTag = 'rawDataCollector' \n\
-#process.hcalDigis.InputLabel = 'rawDataCollector' \n\
-process.ntuple.remove(process.hltHighLevel) \n\
-\n\
 "
 
 # create CMSSW config

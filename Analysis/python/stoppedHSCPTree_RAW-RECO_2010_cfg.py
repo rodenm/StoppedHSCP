@@ -4,7 +4,9 @@ import FWCore.ParameterSet.Config as cms
 
 from StoppedHSCP.Analysis.stoppedHSCPTree_Master_cfg import *
 
-from StoppedHSCP.Analysis.stoppedHSCP_Trigger2010_cff import *
+# 2010 trigger config
+
+from StoppedHSCP.Analysis.StoppedHSCP_Trigger2010_cff import *
 
 process.hltHighLevel.HLTPaths = HLTPaths
 process.stoppedHSCPTree.hltPathJetNoBptx = hltPathJetNoBptx
