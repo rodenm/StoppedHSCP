@@ -2,24 +2,32 @@
 
 # arguments
 dataset=$1
+ntupdir=$2
 
 # variables
-ntuple=ntuples/stoppedHSCP_tree_$dataset.root
+ntuples=''
 outdir=$dataset
-bgdir=0
+
+# get file list
+for file in `ls $ntupdir`; do
+    ntuples="$ntuples $ntupdir$file"
+done
 
 # print out
 echo "Going to run Stopped Gluino analysis"
-echo "  ntuple : " $ntuple
-echo "  output : " $outdir
+echo "  output  : " $outdir
+echo "  ntuples : " $ntupdir
 
 # make output dir
-mkdir $outdir
+if [ ! -e $outdir ]
+then
+    mkdir $outdir
+fi
 
 # make histograms
 echo
-echo "makeHistograms $ntuple $outdir > $outdir/histogrammer.log"
-makeHistograms $ntuple $outdir > $outdir/histogrammer.log
+echo "makeHistograms $outdir $ntuples > $outdir/histogrammer.log"
+makeHistograms $outdir $ntuples > $outdir/histogrammer.log
 
 # make basic plots
 echo

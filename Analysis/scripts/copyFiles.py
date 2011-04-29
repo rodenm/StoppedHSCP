@@ -37,14 +37,15 @@ def CopyFiles(user="jbrooke",
         os.makedirs(odir)
 
     print "Copying files from :"
-    print gridroot
-    print gridloc
+    print gridroot+gridloc
 
     # get file list
     ls = Popen("lcg-ls "+gridroot+gridloc, shell=True, stdout=PIPE)
     lsop=ls.communicate()
 
     files=lsop[0]
+
+    print files
 
     # copy files
     for file in files.splitlines():

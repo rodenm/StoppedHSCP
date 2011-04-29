@@ -8,6 +8,11 @@
 #include "StoppedHSCP/Analysis/interface/Histograms.h"
 #include "StoppedHSCP/Analysis/interface/RunHistograms.h"
 #include "StoppedHSCP/Analysis/interface/FillHistograms.h"
+#include "StoppedHSCP/Analysis/interface/HaloHistograms.h"
+#include "StoppedHSCP/Analysis/interface/BeamGasHistograms.h"
+#include "StoppedHSCP/Analysis/interface/CollisionsHistograms.h"
+#include "StoppedHSCP/Analysis/interface/CosmicsHistograms.h"
+#include "StoppedHSCP/Analysis/interface/NoiseHistograms.h"
 #include "StoppedHSCP/Analysis/interface/LhcFills.h"
 
 #include "TFile.h"
@@ -87,6 +92,12 @@ class Analyser {
 
   // general histograms
   Histograms histograms_;
+
+  HaloHistograms haloHistos_;
+  BeamGasHistograms beamGasHistos_;
+  CollisionsHistograms collisionsHistos_;
+  CosmicsHistograms cosmicsHistos_;
+  NoiseHistograms noiseHistos_;
 
   // "per-run" histograms
   RunHistograms runHistos_;
