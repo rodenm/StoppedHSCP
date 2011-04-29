@@ -5,6 +5,8 @@ import FWCore.ParameterSet.Config as cms
 
 from StoppedHSCP.Analysis.stoppedHSCPTree_Master_cfg import *
 
+process.stoppedHSCPTree.isMC = cms.untracked.bool(True)
+
 process.gctDigis.inputLabel = 'rawDataCollector'
 process.gtDigis.DaqGtInputTag = 'rawDataCollector'
 process.hcalDigis.InputLabel = 'rawDataCollector'

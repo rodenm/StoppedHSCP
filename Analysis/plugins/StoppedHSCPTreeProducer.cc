@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.69 2011/04/18 20:07:08 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.70 2011/04/18 23:55:39 jbrooke Exp $
 //
 //
 
@@ -475,8 +475,8 @@ StoppedHSCPTreeProducer::beginRun(edm::Run const & iRun, edm::EventSetup const& 
   bool changed;
   hltConfig_.init(iRun, iSetup, hltResultsTag_.process(), changed);
   try {
-       hltPathIndexJetNoBptx_ = hltConfig_.triggerIndex(hltPathJetNoBptx_);
-       edm::LogInfo("StoppedHSCPTree") << hltPathJetNoBptx_ << " index is " << hltPathIndexJetNoBptx_ << std::endl;
+    hltPathIndexJetNoBptx_ = hltConfig_.triggerIndex(hltPathJetNoBptx_);
+    edm::LogInfo("StoppedHSCPTree") << hltPathJetNoBptx_ << " index is " << hltPathIndexJetNoBptx_ << std::endl;
   }
   catch (cms::Exception e) {
     edm::LogWarning("StoppedHSCPTree") << "Could not find an HLT path matching " << hltPathJetNoBptx_ << ".  Branch will not be filled" << std::endl;
@@ -661,15 +661,12 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent) {
   
 
   // find last/next collisions
-  if (isMC_) {
-    event_->bxAfterCollision = 999;
-    event_->bxBeforeCollision = 999;
-  }
-  else {
+  int bxAfter = 9999;
+  int bxBefore = -9999;
+  
+  if (! isMC_) {
     int bxLast=-1;
     int bxNext=-1;
-    int bxAfter  = 9999;
-    int bxBefore = -9999;
     if (currentColls_.size() > 0) {
       // special case if event is before first collision
       if (bx < currentColls_.at(0)) {
@@ -678,7 +675,7 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent) {
 	bxAfter  = (bx + bxPerOrbit) - bxLast;
 	bxBefore = bx - bxNext;
 	
-	//	std::cout << bx << " : " << bxLast << " : " << bxNext << " : " << bxAfter << " : " << bxBefore << std::endl;
+	//std::cout << bx << " : " << bxLast << " : " << bxNext << " : " << bxAfter << " : " << bxBefore << std::endl;
 
       }
       // special case if event is after last collision
@@ -701,24 +698,24 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent) {
       }
     }
     
-    // compute relative BX
-    int bxWrt    = ( abs(bxAfter) <= abs(bxBefore) ? bxAfter : bxBefore );
-
-    // set variables in ntuple
-    event_->id = id;
-    event_->bx = bx;
-    event_->orbit = orbit;
-    event_->lb = lb;
-    event_->run = run;
-    event_->fill = fill;
-    event_->fillFromL1 = currentFillL1_;
-    event_->time = time;
-    event_->time2 = iEvent.getRun().beginTime().value() + (bxSinceRunStart * nsPerBx);  // value() in nanoseconds!?!
-    event_->bxAfterCollision = bxAfter;
-    event_->bxBeforeCollision = bxBefore;
-    event_->bxWrtCollision = bxWrt;
-
   }
+
+  // compute relative BX
+  int bxWrt    = ( abs(bxAfter) <= abs(bxBefore) ? bxAfter : bxBefore );
+
+  // set variables in ntuple
+  event_->id = id;
+  event_->bx = bx;
+  event_->orbit = orbit;
+  event_->lb = lb;
+  event_->run = run;
+  event_->fill = fill;
+  event_->fillFromL1 = currentFillL1_;
+  event_->time = time;
+  event_->time2 = iEvent.getRun().beginTime().value() + (bxSinceRunStart * nsPerBx);  // value() in nanoseconds!?!
+  event_->bxAfterCollision = bxAfter;
+  event_->bxBeforeCollision = bxBefore;
+  event_->bxWrtCollision = bxWrt;
 
 }
   
@@ -791,9 +788,15 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
 
   if (HLTR.isValid()) {
     // triggerIndex must be less than the size of HLTR or you get a CMSException: _M_range_check
-    if (doHltBit1_ && hltPathIndexJetNoBptx_ < HLTR->size()) hltBitJetNoBptx = HLTR->accept(hltPathIndexJetNoBptx_); 
+    if (doHltBit1_ && hltPathIndexJetNoBptx_ < HLTR->size()) hltBitJetNoBptx = HLTR->accept(hltPathIndexJetNoBptx_);
     if (doHltBit2_ && hltPathIndexJetNoBptxNoHalo_ < HLTR->size()) hltBitJetNoBptxNoHalo = HLTR->accept(hltPathIndexJetNoBptxNoHalo_); 
     if (doHltBit3_ && hltPathIndexJetNoBptx3BXNoHalo_ < HLTR->size()) hltBitJetNoBptx3BXNoHalo = HLTR->accept(hltPathIndexJetNoBptx3BXNoHalo_); 
+  }
+  else {
+    if (doHltBit3_) edm::LogWarning("MissingProduct") << "HLT information not found.  Branch will not be filled" << std::endl;
+    doHltBit1_ = false;
+    doHltBit2_ = false;
+    doHltBit3_ = false;
   }
 
   // store bits

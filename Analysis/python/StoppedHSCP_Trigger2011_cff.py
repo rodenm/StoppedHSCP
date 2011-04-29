@@ -4,12 +4,12 @@
 import FWCore.ParameterSet.Config as cms
 
 HLTPaths = cms.vstring(
-    "HLT_JetE30_NoBPTX_*",
-    "HLT_JetE30_NoBPTX_NoHalo_*",
-    "HLT_JetE30_NoBPTX3BX_NoHalo_*"
+    "HLT_JetE30_NoBPTX_v*",
+    "HLT_JetE30_NoBPTX_NoHalo_v*",
+    "HLT_JetE30_NoBPTX3BX_NoHalo_v*"
 )
 
-hltPathJetNoBptx = cms.untracked.string("HLT_JetE30_NoBPTX_*")
-hltPathJetNoBptxNoHalo = cms.untracked.string("HLT_JetE30_NoBPTX_NoHalo_*")
-hltPathJetNoBptx3BXNoHalo = cms.untracked.string("HLT_JetE30_NoBPTX3BX_NoHalo_*")
-hltL3Tag = cms.untracked.InputTag("hltStoppedHSCP1CaloJetEnergy30","","HLT")
+hltPathJetNoBptx = cms.untracked.string("HLT_JetE30_NoBPTX_v2")
+hltPathJetNoBptxNoHalo = cms.untracked.string("HLT_JetE30_NoBPTX_NoHalo_v4")
+hltPathJetNoBptx3BXNoHalo = cms.untracked.string("HLT_JetE30_NoBPTX3BX_NoHalo_v4")
+hltL3Tag = cms.untracked.InputTag("hltStoppedHSCPTight1CaloJetEnergy30","","HLT")

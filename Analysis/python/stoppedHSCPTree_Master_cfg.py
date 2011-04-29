@@ -13,7 +13,6 @@ process = cms.Process("SHSCPTree")
 
 process.load('Configuration/StandardSequences/Services_cff')
 process.load('FWCore/MessageService/MessageLogger_cfi')
-#process.MessageLogger.cerr.INFO.limit = cms.untracked.int32(10)
 process.MessageLogger.cerr.threshold = ''
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
