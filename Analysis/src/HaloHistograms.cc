@@ -28,7 +28,7 @@ HaloHistograms::~HaloHistograms() {
 void HaloHistograms::book() {
 
   // time
-  hbx_ = new TH1D("hbx", "BX number", 3564, 0., 3564.);
+  hbx_ = new TH1D("hhalobx", "BX number", 3564, 0., 3564.);
 
 }
 

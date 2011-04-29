@@ -57,9 +57,9 @@ void RunHistograms::book(unsigned long run) {
   base_->mkdir(runstr.str().c_str());
 
   // resize vectors if need be, without creating histograms
-  hbx_.resize(run+1, 0);
-  horb_.resize(run+1, 0);
-  hlb_.resize(run+1, 0);
+  if (hbx_.size() < run+1) hbx_.resize(run+1, 0);
+  if (horb_.size() < run+1) horb_.resize(run+1, 0);
+  if (hlb_.size() < run+1) hlb_.resize(run+1, 0);
 
   // and book histograms
   hbx_.at(run) = new TH1D((std::string("hbx")+runstr.str()).c_str(), "BX number", 3564, 0., 3564.);
@@ -81,9 +81,14 @@ void RunHistograms::fill(StoppedHSCPEvent& event) {
   book(run);
   
   // fill histos
-  hbx_.at(run)->Fill(event.bx);
-  horb_.at(run)->Fill(event.orbit);
-  hlb_.at(run)->Fill(event.lb);
+  if (run < hbx_.size()) 
+    hbx_.at(run)->Fill(event.bx);
+  if (run < horb_.size()) 
+    horb_.at(run)->Fill(event.orbit);
+  if (run < hlb_.size()) 
+    hlb_.at(run)->Fill(event.lb);
+  else 
+    std::cout << "size = " << hlb_.size() << " " << run << std::endl;
 
 }
 

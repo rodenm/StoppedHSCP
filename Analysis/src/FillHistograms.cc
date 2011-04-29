@@ -55,9 +55,9 @@ void FillHistograms::book(unsigned long fill) {
   base_->mkdir(fillstr.str().c_str());
 
   // resize vectors if need be, without creating histograms
-  hbx_.resize(fill+1, 0);
-  horb_.resize(fill+1, 0);
-  hlb_.resize(fill+1, 0);
+  if (hbx_.size() < fill+1) hbx_.resize(fill+1, 0);
+  if (horb_.size() < fill+1) horb_.resize(fill+1, 0);
+  if (hlb_.size() < fill+1) hlb_.resize(fill+1, 0);
 
   // and book histograms
   hbx_.at(fill) = new TH1D((std::string("hbx")+fillstr.str()).c_str(), "BX number", 3564, 0., 3564.);

@@ -12,8 +12,8 @@ CollisionsHistograms::CollisionsHistograms(TFile* file, Cuts* cuts) :
 {
  
   // create directory structure
-  file->mkdir("halo");
-  base_ = file->GetDirectory("halo");
+  file->mkdir("collisions");
+  base_ = file->GetDirectory("collisions");
 
   book();
 
@@ -28,7 +28,7 @@ CollisionsHistograms::~CollisionsHistograms() {
 void CollisionsHistograms::book() {
 
   // time
-  hbx_ = new TH1D("hbx", "BX number", 3564, 0., 3564.);
+  hbx_ = new TH1D("hcollbx", "BX number", 3564, 0., 3564.);
 
 }
 

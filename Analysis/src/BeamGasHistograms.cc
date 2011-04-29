@@ -12,8 +12,8 @@ BeamGasHistograms::BeamGasHistograms(TFile* file, Cuts* cuts) :
 {
  
   // create directory structure
-  file->mkdir("halo");
-  base_ = file->GetDirectory("halo");
+  file->mkdir("beamgas");
+  base_ = file->GetDirectory("beamgas");
 
   book();
 
@@ -28,7 +28,7 @@ BeamGasHistograms::~BeamGasHistograms() {
 void BeamGasHistograms::book() {
 
   // time
-  hbx_ = new TH1D("hbx", "BX number", 3564, 0., 3564.);
+  hbx_ = new TH1D("hbgbx", "BX number", 3564, 0., 3564.);
 
 }
 

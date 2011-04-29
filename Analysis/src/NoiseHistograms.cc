@@ -12,8 +12,8 @@ NoiseHistograms::NoiseHistograms(TFile* file, Cuts* cuts) :
 {
  
   // create directory structure
-  file->mkdir("halo");
-  base_ = file->GetDirectory("halo");
+  file->mkdir("noise");
+  base_ = file->GetDirectory("noise");
 
   book();
 
@@ -28,7 +28,7 @@ NoiseHistograms::~NoiseHistograms() {
 void NoiseHistograms::book() {
 
   // time
-  hbx_ = new TH1D("hbx", "BX number", 3564, 0., 3564.);
+  hbx_ = new TH1D("hnoisebx", "BX number", 3564, 0., 3564.);
 
 }
 
