@@ -137,7 +137,7 @@ if __name__=="__main__":
         
     if options.gridloc==None:
         if options.useCAF==True:
-            options.gridloc = "/castor.cern.ch/cms/store/caf/user/"
+            options.gridloc = "/castor/cern.ch/cms/store/caf/user/"
         else:
             options.gridloc = "/pnfs/pp.rl.ac.uk/data/cms/store/user/"
 
