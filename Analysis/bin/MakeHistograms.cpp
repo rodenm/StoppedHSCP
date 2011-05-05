@@ -185,6 +185,8 @@ int main(int argc, char* argv[]) {
 
   analyser.setup();
 
+  analyser.cuts().print(std::cout);
+
   // make histograms for all events
   analyser.loop(nlimit);
 

@@ -9,11 +9,59 @@
 #include <boost/lexical_cast.hpp>
 #include <math.h>
 
+#define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
+
+
 Cuts::Cuts(StoppedHSCPEvent* event, bool isMC, unsigned version) :
   event_(event),
   isMC_(isMC),
   version_(version)
 {
+
+  // set up cuts
+
+  // default
+  if (version_ == 0) {
+    addCut(&Cuts::triggerCut, "trigger");
+    addCut(&Cuts::bptxVeto, "BPTX veto");
+    addCut(&Cuts::bxVeto, "BX veto");
+    addCut(&Cuts::vertexVeto, "Vertex veto");
+    addCut(&Cuts::haloVeto, "Halo veto");
+    addCut(&Cuts::cosmicVeto, "Cosmic veto");
+    addCut(&Cuts::hcalNoiseVeto, "Noise veto");
+    addCut(&Cuts::looseJetCut, "E30");
+    addCut(&Cuts::jetEnergyCut, "E50");
+    addCut(&Cuts::jetN60Cut, "n60");
+    addCut(&Cuts::jetN90Cut, "n90");
+    addCut(&Cuts::towersIPhiCut, "nTowiPhi");
+    //addCut(&Cuts::iPhiFractionCut, "iPhiFrac");
+    addCut(&Cuts::hpdR1Cut, "R1");
+    addCut(&Cuts::hpdR2Cut, "R2");
+    addCut(&Cuts::hpdRPeakCut, "Rpeak");
+    addCut(&Cuts::hpdROuterCut, "Router");
+  }
+
+  // digi-based timing cuts
+  if (version_ == 1) {
+    addCut(&Cuts::triggerCut, "trigger");
+    addCut(&Cuts::bptxVeto, "BPTX veto");
+    addCut(&Cuts::bxVeto, "BX veto");
+    addCut(&Cuts::vertexVeto, "Vertex veto");
+    addCut(&Cuts::haloVeto, "Halo veto");
+    addCut(&Cuts::cosmicVeto, "Cosmic veto");
+    addCut(&Cuts::hcalNoiseVeto, "Noise veto");
+    addCut(&Cuts::looseJetCut, "E30");
+    addCut(&Cuts::jetEnergyCut, "E50");
+    addCut(&Cuts::jetN60Cut, "n60");
+    addCut(&Cuts::jetN90Cut, "n90");
+    addCut(&Cuts::towersIPhiCut, "nTowiPhi");
+    //addCut(&Cuts::iPhiFractionCut, "iPhiFrac");
+    addCut(&Cuts::digiR1Cut, "R1");
+    addCut(&Cuts::digiR2Cut, "R2");
+    addCut(&Cuts::digiRPeakCut, "Rpeak");
+    addCut(&Cuts::digiROuterCut, "Router");
+  }
+
 
 }
 
@@ -22,178 +70,107 @@ Cuts::~Cuts() {
 }
 
 
-// void Cuts::readMaskedBXs(std::string filename, unsigned run) {
+bool Cuts::triggerCut() const {      // require event passed main trigger
+  return event_->hltJetNoBptx3BXNoHalo;
+}
 
-//   bxMask_.clear();
+bool Cuts::controlTrigger() const {  // event fired control trigger
+  return event_->hltJetNoBptx;
+}
 
-//   // open file
-//   std::ifstream bxfile(filename.c_str(), ifstream::in);
+bool Cuts::bptxVeto() const {        // cut on time wrt BPTX signal
+  return true;
+}
 
-//   // read lines until we find the current run
-//   std::string line;
-//   if (!bxfile.fail()) {
-//     while (!bxfile.eof()) {
-//       getline(bxfile, line);
-//       std::vector<std::string> strs;
-//       boost::split(strs, line, boost::is_any_of(std::string(",")));
-      
-//       if (run==(unsigned)atoi(strs.at(0).c_str())) {
-	
-// 	// read BXs to mask from the rest of the line
-// 	std::cout << "Ignoring BX : ";
-// 	for (unsigned i=1; i<strs.size(); ++i) {
-// 	  int bx = atoi(strs.at(i).c_str());
-// 	  if (bx>=0 && bx<3546) bxMask_.at(bx) = true;
-// 	  std::cout << strs.at(i) << " ";
-// 	}
-// 	std::cout << std::endl;
-//       }
-//     }
-//   }
+bool Cuts::bxVeto() const {          // cut on BX wrt expected collisions
+  return true; //(event_->bxAfterCollision) > 1 && (event_->bxBeforeCollision > 2);  
+}
 
-// }
+bool Cuts::vertexVeto() const {      // no vertex
+  return (event_->nVtx == 0);
+}
 
+bool Cuts::haloVeto() const {        // no halo ID
+  return !(event_->beamHalo_CSCLoose);
+}
 
-// void Cuts::setMaskedBXs(std::vector<bool> bxMask) {
-//   bxMask_ = bxMask;
-// }
+bool Cuts::cosmicVeto() const {      // no cosmic muon
+  return event_->mu_N==0;
+}
 
+bool Cuts::hcalNoiseVeto() const {   // std HCAL noise veto
+  return event_->noiseFilterResult;
+}
 
-// bool Cuts::inMaskedBX() const {
-//   return bxMask_.at(event_->bx); 
-// }
+bool Cuts::looseJetCut() const {     // low Et threshold
+  return event_->jet_N>0 && event_->jetE[0]>30. && fabs(event_->jetEta[0])<1.3;
+}
 
+bool Cuts::jetEnergyCut() const {    // require jet above Et threshold
+  return event_->jet_N>0 && event_->jetE[0]>50. && fabs(event_->jetEta[0])<1.3;
+}
 
-unsigned Cuts::nCuts() const {
-  return 16;
+bool Cuts::jetN60Cut() const {       // jet n60
+  return event_->jet_N>0 && event_->jetN60[0]<6;
+}
+
+bool Cuts::jetN90Cut() const {       // jet n90
+  return event_->jet_N>0 && event_->jetN90[0]>3;
+}
+
+bool Cuts::towersIPhiCut() const {   // cut on N leading towers at same iphi
+  return event_->nTowerSameiPhi<5 && event_->leadingIPhiFraction()<0.95;
+}
+
+bool Cuts::iPhiFractionCut() const { // Et fraction at leading iphi
+  return event_->leadingIPhiFraction()<0.95;
+}
+
+bool Cuts::hpdR1Cut() const {        // timing R1 cut from HPD
+  return (event_->topHPD5R1 > 0.15) && (event_->topHPD5R1 <= 1.0);
+}
+
+bool Cuts::hpdR2Cut() const {        // timing R2 cut from HPD
+  return (event_->topHPD5R2 > 0.1) && (event_->topHPD5R2 < 0.8);
+}
+
+bool Cuts::hpdRPeakCut() const {     // timing Rp cut from HPD
+  return (event_->topHPD5RPeak > 0.3) && (event_->topHPD5RPeak < 0.7) && (event_->topHPD5PeakSample > 0) && (event_->topHPD5PeakSample < 7);
+}
+
+bool Cuts::hpdROuterCut() const {    // timing Ro cut from HPD
+  return (event_->topHPD5ROuter < 0.3) && (event_->topHPD5ROuter >= 0.0) && (event_->topHPD5PeakSample > 0) && (event_->topHPD5PeakSample < 7);
+}
+
+bool Cuts::digiR1Cut() const {       // timing R1 cut from digis
+  return (event_->top5DigiR1 > 0.15) && (event_->top5DigiR1 <= 1.0);
+}
+
+bool Cuts::digiR2Cut() const {       // timing R2 cut from digis
+  return (event_->top5DigiR2 > 0.1) && (event_->top5DigiR2 < 0.5);
+}
+
+bool Cuts::digiRPeakCut() const {    // timing Rp cut from digis
+  return (event_->top5DigiRPeak > 0.4) && (event_->top5DigiRPeak < 0.7) && (event_->top5DigiPeakSample > 0) && (event_->top5DigiPeakSample < 7);
+}
+
+bool Cuts::digiROuterCut() const {   // timing Ro cut from digis
+  return (event_->top5DigiROuter < 0.1) && (event_->top5DigiROuter >= 0.0) && (event_->top5DigiPeakSample > 0) && (event_->top5DigiPeakSample < 7);
+}
+
+bool Cuts::trackCut() const {
+  return (event_->track_N == 0);
+}
+
+// setup method
+void Cuts::addCut(Cuts::CutFn fn, std::string name) {
+  cuts_.push_back(fn);
+  names_.push_back(name);
 }
 
 
-
-
-// return result of a particular cut
-bool Cuts::cutN(unsigned n) const 
-{
-
-  // cut set 0
-  switch (n) {
-
-  case 0:  // trigger
-    if (isMC_) return ((((event_->gtAlgoWord0>>16)&1) == 1) // trigger fires
-		      && (event_->hltJet_N>0) // at least one jet
-		      && (event_->hltJetE[0]> 20.)  // greater than 20 GeV
-		      && (fabs(event_->hltJetEta[0])<1.3)); // in HB
-    else return event_->hltJetNoBptx3BXNoHalo;
-
-  case 1:  // BX mask
-    return isMC_ || true;//! (event_->bxAfterCollision > 1 && event_->bxBeforeCollision > 2);
-
-  case 2:  // BPTX
-    return isMC_ || ((event_->gtAlgoWord1>>(81-64)&1) == 0 && (event_->gtAlgoWord1>>(80-64)&1) == 0);
-
-  case 3:  // vertex veto
-    return (event_->nVtx == 0);
-
-  case 4:  // beam halo
-    return !(event_->beamHalo_CSCLoose);
-
-  case 5:  // cosmic veto
-    return event_->mu_N==0;
-
-  case 6:  // std HCAL cuts
-    return event_->noiseFilterResult;
-
-  case 7:  // jet 30 
-    return event_->jet_N>0 && event_->jetE[0]>30. && fabs(event_->jetEta[0])<1.3;
-
-  case 8:  // jet 50
-    return event_->jet_N>0 && event_->jetE[0]>50. && fabs(event_->jetEta[0])<1.3;
-
-  case 9:  // jet n60
-    return event_->jet_N>0 && event_->jetN60[0]<6;
-
-  case 10:  // jet n90
-    return event_->jet_N>0 && event_->jetN90[0]>3;
-
-  case 11:  // calo towers
-      return event_->nTowerSameiPhi<5 && event_->leadingIPhiFraction()<0.95;
-
-  case 12: // R1
-    if (version_==1)
-      return (event_->top5DigiR1 > 0.15) && (event_->top5DigiR1 <= 1.0);
-    else
-      return (event_->topHPD5R1 > 0.15) && (event_->topHPD5R1 <= 1.0);
-
-  case 13: // R2
-    if (version_==1)
-      return (event_->top5DigiR2 > 0.1) && (event_->top5DigiR2 < 0.5);
-    else
-      return (event_->topHPD5R2 > 0.1) && (event_->topHPD5R2 < 0.8);
-
-  case 14: // Rpeak
-    if (version_==1)
-      return (event_->top5DigiRPeak > 0.4) && (event_->top5DigiRPeak < 0.7) && (event_->top5DigiPeakSample > 0) && (event_->top5DigiPeakSample < 7);
-    else
-      return (event_->topHPD5RPeak > 0.3) && (event_->topHPD5RPeak < 0.7) && (event_->topHPD5PeakSample > 0) && (event_->topHPD5PeakSample < 7);
-
-  case 15: // Router
-    if (version_==1)
-      return (event_->top5DigiROuter < 0.1) && (event_->top5DigiROuter >= 0.0) && (event_->top5DigiPeakSample > 0) && (event_->top5DigiPeakSample < 7);
-    else
-      return (event_->topHPD5ROuter < 0.3) && (event_->topHPD5ROuter >= 0.0) && (event_->topHPD5PeakSample > 0) && (event_->topHPD5PeakSample < 7);
- 
-  default:
-    return true;
-    
-  }
-  
-
-}
-
-
-const std::string Cuts::cutName(unsigned n) const {
-  
-  switch (n) {
-  case 0:
-    return "HLT";
-  case 1:
-    return "BX cut";
-  case 2:
-    return "BPTX cut";
-  case 3:
-    return "Vertex veto";
-  case 4:
-    return "Beam halo veto";
-  case 5:
-    return "mu veto";
-  case 6:
-    return "Noise filter";
-  case 7:
-    return "Jet30";
-  case 8:
-    return "Jet50";
-  case 9:
-    return "n60";
-  case 10:
-    return "n90";
-  case 11:
-    return "Calo towers";
-  case 12:
-    return "R1";
-  case 13:
-    return "R2";
-  case 14:
-    return "Rpeak";
-  case 15:
-    return "Router";
-  case 16:
-    return "iphi fraction";
-//   case 15:
-//     return "jet EMF";
-  default:
-    return "unknown";
-  }
-
+bool Cuts::cutN(unsigned n) const { 
+  return CALL_MEMBER_FN(*this, cuts_.at(n))(); 
 }
 
 // Returns true if all cuts up to and including n are passed; returns false otherwise
@@ -205,8 +182,6 @@ bool Cuts::allCutN(unsigned n) const
   }
   return pass;
 }
-
-
 
 
 // return result of all cuts
@@ -277,62 +252,13 @@ bool Cuts::cutNSyst(unsigned n, double smear) const
   }
   
 }
+ 
 
+void Cuts::print(std::ostream& os) const {
 
-// n HCAL std noise cuts
-// unsigned Cuts::nHcalCuts() const {
-//   return 12;
-// }
+  os << "Cuts : version " << version_ << std::endl;
+  for (unsigned i=0; i<cuts_.size(); ++i) {
+    os << "  " << i << " : " << names_.at(i) << std::endl;
+  }
 
-
-// return result of a particular cut 
-// bool Cuts::stdHcalCutN(unsigned n) const 
-// {
-  
-//   switch (n) {
-//   case 0:
-//     return true;
-//     break;
-//   case 1:
-//     {
-//       return event_->jet_N>0 && event_->jetE[0]>50. && fabs(event_->jetEta[0])<1.3;
-//       break;
-//     }
-//   case 2:
-//     return event_->mu_N==0;
-//     break;
-//   case 3:
-//     return !(event_->noiseMinE2Over10TS < 0.70);
-//     break;
-//   case 4:
-//     return !(event_->noiseMaxE2Over10TS > 0.96);
-//     break;
-//   case 5:
-//     return !(event_->noiseMaxHPDHits >= 17);
-//     break;
-//   case 6:
-//     return !(event_->noiseMaxRBXHits >= 999);
-//     break;
-//   case 7:
-//     return !(event_->noiseMaxHPDNoOtherHits >= 10);
-//     break;
-//   case 8:
-//     return !(event_->noiseMaxZeros >= 10);
-//     break;
-//   case 9:
-//     return !(event_->noiseMin25GeVHitTime < -9999.0);
-//     break;
-//   case 10:
-//     return !(event_->noiseMax25GeVHitTime > 9999.0);
-//     break;
-//   case 11:
-//     return !(event_->noiseMinRBXEMF < 0.01);
-//     break;
-//   default:
-//     return false;
-//     break; 
-//   }
-
-// }
-
-
+}

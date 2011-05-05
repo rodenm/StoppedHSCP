@@ -11,35 +11,55 @@ class StoppedHSCPEvent;
 class Cuts {
  public:
 
+  typedef bool (Cuts::*CutFn)() const;
+
+ public:
+
   Cuts(StoppedHSCPEvent* event,
        bool isMC, 
        unsigned version);
 
   ~Cuts();
 
-  unsigned cutVersion() const;
+  // the cut methods themselves
+  bool triggerCut() const;      // require event passed main trigger
+  bool controlTrigger() const;  // event fired control trigger
+  bool bptxVeto() const;        // cut on time wrt BPTX signal
+  bool bxVeto() const;          // cut on BX wrt expected collisions
+  bool vertexVeto() const;      // no vertex
+  bool haloVeto() const;        // no halo ID
+  bool cosmicVeto() const;      // no cosmic muon
+  bool hcalNoiseVeto() const;   // std HCAL noise veto
+  bool looseJetCut() const;     // low Et threshold
+  bool jetEnergyCut() const;    // require jet above Et threshold
+  bool jetN60Cut() const;       // jet n60
+  bool jetN90Cut() const;       // jet n90
+  bool towersIPhiCut() const;   // cut on N leading towers at same iphi
+  bool iPhiFractionCut() const; // Et fraction at leading iphi
+  bool hpdR1Cut() const;        // timing R1 cut from HPD
+  bool hpdR2Cut() const;        // timing R2 cut from HPD
+  bool hpdRPeakCut() const;     // timing Rp cut from HPD
+  bool hpdROuterCut() const;    // timing Ro cut from HPD
+  bool digiR1Cut() const;       // timing R1 cut from digis
+  bool digiR2Cut() const;       // timing R2 cut from digis
+  bool digiRPeakCut() const;    // timing Rp cut from digis
+  bool digiROuterCut() const;   // timing Ro cut from digis
+  bool trackCut() const;        // require no tracks
 
-  // read BX masks form file - old method
-  //  void readMaskedBXs(std::string filename, unsigned run);
-
-  // set BX masks from filled bunches and window
-  //  void setMaskedBXs(std::vector<bool> bxMask);
+  // get cut version
+  unsigned cutVersion() const { return version_; }
 
   // set current event
-  void setEvent(StoppedHSCPEvent* event) {event_ = event; }
+  void setEvent(StoppedHSCPEvent* event) { event_ = event; }
 
-  // turn on/off digi-based cuts
-
-  //  void setDigiCuts(bool digicut=false){useDigiCuts_=digicut;}
-
-  // number of cuts
-  unsigned nCuts() const;
+  // get number of cuts
+  unsigned nCuts() const { return cuts_.size(); }
 
   // n-th cut result for current event
   bool cutN(unsigned n) const;
 
   // cut name for histogram bins
-  const std::string cutName(unsigned n) const;
+  const std::string cutName(unsigned n) const { return names_.at(n); }
 
   // result of first N cuts
   bool allCutN(unsigned n) const;
@@ -56,6 +76,14 @@ class Cuts {
   // result of cuts after smearing, for systematics
   bool cutNSyst(unsigned n, double smear) const;
 
+  // pretty print
+  void print(std::ostream& os) const;
+
+ private:
+
+  // setup method
+  void addCut(Cuts::CutFn, std::string name);
+
  private:
 
   // pointer to the event
@@ -67,12 +95,12 @@ class Cuts {
   // cuts version
   unsigned version_;
 
-  // list of BXs to mask
-  //  std::vector<bool> bxMask_;
+  // vector of cut methods
+  std::vector<CutFn> cuts_;
 
-  // if enabled, will use digi-based noise cuts
-  //  bool useDigiCuts_;
-
+  // vector of cut names
+  std::vector<std::string> names_;
+  
 };
 
 #endif
