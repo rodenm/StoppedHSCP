@@ -24,4 +24,6 @@ perl -pi -e "s,\n,\,," beam2.tmp1
 echo ' ' >> $CMSSW_BASE/src/StoppedHSCP/Analysis/data/fillingSchemes.txt
 echo $scheme >> $CMSSW_BASE/src/StoppedHSCP/Analysis/data/fillingSchemes.txt
 cat beam1.tmp1 >> $CMSSW_BASE/src/StoppedHSCP/Analysis/data/fillingSchemes.txt
+echo ' ' >> $CMSSW_BASE/src/StoppedHSCP/Analysis/data/fillingSchemes.txt
 cat beam2.tmp1 >> $CMSSW_BASE/src/StoppedHSCP/Analysis/data/fillingSchemes.txt
+echo ' ' >> $CMSSW_BASE/src/StoppedHSCP/Analysis/data/fillingSchemes.txt
