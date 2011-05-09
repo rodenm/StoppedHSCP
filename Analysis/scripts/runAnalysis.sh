@@ -59,6 +59,16 @@ echo
 echo "makeToyJobs.py $outdir"
 makeToyJobs.py $outdir
 
+# run Toy MC jobs
+echo
+echo "$outdir/runAll.sh >& runAll.log"
+./$outdir/runAll.sh >& runAll.log &
+
+# make limit plots
+echo
+echo "makeFinalPlots.sh $outdir"
+makeFinalPlots.sh $outdir
+
 # make tarball
 echo
 echo "tar -zcvf $outdir.tgz $outdir/"
