@@ -27,6 +27,8 @@ CosmicsHistograms::~CosmicsHistograms() {
 
 void CosmicsHistograms::book() {
 
+  base_->cd("");
+
   // time
   hbx_ = new TH1D("hcosbx", "BX number", 3564, 0., 3564.);
 
@@ -41,7 +43,10 @@ void CosmicsHistograms::fill(StoppedHSCPEvent& event) {
 
 void CosmicsHistograms::save() {
 
+  base_->cd("");
+
   hbx_->Write("",TObject::kOverwrite);
+
 }
 
 

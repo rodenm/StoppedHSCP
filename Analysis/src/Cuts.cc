@@ -62,6 +62,28 @@ Cuts::Cuts(StoppedHSCPEvent* event, bool isMC, unsigned version) :
     addCut(&Cuts::digiROuterCut, "Router");
   }
 
+  // added HF veto and N tracks cuts
+  if (version_ == 2) {
+    addCut(&Cuts::triggerCut, "trigger");
+    addCut(&Cuts::bptxVeto, "BPTX veto");
+    addCut(&Cuts::bxVeto, "BX veto");
+    addCut(&Cuts::vertexVeto, "Vertex veto");
+    addCut(&Cuts::haloVeto, "Halo veto");
+    addCut(&Cuts::cosmicVeto, "Cosmic veto");
+    addCut(&Cuts::hcalNoiseVeto, "Noise veto");
+    addCut(&Cuts::hfVeto, "HF veto");
+    addCut(&Cuts::trackVeto, "Track veto");
+    addCut(&Cuts::looseJetCut, "E30");
+    addCut(&Cuts::jetEnergyCut, "E50");
+    addCut(&Cuts::jetN60Cut, "n60");
+    addCut(&Cuts::jetN90Cut, "n90");
+    addCut(&Cuts::towersIPhiCut, "nTowiPhi");
+    //addCut(&Cuts::iPhiFractionCut, "iPhiFrac");
+    addCut(&Cuts::hpdR1Cut, "R1");
+    addCut(&Cuts::hpdR2Cut, "R2");
+    addCut(&Cuts::hpdRPeakCut, "Rpeak");
+    addCut(&Cuts::hpdROuterCut, "Router");
+  }
 
 }
 
@@ -92,6 +114,14 @@ bool Cuts::vertexVeto() const {      // no vertex
 
 bool Cuts::haloVeto() const {        // no halo ID
   return !(event_->beamHalo_CSCLoose);
+}
+
+bool Cuts::hfVeto() const {
+  return event_->hfPlusTotalE < 50. && event_->hfMinusTotalE < 50.;
+}
+
+bool Cuts::trackVeto() const {
+  return (event_->track_N == 0);
 }
 
 bool Cuts::cosmicVeto() const {      // no cosmic muon
@@ -158,9 +188,6 @@ bool Cuts::digiROuterCut() const {   // timing Ro cut from digis
   return (event_->top5DigiROuter < 0.1) && (event_->top5DigiROuter >= 0.0) && (event_->top5DigiPeakSample > 0) && (event_->top5DigiPeakSample < 7);
 }
 
-bool Cuts::trackCut() const {
-  return (event_->track_N == 0);
-}
 
 // setup method
 void Cuts::addCut(Cuts::CutFn fn, std::string name) {

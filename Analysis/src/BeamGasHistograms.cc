@@ -27,21 +27,36 @@ BeamGasHistograms::~BeamGasHistograms() {
 
 void BeamGasHistograms::book() {
 
-  // time
+  base_->cd("");
+
+  // events with HF energy
   hbx_ = new TH1D("hbgbx", "BX number", 3564, 0., 3564.);
+
+
 
 }
 
 
 void BeamGasHistograms::fill(StoppedHSCPEvent& event) {
 
-  hbx_->Fill(event.bx);
+  // all events
+
+  // events failing HF veto
+  if (!cuts_->hfVeto()) {
+
+    hbx_->Fill(event.bx);
+
+  }
+
 }
 
 
 void BeamGasHistograms::save() {
 
+  base_->cd("");
+
   hbx_->Write("",TObject::kOverwrite);
+
 }
 
 

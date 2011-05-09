@@ -27,6 +27,8 @@ NoiseHistograms::~NoiseHistograms() {
 
 void NoiseHistograms::book() {
 
+  base_->cd("");
+
   // time
   hbx_ = new TH1D("hnoisebx", "BX number", 3564, 0., 3564.);
 
@@ -41,7 +43,10 @@ void NoiseHistograms::fill(StoppedHSCPEvent& event) {
 
 void NoiseHistograms::save() {
 
+  base_->cd("");
+
   hbx_->Write("",TObject::kOverwrite);
+
 }
 
 

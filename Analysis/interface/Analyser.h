@@ -6,6 +6,7 @@
 #include "StoppedHSCP/Analysis/interface/StoppedHSCPEvent.h"
 #include "StoppedHSCP/Analysis/interface/Cuts.h"
 #include "StoppedHSCP/Analysis/interface/Histograms.h"
+#include "StoppedHSCP/Analysis/interface/ControlHistograms.h"
 #include "StoppedHSCP/Analysis/interface/RunHistograms.h"
 #include "StoppedHSCP/Analysis/interface/FillHistograms.h"
 #include "StoppedHSCP/Analysis/interface/HaloHistograms.h"
@@ -92,7 +93,7 @@ class Analyser {
 
   // general histograms
   Histograms histograms_;
-
+  ControlHistograms controlHistos_;
   HaloHistograms haloHistos_;
   BeamGasHistograms beamGasHistos_;
   CollisionsHistograms collisionsHistos_;

@@ -33,6 +33,12 @@ class BeamGasHistograms {
   Cuts* cuts_;
   TDirectory* base_;
 
+  TH1D* hehfp_;
+  TH1D* hehfm_;
+  TH1D* hehf_;
+
+  TH1D* hntrk_;
+
   TH1D* hbx_;
 
 };

@@ -28,6 +28,8 @@ class Cuts {
   bool bxVeto() const;          // cut on BX wrt expected collisions
   bool vertexVeto() const;      // no vertex
   bool haloVeto() const;        // no halo ID
+  bool hfVeto() const;          // no HF activity
+  bool trackVeto() const;        // require no tracks
   bool cosmicVeto() const;      // no cosmic muon
   bool hcalNoiseVeto() const;   // std HCAL noise veto
   bool looseJetCut() const;     // low Et threshold
@@ -44,7 +46,6 @@ class Cuts {
   bool digiR2Cut() const;       // timing R2 cut from digis
   bool digiRPeakCut() const;    // timing Rp cut from digis
   bool digiROuterCut() const;   // timing Ro cut from digis
-  bool trackCut() const;        // require no tracks
 
   // get cut version
   unsigned cutVersion() const { return version_; }

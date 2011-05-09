@@ -47,6 +47,7 @@ void Histograms::book() {
   hbptx_ = new TH1D("hbptx", "BPTX BX", 5, -2.5, 2.5);
   
   // HLT
+  hhltbits_ = new TH1D("hhltbits", "HLT bits", 5, 0., 5.);
   hhlte_ = new TH1D("hhlte",  "Leading HLT jet E", 100, 0., 200.);
   hhlteta_ = new TH1D("hhlteta", "Leading HLT jet #eta", 70, -3.5, 3.5);
   hhltphi_ = new TH1D("hhltphi", "Leading HLT jet #phi", 72, -1 * TMath::Pi(),  TMath::Pi());
@@ -169,6 +170,11 @@ void Histograms::fill(StoppedHSCPEvent& event) {
   hl1bits_->Fill("L1_SingleJet10U", (event.gtAlgoWord0>>16)&0x1);
   hl1bits_->Fill("L1_SingleMuOpen", (event.gtAlgoWord0>>55)&0x1);
   hl1bits_->Fill("L1Tech_BSC_minBias_thresh1", (event.gtTechWord>>40)&0x1);
+
+  hhltbits_->Fill("HLT_JetE_NoBptx", event.hltJetNoBptx);
+  hhltbits_->Fill("HLT_JetE_NoBptx_NoHalo", event.hltJetNoBptxNoHalo);
+  hhltbits_->Fill("HLT_JetE_NoBptx3BX_NoHalo", event.hltJetNoBptx3BXNoHalo);
+
 
   for (unsigned bx=0; bx<5; ++bx) {
     if (event.l1JetNoBptx.at(bx)>0) hbptx_->Fill(bx-2);
@@ -342,6 +348,8 @@ void Histograms::save() {
   hl1phi_->Write("",TObject::kOverwrite);
   hl1type_->Write("",TObject::kOverwrite);
   hbptx_->Write("",TObject::kOverwrite);
+
+  hhltbits_->Write("",TObject::kOverwrite);
   hhlte_->Write("",TObject::kOverwrite);
   hhlteta_->Write("",TObject::kOverwrite);
   hhltphi_->Write("",TObject::kOverwrite);

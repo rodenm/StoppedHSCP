@@ -4,6 +4,8 @@
 dataset=$1
 ntupdir=$2
 
+version=$3
+
 # variables
 ntuples=''
 outdir=$dataset
@@ -27,7 +29,7 @@ fi
 # make histograms
 echo
 echo "makeHistograms $outdir $ntuples > $outdir/histogrammer.log"
-makeHistograms $outdir $ntuples > $outdir/histogrammer.log
+makeHistograms -c $version $outdir $ntuples > $outdir/histogrammer.log
 
 # make basic plots
 echo
@@ -51,6 +53,11 @@ python $CMSSW_BASE/src/StoppedHSCP/Analysis/python/fillPlots.py $outdir > $outdi
 echo
 echo "printSummary.py $outdir > $outdir/summary.txt"
 python $CMSSW_BASE/src/StoppedHSCP/Analysis/python/printSummary.py $outdir $bgdir > $outdir/summary.txt
+
+# generate Toy MC jobs
+echo
+echo "makeToyJobs.py $outdir"
+makeToyJobs.py $outdir
 
 # make tarball
 echo

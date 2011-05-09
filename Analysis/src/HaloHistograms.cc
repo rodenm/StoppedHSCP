@@ -27,6 +27,8 @@ HaloHistograms::~HaloHistograms() {
 
 void HaloHistograms::book() {
 
+  base_->cd("");
+
   // time
   hbx_ = new TH1D("hhalobx", "BX number", 3564, 0., 3564.);
 
@@ -41,7 +43,10 @@ void HaloHistograms::fill(StoppedHSCPEvent& event) {
 
 void HaloHistograms::save() {
 
+  base_->cd("");
+
   hbx_->Write("",TObject::kOverwrite);
+
 }
 
 
