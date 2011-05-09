@@ -3,8 +3,14 @@
 # arguments
 dataset=$1
 ntupdir=$2
-
 version=$3
+if [ $# -ne 3 ]
+then
+    version=0
+fi
+
+echo "Using cuts version $version"
+
 
 # variables
 ntuples=''
@@ -28,7 +34,7 @@ fi
 
 # make histograms
 echo
-echo "makeHistograms $outdir $ntuples > $outdir/histogrammer.log"
+echo "makeHistograms -c $version $outdir $ntuples > $outdir/histogrammer.log"
 makeHistograms -c $version $outdir $ntuples > $outdir/histogrammer.log
 
 # make basic plots
@@ -41,7 +47,7 @@ echo
 echo "runPlots.py $outdir > $outdir/plots.log"
 python $CMSSW_BASE/src/StoppedHSCP/Analysis/python/runPlots.py $outdir > $outdir/plots.log
 
-# make per-run plots
+# make per-fill plots
 echo
 echo "fillPlots.py $outdir > $outdir/plots.log"
 python $CMSSW_BASE/src/StoppedHSCP/Analysis/python/fillPlots.py $outdir > $outdir/plots.log
