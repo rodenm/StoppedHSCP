@@ -31,7 +31,7 @@ dataset = args[0]
 ddir = os.environ['PWD']+'/'+dataset
 odir = ddir+'/toymc'
 
-paramfile = os.environ['CMSSW_BASE']+'/src/StoppedHSCP/ToyMC/data/parameters.txt'
+paramfile = ddir+'/parameters.txt'
 if len(args)>1:
     paramfile = args[1]
 
@@ -39,7 +39,7 @@ if len(args)>1:
 if not os.path.exists(odir):
     os.makedirs(odir)
 
-# read lifetimes from lifetime file
+# read lifetimes from standard lifetime file
 lifetimes = []
 file = open(os.environ['CMSSW_BASE']+'/src/StoppedHSCP/ToyMC/data/lifetimes.txt', 'r')
 for line in file:
@@ -54,8 +54,8 @@ file.close()
 lifetimes.sort()
 
 
-# regexps to replace lifetime in standard parameters file
-p = re.compile(r'(lifetime\s*)(\S*)')
+# regexps to replace lines in standard parameters file
+line1 = re.compile(r'(lifetime\s*)(\S*)')
 
 # write master script
 master = open(odir+'/runAll.sh', 'w')
@@ -76,7 +76,7 @@ for lifetime in lifetimes:
     # write params file
     w = open(jobdir+'/params'+str(count)+'.txt', 'w')
     for line in f.readlines():
-        m = p.match(line)
+        m = line1.match(line)
         if (not m):
             w.write(line)
         else:
