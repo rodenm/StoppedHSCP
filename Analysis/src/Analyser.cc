@@ -15,6 +15,7 @@ Analyser::Analyser(std::vector<std::string> ifiles,
   event_(0),
   cuts_(0, isMC, cutVersion),
   histograms_(&ofile_, &cuts_),
+  controlHistos_(&ofile_, &cuts_),
   haloHistos_(&ofile_, &cuts_),
   beamGasHistos_(&ofile_, &cuts_),
   collisionsHistos_(&ofile_, &cuts_),
@@ -70,14 +71,6 @@ Analyser::Analyser(std::vector<std::string> ifiles,
 }
 
 Analyser::~Analyser() {
-
-  histograms_.save();
-  runHistos_.save();
-  fillHistos_.save();
-
-  histograms_.summarise();
-  runHistos_.summarise();
-  fillHistos_.summarise();
 
   dumpFile_.close();
   eventFile_.close();
@@ -254,7 +247,24 @@ void Analyser::loop(ULong64_t maxEvents) {
 
   // save the histograms
   histograms_.save();
+  controlHistos_.save();
   runHistos_.save();
   fillHistos_.save();
+
+  histograms_.summarise();
+  runHistos_.summarise();
+  fillHistos_.summarise();
+
+  haloHistos_.save();
+  beamGasHistos_.save();
+  collisionsHistos_.save();
+  cosmicsHistos_.save();
+  noiseHistos_.save();
+
+  haloHistos_.summarise();
+  beamGasHistos_.summarise();
+  collisionsHistos_.summarise();
+  cosmicsHistos_.summarise();
+  noiseHistos_.summarise();
 
 }
