@@ -34,6 +34,10 @@ for opt, arg in opts:
 
 # arguments
 dataset=args[0]
+ddir = os.environ['PWD']+'/'+dataset
+
+# cmssw
+cmsswdir = os.environ['CMSSW_BASE']
 
 # ROOT
 from ROOT import *
@@ -61,23 +65,6 @@ hcutcum=hfile.Get("histograms/Cuts/hncutcum")
 hcutind=hfile.Get("histograms/Cuts/hncutind")
 hcutnmo=hfile.Get("histograms/Cuts/hnminus1cut")
 hnmu=hfile.Get("histograms/NoCuts/hnmu")
-
-## cutnames=["HLT\t",
-##           "BX veto\t",
-##           "BPTX veto\t",
-##           "Beam halo\t",
-##           "Muon veto\t",
-##           "HCAL noise\t",
-##           "Jet 30 GeV\t",
-##           "Jet 50 GeV\t",
-##           "Jet n60\t",
-##           "Jet n90\t",
-##           "Calo tower\t",
-##           "R1\t\t",
-##           "R2\t\t",
-##           "Rpeak\t\t",
-##           "Router\t\t"]
-
 
 ntot=hnmu.GetEntries()
 if isMC:
@@ -157,4 +144,46 @@ print '  Combined      : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (bgRateEst, bgR
 print
 
 
+
+# now write Toy MC file
+bgRateTotErr = sqrt(pow(bgRateEst*errStatBGRateEst, 2) + pow(bgRateEst*errSystBGRateEst, 2))
+firstRun = 0
+lastRun  = 10
+fillStr  = "1,2,3,4"
+
+ofile = open(dataset+"/parameters.txt", 'w')
+ofile.write("mass\t\t\t200\n")
+ofile.write("crossSection\t\t606\n")
+ofile.write("lifetime\t\t1\n")
+ofile.write("signalEff\t\t0.033652\n")
+ofile.write("signalEff_e\t\t0.0\n")
+ofile.write("bgRate\t\t\t")
+ofile.write(str(bgRateEst)+"\n")
+ofile.write("bgRate_e\t\t")
+ofile.write(str(bgRateTotErr)+"\n")
+ofile.write("scaleUncert\t\t0.13\n")
+ofile.write("optimizeTimeCut\t\t1\n")
+ofile.write("histFile\t\t")
+ofile.write(ddir+"/histograms.root\n")
+ofile.write("lumiFile\t\t")
+ofile.write(cmsswdir+"/src/StoppedHSCP/Analysis/data/lumi_all.csv\n")
+ofile.write("jsonFile\t\t")
+ofile.write(cmsswdir+"/src/StoppedHSCP/Analysis/data/"+dataset+".root\n")
+ofile.write("lumiFirstRun\t\t")
+ofile.write(str(firstRun)+"\n")  
+ofile.write("lumiLastRun\t\t")
+ofile.write(str(lastRun)+"\n")
+ofile.write("fills\t\t\t")
+ofile.write(fillStr+"\n")
+ofile.write("eventsFile\t\t")
+ofile.write(ddir+"/eventList.log\n")
+ofile.write("nTrialsSignal\t\t100\n")
+ofile.write("nTrialsBackground\t100\n")
+ofile.write("simulateExpt\t\t0\n")
+ofile.write("fillScheme\t\tSingle_2b_1_1_1\n")
+ofile.write("beamOnTime\t\t0.\n")
+ofile.write("beamOffTime\t\t0.\n")
+ofile.write("instLumi\t\t0.\n")
+ofile.write("runningTime\t\t0.\n")
+ofile.close()
 
