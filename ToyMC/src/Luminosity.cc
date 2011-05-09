@@ -126,11 +126,14 @@ void Luminosity::buildFromFile(std::vector<unsigned long> runs, bool useHists, s
 
 	// is this lumi block good
 	if (useHists) {
-	  std::string hstr = strs.at(0)+std::string("/NoCuts/hlb");
+	  std::string hstr = std::string("runs/")+strs.at(0)+std::string("/hlb")+strs.at(0);
 	  //	  std::cout << histFile << " " << hstr << std::endl;
 	  TH1D* hlb = (TH1D*) histFile->Get(hstr.c_str());
 	  if (hlb != NULL) {
 	    lb.good = (hlb->GetBinContent(lb.ls+1) > 0);
+	  }
+	  else {
+	    //	    std::cout << "NULL histogram " << hstr << std::endl;
 	  }
 	  
 	}
@@ -163,6 +166,9 @@ void Luminosity::buildFromFile(std::vector<unsigned long> runs, bool useHists, s
 
     }
 
+  }
+  else {
+    std::cerr << "Could not open lumi file : " << filename << std::endl;
   }
 
   // count good lumis
@@ -217,7 +223,9 @@ void Luminosity::dump(ostream& o, bool full) {
 
   std::cout << "Total lumi                 : " << totalLumi << " /pb" << std::endl;
   std::cout << "N lumi sections good/total : " << nGoodLS << "/" << lumis_.size() << std::endl;
-  std::cout << "First run                  : " << lumis_.begin()->run << std::endl;
-  std::cout << "Last tun                   : " << --(lumis_.end())->run << std::endl;
+  if (lumis_.size() > 0) {
+    std::cout << "First run                  : " << lumis_.begin()->run << std::endl;
+    std::cout << "Last run                   : " << --(lumis_.end())->run << std::endl;
+  }
 
 }

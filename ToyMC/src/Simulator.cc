@@ -112,7 +112,15 @@ void Simulator::simulateSignal(unsigned firstFill, unsigned lastFill) {
 
       // assign production BX and orbit
       // ie. assume productions are evenly distributed within LS
-      unsigned prodBX = fills_.getCollisionsFromRun(prodRun).at((random_.Integer(fills_.getCollisionsFromRun(prodRun).size())));
+      unsigned rndColl = random_.Integer(fills_.getCollisionsFromRun(prodRun).size());
+      unsigned prodBX = 0;
+      if (rndColl < fills_.getCollisionsFromRun(prodRun).size()) {
+	prodBX = fills_.getCollisionsFromRun(prodRun).at(rndColl);
+      }
+      else {
+	std::cerr << "No collisions in fill : " << fills_.getFillFromRun(prodRun) << std::endl;
+	break;
+      }
       unsigned prodOrbit = random_.Integer(NORBITS_PER_LS);
       unsigned long prodLSIndex = i;
 
@@ -154,9 +162,10 @@ void Simulator::simulateSignal(unsigned firstFill, unsigned lastFill) {
       // TODO - add interfill expt lifetime mask!!!
       bool passBunchMask   = !(fills_.getMaskFromRun(decayRun).at(decayBX));
       bool passSensitiveLS = (decayLSIndex < lumi_.size()) && lumi_.cmsSensitive(decayLSIndex);
+      bool passFillPeriod  = fills_.getFillFromRun(decayRun) >= firstFill && fills_.getFillFromRun(decayRun) <= lastFill;
       bool passLifetimeMask= !(fills_.getLifetimeMaskFromRun(decayRun).at(decayBX)) || !(expt_->optimizeTimeCut);
 
-      if(passSensitiveLS && passBunchMask && passLifetimeMask) {
+      if(passSensitiveLS && passFillPeriod && passBunchMask && passLifetimeMask) {
 	++nEvents;
 	++nTotalEvents;
       }
@@ -175,9 +184,11 @@ void Simulator::simulateSignal(unsigned firstFill, unsigned lastFill) {
   expt_->nObs_MC     += nTotalEvents;
   expt_->effLumi     += effLumi;
 
-  expt_->expSignal   = (expt_->nObs_MC/expt_->nDecays_MC) * expt_->signalEff * expt_->effLumi * expt_->crossSection;
-  expt_->expSignal_e = expt_->expSignal * (sqrt(expt_->nObs_MC)/expt_->nDecays_MC);
-  expt_->effLumi_e   = expt_->effLumi * (sqrt(expt_->nObs_MC)/expt_->nDecays_MC);
+  if (expt_->nDecays_MC > 0) {
+    expt_->expSignal   = (expt_->nObs_MC/expt_->nDecays_MC) * expt_->signalEff * expt_->effLumi * expt_->crossSection;
+    expt_->expSignal_e = expt_->expSignal * (sqrt(expt_->nObs_MC)/expt_->nDecays_MC);
+    expt_->effLumi_e   = expt_->effLumi * (sqrt(expt_->nObs_MC)/expt_->nDecays_MC);
+  }
 
   std::cout << "Effective lumi  : " << effLumi << std::endl;
   std::cout << "Expected signal : " << expt_->expSignal << std::endl;

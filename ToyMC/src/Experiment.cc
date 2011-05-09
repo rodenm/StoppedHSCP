@@ -24,6 +24,7 @@ Experiment::Experiment(std::string filename) :
   histFile("histograms.root"),
   lumiFile("lumi_all.csv"),
   lumiFirstRun(0),
+  lumiLastRun(0),
   jsonFile("json.txt"),
   fills(0),
   eventsFile("eventList.log"),
