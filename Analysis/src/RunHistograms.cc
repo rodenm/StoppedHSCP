@@ -28,6 +28,16 @@ RunHistograms::RunHistograms(TFile* file, Cuts* cuts) :
 
 RunHistograms::~RunHistograms() {
 
+  // print list of runs found
+  sort(runs_.begin(), runs_.end());
+  std::cout << std::endl;
+  std::cout << "Runs : ";
+  for (unsigned i=0; i<runs_.size(); ++i) {
+    std::cout << runs_.at(i);
+    if (i<runs_.size()-1) std::cout << ",";
+  }
+  std::cout << std::endl;
+
   // clean up memory
   std::vector<TH1D*>::iterator itr;
 
@@ -121,12 +131,12 @@ void RunHistograms::summarise() {
   // book histograms
   TH1D* hnhlt       = new TH1D("hnhlt", "HLT counts", nruns, 0., 0.);
   TH1D* hlivetime   = new TH1D("hlivetime", "Live time", nruns, 0., 0.);
-  TH1D* hnfin       = new TH1D("hnfin", "Final counts", nruns, 0., 0.);
-  TH1D* hefftime    = new TH1D("hefftime", "Effective live time", nruns, 0., 0.);
+  //  TH1D* hnfin       = new TH1D("hnfin", "Final counts", nruns, 0., 0.);
+  //  TH1D* hefftime    = new TH1D("hefftime", "Effective live time", nruns, 0., 0.);
   TH1D* hnlb        = new TH1D("hnlb", "N lumi blocks", nruns, 0., 0.);
-  TH1D* hnpostjet   = new TH1D("hnpostjet", "N events after jet cuts", nruns, 0., 0.);
-  TH1D* hnposttim   = new TH1D("hnposttim", "N events after timing cuts", nruns, 0., 0.);
-  TH1D* hnj50nmo    = new TH1D("hnj50nmo", "Jet50 N-1 counts", nruns, 0., 0.);
+  //  TH1D* hnpostjet   = new TH1D("hnpostjet", "N events after jet cuts", nruns, 0., 0.);
+  //  TH1D* hnposttim   = new TH1D("hnposttim", "N events after timing cuts", nruns, 0., 0.);
+  //  TH1D* hnj50nmo    = new TH1D("hnj50nmo", "Jet50 N-1 counts", nruns, 0., 0.);
 
   // fill them
   for (std::vector<unsigned long>::const_iterator itr=runs_.begin();

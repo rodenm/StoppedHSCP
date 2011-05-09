@@ -26,6 +26,16 @@ FillHistograms::FillHistograms(TFile* file, Cuts* cuts) :
 
 FillHistograms::~FillHistograms() {
 
+  // print list of fills found
+  sort(fills_.begin(), fills_.end());
+  std::cout << std::endl;
+  std::cout << "Fills : ";
+  for (unsigned i=0; i<fills_.size(); ++i) {
+    std::cout << fills_.at(i);
+    if (i<fills_.size()-1) std::cout << ",";
+  }
+  std::cout << std::endl;
+
   // clean up memory
   std::vector<TH1D*>::iterator itr;
 
