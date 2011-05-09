@@ -3,6 +3,7 @@ import sys
 import getopt
 import string
 import os
+import re
 
 from constants import *
 
@@ -145,11 +146,25 @@ print
 
 
 
+# get lists of runs, fills
+logfile = open(dataset+"/histogrammer.log", 'r')
+line1 = re.compile(r'(Runs :\s*)(\S*)')
+line2 = re.compile(r'(Fills :\s*)(\S*)')
+runsStr = ""
+fillsStr = ""
+for line in logfile.readlines():
+    l1 = line1.match(line)
+    if (l1):
+        runsStr = l1.group(2)
+    l2 = line2.match(line)
+    if (l2):
+        fillsStr = l2.group(2)
+
+runlist = runsStr.split(',')
+
+
 # now write Toy MC file
 bgRateTotErr = sqrt(pow(bgRateEst*errStatBGRateEst, 2) + pow(bgRateEst*errSystBGRateEst, 2))
-firstRun = 0
-lastRun  = 10
-fillStr  = "1,2,3,4"
 
 ofile = open(dataset+"/parameters.txt", 'w')
 ofile.write("mass\t\t\t200\n")
@@ -170,11 +185,11 @@ ofile.write(cmsswdir+"/src/StoppedHSCP/Analysis/data/lumi_all.csv\n")
 ofile.write("jsonFile\t\t")
 ofile.write(cmsswdir+"/src/StoppedHSCP/Analysis/data/"+dataset+".root\n")
 ofile.write("lumiFirstRun\t\t")
-ofile.write(str(firstRun)+"\n")  
+ofile.write(runlist[0]+"\n")  
 ofile.write("lumiLastRun\t\t")
-ofile.write(str(lastRun)+"\n")
+ofile.write(runlist[len(runlist)-1]+"\n")
 ofile.write("fills\t\t\t")
-ofile.write(fillStr+"\n")
+ofile.write(fillsStr+"\n")
 ofile.write("eventsFile\t\t")
 ofile.write(ddir+"/eventList.log\n")
 ofile.write("nTrialsSignal\t\t100\n")
