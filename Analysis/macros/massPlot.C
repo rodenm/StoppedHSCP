@@ -1,4 +1,4 @@
-// .L massPlot.C+
+/// .L massPlot.C+
 // lifetimePlot("limit_summary.txt", "time_profile_summary.txt")
 
 #include <cstdlib>
@@ -24,18 +24,18 @@ void massPlot(char* filename, char* filename2) {
 
   // stuff that has to be set by hand
   // some numbers need to be set buy hand
-  double lumi_tp = 38.0;  // lumi figure to use for time-profile fit
+  double lumi_tp = 116.0;  // lumi figure to use for time-profile fit
 
   // set which bin to use for intercept calculation (mass limit)
-  unsigned theoryBin = 4;
-  unsigned dataBin = 3;
+  unsigned theoryBin = 5;
+  unsigned dataBin = 4;
 
   unsigned point1 = 9;
   unsigned point2 = 27;
   unsigned point3 = 43;
   unsigned pointtp = 9;
 
-  unsigned nmasses=5;
+  unsigned nmasses=7;
   double mass[10] = {
     150.,
     200.,
@@ -53,8 +53,8 @@ void massPlot(char* filename, char* filename2) {
     0.170,
     0.175,  
     0.175,   
-    0.,
-    0.
+    0.175,
+    0.175
   };
   
   double stopEff[10] = {
@@ -170,7 +170,7 @@ void massPlot(char* filename, char* filename2) {
   
   
   // theoretical cross-section  (pb)
-  unsigned ntheory = 6;
+  unsigned ntheory = 10;
   double theoryUncertainty = 0.0;
   double theoryXS[10] = {
     2.11e4,
@@ -218,20 +218,20 @@ void massPlot(char* filename, char* filename2) {
   canvas->SetLogy();
   
   TH1 * h;
-  h = canvas->DrawFrame(100., .5, 500., 5e3);
+  h = canvas->DrawFrame(100., .05, 900., 5e2);
   h->SetTitle("Beamgap Expt;m_{#tilde{g}} [GeV/c^{2}]; #sigma(pp #rightarrow #tilde{g}#tilde{g}) #times BR(#tilde{g} #rightarrow g#tilde{#chi}^{0}) [pb]");
   
   // not covered region
-  TBox* nc = new TBox(100., .5, 150., 5e3);
+  TBox* nc = new TBox(100., .05, 150., 5e2);
   nc->SetFillStyle(3354);
   nc->SetFillColor(kRed-4);
   nc->Draw();
   
   // details
-  TPaveText* blurb = new TPaveText(101., 1.e2, 220., 4.5e3);
+  TPaveText* blurb = new TPaveText(110., 1.e1, 350., 4.5e2);
   //blurb->AddText("CMS Preliminary 2010");
-  blurb->AddText("#int L dt = 38 pb^{-1}");
-  blurb->AddText("L^{max}_{inst} = 5 x 10^{32} cm^{-2}s^{-1}");
+  blurb->AddText("#int L dt = 116 pb^{-1}");
+  blurb->AddText("L^{max}_{inst} = 7 x 10^{32} cm^{-2}s^{-1}");
   blurb->AddText("#sqrt{s} = 7 TeV");
   blurb->AddText("m_{#tilde{g}} - m_{#tilde{#chi}^{0}} = 100 GeV/c^{2}");
   blurb->SetTextFont(42);
@@ -243,7 +243,9 @@ void massPlot(char* filename, char* filename2) {
 
   
   // legend
-  TLegend *leg = new TLegend(220., 1.e2, 480., 4e3,"95% C.L. Limits","");
+  TBox *legbg = new TBox(350., 1.e1, 850., 4e2);
+  legbg->Draw();
+  TLegend *leg = new TLegend(350., 1.e1, 850., 4e2,"95% C.L. Limits","");
   leg->SetTextSize(0.032);
   leg->SetBorderSize(0);
   leg->SetTextFont(42);
@@ -302,8 +304,8 @@ void massPlot(char* filename, char* filename2) {
   // EM curve
   graphEM->SetLineColor(kGray+1);
   graphEM->SetLineStyle(5);
-graphEM->SetLineWidth(2);
-graphEM->Draw("l");
+  graphEM->SetLineWidth(2);
+  //  graphEM->Draw("l");
 
   // 1 mus lifetime fit limit
   graphL->SetLineColor(kRed);
@@ -320,7 +322,7 @@ graphEM->Draw("l");
   theory->Draw("l3");
   
   // theory line label
-  TText* th = new TText(290., 80., "NLO+NLL");
+  TText* th = new TText(600., 0.1, "NLO+NLL");
   th->SetTextColor(kBlue);
   th->SetTextFont(42);
   th->SetTextSize(0.035);

@@ -272,8 +272,8 @@ TCanvas *makeLifetimePlot(TGraph *g_obs,
 
   blurb = new TPaveText(9e-8, 8e1, 2e-3, 4e3);
   blurb->AddText("CMS Preliminary 2011");
-  blurb->AddText("#int L dt = 38 pb^{-1}");
-  blurb->AddText("L^{max}_{inst} = 5 x 10^{32} cm^{-2}s^{-1}");
+  blurb->AddText("#int L dt = 116 pb^{-1}");
+  blurb->AddText("L^{max}_{inst} = 7 x 10^{32} cm^{-2}s^{-1}");
   blurb->AddText("#sqrt{s} = 7 TeV");
   blurb->AddText("m_{#tilde{g}} - m_{#tilde{#chi}^{0}} = 100 GeV/c^{2}");
   //blurb->AddText("m_{#tilde{g}} = 300 GeV/c^{2}");
@@ -413,8 +413,8 @@ TCanvas *makeBasicPlot(TGraph *g1,
 
   blurb = new TPaveText(1e-6, 3e0, 1e-2, 1e1);
   blurb->AddText("CMS Preliminary 2011");
-  blurb->AddText("#int L dt = 38 pb^{-1}");
-  blurb->AddText("L^{max}_{inst} = 5 x 10^{32}");
+  blurb->AddText("#int L dt = 116 pb^{-1}");
+  blurb->AddText("L^{max}_{inst} = 7 x 10^{32}");
   blurb->AddText("#sqrt{s} = 7 TeV");
   blurb->SetTextFont(42);
   blurb->SetBorderSize(0);
