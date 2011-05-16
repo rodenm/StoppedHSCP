@@ -68,7 +68,7 @@ makeToyJobs.py $outdir
 # run Toy MC jobs
 echo
 echo "$outdir/runAll.sh >& runAll.log"
-./$outdir/runAll.sh >& runAll.log &
+./$outdir/toymc/runAll.sh >& $outdir/toymc/runAll.log &
 
 # make limit plots
 echo
