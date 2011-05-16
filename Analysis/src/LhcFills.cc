@@ -1,17 +1,13 @@
 
 #include "StoppedHSCP/Analysis/interface/LhcFills.h"
 
+#include "StoppedHSCP/Analysis/interface/Constants.h"
 
 #include <iostream>
 #include <fstream>
 #include <boost/algorithm/string.hpp>
 #include <boost/bind.hpp>
 //#include <boost/lexical_cast.hpp>
-
-const unsigned LhcFills::NBX_PER_ORBIT = 3564;
-const double LhcFills::TIME_WINDOW     = 1.256;
-const double LhcFills::TIME_PER_BX     = 25.e-9;
-
 
 LhcFills::LhcFills() {
 
@@ -175,14 +171,14 @@ void LhcFills::setupBunches() {
     f->bunches.erase(std::unique(f->bunches.begin(), f->bunches.end()), f->bunches.end());  
  
     // set up mask
-    f->mask.resize(LhcFills::NBX_PER_ORBIT, false);
+    f->mask.resize(NBX_PER_ORBIT, false);
     
     for (unsigned i=0; i<f->bunches.size(); ++i) {
       unsigned bx=f->bunches.at(i);
-      f->mask.at((bx-2)%LhcFills::NBX_PER_ORBIT)=true;
-      f->mask.at((bx-1)%LhcFills::NBX_PER_ORBIT)=true;
-      f->mask.at((bx)%LhcFills::NBX_PER_ORBIT)=true;
-      f->mask.at((bx+1)%LhcFills::NBX_PER_ORBIT)=true;
+      f->mask.at((bx-2)%NBX_PER_ORBIT)=true;
+      f->mask.at((bx-1)%NBX_PER_ORBIT)=true;
+      f->mask.at((bx)%NBX_PER_ORBIT)=true;
+      f->mask.at((bx+1)%NBX_PER_ORBIT)=true;
     }
 
   }
@@ -194,12 +190,12 @@ void LhcFills::setupLifetimeMask(double lifetime) {
 
   for (std::vector<Fill>::iterator f=fills_.begin(); f!=fills_.end(); ++f) {
     
-    f->lifetimeMask.resize(LhcFills::NBX_PER_ORBIT, false);
+    f->lifetimeMask.resize(NBX_PER_ORBIT, false);
 
     // TODO - this won't work with a filling scheme which doesn't have a collision in BX 0 or 1 !!!
     int lastColl    = -1;
     // loop over orbit
-    for (unsigned int bx=0; bx < LhcFills::NBX_PER_ORBIT; ++bx) {
+    for (unsigned int bx=0; bx < NBX_PER_ORBIT; ++bx) {
       
       // if this is a collision, set lastColl index
       for (unsigned i=0; i<f->collisions.size(); ++i) {
@@ -207,8 +203,8 @@ void LhcFills::setupLifetimeMask(double lifetime) {
       }
       
       // mask the BX if the time since last collision is more than 1.256 x lifetime
-      double tSinceLastColl = (bx - lastColl) * LhcFills::TIME_PER_BX;
-      f->lifetimeMask.at(bx) = (tSinceLastColl > (LhcFills::TIME_WINDOW * lifetime));
+      double tSinceLastColl = (bx - lastColl) * TIME_PER_BX;
+      f->lifetimeMask.at(bx) = (tSinceLastColl > (TIME_WINDOW * lifetime));
       
     }
 

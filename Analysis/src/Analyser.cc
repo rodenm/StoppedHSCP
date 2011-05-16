@@ -1,5 +1,7 @@
 #include "StoppedHSCP/Analysis/interface/Analyser.h"
 
+#include "StoppedHSCP/Analysis/interface/Constants.h"
+
 #include <iostream>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
@@ -242,8 +244,8 @@ void Analyser::loop(ULong64_t maxEvents) {
       printCutValues(dumpFile_);
       eventFile_ << event_->run << "," << event_->lb << "," << event_->orbit << "," << event_->bx << "," << event_->id << std::endl;
       pickFile_ << event_->run << ":" << event_->lb << ":"  << event_->id << std::endl;
-      lifetimeFile_ << ((event_->bxAfterCollision -1) * 25e-9)/1.256 << std::endl;
-      lifetimeFile_ << (event_->bxAfterCollision * 25e-9)/1.256 << std::endl;
+      lifetimeFile_ << ((event_->bxAfterCollision - 1) *  TIME_PER_BX)/TIME_WINDOW << std::endl;
+      lifetimeFile_ << (event_->bxAfterCollision *  TIME_PER_BX)/TIME_WINDOW << std::endl;
     }
   } // for (unsigned long i=0;...)
 
