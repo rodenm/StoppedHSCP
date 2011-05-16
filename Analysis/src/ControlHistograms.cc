@@ -47,7 +47,7 @@ void ControlHistograms::book() {
 void ControlHistograms::fill(StoppedHSCPEvent& event) {
 
   // check this is a control trigger event
-  if (cuts_->controlTrigger()) {
+  //  if (cuts_->controlTrigger()) {
 
     hbx_->Fill(event.bx);
     hbxrel_->Fill(event.bxWrtCollision);
@@ -58,7 +58,7 @@ void ControlHistograms::fill(StoppedHSCPEvent& event) {
     
     hntrk_->Fill(event.track_N);
 
-  }
+    //  }
 
 }
 

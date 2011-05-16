@@ -37,7 +37,11 @@ void HaloHistograms::book() {
 
 void HaloHistograms::fill(StoppedHSCPEvent& event) {
 
-  hbx_->Fill(event.bx);
+  if (!cuts_->haloVeto()) {
+
+    hbx_->Fill(event.bx);
+
+  }
 }
 
 

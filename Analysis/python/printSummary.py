@@ -145,6 +145,10 @@ print '  Combined      : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (bgRateEst, bgR
 print
 
 
+# expected counts
+print 'Expected BG counts : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (bgRateEst*time, bgRateEst*errStatBGRateEst*time, bgRateEst*errSystBGRateEst*time)
+print
+
 
 # get lists of runs, fills
 logfile = open(dataset+"/histogrammer.log", 'r')

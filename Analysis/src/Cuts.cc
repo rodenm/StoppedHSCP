@@ -39,7 +39,6 @@ Cuts::Cuts(StoppedHSCPEvent* event, bool isMC, unsigned version) :
     addCut(&Cuts::hpdR2Cut, "R2");
     addCut(&Cuts::hpdRPeakCut, "Rpeak");
     addCut(&Cuts::hpdROuterCut, "Router");
-    addCut(&Cuts::geometryHaloCut, "Geometry Halo veto");
   }
 
   // digi-based timing cuts
@@ -61,7 +60,6 @@ Cuts::Cuts(StoppedHSCPEvent* event, bool isMC, unsigned version) :
     addCut(&Cuts::digiR2Cut, "R2");
     addCut(&Cuts::digiRPeakCut, "Rpeak");
     addCut(&Cuts::digiROuterCut, "Router");
-    addCut(&Cuts::geometryHaloCut, "Geometry Halo veto");
   }
 
   // added HF veto and N tracks cuts
@@ -85,7 +83,6 @@ Cuts::Cuts(StoppedHSCPEvent* event, bool isMC, unsigned version) :
     addCut(&Cuts::hpdR2Cut, "R2");
     addCut(&Cuts::hpdRPeakCut, "Rpeak");
     addCut(&Cuts::hpdROuterCut, "Router");
-    addCut(&Cuts::geometryHaloCut, "Geometry Halo veto");
   }
 
 }
@@ -108,7 +105,7 @@ bool Cuts::bptxVeto() const {        // cut on time wrt BPTX signal
 }
 
 bool Cuts::bxVeto() const {          // cut on BX wrt expected collisions
-  return true; //(event_->bxAfterCollision) > 1 && (event_->bxBeforeCollision > 2);  
+  return abs(event_->bxWrtCollision) > 2;
 }
 
 bool Cuts::vertexVeto() const {      // no vertex
@@ -116,7 +113,7 @@ bool Cuts::vertexVeto() const {      // no vertex
 }
 
 bool Cuts::haloVeto() const {        // no halo ID
-  return !(event_->beamHalo_CSCLoose);
+  return !(event_->beamHalo_CSCLoose) && geometryHaloCut();
 }
 
 bool Cuts::hfVeto() const {

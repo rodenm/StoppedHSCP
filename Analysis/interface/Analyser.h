@@ -14,6 +14,7 @@
 #include "StoppedHSCP/Analysis/interface/CollisionsHistograms.h"
 #include "StoppedHSCP/Analysis/interface/CosmicsHistograms.h"
 #include "StoppedHSCP/Analysis/interface/NoiseHistograms.h"
+#include "StoppedHSCP/Analysis/interface/SignalHistograms.h"
 #include "StoppedHSCP/Analysis/interface/LhcFills.h"
 
 #include "TFile.h"
@@ -99,6 +100,7 @@ class Analyser {
   CollisionsHistograms collisionsHistos_;
   CosmicsHistograms cosmicsHistos_;
   NoiseHistograms noiseHistos_;
+  SignalHistograms signalHistos_;
 
   // "per-run" histograms
   RunHistograms runHistos_;

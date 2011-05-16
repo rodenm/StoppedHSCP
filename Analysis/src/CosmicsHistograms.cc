@@ -37,7 +37,12 @@ void CosmicsHistograms::book() {
 
 void CosmicsHistograms::fill(StoppedHSCPEvent& event) {
 
-  hbx_->Fill(event.bx);
+  if (!cuts_->cosmicVeto()) {
+
+    hbx_->Fill(event.bx);
+
+  }
+
 }
 
 

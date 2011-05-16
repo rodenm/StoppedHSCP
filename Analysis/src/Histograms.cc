@@ -35,7 +35,7 @@ void Histograms::book() {
   hbx_ = new TH1D("hbx", "BX number", 3564, 0., 3564.);
   horb_ = new TH1D("horb", "Orbit number", 100, 0., 10000.);
   htime_ = new TH1D("htime", "Event time", 100, 0., 1.E8);
-  hrelbx_ = new TH1D("hrelbx", "BX wrt coll", 5, -2.5, +2.5);
+  hrelbx_ = new TH1D("hrelbx", "BX wrt coll", 200, -200.5, +199.5);
  
   // L1
   hl1bits_ = new TH1D("hl1bits", "L1 trigger bits", 10, 0., 20.);

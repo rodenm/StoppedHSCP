@@ -21,6 +21,7 @@ Analyser::Analyser(std::vector<std::string> ifiles,
   collisionsHistos_(&ofile_, &cuts_),
   cosmicsHistos_(&ofile_, &cuts_),
   noiseHistos_(&ofile_, &cuts_),
+  signalHistos_(&ofile_, &cuts_),
   runHistos_(&ofile_, &cuts_),
   fillHistos_(&ofile_, &cuts_),
   fills_(),
@@ -229,6 +230,7 @@ void Analyser::loop(ULong64_t maxEvents) {
     collisionsHistos_.fill(*event_);
     cosmicsHistos_.fill(*event_);
     noiseHistos_.fill(*event_);
+    signalHistos_.fill(*event_);
     
     // check if this is an event we're watching for and do something if so
     if (isWatchedEvent()) {
@@ -260,11 +262,13 @@ void Analyser::loop(ULong64_t maxEvents) {
   collisionsHistos_.save();
   cosmicsHistos_.save();
   noiseHistos_.save();
+  signalHistos_.save();
 
   haloHistos_.summarise();
   beamGasHistos_.summarise();
   collisionsHistos_.summarise();
   cosmicsHistos_.summarise();
   noiseHistos_.summarise();
+  signalHistos_.summarise();
 
 }

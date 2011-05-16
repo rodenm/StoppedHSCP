@@ -35,7 +35,7 @@ void lifetimePlot(char* filename, char* filename2="", char* filename3="") {
   unsigned massIndex = 3;  // point 3 -> m_gluino=300, m_neutralino=200
 
   // some numbers need to be set buy hand
-  double lumi_tp = 10.2;  // lumi figure to use for time-profile fit
+  double lumi_tp = 116;  // lumi figure to use for time-profile fit
   double m_g[10]        = { 150., 200., 300., 300., 400., 500. };
   double m_chi[10]      = { 50., 100., 100., 200., 300., 400. };
   double stopEff_cm[10] = { 0.219*2., 0.198*2.,  0.205*2.,  0.205*2.,  0.207*2.,  0.209*2. };  // cloud model
