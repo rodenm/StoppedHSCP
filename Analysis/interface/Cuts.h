@@ -46,6 +46,7 @@ class Cuts {
   bool digiR2Cut() const;       // timing R2 cut from digis
   bool digiRPeakCut() const;    // timing Rp cut from digis
   bool digiROuterCut() const;   // timing Ro cut from digis
+  bool geometryHaloCut() const; // cut events with halo-like CSCSegments
 
   // get cut version
   unsigned cutVersion() const { return version_; }

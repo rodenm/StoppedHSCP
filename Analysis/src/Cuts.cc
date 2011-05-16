@@ -39,6 +39,7 @@ Cuts::Cuts(StoppedHSCPEvent* event, bool isMC, unsigned version) :
     addCut(&Cuts::hpdR2Cut, "R2");
     addCut(&Cuts::hpdRPeakCut, "Rpeak");
     addCut(&Cuts::hpdROuterCut, "Router");
+    addCut(&Cuts::geometryHaloCut, "Geometry Halo veto");
   }
 
   // digi-based timing cuts
@@ -60,6 +61,7 @@ Cuts::Cuts(StoppedHSCPEvent* event, bool isMC, unsigned version) :
     addCut(&Cuts::digiR2Cut, "R2");
     addCut(&Cuts::digiRPeakCut, "Rpeak");
     addCut(&Cuts::digiROuterCut, "Router");
+    addCut(&Cuts::geometryHaloCut, "Geometry Halo veto");
   }
 
   // added HF veto and N tracks cuts
@@ -83,6 +85,7 @@ Cuts::Cuts(StoppedHSCPEvent* event, bool isMC, unsigned version) :
     addCut(&Cuts::hpdR2Cut, "R2");
     addCut(&Cuts::hpdRPeakCut, "Rpeak");
     addCut(&Cuts::hpdROuterCut, "Router");
+    addCut(&Cuts::geometryHaloCut, "Geometry Halo veto");
   }
 
 }
@@ -188,6 +191,24 @@ bool Cuts::digiROuterCut() const {   // timing Ro cut from digis
   return (event_->top5DigiROuter < 0.1) && (event_->top5DigiROuter >= 0.0) && (event_->top5DigiPeakSample > 0) && (event_->top5DigiPeakSample < 7);
 }
 
+bool Cuts::geometryHaloCut() const {
+  if (event_->cscSeg_N == 0) return true;
+
+  for (unsigned int i = 0; i < event_->cscSeg_N; i++) {
+    if (event_->cscSegDirTheta[i] < 0.4 || event_->cscSegDirTheta[i] > 2.74){
+      Double_t r = event_->cscSegR[i];
+      Double_t phi = event_->cscSegPhi[i];
+
+      for (unsigned int j = i; j < event_->cscSeg_N; j++) {
+	if (fabs(r - event_->cscSegR[j]) < 20.0 &&
+	    fabs(phi - event_->cscSegPhi[j]) < 0.2) 
+	  return false;
+      }
+    }
+  }
+
+  return true;
+}
 
 // setup method
 void Cuts::addCut(Cuts::CutFn fn, std::string name) {
