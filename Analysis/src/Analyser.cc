@@ -242,7 +242,7 @@ void Analyser::loop(ULong64_t maxEvents) {
       printCutValues(dumpFile_);
       eventFile_ << event_->run << "," << event_->lb << "," << event_->orbit << "," << event_->bx << "," << event_->id << std::endl;
       pickFile_ << event_->run << ":" << event_->lb << ":"  << event_->id << std::endl;
-      lifetimeFile_ << (event_->bxAfterCollision * 25e-9)/1.256 << std::endl;
+      lifetimeFile_ << ((event_->bxAfterCollision -1) * 25e-9)/1.256 << std::endl;
       lifetimeFile_ << (event_->bxAfterCollision * 25e-9)/1.256 << std::endl;
     }
   } // for (unsigned long i=0;...)
