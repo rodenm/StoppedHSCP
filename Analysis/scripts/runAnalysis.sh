@@ -9,6 +9,12 @@ then
     version=0
 fi
 
+if [ $# -lt 2 ]
+then
+    echo "Must provide <outputdir> <inputdir> on command line!"
+    exit 2
+fi
+
 echo "Using cuts version $version"
 
 
