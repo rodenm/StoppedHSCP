@@ -80,19 +80,27 @@ def RunAnalysis(outdir, indir, version=0,steps=[]):
     
     return
 
-def help():
-    print "Step 0:  Make Histograms"
-    print "Step 1:  Make Basic Plots"
-    print "Step 2:  Make Per-Run Plots"
-    print "Step 3:  Make Per-Fill Plots"
-    print "Step 4:  Make Complex Plots (not yet enabled)"
-    print "Step 5:  Print Summary"
-    print "Step 6:  Make Toy MC Jobs"
-    print "Step 7:  Run Toy MC Jobs"
-    print "Step 8:  Make Final Limit Plots"
-    print "Step 9:  Create Tarball"
+def labels(step):
+    if (step==0):
+        return "Step 0:  Make Histograms"
+    if (step==1):
+        return "Step 1:  Make Basic Plots"
+    if (step==2):  return "Step 2:  Make Per-Run Plots"
+    if (step==3):  return "Step 3:  Make Per-Fill Plots"
+    if (step==4):  return "Step 4:  Make Complex Plots (not yet enabled)"
+    if (step==5):  return "Step 5:  Print Summary"
+    if (step==6):  return "Step 6:  Make Toy MC Jobs"
+    if (step==7):  return "Step 7:  Run Toy MC Jobs"
+    if (step==8):  return "Step 8:  Make Final Limit Plots"
+    if (step==9):  return "Step 9:  Create Tarball"
+    else:
+        return "Step %s not defined"%step
     return
 
+def help():
+    for i in range(0,10):
+        print labels(i)
+    return
 
 if __name__=="__main__":
     parser=OptionParser()
@@ -111,7 +119,7 @@ if __name__=="__main__":
     for i in range(0,10):
         parser.add_option("-%i"%i,"--step%i"%i,
                           dest="step%i"%i,
-                          help="Run step #%i "%i,
+                          help=labels(i),
                           default=False,
                           action="store_true")
 
