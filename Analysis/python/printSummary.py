@@ -71,6 +71,8 @@ ntot=hnmu.GetEntries()
 if isMC:
     ntot=hcutcum.GetBinContent(1)
 
+# if (ntot==0):  print "ERROR!  Total number of entries = 0!"  # EXIT?
+
 print
 print '[TABLE border=1]'
 
@@ -85,10 +87,16 @@ for i in range(0,nCuts):
     nnmo = hcutnmo.GetBinContent(i+1)
     label = hcutcum.GetXaxis().GetBinLabel(i+1)
     if isMC:
-        print '|%i %s | %i | %.2e | %.2e |' % (i, label, ncum, 100.*ncum/ntot, 100.*nnmo/ntot)
+        if (ntot<>0):
+            print '|%i %s | %i | %.2e | %.2e |' % (i, label, ncum, 100.*ncum/ntot, 100.*nnmo/ntot)
+        else:
+            print '|%i %s | %i | N/A | N/A |' % (i, label, ncum)
     else:
-        print '|%i %s | %i | %.2e | %.2e | %.2e | %.2e | %.2e |-' % (i, label, ncum, ncum/time, 100.*nind/ntot, 100.*ncum/ntot, 100.*nnmo/ntot, nnmo/time)
-
+        if (ntot<>0):
+            print '|%i %s | %i | %.2e | %.2e | %.2e | %.2e | %.2e |-' % (i, label, ncum, ncum/time, 100.*nind/ntot, 100.*ncum/ntot, 100.*nnmo/ntot, nnmo/time)
+        else:
+            print '|%i %s | %i | N/A | N/A |' % (i, label, ncum)
+            
 print '[/TABLE]'
 print
 
