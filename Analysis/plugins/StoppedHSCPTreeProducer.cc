@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.70 2011/04/18 23:55:39 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.71 2011/04/29 15:44:27 jbrooke Exp $
 //
 //
 
@@ -474,30 +474,84 @@ StoppedHSCPTreeProducer::beginRun(edm::Run const & iRun, edm::EventSetup const& 
   // HLT setup
   bool changed;
   hltConfig_.init(iRun, iSetup, hltResultsTag_.process(), changed);
-  try {
-    hltPathIndexJetNoBptx_ = hltConfig_.triggerIndex(hltPathJetNoBptx_);
-    edm::LogInfo("StoppedHSCPTree") << hltPathJetNoBptx_ << " index is " << hltPathIndexJetNoBptx_ << std::endl;
-  }
+  
+  // HLT Path -- No BPTX
+  try{
+    hltPathIndexJetNoBptx_=(hltConfig_.triggerNames()).size();  // default setting -- trigger not found
+    for (uint i=0;i<(hltConfig_.triggerNames()).size();++i) // loop over trigger names
+      {
+	std::string trigName=hltConfig_.triggerName(i);
+	// Search for first occurrence of trigger name -- store vector of all triggers found at some point?
+	if (hltPathJetNoBptx_.size()>0 &&
+	    trigName.find(hltPathJetNoBptx_)!= std::string::npos)
+	  {
+	    hltPathIndexJetNoBptx_ = hltConfig_.triggerIndex(trigName); // could just set to i, but let's be careful...
+	  }
+      }
+    if (hltPathIndexJetNoBptx_==(hltConfig_.triggerNames()).size())
+      {
+	edm::LogWarning("StoppedHSCPTree") << "HLTJetNoBPTX:  Could not find an HLT path matching "<<hltPathJetNoBptx_<<".  Branch will not be filled."<<std::endl;
+	doHltBit1_=false;
+      }
+    else
+      edm::LogInfo("StoppedHSCPTree") << hltPathJetNoBptx_ << " index is " << hltPathIndexJetNoBptx_ << std::endl;
+  } // end of try loop
   catch (cms::Exception e) {
-    edm::LogWarning("StoppedHSCPTree") << "Could not find an HLT path matching " << hltPathJetNoBptx_ << ".  Branch will not be filled" << std::endl;
+    edm::LogWarning("StoppedHSCPTree") << "HLTJetNoBPTX:  Could not find an HLT path matching " << hltPathJetNoBptx_ << ".  Branch will not be filled" << std::endl;
     doHltBit1_ = false;
   }
+  // HLT Path -- No BPTX, No Halo
   try {
-    hltPathIndexJetNoBptxNoHalo_ = hltConfig_.triggerIndex(hltPathJetNoBptxNoHalo_);
-    edm::LogInfo("StoppedHSCPTree") << hltPathJetNoBptxNoHalo_ << " index is " << hltPathIndexJetNoBptxNoHalo_ << std::endl;
+    hltPathIndexJetNoBptxNoHalo_=(hltConfig_.triggerNames()).size();  // default value
+    for (uint i=0;i<(hltConfig_.triggerNames()).size();++i)
+      {
+	std::string trigName=hltConfig_.triggerName(i);
+	// Search triggers for NoBpxtNoHalo name
+	if (hltPathJetNoBptxNoHalo_.size()>0 &&
+	    trigName.find(hltPathJetNoBptxNoHalo_)!= std::string::npos)
+	  {
+	    hltPathIndexJetNoBptxNoHalo_ = hltConfig_.triggerIndex(trigName); // could just set to i, but let's be careful...
+	  }
+      }
+    if (hltPathIndexJetNoBptxNoHalo_==(hltConfig_.triggerNames()).size())
+      {
+	edm::LogWarning("StoppedHSCPTree") << "HLTJetNoBPTXNoHalo:  Could not find an HLT path matching "<<hltPathJetNoBptxNoHalo_<<".  Branch will not be filled."<<std::endl;
+	doHltBit2_=false;
+      }
+    else
+      edm::LogInfo("StoppedHSCPTree") << hltPathJetNoBptxNoHalo_ << " index is " << hltPathIndexJetNoBptxNoHalo_ << std::endl;
   }
   catch (cms::Exception e) {
-    edm::LogWarning("StoppedHSCPTree") << "Could not find an HLT path matching " << hltPathJetNoBptxNoHalo_ << ".  Branch will not be filled" << std::endl;
+    edm::LogWarning("StoppedHSCPTree") << "HLTJetNoBPTXNoHalo:  Could not find an HLT path matching " << hltPathJetNoBptxNoHalo_ << ".  Branch will not be filled" << std::endl;
     doHltBit2_ = false;
   }
+  // HLT Path -- No BPTX, No Halo, 3BX
   try {
-    hltPathIndexJetNoBptx3BXNoHalo_ = hltConfig_.triggerIndex(hltPathJetNoBptx3BXNoHalo_);
+    hltPathIndexJetNoBptx3BXNoHalo_=(hltConfig_.triggerNames()).size();  // default value
+    for (uint i=0;i<(hltConfig_.triggerNames()).size();++i)
+      {
+	std::string trigName=hltConfig_.triggerName(i);
+	// Search for first occurrence of trigger name
+	if (hltPathJetNoBptx3BXNoHalo_.size()>0 &&
+	    trigName.find(hltPathJetNoBptx3BXNoHalo_)!= std::string::npos)
+	  {
+	    hltPathIndexJetNoBptx3BXNoHalo_ = hltConfig_.triggerIndex(trigName); // could just set to i, but let's be careful...
+	  }
+      }
     edm::LogInfo("StoppedHSCPTree") << hltPathJetNoBptx3BXNoHalo_ << " index is " << hltPathIndexJetNoBptx3BXNoHalo_ << std::endl;
+    if (hltPathIndexJetNoBptx3BXNoHalo_==(hltConfig_.triggerNames()).size())
+      {
+	edm::LogWarning("StoppedHSCPTree") << "HLTJetNoBPTX3BXNoHalo:  Could not find an HLT path matching "<<hltPathJetNoBptx3BXNoHalo_<<".  Branch will not be filled."<<std::endl;
+	doHltBit3_=false;
+      }
+    else
+      edm::LogInfo("StoppedHSCPTree") << hltPathJetNoBptx3BXNoHalo_ << " index is " << hltPathIndexJetNoBptx3BXNoHalo_ << std::endl;
   }
   catch (cms::Exception e) {
-    edm::LogWarning("StoppedHSCPTree") << "Could not find an HLT path matching " << hltPathJetNoBptx3BXNoHalo_ << ".  Branch will not be filled" << std::endl;
+    edm::LogWarning("StoppedHSCPTree") << "HLTJetNoBPTX3BXNoHalo:  Could not find an HLT path matching " << hltPathJetNoBptx3BXNoHalo_ << ".  Branch will not be filled" << std::endl;
     doHltBit3_ = false;
   }
+  // end of HLT checks
 
 
   // HCAL geometry to calculate eta/phi for CaloRecHits
