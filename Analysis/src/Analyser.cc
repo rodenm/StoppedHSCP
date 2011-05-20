@@ -15,7 +15,7 @@ Analyser::Analyser(std::vector<std::string> ifiles,
   iEvent_(0),
   ofile_((outdir+std::string("/histograms.root")).c_str(), "RECREATE"),
   event_(0),
-  cuts_(0, isMC, cutVersion),
+  cuts_(0, isMC, cutVersion, 0),
   histograms_(&ofile_, &cuts_),
   controlHistos_(&ofile_, &cuts_),
   haloHistos_(&ofile_, &cuts_),
@@ -69,7 +69,7 @@ Analyser::Analyser(std::vector<std::string> ifiles,
 //   std::cout << std::endl;
 
   // for backwards compatibility with old versions of the analysis
-  //fills_.writeBunchMaskFile();
+  fills_.writeBunchMaskFile();
 
 }
 
@@ -96,6 +96,7 @@ void Analyser::setup() {
 
   // setup the cuts
   cuts_.setEvent(event_);
+  cuts_.setFills(&fills_);
 
   // setup the watched event list
   readWatchedEvents();
