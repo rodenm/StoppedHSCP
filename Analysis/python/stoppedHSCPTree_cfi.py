@@ -13,9 +13,9 @@ stoppedHSCPTree = cms.EDAnalyzer(
     hltResultsTag = cms.untracked.InputTag("TriggerResults","","HLT"),
     hltEventTag = cms.untracked.InputTag("hltTriggerSummaryAOD","","HLT"),
     # Remove '*' from name, so that ntuple Producer can search for strings properly in C++
-    hltPathJetNoBptx = cms.untracked.string("HLT_JetE30_NoBPTX_"),
-    hltPathJetNoBptxNoHalo = cms.untracked.string("HLT_JetE30_NoBPTX_NoHalo_"),
-    hltPathJetNoBptx3BXNoHalo = cms.untracked.string("HLT_JetE30_NoBPTX3BX_NoHalo_"),
+    hltPathJetNoBptx = cms.untracked.string("HLT_JetE30_NoBPTX_v*"),
+    hltPathJetNoBptxNoHalo = cms.untracked.string("HLT_JetE30_NoBPTX_NoHalo_v*"),
+    hltPathJetNoBptx3BXNoHalo = cms.untracked.string("HLT_JetE30_NoBPTX3BX_NoHalo_v*"),
     hltL3Tag = cms.untracked.InputTag("hltStoppedHSCPTight1CaloJetEnergy30","","HLT"),
 
     # MC

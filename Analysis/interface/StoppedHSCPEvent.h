@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.44 2011/04/18 20:07:07 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.45 2011/04/18 23:55:39 jbrooke Exp $
 //
 //
 
@@ -235,6 +235,9 @@ class StoppedHSCPEvent : public TObject {
   Long_t bxAfterCollision;
   Long_t bxBeforeCollision;
   Long_t bxWrtCollision;
+  Long_t bxAfterBunch;
+  Long_t bxBeforeBunch;
+  Long_t bxWrtBunch;
 
   // trigger
   ULong64_t gtAlgoWord0;
@@ -432,7 +435,7 @@ class StoppedHSCPEvent : public TObject {
   double top5DigiROuter;
 
 
-  ClassDef(StoppedHSCPEvent,15);
+  ClassDef(StoppedHSCPEvent,16);
 
 };
 

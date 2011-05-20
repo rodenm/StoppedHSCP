@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.71 2011/04/29 15:44:27 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.72 2011/05/19 16:53:33 temple Exp $
 //
 //
 
@@ -326,6 +326,7 @@ private:
   unsigned currentFill_;
   unsigned currentFillL1_;
   std::vector<unsigned long> currentColls_;
+  std::vector<unsigned long> currentBunches_;
 
   // debug stuff
   bool l1JetsMissing_;
@@ -589,6 +590,7 @@ StoppedHSCPTreeProducer::beginRun(edm::Run const & iRun, edm::EventSetup const& 
 
   // set filling scheme for this run
   currentColls_ = fills_.getCollisionsFromRun(iRun.runAuxiliary().run());
+  currentColls_ = fills_.getBunchesFromRun(iRun.runAuxiliary().run());
   currentFill_  = fills_.getFillFromRun(iRun.runAuxiliary().run());
 
 }
@@ -757,6 +759,50 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent) {
   // compute relative BX
   int bxWrt    = ( abs(bxAfter) <= abs(bxBefore) ? bxAfter : bxBefore );
 
+  // find last/next bunch
+  int bxAfterBunch = 9999;
+  int bxBeforeBunch = -9999;
+  
+  if (! isMC_) {
+    int bxLast=-1;
+    int bxNext=-1;
+    if (currentBunches_.size() > 0) {
+      // special case if event is before first collision
+      if (bx < currentBunches_.at(0)) {
+	bxLast   = currentBunches_.at(currentBunches_.size() - 1);
+	bxNext   = currentBunches_.at(0);
+	bxAfterBunch  = (bx + bxPerOrbit) - bxLast;
+	bxBeforeBunch = bx - bxNext;
+	
+	//std::cout << bx << " : " << bxLast << " : " << bxNext << " : " << bxAfter << " : " << bxBefore << std::endl;
+
+      }
+      // special case if event is after last collision
+      else if (bx > currentBunches_.at(currentBunches_.size() - 1)) {
+	bxLast   = currentBunches_.at(currentBunches_.size()-1);
+	bxNext   = currentBunches_.at(0);
+	bxAfterBunch  = bx - bxLast;
+	bxBeforeBunch = (bx - bxPerOrbit) - bxNext;
+
+	//	std::cout << bx << " : " << bxLast << " : " << bxNext << " : " << bxAfter << " : " << bxBefore << std::endl;
+      }
+      // general case
+      else {      
+	for (unsigned c=0; c<(currentBunches_.size()-1) && currentBunches_.at(c)<bx; ++c) {
+	  bxLast = currentBunches_.at(c);
+	  bxNext = currentBunches_.at(c+1);
+	  bxAfterBunch = bx - bxLast;
+	  bxBeforeBunch = bx - bxNext;
+	}
+      }
+    }
+    
+  }
+
+  // compute relative BX
+  int bxWrtBunch    = ( abs(bxAfterBunch) <= abs(bxBeforeBunch) ? bxAfterBunch : bxBeforeBunch );
+
+
   // set variables in ntuple
   event_->id = id;
   event_->bx = bx;
@@ -770,6 +816,9 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent) {
   event_->bxAfterCollision = bxAfter;
   event_->bxBeforeCollision = bxBefore;
   event_->bxWrtCollision = bxWrt;
+  event_->bxAfterBunch = bxAfterBunch;
+  event_->bxBeforeBunch = bxBeforeBunch;
+  event_->bxWrtBunch = bxWrtBunch;
 
 }
   
