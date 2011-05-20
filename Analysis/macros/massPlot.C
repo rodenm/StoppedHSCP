@@ -15,6 +15,7 @@
 #include "TLegend.h"
 #include "TPaveText.h"
 #include "TBox.h"
+#include "TLatex.h"
 
 // .L massPlot.C+
 // massPlot("limit_summary.txt", "time_profile_summary.txt");
@@ -24,56 +25,41 @@ void massPlot(char* filename, char* filename2) {
 
   // stuff that has to be set by hand
   // some numbers need to be set buy hand
-  double lumi_tp = 116.0;  // lumi figure to use for time-profile fit
+  double lumi_tp = 131.0;  // lumi figure to use for time-profile fit
 
   // set which bin to use for intercept calculation (mass limit)
   unsigned theoryBin = 5;
   unsigned dataBin = 4;
 
-  unsigned point1 = 9;
-  unsigned point2 = 27;
-  unsigned point3 = 43;
-  unsigned pointtp = 9;
+  unsigned point1 = 9;    // short lifetime
+  unsigned point2 = 39;   // plateau
+  unsigned point3 = 43;   // long lifetime
+  unsigned pointtp = 9;   // time profile
 
-  unsigned nmasses=7;
-  double mass[10] = {
-    150.,
-    200.,
-    300.,
-    400.,
-    500.,
-    600.,
-    900.
-  };
-  
-  
-  double recoEff[10] = {
-    0.146,
-    0.157,
-    0.170,
-    0.175,  
-    0.175,   
-    0.175,
-    0.175
-  };
-  
-  double stopEff[10] = {
-    0.217 * 2.,
-    0.198 * 2.,
-    0.205 * 2.,
-    0.207 * 2.,
-    0.209 * 2.,
-    0.216 * 2.,
-    0.255 * 2.
-  };
+  unsigned nGluino=7;
 
-  double stopEffEm[10] = {
-	0.0622 * 2.,
-	0.0591 * 2.,
-	0.0596 * 2.,
-	0.0601 * 2.,
-	0.0634 * 2.
-  };
+  double m_g[10]        = { 150.,     200.,      300.,      400.,      500.,     600.,    900. };
+  double m_chi[10]      = { 50.,      100.,      200.,      300.,      400.,     500.,    800. };
+  double stopEff_cm[10] = { 0.219*2., 0.198*2.,  0.205*2.,  0.207*2.,  0.209*2., 0.216*2, 0.255*2 };  // cloud model
+  double stopEff_em[10] = { 0.062*2., 0.0591*2., 0.0596*2., 0.0601*2., 0.0634*2. };  // EM only
+  double stopEff_nb[10] = { 0.120*2., 0.0115*2., 0.0128*2., 0.0141*2., 0.0147*2. };  // neutral baryon
+  double recoEff[10]    = { 0.146,    0.157,     0.170,     0.175,     0.175,    0.175,   0.175 };
+ 
+  unsigned nStop          = 7;
+  double m_stop[10]       = { 130,   200,   300,   500,   600,   800,   1200 };
+  double m_chi_stop[10]   = { 30,    100,   200,   400,   500,   700,   1100 };
+  double stopEff_stop[10] = { .2962, .2656, .2438, .2060, .1949, .1835, .1853 };
+  double recoEff_stop[10] = { 0.146, 0.157, 0.170, 0.175, 0.175, 0.175, 0.175 };
+
+  unsigned nTheory = 10;
+  double theoryUncertainty = 0.0;
+  double theoryMass[10] = { 100.,   150.,   200.,   300.,   400.,   500.,   600.,    700.,    800.,    900. };
+  double theoryXS[10]   = { 2.11e4, 2.82e3, 6.06e2, 5.72e1, 8.98e0, 1.87e0, 4.65e-1, 1.30e-1, 3.96e-2, 1.28e-2 };
+  
+  unsigned nTheory_stop = 4;
+  double theoryMass_stop[10] = { 100., 400.,    600.,    1000. };
+  double theoryXS_stop[10]   = { 423., 2.18E-1, 1.30E-2, 1.31E-4 };
+
 
   // arrays to fill with data
   double lifetime[100];
@@ -151,66 +137,58 @@ void massPlot(char* filename, char* filename2) {
   double excXS2[10];
   double excXS3[10];
   
-  double excXS_EM[10];
-
-  double excXSL[10];
+  double excXS_em[10];
+  double excXS_tp[10];
+  double excXS_stop[10];
   
-  for (unsigned im=0; im<nmasses; ++im) {
-    excXS_exp[im]   = exp[point2] / (effLumi[point2] * stopEff[im] * recoEff[im]);
-    excXS_exp1m[im] = (exp[point2]-exp_lo1sig[point2]) / (effLumi[point2] * stopEff[im] * recoEff[im]);
-    excXS_exp1p[im] = (exp_hi1sig[point2]-exp[point2]) / (effLumi[point2] * stopEff[im] * recoEff[im]);
-    excXS_exp2m[im] = (exp[point2]-exp_lo2sig[point2]) / (effLumi[point2] * stopEff[im] * recoEff[im]);
-    excXS_exp2p[im] = (exp_hi2sig[point2]-exp[point2]) / (effLumi[point2] * stopEff[im] * recoEff[im]);
-    excXS1[im]= cl95[point1] / (effLumi[point1] * stopEff[im] * recoEff[im]);
-    excXS2[im]= cl95[point2] / (effLumi[point2] * stopEff[im] * recoEff[im]);
-    excXS3[im]= cl95[point3] / (effLumi[point3] * stopEff[im] * recoEff[im]);
-	excXS_EM[im] = cl95[point2] / (effLumi[point2] * stopEffEm[im] * recoEff[im]);
-    excXSL[im]= cl95_tp[pointtp] / (lumi_tp * stopEff[im] * recoEff[im]);
+  for (unsigned im=0; im<nGluino; ++im) {
+    excXS_exp[im]   = exp[point2] / (effLumi[point2] * stopEff_cm[im] * recoEff[im]);
+    excXS_exp1m[im] = (exp[point2]-exp_lo1sig[point2]) / (effLumi[point2] * stopEff_cm[im] * recoEff[im]);
+    excXS_exp1p[im] = (exp_hi1sig[point2]-exp[point2]) / (effLumi[point2] * stopEff_cm[im] * recoEff[im]);
+    excXS_exp2m[im] = (exp[point2]-exp_lo2sig[point2]) / (effLumi[point2] * stopEff_cm[im] * recoEff[im]);
+    excXS_exp2p[im] = (exp_hi2sig[point2]-exp[point2]) / (effLumi[point2] * stopEff_cm[im] * recoEff[im]);
+    excXS1[im]= cl95[point1] / (effLumi[point1] * stopEff_cm[im] * recoEff[im]);
+    excXS2[im]= cl95[point2] / (effLumi[point2] * stopEff_cm[im] * recoEff[im]);
+    excXS3[im]= cl95[point3] / (effLumi[point3] * stopEff_cm[im] * recoEff[im]);
+    excXS_em[im] = cl95[point2] / (effLumi[point2] * stopEff_em[im] * recoEff[im]);
+    excXS_tp[im]= cl95_tp[pointtp] / (lumi_tp * stopEff_cm[im] * recoEff[im]);
+  }
+
+  for (unsigned im=0; im<nStop; ++im) {
+    excXS_stop[im] = cl95[point2] / (effLumi[point2] * stopEff_stop[im] * recoEff_stop[im]);
   }
   
-  
   // theoretical cross-section  (pb)
-  unsigned ntheory = 10;
-  double theoryUncertainty = 0.0;
-  double theoryXS[10] = {
-    2.11e4,
-    2.82e3,
-    6.06e2,
-    5.72e1,
-    8.98e0,
-    1.87e0,
-    4.65e-1,
-    1.30e-1,
-    3.96e-2,
-    1.28e-2
-  };
-  
   double theoryBand[10];
-  for (unsigned i=0; i<10; ++i) {
+  for (unsigned i=0; i<nTheory; ++i) {
     theoryBand[i] = theoryUncertainty*theoryXS[i];
   }
   
-  double theoryMass[10] = { 100., 150., 200., 300., 400., 500., 600., 700., 800., 900. };
-  
+  double theoryBand_stop[10];
+  for (unsigned i=0; i<nTheory_stop; ++i) {
+    theoryBand_stop[i] = theoryUncertainty*theoryXS_stop[i];
+  }  
   
   // plotting below
   
   // expected limit (1 and 2 sigma bands)
-  TGraph* graph_exp = new TGraph(nmasses, mass, excXS_exp);
-  TGraphAsymmErrors* graph_exp1 = new TGraphAsymmErrors(nmasses, mass, excXS_exp, 0, 0, excXS_exp1m, excXS_exp1p);
-  TGraphAsymmErrors* graph_exp2 = new TGraphAsymmErrors(nmasses, mass, excXS_exp, 0, 0, excXS_exp2m, excXS_exp2p);
+  TGraph* graph_exp = new TGraph(nGluino, m_g, excXS_exp);
+  TGraphAsymmErrors* graph_exp1 = new TGraphAsymmErrors(nGluino, m_g, excXS_exp, 0, 0, excXS_exp1m, excXS_exp1p);
+  TGraphAsymmErrors* graph_exp2 = new TGraphAsymmErrors(nGluino, m_g, excXS_exp, 0, 0, excXS_exp2m, excXS_exp2p);
   
   // three points on counting expt curve
-  TGraph* graph1 = new TGraph(nmasses, mass, excXS1);
-  TGraph* graph2 = new TGraph(nmasses, mass, excXS2);
-  TGraph* graph3 = new TGraph(nmasses, mass, excXS3);
-  TGraph* graphEM = new TGraph(nmasses, mass, excXS_EM);
+  TGraph* graph1 = new TGraph(nGluino, m_g, excXS1);
+  TGraph* graph2 = new TGraph(nGluino, m_g, excXS2);
+  TGraph* graph3 = new TGraph(nGluino, m_g, excXS3);
+  TGraph* graph_em = new TGraph(nGluino, m_g, excXS_em);
+  TGraph* graph_stop = new TGraph(nStop, m_stop, excXS_stop);
   
   // one point from lifetime fit
-  TGraph* graphL = new TGraph(nmasses, mass, excXSL);
+  TGraph* graph_tp = new TGraph(nGluino, m_g, excXS_tp);
   
   // theory prediction
-  TGraph* theory = new TGraphErrors(ntheory, theoryMass, theoryXS, 0, theoryBand);
+  TGraph* theory = new TGraphErrors(nTheory, theoryMass, theoryXS, 0, theoryBand);
+  TGraph* theory_stop = new TGraphErrors(nTheory_stop, theoryMass_stop, theoryXS_stop, 0, theoryBand_stop);
   
   TCanvas* canvas = new TCanvas("canvas");
   
@@ -218,11 +196,11 @@ void massPlot(char* filename, char* filename2) {
   canvas->SetLogy();
   
   TH1 * h;
-  h = canvas->DrawFrame(100., .05, 900., 5e2);
+  h = canvas->DrawFrame(100., .1, 900., 5e2);
   h->SetTitle("Beamgap Expt;m_{#tilde{g}} [GeV/c^{2}]; #sigma(pp #rightarrow #tilde{g}#tilde{g}) #times BR(#tilde{g} #rightarrow g#tilde{#chi}^{0}) [pb]");
   
   // not covered region
-  TBox* nc = new TBox(100., .05, 150., 5e2);
+  TBox* nc = new TBox(100., .1, 150., 5e2);
   nc->SetFillStyle(3354);
   nc->SetFillColor(kRed-4);
   nc->Draw();
@@ -230,8 +208,8 @@ void massPlot(char* filename, char* filename2) {
   // details
   TPaveText* blurb = new TPaveText(110., 1.e1, 350., 4.5e2);
   //blurb->AddText("CMS Preliminary 2010");
-  blurb->AddText("#int L dt = 116 pb^{-1}");
-  blurb->AddText("L^{max}_{inst} = 7 x 10^{32} cm^{-2}s^{-1}");
+  blurb->AddText("#int L dt = 131 pb^{-1}");
+  blurb->AddText("L^{max}_{inst} = 5 x 10^{32} cm^{-2}s^{-1}");
   blurb->AddText("#sqrt{s} = 7 TeV");
   blurb->AddText("m_{#tilde{g}} - m_{#tilde{#chi}^{0}} = 100 GeV/c^{2}");
   blurb->SetTextFont(42);
@@ -254,10 +232,11 @@ void massPlot(char* filename, char* filename2) {
   leg->AddEntry(graph_exp1, "Expected #pm1#sigma: 10 #mus - 1000 s Counting Exp.", "f");
   leg->AddEntry(graph_exp2, "Expected #pm2#sigma: 10 #mus - 1000 s Counting Exp.", "f");
 //  leg->AddEntry(graph3, "Obs.: 10^{6} s Counting Exp.", "l");
-  leg->AddEntry(graphEM, "Obs.: 10 #mus - 1000 s Counting Exp. (EM only)", "l");
   leg->AddEntry(graph2, "Obs.: 10 #mus - 1000 s Counting Exp.", "l");
+  leg->AddEntry(graph_stop, "Obs.: 10 #mus - 1000 s Counting Exp. (#tilde{t})", "l");
+  leg->AddEntry(graph_em, "Obs.: 10 #mus - 1000 s Counting Exp. (EM only)", "l");
   //  leg->AddEntry(graph1, "Obs.: 570 ns Counting Exp.", "l");
-  leg->AddEntry(graphL, "Obs.: 10 #mus Timing Profile", "l");
+  leg->AddEntry(graph_tp, "Obs.: 10 #mus Timing Profile", "l");
   leg->Draw();
   
   
@@ -300,18 +279,24 @@ void massPlot(char* filename, char* filename2) {
 //  graph3->SetLineStyle(5);
 //  graph3->SetLineWidth(2);
 //  graph3->Draw("l");
-  
+
+   // stop curve
+  graph_stop->SetLineColor(kRed+1);
+  graph_stop->SetLineStyle(5);
+  graph_stop->SetLineWidth(2);
+  graph_stop->Draw("l");
+ 
   // EM curve
-  graphEM->SetLineColor(kGray+1);
-  graphEM->SetLineStyle(5);
-  graphEM->SetLineWidth(2);
+  graph_em->SetLineColor(kGray+1);
+  graph_em->SetLineStyle(5);
+  graph_em->SetLineWidth(2);
   //  graphEM->Draw("l");
 
   // 1 mus lifetime fit limit
-  graphL->SetLineColor(kRed);
-  graphL->SetLineStyle(3);
-  graphL->SetLineWidth(3);
-  graphL->Draw("l");
+  graph_tp->SetLineColor(kRed);
+  graph_tp->SetLineStyle(3);
+  graph_tp->SetLineWidth(3);
+  graph_tp->Draw("l");
   
   // theory line
   theory->SetLineColor(kBlue);
@@ -321,12 +306,26 @@ void massPlot(char* filename, char* filename2) {
   theory->SetFillColor(kBlue-4);
   theory->Draw("l3");
   
+  theory_stop->SetLineColor(kRed);
+  theory_stop->SetLineStyle(1);
+  theory_stop->SetLineWidth(2);
+  theory_stop->SetFillStyle(3001);
+  theory_stop->SetFillColor(kRed-4);
+  theory_stop->Draw("l3");
+
+
   // theory line label
-  TText* th = new TText(600., 0.1, "NLO+NLL");
+  TLatex* th = new TLatex(520., 0.2, "NLO+NLL #tilde{g}");
   th->SetTextColor(kBlue);
   th->SetTextFont(42);
   th->SetTextSize(0.035);
   th->Draw();
+
+  TLatex* ths = new TLatex(270., 0.2, "NLO+NLL #tilde{t}");
+  ths->SetTextColor(kRed);
+  ths->SetTextFont(42);
+  ths->SetTextSize(0.035);
+  ths->Draw();
 
   // not explored label
   TText* ne = new TText(115., 11., "Not Sensitive");
@@ -344,25 +343,24 @@ void massPlot(char* filename, char* filename2) {
   canvas->Print("massLimit.C");
 
   // calculate intercept
-
   double mt = ( log10(theoryXS[theoryBin+1]-theoryBand[theoryBin+1]) - log10(theoryXS[theoryBin]-theoryBand[theoryBin]) ) / (theoryMass[theoryBin+1]-theoryMass[theoryBin]);
   double ct = log10(theoryXS[theoryBin+1]-theoryBand[theoryBin+1]) - (mt*theoryMass[theoryBin+1]);
 
   // expected limit
-  double mexp = ( log10(excXS_exp[dataBin+1]) - log10(excXS_exp[dataBin]) ) / (mass[dataBin+1]-mass[dataBin]);
-  double cexp = log10(excXS_exp[dataBin+1]) - (mexp*mass[dataBin+1]);
+  double mexp = ( log10(excXS_exp[dataBin+1]) - log10(excXS_exp[dataBin]) ) / (m_g[dataBin+1]-m_g[dataBin]);
+  double cexp = log10(excXS_exp[dataBin+1]) - (mexp*m_g[dataBin+1]);
 
   // plateau limit
-  double mobs = ( log10(excXS2[dataBin+1]) - log10(excXS2[dataBin]) ) / (mass[dataBin+1]-mass[dataBin]);
-  double cobs = log10(excXS2[dataBin+1]) - (mobs*mass[dataBin+1]);
+  double mobs = ( log10(excXS2[dataBin+1]) - log10(excXS2[dataBin]) ) / (m_g[dataBin+1]-m_g[dataBin]);
+  double cobs = log10(excXS2[dataBin+1]) - (mobs*m_g[dataBin+1]);
 
   // EM limit
-  double mem = ( log10(excXS_EM[dataBin+1]) - log10(excXS_EM[dataBin]) ) / (mass[dataBin+1]-mass[dataBin]);
-  double cem = log10(excXS_EM[dataBin+1]) - (mem*mass[dataBin+1]);
+  double mem = ( log10(excXS_em[dataBin+1]) - log10(excXS_em[dataBin]) ) / (m_g[dataBin+1]-m_g[dataBin]);
+  double cem = log10(excXS_em[dataBin+1]) - (mem*m_g[dataBin+1]);
 
   // time profile limit
-  double tpml = (log10(excXSL[dataBin+1])-log10(excXSL[dataBin])) / (mass[dataBin+1]-mass[dataBin]);
-  double tpcl = log10(excXSL[dataBin+1]) - (tpml*mass[dataBin+1]);
+  double tpml = (log10(excXS_tp[dataBin+1])-log10(excXS_tp[dataBin])) / (m_g[dataBin+1]-m_g[dataBin]);
+  double tpcl = log10(excXS_tp[dataBin+1]) - (tpml*m_g[dataBin+1]);
 
   double massLimit_exp = (cexp - ct) / (mt - mexp);
   double massLimit_obs = (cobs - ct) / (mt - mobs);

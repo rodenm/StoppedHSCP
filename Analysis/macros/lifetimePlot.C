@@ -21,6 +21,7 @@ TCanvas *makeLifetimePlot(TGraph *g_cl95,
 			  TGraph *g_exp_2sig=NULL,
 			  TGraph *g_cl95_em=NULL,
 			  TGraph *g_cl95_nb=NULL,
+			  TGraph *g_cl95_stop=NULL,
 			  TGraph *g_cl95_tp=NULL);
 
 TCanvas *makeBasicPlot(TGraph *g1,
@@ -32,17 +33,26 @@ TCanvas *makeBasicPlot(TGraph *g1,
 void lifetimePlot(char* filename, char* filename2="", char* filename3="") {
 
   // which mass point ?
-  unsigned massIndex = 3;  // point 3 -> m_gluino=300, m_neutralino=200
+  unsigned massIndex = 3;  // point 3 -> m_gluino=400, m_neutralino=300
+  unsigned stopIndex = 2;  // point 3 -> m_stop=300
 
   // some numbers need to be set buy hand
-  double lumi_tp = 116;  // lumi figure to use for time-profile fit
-  double m_g[10]        = { 150., 200., 300., 300., 400., 500. };
-  double m_chi[10]      = { 50., 100., 100., 200., 300., 400. };
-  double stopEff_cm[10] = { 0.219*2., 0.198*2.,  0.205*2.,  0.205*2.,  0.207*2.,  0.209*2. };  // cloud model
-  double stopEff_em[10] = { 0.062*2., 0.0591*2., 0.0596*2., 0.0596*2., 0.0601*2., 0.0634*2. };  // EM only
-  double stopEff_nb[10] = { 0.120*2., 0.0115*2., 0.0128*2., 0.0128*2., 0.0141*2., 0.0147*2. };  // neutral baryon
-  double recoEff[10] = { 0., 0.157, 0.198, 0.170, 0.175, 0.175 };
-  
+  double lumi_tp = 131;  // lumi figure to use for time-profile fit
+
+  unsigned nGluino      = 7;
+  double m_g[10]        = { 150.,     200.,      300.,      400.,      500.,     600.,    900. };
+  double m_chi[10]      = { 50.,      100.,      200.,      300.,      400.,     500.,    800. };
+  double stopEff_cm[10] = { 0.219*2., 0.198*2.,  0.205*2.,  0.207*2.,  0.209*2.  };  // cloud model
+  double stopEff_em[10] = { 0.062*2., 0.0591*2., 0.0596*2., 0.0601*2., 0.0634*2. };  // EM only
+  double stopEff_nb[10] = { 0.120*2., 0.0115*2., 0.0128*2., 0.0141*2., 0.0147*2. };  // neutral baryon
+  double recoEff[10]    = { 0.146,    0.157,     0.170,     0.175,     0.175,    0.175,   0.175 };
+ 
+  unsigned nStop          = 7;
+  double m_stop[10]       = { 130,   200,   300,   500,   600,   800,   1200 };
+  double m_chi_stop[10]   = { 30,    100,   200,   400,   500,   700,   1100 };
+  double stopEff_stop[10] = { .2962, .2656, .2438, .2060, .1949, .1835, .1853 };
+  double recoEff_stop[10] = { 0.146, 0.157, 0.170, 0.175, 0.175, 0.175, 0.175 };
+
   // arrays to fill with data
   double lifetime[100];
   double effLumi[100];
@@ -157,6 +167,7 @@ void lifetimePlot(char* filename, char* filename2="", char* filename3="") {
   double xs_cl95[100]; // observed limit
   double xs_cl95_em[100];  // EM only
   double xs_cl95_nb[100];  // neutral baryon
+  double xs_cl95_stop[100];  // stop
 
   double xs_exp[100];          // expected limit
   double xs_exp_lo1sig[100];   // lower 1 sigma band
@@ -172,9 +183,10 @@ void lifetimePlot(char* filename, char* filename2="", char* filename3="") {
   for (unsigned l=0; l<count; ++l) {
 
     // observed limits
-    xs_cl95[l]    = cl95[l] / (effLumi[l] * stopEff_cm[massIndex] * recoEff[massIndex]);
-    xs_cl95_em[l] = cl95[l] / (effLumi[l] * stopEff_em[massIndex] * recoEff[massIndex]);
-    xs_cl95_nb[l] = cl95[l] / (effLumi[l] * stopEff_nb[massIndex] * recoEff[massIndex]);
+    xs_cl95[l]      = cl95[l] / (effLumi[l] * stopEff_cm[massIndex] * recoEff[massIndex]);
+    xs_cl95_em[l]   = cl95[l] / (effLumi[l] * stopEff_em[massIndex] * recoEff[massIndex]);
+    xs_cl95_nb[l]   = cl95[l] / (effLumi[l] * stopEff_nb[massIndex] * recoEff[massIndex]);
+    xs_cl95_stop[l] = cl95[l] / (effLumi[l] * stopEff_stop[massIndex] * recoEff_stop[massIndex]);
 
     // expected limit and bands
     xs_exp[l]        = exp[l] / (effLumi[l] * stopEff_cm[massIndex] * recoEff[massIndex]);
@@ -197,6 +209,7 @@ void lifetimePlot(char* filename, char* filename2="", char* filename3="") {
   TGraph* g_cl95    = new TGraph(count, lifetime, xs_cl95);
   TGraph* g_cl95_em = new TGraph(count, lifetime, xs_cl95_em);
   TGraph* g_cl95_nb = new TGraph(count, lifetime, xs_cl95_nb);
+  TGraph* g_cl95_stop = new TGraph(count, lifetime, xs_cl95_stop);
   TGraph* g_cl95_tp = new TGraph(13, lifetime_tp, xs_tp);
 
   // graphs - expected
@@ -212,6 +225,7 @@ void lifetimePlot(char* filename, char* filename2="", char* filename3="") {
 				   g_exp_2sig,
 				   g_cl95_em,
 				   g_cl95_nb,
+				   g_cl95_stop,
 				   g_cl95_tp);
   
   plot->Print("lifetimeLimit.png");
@@ -250,6 +264,7 @@ TCanvas *makeLifetimePlot(TGraph *g_obs,
 			  TGraph *g_exp_2sig,
 			  TGraph *g_obs_em,
 			  TGraph *g_obs_nb,
+			  TGraph *g_obs_stop,
 			  TGraph *g_obs_tp) {
 
   // expected limit
@@ -266,14 +281,14 @@ TCanvas *makeLifetimePlot(TGraph *g_obs,
   TH1 * h;
   TPaveText *blurb;
 
-  h = canvas->DrawFrame(7.5e-8, .5, 1e6, 5e3);
+  h = canvas->DrawFrame(7.5e-8, .1, 1e6, 5e3);
   //  h->SetTitle("Beamgap Expt;#tau_{#tilde{g}} [s]; #sigma(pp #rightarrow #tilde{g}#tilde{g}) [cm^{2}]");
   h->SetTitle("Beamgap Expt;#tau_{#tilde{g}} [s]; #sigma(pp #rightarrow #tilde{g}#tilde{g}) #times BR(#tilde{g} #rightarrow g#tilde{#chi}^{0}) [pb]");
 
   blurb = new TPaveText(9e-8, 8e1, 2e-3, 4e3);
   blurb->AddText("CMS Preliminary 2011");
-  blurb->AddText("#int L dt = 116 pb^{-1}");
-  blurb->AddText("L^{max}_{inst} = 7 x 10^{32} cm^{-2}s^{-1}");
+  blurb->AddText("#int L dt = 131 pb^{-1}");
+  blurb->AddText("L^{max}_{inst} = 5 x 10^{32} cm^{-2}s^{-1}");
   blurb->AddText("#sqrt{s} = 7 TeV");
   blurb->AddText("m_{#tilde{g}} - m_{#tilde{#chi}^{0}} = 100 GeV/c^{2}");
   //blurb->AddText("m_{#tilde{g}} = 300 GeV/c^{2}");
@@ -294,10 +309,11 @@ TCanvas *makeLifetimePlot(TGraph *g_obs,
   leg->AddEntry(g_exp, "Expected: Counting Exp.", "l");
   leg->AddEntry(g_exp_1sig, "Expected #pm1#sigma: Counting Exp.", "f");
   leg->AddEntry(g_exp_2sig, "Expected #pm2#sigma: Counting Exp.", "f");
-  leg->AddEntry(g_obs, "Obs.: Counting Exp.", "l");
-  leg->AddEntry(g_obs_nb, "Obs.: Counting Exp. (Neutral R-Baryon)", "l");
-  leg->AddEntry(g_obs_em, "Obs.: Counting Exp. (EM only)", "l");
-  leg->AddEntry(g_obs_tp, "Obs.: Timing Profile", "l");
+  leg->AddEntry(g_obs,     "Obs.: Counting Exp.", "l");
+  leg->AddEntry(g_obs_stop,"Obs.: Counting Exp. (#tilde{t})", "l");
+  leg->AddEntry(g_obs_nb,  "Obs.: Counting Exp. (Neutral R-Baryon)", "l");
+  leg->AddEntry(g_obs_em,  "Obs.: Counting Exp. (EM only)", "l");
+  leg->AddEntry(g_obs_tp,  "Obs.: Timing Profile", "l");
   leg->Draw();
 
   // 2 sigma band
@@ -387,6 +403,15 @@ TCanvas *makeLifetimePlot(TGraph *g_obs,
     g_obs_nb->Draw("l");
   }
 
+  // stop
+  if (g_obs_stop) {
+    g_obs_stop->SetLineColor(kRed+1);
+    g_obs_stop->SetLineWidth(2);
+    g_obs_stop->SetLineStyle(5);
+    g_obs_stop->Draw("l");
+  }
+
+
   canvas->RedrawAxis();
 
   return canvas;
@@ -413,7 +438,7 @@ TCanvas *makeBasicPlot(TGraph *g1,
 
   blurb = new TPaveText(1e-6, 3e0, 1e-2, 1e1);
   blurb->AddText("CMS Preliminary 2011");
-  blurb->AddText("#int L dt = 116 pb^{-1}");
+  blurb->AddText("#int L dt = 131 pb^{-1}");
   blurb->AddText("L^{max}_{inst} = 7 x 10^{32}");
   blurb->AddText("#sqrt{s} = 7 TeV");
   blurb->SetTextFont(42);
