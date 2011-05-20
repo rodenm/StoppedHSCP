@@ -21,23 +21,23 @@ class LhcFills {
   void setupLifetimeMask(double lifetime);
 
   // get everything
-  std::vector<unsigned long> getFills();
+  //const std::vector<unsigned long>& getFills();
 
   // get info about a particular fill
-  std::vector<unsigned long> getRuns(unsigned long fill);
+  const std::vector<unsigned long> getRuns(unsigned long fill);
   std::string getFillingScheme(unsigned long fill);
-  std::vector<unsigned long> getCollisions(unsigned long fill);
-  std::vector<unsigned long> getBunches(unsigned long fill);
-  std::vector<bool> getMask(unsigned long fill);
-  std::vector<bool> getLifetimeMask(unsigned long fill);
+  const std::vector<unsigned long>& getCollisions(unsigned long fill);
+  const std::vector<unsigned long>& getBunches(unsigned long fill);
+  const std::vector<bool>& getMask(unsigned long fill);
+  const std::vector<bool>& getLifetimeMask(unsigned long fill);
 
   // get info about a particular run
   unsigned long getFillFromRun(unsigned long run);
   std::string getFillingSchemeFromRun(unsigned long run);
-  std::vector<unsigned long> getCollisionsFromRun(unsigned long run);
-  std::vector<unsigned long> getBunchesFromRun(unsigned long run);
-  std::vector<bool> getMaskFromRun(unsigned long run);
-  std::vector<bool> getLifetimeMaskFromRun(unsigned long run);
+  const std::vector<unsigned long>& getCollisionsFromRun(unsigned long run);
+  const std::vector<unsigned long>& getBunchesFromRun(unsigned long run);
+  const std::vector<bool>& getMaskFromRun(unsigned long run);
+  const std::vector<bool>& getLifetimeMaskFromRun(unsigned long run);
 
   // get info about a particular filling scheme
   //   std::vector<unsigned> getCollisionsFromScheme(std::string scheme);

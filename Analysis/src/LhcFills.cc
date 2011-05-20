@@ -173,12 +173,19 @@ void LhcFills::setupBunches() {
     // set up mask
     f->mask.resize(NBX_PER_ORBIT, false);
     
+    // loop over all filled bunches
     for (unsigned i=0; i<f->bunches.size(); ++i) {
-      unsigned bx=f->bunches.at(i);
-      f->mask.at((bx-2)%NBX_PER_ORBIT)=true;
-      f->mask.at((bx-1)%NBX_PER_ORBIT)=true;
-      f->mask.at((bx)%NBX_PER_ORBIT)=true;
-      f->mask.at((bx+1)%NBX_PER_ORBIT)=true;
+
+      int bx=f->bunches.at(i);
+
+      // loop over BX around filled bunch and mask them
+      for (int j=BX_VETO_MINUS; j<=BX_VETO_PLUS; ++j) {
+	if ((bx+j) >= 0) 
+	  f->mask.at((bx+j)%NBX_PER_ORBIT)=true;
+ 	else
+ 	  f->mask.at((bx+j+NBX_PER_ORBIT)%NBX_PER_ORBIT)=true;
+      }
+
     }
 
   }
@@ -214,7 +221,7 @@ void LhcFills::setupLifetimeMask(double lifetime) {
 
 
 
-std::vector<unsigned long> LhcFills::getRuns(unsigned long fill) {
+const std::vector<unsigned long> LhcFills::getRuns(unsigned long fill) {
 
   for (unsigned f=0; f<fills_.size(); ++f) {
     if (fills_.at(f).number == fill) return fills_.at(f).runs;
@@ -234,21 +241,21 @@ std::string LhcFills::getFillingScheme(unsigned long fill) {
 }
 
 
-std::vector<unsigned long> LhcFills::getCollisions(unsigned long fill) {
+const std::vector<unsigned long>& LhcFills::getCollisions(unsigned long fill) {
   return fills_.at(getIndexFromFill(fill)).collisions;
 }
 
 
-std::vector<unsigned long> LhcFills::getBunches(unsigned long fill) {
+const std::vector<unsigned long>& LhcFills::getBunches(unsigned long fill) {
   return fills_.at(getIndexFromFill(fill)).bunches;
 }
 
 
-std::vector<bool> LhcFills::getMask(unsigned long fill) {
+const std::vector<bool>& LhcFills::getMask(unsigned long fill) {
   return fills_.at(getIndexFromFill(fill)).mask;
 }
 
-std::vector<bool> LhcFills::getLifetimeMask(unsigned long fill) {
+const std::vector<bool>& LhcFills::getLifetimeMask(unsigned long fill) {
   return fills_.at(getIndexFromFill(fill)).lifetimeMask;
 }
 
@@ -269,21 +276,21 @@ std::string LhcFills::getFillingSchemeFromRun(unsigned long run) {
 }
 
 
-std::vector<unsigned long> LhcFills::getCollisionsFromRun(unsigned long run) {
+const std::vector<unsigned long>& LhcFills::getCollisionsFromRun(unsigned long run) {
   return getCollisions(getFillFromRun(run));
 }
 
 
-std::vector<unsigned long> LhcFills::getBunchesFromRun(unsigned long run) {
+const std::vector<unsigned long>& LhcFills::getBunchesFromRun(unsigned long run) {
   return getBunches(getFillFromRun(run));
 }
 
 
-std::vector<bool> LhcFills::getMaskFromRun(unsigned long run) {
+const std::vector<bool>& LhcFills::getMaskFromRun(unsigned long run) {
   return getMask(getFillFromRun(run));
 }
 
-std::vector<bool> LhcFills::getLifetimeMaskFromRun(unsigned long run) {
+const std::vector<bool>& LhcFills::getLifetimeMaskFromRun(unsigned long run) {
   return getLifetimeMask(getFillFromRun(run));
 }
 
@@ -355,27 +362,11 @@ void LhcFills::writeBunchMaskFile() {
 
     for (unsigned r=0; r<fills_.at(f).runs.size(); ++r) {
 
-      std::vector<unsigned> mask(0);
-
-      for (unsigned b=0; b<fills_.at(f).beam1.size(); ++b) {
-	mask.push_back( fills_.at(f).beam1.at(b)-1 );
-	mask.push_back( fills_.at(f).beam1.at(b) );
-	mask.push_back( fills_.at(f).beam1.at(b)+1 );
-      }
-      for (unsigned b=0; b<fills_.at(f).beam2.size(); ++b) {
-	mask.push_back( fills_.at(f).beam2.at(b)-1 );
-	mask.push_back( fills_.at(f).beam2.at(b) );
-	mask.push_back( fills_.at(f).beam2.at(b)+1 );
-      }
-
-      // sort and remove duplicates
-      sort(mask.begin(), mask.end());
-      mask.erase(std::unique(mask.begin(), mask.end()), mask.end());
-
       ofile << fills_.at(f).runs.at(r) << ",";
 
-      for (unsigned i=0; i<mask.size(); ++i) {
-	ofile << mask.at(i) << ",";
+      for (unsigned bx=0; bx<fills_.at(f).mask.size(); ++bx) {
+	if (fills_.at(f).mask.at(bx)) 
+	  ofile << bx << ",";
       }
 
       ofile << std::endl;
