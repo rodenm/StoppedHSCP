@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.72 2011/05/19 16:53:33 temple Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.73 2011/05/20 15:37:55 jbrooke Exp $
 //
 //
 
@@ -413,6 +413,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   currentFill_(0),
   currentFillL1_(0),
   currentColls_(0),
+  currentBunches_(0),
   l1JetsMissing_(false),
   hltJetsMissing_(false),
   hltMissing_(false),
@@ -590,7 +591,7 @@ StoppedHSCPTreeProducer::beginRun(edm::Run const & iRun, edm::EventSetup const& 
 
   // set filling scheme for this run
   currentColls_ = fills_.getCollisionsFromRun(iRun.runAuxiliary().run());
-  currentColls_ = fills_.getBunchesFromRun(iRun.runAuxiliary().run());
+  currentBunches_ = fills_.getBunchesFromRun(iRun.runAuxiliary().run());
   currentFill_  = fills_.getFillFromRun(iRun.runAuxiliary().run());
 
 }
