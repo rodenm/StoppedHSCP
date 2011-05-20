@@ -7,6 +7,7 @@
 #include <vector>
 
 class StoppedHSCPEvent;
+class LhcFills;
 
 class Cuts {
  public:
@@ -17,12 +18,14 @@ class Cuts {
 
   Cuts(StoppedHSCPEvent* event,
        bool isMC, 
-       unsigned version);
+       unsigned version,
+       LhcFills* fills);
 
   ~Cuts();
 
   // the cut methods themselves
   bool triggerCut() const;      // require event passed main trigger
+  bool trigger2010Cut() const;  // require event passed main trigger
   bool controlTrigger() const;  // event fired control trigger
   bool bptxVeto() const;        // cut on time wrt BPTX signal
   bool bxVeto() const;          // cut on BX wrt expected collisions
@@ -50,6 +53,9 @@ class Cuts {
 
   // get cut version
   unsigned cutVersion() const { return version_; }
+
+  // set the fills pointer
+  void setFills(LhcFills* fills) { fills_ = fills; }
 
   // set current event
   void setEvent(StoppedHSCPEvent* event) { event_ = event; }
@@ -102,6 +108,9 @@ class Cuts {
 
   // vector of cut names
   std::vector<std::string> names_;
+
+  // hack!
+  LhcFills* fills_;
   
 };
 

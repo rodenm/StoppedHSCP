@@ -1,6 +1,7 @@
 #include "StoppedHSCP/Analysis/interface/Cuts.h"
 
 #include "StoppedHSCP/Analysis/interface/StoppedHSCPEvent.h"
+#include "StoppedHSCP/Analysis/interface/LhcFills.h"
 
 
 #include <iostream>
@@ -12,10 +13,11 @@
 #define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
 
 
-Cuts::Cuts(StoppedHSCPEvent* event, bool isMC, unsigned version) :
+Cuts::Cuts(StoppedHSCPEvent* event, bool isMC, unsigned version, LhcFills* fills) :
   event_(event),
   isMC_(isMC),
-  version_(version)
+  version_(version),
+  fills_(fills)
 {
 
   // set up cuts
@@ -43,7 +45,7 @@ Cuts::Cuts(StoppedHSCPEvent* event, bool isMC, unsigned version) :
 
   // digi-based timing cuts
   if (version_ == 1) {
-    addCut(&Cuts::triggerCut, "trigger");
+    addCut(&Cuts::trigger2010Cut, "trigger");
     addCut(&Cuts::bptxVeto, "BPTX veto");
     addCut(&Cuts::bxVeto, "BX veto");
     addCut(&Cuts::vertexVeto, "Vertex veto");
@@ -56,14 +58,35 @@ Cuts::Cuts(StoppedHSCPEvent* event, bool isMC, unsigned version) :
     addCut(&Cuts::jetN90Cut, "n90");
     addCut(&Cuts::towersIPhiCut, "nTowiPhi");
     //addCut(&Cuts::iPhiFractionCut, "iPhiFrac");
-    addCut(&Cuts::digiR1Cut, "R1");
-    addCut(&Cuts::digiR2Cut, "R2");
-    addCut(&Cuts::digiRPeakCut, "Rpeak");
-    addCut(&Cuts::digiROuterCut, "Router");
+    addCut(&Cuts::digiR1Cut, "R1 digi");
+    addCut(&Cuts::digiR2Cut, "R2 digi");
+    addCut(&Cuts::digiRPeakCut, "Rpeak digi");
+    addCut(&Cuts::digiROuterCut, "Router digi");
+  }
+
+  // 2010 trigger
+  if (version_ == 2) {
+    addCut(&Cuts::trigger2010Cut, "trigger");
+    addCut(&Cuts::bptxVeto, "BPTX veto");
+    addCut(&Cuts::bxVeto, "BX veto");
+    addCut(&Cuts::vertexVeto, "Vertex veto");
+    addCut(&Cuts::haloVeto, "Halo veto");
+    addCut(&Cuts::cosmicVeto, "Cosmic veto");
+    addCut(&Cuts::hcalNoiseVeto, "Noise veto");
+    addCut(&Cuts::looseJetCut, "E30");
+    addCut(&Cuts::jetEnergyCut, "E50");
+    addCut(&Cuts::jetN60Cut, "n60");
+    addCut(&Cuts::jetN90Cut, "n90");
+    addCut(&Cuts::towersIPhiCut, "nTowiPhi");
+    //addCut(&Cuts::iPhiFractionCut, "iPhiFrac");
+    addCut(&Cuts::hpdR1Cut, "R1");
+    addCut(&Cuts::hpdR2Cut, "R2");
+    addCut(&Cuts::hpdRPeakCut, "Rpeak");
+    addCut(&Cuts::hpdROuterCut, "Router");
   }
 
   // added HF veto and N tracks cuts
-  if (version_ == 2) {
+  if (version_ == 3) {
     addCut(&Cuts::triggerCut, "trigger");
     addCut(&Cuts::bptxVeto, "BPTX veto");
     addCut(&Cuts::bxVeto, "BX veto");
@@ -96,6 +119,10 @@ bool Cuts::triggerCut() const {      // require event passed main trigger
   return event_->hltJetNoBptx3BXNoHalo;
 }
 
+bool Cuts::trigger2010Cut() const {  // require event passed main trigger
+  return true;//event_->hltJetNoBptx;
+}
+
 bool Cuts::controlTrigger() const {  // event fired control trigger
   return event_->hltJetNoBptx;
 }
@@ -105,6 +132,8 @@ bool Cuts::bptxVeto() const {        // cut on time wrt BPTX signal
 }
 
 bool Cuts::bxVeto() const {          // cut on BX wrt expected collisions
+
+  //return !(fills_->getMaskFromRun(event_->run).at(event_->bx));
   return abs(event_->bxWrtCollision) > 2;
 }
 
@@ -113,7 +142,7 @@ bool Cuts::vertexVeto() const {      // no vertex
 }
 
 bool Cuts::haloVeto() const {        // no halo ID
-  return !(event_->beamHalo_CSCLoose) && geometryHaloCut();
+  return !(event_->beamHalo_CSCLoose) ;//&& geometryHaloCut();
 }
 
 bool Cuts::hfVeto() const {
