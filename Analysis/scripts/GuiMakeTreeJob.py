@@ -480,6 +480,7 @@ class TreeJobGui:
         self.copyoutputdir=StringVar()
         self.verbose=BooleanVar()
         self.overwrite=BooleanVar()
+        self.listfiles=BooleanVar()
 
         self.user.set("jbrooke")
         self.gridroot.set("srm://heplnx204.pp.rl.ac.uk:8443/srm/managerv2?SFN=")
@@ -489,6 +490,7 @@ class TreeJobGui:
             self.odir.set("/storage/phjjb/stoppedHSCP/")
         self.verbose.set(False)
         self.overwrite.set(False)
+        self.listfiles.set(False)
 
         parent.columnconfigure(0,weight=1)
         Label(parent,text="Copy File Utility\n(Run after ntuples from tree job are created)").grid(row=0,column=0,columnspan=2)
@@ -536,6 +538,12 @@ class TreeJobGui:
                                       #command=lambda y=self.useJSON.get(): self.checkJSON(y)
                                       )
         self.overwriteMenu.grid(row=row,column=1,sticky=EW)
+        row=row+1
+        Label(self.CopyFrame2,text="List (don't copy) files:").grid(row=row,column=0)
+        self.listfileMenu=OptionMenu(self.CopyFrame2,
+                                     self.listfiles,
+                                     True, False)
+        self.listfileMenu.grid(row=row,column=1,sticky=EW)
         self.CopyButton=Button(self.CopyFrame2,text="\nCopy\nFiles\n",command = lambda x=self:x.CopyFiles(),width=20,bg="blue",fg="white")
         row=row+1
         self.CopyButton.grid(row=row,column=1)
@@ -559,13 +567,14 @@ class TreeJobGui:
         except KeyError:
             self.Print("ERROR!  CRAB DOES NOT APPEAR TO HAVE BEEN SET UP!")
             return
-        CopyFiles(self.user.get(),
-                  self.gridroot.get(),
-                  self.gridloc.get(),
-                  self.copydataset.get(),
-                  self.copyoutputdir.get(),
-                  self.verbose.get(),
-                  self.overwrite.get())
+        CopyFiles(user=self.user.get(),
+                  gridroot=self.gridroot.get(),
+                  gridloc=self.gridloc.get(),
+                  dataset=self.copydataset.get(),
+                  odir=self.copyoutputdir.get(),
+                  verbose=self.verbose.get(),
+                  overwrite=self.overwrite.get(),
+                  listfiles=self.listfiles.get())
 
     ###############################################################
 
