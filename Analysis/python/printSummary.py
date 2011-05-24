@@ -121,23 +121,31 @@ print "Expected background rates"
 
 # n90 method
 bgRateN90        = rateCoeffN90*n90nmo/time
-errStatBGRateN90 = 1/sqrt(n90nmo)
+if (n90nmo>0):
+    errStatBGRateN90 = 1/sqrt(n90nmo)
+else:
+    errStatBGRateN90 = 99999999
 errSystBGRateN90 = sqrt(errSystRateCoeff*errSystRateCoeff +
                         errCtrlN90NM1Rate*errCtrlN90NM1Rate +
                         errCtrlFinRate*errCtrlFinRate)
-
-print '  N90 method    : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (bgRateN90, bgRateN90*errStatBGRateN90, bgRateN90*errSystBGRateN90)
-
+if (n90nmo>0):
+    print '  N90 method    : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (bgRateN90, bgRateN90*errStatBGRateN90, bgRateN90*errSystBGRateN90)
+else:
+    print '  N90 method    : n90nmo = 0! '
 
 # CT method
 bgRateCT         = rateCoeffCT*ctnmo/time
-errStatBGRateCT  = 1/sqrt(ctnmo)
+if (ctnmo>0):
+    errStatBGRateCT  = 1/sqrt(ctnmo)
+else:
+    errStatBGRateCT=99999999
 errSystBGRateCT  = sqrt(errSystRateCoeff*errSystRateCoeff +
                         errCtrlCTNM1Rate*errCtrlCTNM1Rate +
                         errCtrlFinRate*errCtrlFinRate)
-
-print '  CT method     : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (bgRateCT, bgRateCT*errStatBGRateCT, bgRateCT*errSystBGRateCT)
-
+if (ctnmo>0):
+    print '  CT method     : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (bgRateCT, bgRateCT*errStatBGRateCT, bgRateCT*errSystBGRateCT)
+else:
+    print '  CT method     :  ctnmo = 0!'
 
 # combined n90 & CT
 bgRateEst        = 0.5 * (bgRateN90 + bgRateCT)
