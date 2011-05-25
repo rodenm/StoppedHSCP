@@ -37,6 +37,8 @@ for opt, arg in opts:
 
 # arguments
 dataset=args[0]
+while dataset.endswith("/"):  #remove any trailing '/'
+    dataset=dataset[:-1]
 runs=[]
 if (len(args)>1):
     runlist=args[1].split(',')
@@ -44,7 +46,6 @@ if (len(args)>1):
         runs.append(int(runlist[i]))
         
 sys.argv.append('-b')
-
 
 from ROOT import *
 from math import *
@@ -58,8 +59,8 @@ gROOT.SetStyle("tdrStyle")
 gROOT.ForceStyle()
 
 # output file
-ofile = dataset+"/"+dataset+"_basic.ps"
-opdf = dataset+"/"+dataset+"_basic.pdf"
+ofile=os.path.join(dataset,"%s_basic.ps"%dataset)
+opdf=os.path.join(dataset,"%s_basic.pdf"%dataset)
 
 # prepare canvas for plotting
 canvas = TCanvas("canvas")

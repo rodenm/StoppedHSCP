@@ -28,7 +28,9 @@ if len(args) < 1 :
 
 # arguments
 dataset=args[0]
-        
+while dataset.endswith("/"):  #remove any trailing '/'
+    dataset=dataset[:-1]
+    
 sys.argv.append('-b')
 
 from ROOT import *
@@ -43,8 +45,8 @@ gROOT.SetStyle("tdrStyle")
 gROOT.ForceStyle()
 
 # output file
-ofile = dataset+"/"+dataset+"_runs.ps"
-opdf = dataset+"/"+dataset+"_runs.pdf"
+ofile=os.path.join(dataset,"%s_runs.ps"%dataset)
+opdf=os.path.join(dataset,"%s_runs.pdf"%dataset)
 
 # prepare canvas for plotting
 canvas = TCanvas("canvas")
