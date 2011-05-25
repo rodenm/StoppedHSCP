@@ -133,8 +133,8 @@ bool Cuts::bptxVeto() const {        // cut on time wrt BPTX signal
 
 bool Cuts::bxVeto() const {          // cut on BX wrt expected collisions
 
-  //return !(fills_->getMaskFromRun(event_->run).at(event_->bx));
-  return abs(event_->bxWrtCollision) > 2;
+  return !(fills_->getMaskFromRun(event_->run).at(event_->bx));
+  //return abs(event_->bxWrtCollision) > 2;
 }
 
 bool Cuts::vertexVeto() const {      // no vertex
