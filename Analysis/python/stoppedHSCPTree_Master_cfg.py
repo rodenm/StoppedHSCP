@@ -31,7 +31,8 @@ process.hltHighLevel.TriggerResultsTag = cms.InputTag("TriggerResults","","HLT")
 process.hltHighLevel.HLTPaths = cms.vstring(
     "HLT_JetE30_NoBPTX_*",
     "HLT_JetE30_NoBPTX_NoHalo_*",
-    "HLT_JetE30_NoBPTX3BX_NoHalo_*"
+    "HLT_JetE30_NoBPTX3BX_NoHalo_*",
+    "HLT_JetE50_NoBPTX3BX_NoHalo_*"
 )
 
 process.hltStoppedHSCPHpdFilter = cms.EDFilter( "HLTHPDFilter",

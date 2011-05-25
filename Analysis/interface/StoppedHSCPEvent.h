@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.45 2011/04/18 23:55:39 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.46 2011/05/20 15:37:55 jbrooke Exp $
 //
 //
 
@@ -250,6 +250,7 @@ class StoppedHSCPEvent : public TObject {
   bool hltJetNoBptx;
   bool hltJetNoBptxNoHalo;
   bool hltJetNoBptx3BXNoHalo;
+  bool hltJetE50NoBptx3BXNoHalo;
 
   // trigger jets
   unsigned l1Jet_N;
