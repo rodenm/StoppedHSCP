@@ -3,7 +3,7 @@
 
 import FWCore.ParameterSet.Config as cms
 
-HLTPaths = cms.vstring("HLT_StoppedHSCP")
+HLTPaths = cms.vstring("HLT_StoppedHSCP*")
 
 hltPathJetNoBptx = cms.untracked.string("HLT_StoppedHSCP")
 hltPathJetNoBptxNoHalo = cms.untracked.string("")
