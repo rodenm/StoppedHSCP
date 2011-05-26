@@ -116,12 +116,14 @@ void Analyser::readWatchedEvents() {
     while (!file.eof()) {
       getline(file, line);
       std::vector<std::string> strs(0);
-      boost::split(strs, line, boost::is_any_of(std::string(":"))); 
-      if(atoi(strs.at(0).c_str())>0) {
-	unsigned long run = (unsigned long) atoi(strs.at(0).c_str());
-	//unsigned lb  = (unsigned) atoi(strs.at(1).c_str()); // not currently used
-	unsigned long id  = (unsigned long) atoi(strs.at(2).c_str());
-	watchedEvents_.push_back(std::pair<unsigned long, unsigned long>(run, id));
+      boost::split(strs, line, boost::is_any_of(std::string(":")));
+      if (strs.size() > 0) {
+	if(atoi(strs.at(0).c_str())>0) {
+	  unsigned long run = (unsigned long) atoi(strs.at(0).c_str());
+	  //unsigned lb  = (unsigned) atoi(strs.at(1).c_str()); // not currently used
+	  unsigned long id  = (unsigned long) atoi(strs.at(2).c_str());
+	  watchedEvents_.push_back(std::pair<unsigned long, unsigned long>(run, id));
+	}
       }
     }
   }
@@ -159,31 +161,37 @@ void Analyser::printEvent() {
 void Analyser::printCutValues(ostream& o) {
 
   o << "Stopped HSCP Event" << std::endl;
-  o << "  run            = " << event_->run << std::endl;
-  o << "  lb             = " << event_->lb << std::endl;
-  o << "  id             = " << event_->id << std::endl;
-  o << "  bx             = " << event_->bx << std::endl;
-  o << "  t since coll   = " << event_->bxAfterCollision * 25e-9 << std::endl;
-  o << "  orbit          = " << event_->orbit << std::endl;
-  o << "  BX veto        = " << cuts_.cutN(1) << std::endl;
-  o << "  BPTX veto      = " << cuts_.cutN(2) << std::endl;
-  o << "  nVtx           = " << event_->nVtx << std::endl;
+  o << "  run            = " << event_->run << "\t" << std::endl;
+  o << "  lb             = " << event_->lb << "\t" << std::endl;
+  o << "  id             = " << event_->id << "\t" << std::endl;
+  o << "  bx             = " << event_->bx << "\t" << std::endl;
+  double lifetime = event_->bxAfterCollision * TIME_PER_BX;
+  o << "  t since coll   = " << lifetime << "\t" << std::endl;
+  o << "  orbit          = " << event_->orbit << "\t" << std::endl;
+  o << " Cut values :" << std::endl;
+  o << "  BX wrt coll    = " << event_->bxWrtCollision << "\t" << cuts_.bxVeto() << std::endl;
+  o << "  nVtx           = " << event_->nVtx << "\t" << cuts_.vertexVeto() << std::endl;
   std::string halo("None");
   if (event_->beamHalo_CSCLoose) halo = "CSCLoose";
   if (event_->beamHalo_CSCTight) halo = "CSCTight";
-  o << "  beamHalo       = " << halo << std::endl;
-  o << "  mu_N           = " << event_->mu_N << std::endl;
-  o << "  HCAL noise     = " << (event_->noiseFilterResult ? "No" : "Yes") << std::endl;
-  o << "  nTowerSameiPhi = " << event_->nTowerSameiPhi << std::endl;
-  o << "  jetE[0]        = " << event_->jetE[0] << std::endl;
-  o << "  jetEta[0]      = " << event_->jetEta[0] << std::endl;
-  o << "  jetN60[0]      = " << event_->jetN60[0] << std::endl;
-  o << "  jetN90[0]      = " << event_->jetN90[0] << std::endl;
-  o << "  top5DigiR1     = " << event_->top5DigiR1 << std::endl;
-  o << "  top5DigiR2     = " << event_->top5DigiR2 << std::endl;
-  o << "  top5DigiRPeak  = " << event_->top5DigiRPeak << std::endl;
-  o << "  top5DigiROuter = " << event_->top5DigiROuter << std::endl;
+  o << "  beamHalo       = " << halo << "\t" << cuts_.haloVeto() << std::endl;
+  o << "  mu_N           = " << event_->mu_N << "\t\t" << cuts_.cosmicVeto() << std::endl;
+  std::string noise = (event_->noiseFilterResult ? "No" : "Yes");
+  o << "  HCAL noise     = " << noise << "\t\t" << cuts_.hcalNoiseVeto() << std::endl;
+  o << "  nTowerSameiPhi = " << event_->nTowerSameiPhi << "\t\t" << cuts_.towersIPhiCut() << std::endl;
+  o << "  jetE[0]        = " << event_->jetE[0] << "\t" << cuts_.jetEnergyCut() << std::endl;
+  o << "  jetEta[0]      = " << event_->jetEta[0] << "\t" << cuts_.jetEnergyCut() << std::endl;
+  o << "  jetN60[0]      = " << event_->jetN60[0] << "\t\t" << cuts_.jetN60Cut() << std::endl;
+  o << "  jetN90[0]      = " << event_->jetN90[0] << "\t\t" << cuts_.jetN90Cut() << std::endl;
   o << "  jetEMF[0]      = " << (event_->jetEEm[0] / event_->jetEHad[0]) << std::endl;
+  o << "  topHPD5R1      = " << event_->topHPD5R1 << "\t" << cuts_.hpdR1Cut() << std::endl;
+  o << "  topHPDR2       = " << event_->topHPD5R2 << "\t" << cuts_.hpdR2Cut() << std::endl;
+  o << "  topHPD5RPeak   = " << event_->topHPD5RPeak << "\t" << cuts_.hpdRPeakCut() << std::endl;
+  o << "  topHPD5ROuter  = " << event_->topHPD5ROuter << "\t" << cuts_.hpdROuterCut() << std::endl;
+  o << "  top5DigiR1     = " << event_->top5DigiR1 << "\t" << cuts_.digiR1Cut() << std::endl;
+  o << "  top5DigiR2     = " << event_->top5DigiR2 << "\t" << cuts_.digiR2Cut() << std::endl;
+  o << "  top5DigiRPeak  = " << event_->top5DigiRPeak << "\t" << cuts_.digiRPeakCut() << std::endl;
+  o << "  top5DigiROuter = " << event_->top5DigiROuter << "\t" << cuts_.digiROuterCut() << std::endl;
   o << "  time sample    = ";
   for (unsigned i=0; i<10; ++i) o << event_->top5DigiTimeSamples.at(i) << " ";
   o << std::endl;
