@@ -44,13 +44,11 @@ process.hltStoppedHSCPHpdFilter = cms.EDFilter( "HLTHPDFilter",
     rbxSpikeUnbalance = cms.double( 0.2 )
 )
 
-process.load("CommonTools.RecoAlgos.HBHENoiseFilter_cfi")
-process.HBHENoiseFilter.minNumIsolatedNoiseChannels = cms.int32(999999)
-process.HBHENoiseFilter.minIsolatedNoiseSumE = cms.double(999999.)
-process.HBHENoiseFilter.minIsolatedNoiseSumEt = cms.double(999999.)
-
 # add a flag indicating the HBHE noise 
 process.load('CommonTools/RecoAlgos/HBHENoiseFilterResultProducer_cfi')
+process.HBHENoiseFilterProducer.minNumIsolatedNoiseChannels = cms.int32(999999)
+process.HBHENoiseFilterProducer.minIsolatedNoiseSumE = cms.double(999999.)
+process.HBHENoiseFilterProducer.minIsolatedNoiseSumEt = cms.double(999999.)
 
 # get RAW data
 process.load('Configuration/StandardSequences/RawToDigi_Data_cff')
