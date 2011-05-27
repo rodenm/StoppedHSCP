@@ -9,17 +9,38 @@ from subprocess import *
 
 from optparse import OptionParser
 
+import threading
+import time
 
+class CopyFileThread(threading.Thread):
+    ''' Class that will run each copy command independently, rather than sequentially.'''
+    
+    def __init__(self,command,sleeptime=60):
+        threading.Thread.__init__(self)
+        self.command=command
+        self.sleeptime=sleeptime
+        
+    def run(self):
+        time.sleep(2)  # small break between jobs
+        print self.command
+        cp = Popen(self.command, shell=True)  # execute command
+        # wait to see if copying is complete
+        completed=False
+        totaltime=0
 
-#def usage():
-#    print "copyFiles.py [-c] <dataset>"
-#    sys.exit()
-
-#try:
-#    opts, args = getopt.getopt(sys.argv[1:], "c")
-#except getopt.GetoptError:
-#    usage()
-#    sys.exit(2)
+        # This doesn't seem to work -- sometimes the "poll" command
+        # never returns True, even when the file is copied.
+        
+        #while (completed==False):
+        #    completed=cp.poll()
+        #    # Check every (sleeptime) seconds to see if file has finished copying
+        #    if (totaltime>300):  # print messages after 5 minutes
+        #        print "Checking on '%s':  Completed? %s"%(self.command,completed)
+        #    time.sleep(self.sleeptime)
+        #    totaltime=totaltime+self.sleeptime
+        cp.wait()  # is this necessary?
+        print "Completed '%s'"%self.command
+        return
 
 def CopyFiles(user="jbrooke",
               gridroot="srm://heplnx204.pp.rl.ac.uk:8443/srm/managerv2?SFN=",
@@ -27,8 +48,10 @@ def CopyFiles(user="jbrooke",
               dataset="",
               odir="/storage/phjjb/stoppedHSCP/",
               verbose=False,
-              overwrite=False):
+              overwrite=False,
+              listfiles=False):
 
+    starttime=time.time()
     # Specify grid location using base gridloc, user and dataset
     # Specify output directory from base and dataset
     gridloc=os.path.join(gridloc,user,dataset)
@@ -36,7 +59,10 @@ def CopyFiles(user="jbrooke",
     if not os.path.exists(odir):  # Create output dir if it doesn't exist
         os.makedirs(odir)
 
-    print "Copying files from :"
+    if (listfiles==True):
+        print "Listing files from :"
+    else:
+        print "Copying files from :"
     print gridroot+gridloc
 
     # get file list
@@ -45,28 +71,68 @@ def CopyFiles(user="jbrooke",
 
     files=lsop[0]
 
+    allfiles=files.splitlines()
+    filecount=len(allfiles)
+    print "A total of %i files found:"%filecount
     print files
+    # Only list files, don't copy them
+    if listfiles==True:
+        endtime=time.time()
+        print "A total of %i files found."%filecount
+        print "Total time taken: %i min %.2f sec"%((endtime-starttime)/60, (endtime-starttime)%60)
+        return True
 
+    print "A total of %i files will be copied."%filecount
+    endtime=time.time()
+    print "(Job time so far: %i min %.2f sec)"%((endtime-starttime)/60, (endtime-starttime)%60)
     # copy files
-    for file in files.splitlines():
+    counter=1
+
+    cmdThreads=[]
+    for file in allfiles:
         basename=os.path.basename(file)
         #command = "lcg-cp "+gridroot+"/"+file+" "+os.path.join(odir,basename)
         command = "lcg-cp %s/%s %s"%(gridroot,file,os.path.join(odir,basename))
         print "\n%s\n"%command
-        
+        print "Copying %s -- file %i of %i"%(os.path.join(odir,basename),counter,filecount)
+        counter=counter+1
         # Protection against overwriting existing files -- ask if conflicting files should be overwritten
         if overwrite==False:
-            print os.path.join(odir,basename), os.path.exists(os.path.join(odir,basename))
+            #print os.path.join(odir,basename), os.path.exists(os.path.join(odir,basename))
             if os.path.exists(os.path.join(odir,basename)):
                 print "WARNING!  File '%s' already exists!"%os.path.join(odir,basename)
                 cont=raw_input("Overwrite (y/n)? :  ")
                 if not (cont.upper()).startswith("Y"):
                     continue
                 print "Overwriting '%s'..."%basename
-        cp = Popen(command, shell=True)
-        cp.wait()
 
-    return
+        cmdThreads.append(CopyFileThread(command))
+        cmdThreads[-1].start()
+
+        #cp = Popen(command, shell=True)
+        #cp.wait()
+
+    # Wait for all jobs to complete
+    alive=99
+    while alive>0:
+        endtime=time.time()
+        alive=0
+        mysize=len(cmdThreads)
+        for i in cmdThreads:
+            if i.isAlive():
+                alive=alive+1
+                if (endtime-starttime)>300:
+                    print "alive:  ",i.command
+        print "%i of %i total files are still being copied "%(alive,mysize)
+        sys.stdout.flush()
+        if (alive==0):
+            break
+        time.sleep(60)
+        
+    endtime=time.time()
+    print "Total time taken: %i min %.2f sec"%((endtime-starttime)/60, (endtime-starttime)%60)
+
+    return True
 
 
 def PrintHelp(parser):
@@ -118,7 +184,11 @@ if __name__=="__main__":
                       default=False,
                       action="store_true",
                       help="Alternate method of accessing this help message")
-    
+    parser.add_option("-l","--listfiles",
+                      dest="listfiles",
+                      default=False,
+                      action="store_true",
+                      help="Only list the files in the initial location, rather than copying them")
     (options,args)=parser.parse_args()
 
     if options.help==True:
@@ -168,11 +238,15 @@ if __name__=="__main__":
             sys.exit()
 
     for d in options.datasets:
-        print "Copying files in dataset '%s'"%d
+        if (options.listfiles==True):
+            print "Listing files in dataset '%s'"%d
+        else:
+            print "Copying files in dataset '%s'"%d
         CopyFiles(user=options.user,
                   gridroot=options.gridroot,
                   gridloc=options.gridloc,
                   dataset=d,
                   odir=options.outputdir,
                   verbose=options.verbose,
-                  overwrite=options.overwrite)
+                  overwrite=options.overwrite,
+                  listfiles=options.listfiles)
