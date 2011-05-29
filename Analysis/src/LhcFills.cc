@@ -295,6 +295,33 @@ const std::vector<bool>& LhcFills::getLifetimeMaskFromRun(unsigned long run) {
 }
 
 
+
+double LhcFills::getLiveFractionFromRun(unsigned long run) {
+
+  // count number of unmasked bunches
+  unsigned nLiveBx = 0;
+  for (unsigned bx=0; bx<NBX_PER_ORBIT; ++bx) {
+    if ( !getMaskFromRun(run).at(bx) ) nLiveBx++;
+  }
+
+  return (double) nLiveBx / (double) NBX_PER_ORBIT;
+
+}
+
+
+double LhcFills::getLiveFractionLifetimeFromRun(unsigned long run) {
+
+  // count number of unmasked bunches
+  unsigned nLiveBx = 0;
+  for (unsigned bx=0; bx<NBX_PER_ORBIT; ++bx) {
+    if ( !(getMaskFromRun(run).at(bx) || getLifetimeMaskFromRun(run).at(bx) ) ) nLiveBx++;
+  }
+
+  return (double) nLiveBx / (double) NBX_PER_ORBIT;
+
+}
+
+
 unsigned long LhcFills::getIndexFromFill(unsigned long fill) {
   if (fill < lookupFillIndex_.size()) {
     return lookupFillIndex_.at(fill);

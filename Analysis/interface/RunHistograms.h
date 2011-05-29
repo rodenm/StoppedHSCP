@@ -6,6 +6,7 @@
 
 #include "StoppedHSCP/Analysis/interface/StoppedHSCPEvent.h"
 #include "StoppedHSCP/Analysis/interface/Cuts.h"
+#include "StoppedHSCP/Analysis/interface/LhcFills.h"
 
 #include "TFile.h"
 #include "TH1D.h"
@@ -19,7 +20,7 @@ class RunHistograms {
 
  public:
 
-  RunHistograms(TFile* file, Cuts* cuts);
+  RunHistograms(TFile* file, Cuts* cuts, LhcFills* fills);
   ~RunHistograms();
 
   // book the per-run histograms
@@ -37,6 +38,8 @@ class RunHistograms {
  private:
 
   Cuts* cuts_;
+  LhcFills* fills_;
+
   TDirectory* base_;
 
   std::vector<unsigned long> runs_;
@@ -44,6 +47,7 @@ class RunHistograms {
   std::vector<TH1D*> hbx_;
   std::vector<TH1D*> horb_;
   std::vector<TH1D*> hlb_;
+  std::vector<TH1D*> hlivetime_;
 
 };
 

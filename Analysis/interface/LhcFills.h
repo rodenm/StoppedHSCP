@@ -38,6 +38,8 @@ class LhcFills {
   const std::vector<unsigned long>& getBunchesFromRun(unsigned long run);
   const std::vector<bool>& getMaskFromRun(unsigned long run);
   const std::vector<bool>& getLifetimeMaskFromRun(unsigned long run);
+  double getLiveFractionFromRun(unsigned long run);
+  double getLiveFractionLifetimeFromRun(unsigned long run);
 
   // get info about a particular filling scheme
   //   std::vector<unsigned> getCollisionsFromScheme(std::string scheme);
