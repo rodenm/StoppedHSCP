@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.74 2011/05/20 16:09:00 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.75 2011/05/25 14:59:26 heistera Exp $
 //
 //
 
@@ -896,7 +896,13 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
   event_->gtTechWord = gtTechWord;
   
   // L1 trigger bits for -2..+2 BX
-  for (int bx=-2; bx<3; ++bx) {
+  int start = -2;
+  int end = 3;
+  if (isMC_) {  // don't loop over multiple BX for MC
+    start=0;
+    end=1;
+  }
+  for (int bx=-start; bx<end; ++bx) {
 
     const DecisionWord decisionWord = gtReadoutRecord->decisionWord(bx);
     const TechnicalTriggerWord technicalWord = gtReadoutRecord->technicalTriggerWord(bx);
