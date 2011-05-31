@@ -149,16 +149,16 @@ if __name__=="__main__":
         sys.exit()
 
     if not os.path.isdir(options.inputdir):
-        print "Error!  Input directory '%s' does not exist!"%inputdir
+        print "Error!  Input directory '%s' does not exist!"%options.inputdir
         sys.exit()
     if not os.path.isdir(options.outputdir):
-        print "Error!  Output directory '%s' does not exist!"%outputdir
+        print "Error!  Output directory '%s' does not exist!"%options.outputdir
         yesno=raw_input("Create directory (y/n)? ")
         if yesno.upper().startswith("Y"):
             try:
                 os.mkdir(options.outputdir)
             except OSError:
-                print "Sorry, can't make output directory '%s'"%outputdir
+                print "Sorry, can't make output directory '%s'"%options.outputdir
                 print "Perhaps you need to create parent directories first?"
                 sys.exit()
         else:
