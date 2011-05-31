@@ -1,6 +1,12 @@
 
+from math import *
+
 # constants
-lumiBlockLength = 25.e-9 * 3564. * pow(2., 18)
+TIME_PER_BX       = 25.e-9
+BX_PER_ORBIT      = 3564
+ORBIT_PER_LS      = pow(2., 18)
+TIME_PER_LS       = TIME_PER_BX * BX_PER_ORBIT * ORBIT_PER_LS
+lumiBlockLength   = TIME_PER_LS
 
 # cuts
 nCuts    = 16
@@ -9,43 +15,22 @@ in90     = 10
 iCT      = 11
 iAllCuts = 15
 
+# systematics
+errSystRateCoeff  = 0.10691  # dn90/dCT syst error (relative)
+scaleUncert       = 0.13     # combined JES, lumi systematic
 
+# control sample counts for BG estimation
 
-### Numbers derived from control sample ###
+#N_ctrl          = 46    # 2010 values
+#N_n90_ctrl      = 202
+#N_ct_ctrl       = 1216
 
-# final rate
-#ctrlFinRate       = 5.54884e-05
-ctrlFinRate        = 5.09013e-05  # leading iphi fraction test
-#ctrlFinRate        = 5.37292e-05  # tiziano test
+N_ctrl          = 29    # from Run2010A_Apr21_423p2_v4_1117_1309
+N_n90_ctrl      = 257
+N_ct_ctrl       = 1982
 
-# stat error on final rate (relative)
-#errCtrlFinRate    = 0.229416
-errCtrlFinRate    = 0.235702  # leading iphi fraction test
-#errCtrlFinRate    = 0.229416  # tiziano test
+# errors (fractional)
+N_ctrl_stat     = 1/sqrt(N_ctrl)
+N_n90_ctrl_stat = 1/sqrt(N_n90_ctrl)
+N_ct_ctrl_stat  = 1/sqrt(N_ct_ctrl)
 
-# CT N-1 rate
-#ctrlCTNM1Rate    = 0.00136677
-ctrlCTNM1Rate    = 0.00134606  # leading iphi fraction test
-#ctrlCTNM1Rate    = 0.00134606  # tiziano test
-
-# stat error on CT N-1 rate (relative)
-#errCtrlCTNM1Rate = 0.046225
-errCtrlCTNM1Rate = 0.0458349  # leading iphi fraction test
-#errCtrlCTNM1Rate = 0.0458349  # tiziano test
-
-# N90 N-1 rate
-#ctrlN90NM1Rate     = 0.00193917
-ctrlN90NM1Rate     = 0.0002234  # leading iphi fraction test
-#ctrlN90NM1Rate     = 0.0019399  # tiziano test
-
-# stat error on N90 N-1 rate (relative)
-#errCtrlN90NM1Rate  = 0.0388075
-errCtrlN90NM1Rate  = 0.112509   # leading iphi test
-#errCtrlN90NM1Rate  = 0.0381802   # tiziano test
-
-# rate coefficients
-rateCoeffN90      = ctrlFinRate/ctrlN90NM1Rate
-rateCoeffCT       = ctrlFinRate/ctrlCTNM1Rate
-
-# dn90/dCT syst error (relative)
-errSystRateCoeff  = 0.10691

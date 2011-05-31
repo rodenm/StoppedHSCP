@@ -25,7 +25,7 @@ void massPlot(char* filename, char* filename2) {
 
   // stuff that has to be set by hand
   // some numbers need to be set buy hand
-  double lumi_tp = 131.0;  // lumi figure to use for time-profile fit
+  double lumi_tp = 132.0;  // lumi figure to use for time-profile fit
 
   // set which bin to use for intercept calculation (mass limit)
   unsigned theoryBin = 5;
@@ -208,7 +208,7 @@ void massPlot(char* filename, char* filename2) {
   // details
   TPaveText* blurb = new TPaveText(110., 1.e1, 350., 4.5e2);
   //blurb->AddText("CMS Preliminary 2010");
-  blurb->AddText("#int L dt = 131 pb^{-1}");
+  blurb->AddText("#int L dt = 132 pb^{-1}");
   blurb->AddText("L^{max}_{inst} = 5 x 10^{32} cm^{-2}s^{-1}");
   blurb->AddText("#sqrt{s} = 7 TeV");
   blurb->AddText("m_{#tilde{g}} - m_{#tilde{#chi}^{0}} = 100 GeV/c^{2}");

@@ -45,12 +45,12 @@ RunHistograms::~RunHistograms() {
   for (itr=hbx_.begin(); itr!=hbx_.end(); ++itr) delete (*itr);
   for (itr=horb_.begin(); itr!=horb_.end(); ++itr) delete (*itr);
   for (itr=hlb_.begin(); itr!=hlb_.end(); ++itr) delete (*itr);
-  for (itr=hlivetime_.begin(); itr!=hlivetime_.end(); ++itr) delete (*itr);
+  //for (itr=hlivetime_.begin(); itr!=hlivetime_.end(); ++itr) delete (*itr);
 
   hbx_.clear();
   horb_.clear();
   hlb_.clear();
-  hlivetime_.clear();
+  //hlivetime_.clear();
 
 }
 
@@ -73,14 +73,13 @@ void RunHistograms::book(unsigned long run) {
   if (hbx_.size() < run+1) hbx_.resize(run+1, 0);
   if (horb_.size() < run+1) horb_.resize(run+1, 0);
   if (hlb_.size() < run+1) hlb_.resize(run+1, 0);
-  if (hlivetime_.size() < run+1) hlivetime_.resize(run+1, 0);
+  //if (hlivetime_.size() < run+1) hlivetime_.resize(run+1, 0);
 
   // and book histograms
   hbx_.at(run) = new TH1D((std::string("hbx")+runstr.str()).c_str(), "BX number", 3564, 0., 3564.);
   horb_.at(run) = new TH1D((std::string("horb")+runstr.str()).c_str(), "Orbit number", 100, 0., 10000.);
   hlb_.at(run) = new TH1D((std::string("hlb")+runstr.str()).c_str(), "Lumi block", 5000, 0., 5000.);
-  
-  hlivetime_.at(run) = new TH1D((std::string("hlivetime")+runstr.str()).c_str(), "Livetime per LS", 5000, 0., 5000.);
+  //  hlivetime_.at(run) = new TH1D((std::string("hlivetime")+runstr.str()).c_str(), "Livetime per LS", 5000, 0., 5000.);
 
   // record the fact we booked this run already
   runs_.push_back(run);
@@ -108,8 +107,8 @@ void RunHistograms::fill(StoppedHSCPEvent& event) {
   else 
     std::cout << "size = " << hlb_.size() << " " << run << std::endl;
 
-  if (run < hlivetime_.size())
-    hlivetime_.at(run)->SetBinContent(event.lb, fills_->getLiveFractionFromRun(run) * TIME_PER_LS);
+//   if (run < hlivetime_.size())
+//     hlivetime_.at(run)->SetBinContent(event.lb, fills_->getLiveFractionFromRun(run) * TIME_PER_LS);
 
 }
 
@@ -129,6 +128,7 @@ void RunHistograms::save() {
     hbx_.at(*itr)->Write("",TObject::kOverwrite);
     horb_.at(*itr)->Write("",TObject::kOverwrite);
     hlb_.at(*itr)->Write("",TObject::kOverwrite);
+    //    hlivetime_.at(*itr)->Write("",TObject::kOverwrite);
 
   }
 
@@ -170,8 +170,9 @@ void RunHistograms::summarise() {
     }
     hnlb->Fill(runstr.c_str(), nlb);
 
+
     // live time
-    hlivetime->Fill(runstr.c_str(), nlb*TIME_PER_LS);
+    hlivetime->Fill(runstr.c_str(), nlb*TIME_PER_LS*fills_->getLiveFractionFromRun(*itr));
     
   }
 

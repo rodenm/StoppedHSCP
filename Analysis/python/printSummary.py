@@ -43,6 +43,9 @@ cmsswdir = os.environ['CMSSW_BASE']
 # ROOT
 from ROOT import *
 
+# print out
+print "Summary for dataset : ", dataset
+print
 
 hfile=TFile(dataset+"/histograms.root")
 
@@ -52,9 +55,9 @@ if (not isMC):
     htime=hfile.Get("runs/hlivetime")
     hnlb=hfile.Get("runs/hnlb")
     
-    print "Run\tLS\tLivetime"
-    for i in range(1,htime.GetNbinsX()+1):
-        print htime.GetXaxis().GetBinLabel(i)+"\t"+str(hnlb.GetBinContent(i))+"\t"+str(htime.GetBinContent(i))
+#    print "Run\tLS\tLivetime"
+#    for i in range(1,htime.GetNbinsX()+1):
+#        print htime.GetXaxis().GetBinLabel(i)+"\t"+str(hnlb.GetBinContent(i))+"\t"+str(htime.GetBinContent(i))
 
 
     # total time
@@ -100,70 +103,98 @@ for i in range(0,nCuts):
 print '[/TABLE]'
 print
 
-print "Rate coefficients from control sample"
-print "Rate coefficient N90 : ", rateCoeffN90
-print "Rate coefficient CT  : ", rateCoeffCT
-
 # backgrounds
-n90nmo   = int(hcutnmo.GetBinContent(in90+1))
-ctnmo    = int(hcutnmo.GetBinContent(iCT+1))
-fincount = hcutcum.GetBinContent(iAllCuts+1)
+N_n90   = int(hcutnmo.GetBinContent(in90+1))
+N_ct    = int(hcutnmo.GetBinContent(iCT+1))
+N       = hcutcum.GetBinContent(iAllCuts+1)
 
-print "N-1 rates"
-print '  n90   : %.2e +/- %.2e (stat)' % (n90nmo/time, sqrt(n90nmo)/time)
-print '  CT    : %.2e +/- %.2e (stat)' % (ctnmo/time, sqrt(ctnmo)/time)
+#print "N-1 rates"
+#print '  n90   : %.2e +/- %.2e (stat)' % (n90nmo/time, sqrt(n90nmo)/time)
+#print '  CT    : %.2e +/- %.2e (stat)' % (ctnmo/time, sqrt(ctnmo)/time)
+#print
+
+# selected counts
+print "Selected counts from this sample"
+print "  N90(N-1)  : ", N_n90
+print "  CT(N-1)   : ", N_ct
+print "  Final     : ", int(N)
+print
+
+# Rate coefficients
+Rn90 = N/N_n90
+Rct  = N/N_ct
+print "Rate coefficients from this sample"
+print "  N90 : ", Rn90
+print "  CT  : ", Rct
+print
+
+# Rate coefficients from control
+Rn90_ctrl = float(N_ctrl)/N_n90_ctrl
+Rct_ctrl  = float(N_ctrl)/N_ct_ctrl
+print "Rate coefficients from control sample"
+print "  N90 : ", Rn90_ctrl
+print "  CT  : ", Rct_ctrl
+print
+
+# calculate expected final counts
+# using n90 only
+Nexp_n90       = Rn90_ctrl * N_n90
+if (N_n90 > 0):
+    Nexp_n90_stat = 1/sqrt(N_n90)
+else:
+    Nexp_n90_stat = 99999999
+Nexp_n90_syst = sqrt( pow(errSystRateCoeff, 2) +
+                      pow(N_n90_ctrl_stat, 2) +
+                      pow(N_ctrl_stat, 2) )
+
+# using CT only
+Nexp_ct       = Rct_ctrl * N_ct
+if (N_ct > 0):
+    Nexp_ct_stat = 1/sqrt(N_ct)
+else:
+    Nexp_ct_stat = 99999999
+Nexp_ct_syst = sqrt( pow(errSystRateCoeff, 2) +
+                     pow(N_ct_ctrl_stat, 2) +
+                     pow(N_ctrl_stat, 2) )
+
+
+# combined
+Nexp       = 0.5 * ((Rn90_ctrl * N_n90) + (Rct_ctrl * N_ct))
+Nexp_stat  = sqrt( pow(N_n90_ctrl_stat, 2) +
+                   pow(N_ct_ctrl_stat, 2) )
+
+    
+Nexp_syst = 0.5 * sqrt( 2*pow(errSystRateCoeff, 2) +
+                              pow(N_n90_ctrl_stat, 2) +
+                              pow(N_ct_ctrl_stat, 2) +
+                              4*pow(N_ctrl_stat, 2) )
+
+Nexp_err  = sqrt(pow(Nexp_stat, 2) +
+                 pow(Nexp_syst, 2) )
+
+print 'Expected BG counts : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (Nexp, Nexp*Nexp_stat, Nexp*Nexp_syst)
 print
 
 
-print "Expected background rates"
-
-### all error variables are relative, not absolute ###
-
-# n90 method
-bgRateN90        = rateCoeffN90*n90nmo/time
-if (n90nmo>0):
-    errStatBGRateN90 = 1/sqrt(n90nmo)
-else:
-    errStatBGRateN90 = 99999999
-errSystBGRateN90 = sqrt(errSystRateCoeff*errSystRateCoeff +
-                        errCtrlN90NM1Rate*errCtrlN90NM1Rate +
-                        errCtrlFinRate*errCtrlFinRate)
-if (n90nmo>0):
-    print '  N90 method    : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (bgRateN90, bgRateN90*errStatBGRateN90, bgRateN90*errSystBGRateN90)
+print "Background rates"
+if (N_n90>0):
+    print '  N90 method    : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (Nexp_n90/time, Nexp*Nexp_n90_stat/time, Nexp*Nexp_n90_syst/time) 
 else:
     print '  N90 method    : n90nmo = 0! '
-
-# CT method
-bgRateCT         = rateCoeffCT*ctnmo/time
-if (ctnmo>0):
-    errStatBGRateCT  = 1/sqrt(ctnmo)
-else:
-    errStatBGRateCT=99999999
-errSystBGRateCT  = sqrt(errSystRateCoeff*errSystRateCoeff +
-                        errCtrlCTNM1Rate*errCtrlCTNM1Rate +
-                        errCtrlFinRate*errCtrlFinRate)
-if (ctnmo>0):
-    print '  CT method     : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (bgRateCT, bgRateCT*errStatBGRateCT, bgRateCT*errSystBGRateCT)
+if (N_ct>0):
+    print '  CT method     : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (Nexp_ct/time, Nexp*Nexp_ct_stat/time, Nexp*Nexp_ct_syst/time) 
 else:
     print '  CT method     :  ctnmo = 0!'
-
-# combined n90 & CT
-bgRateEst        = 0.5 * (bgRateN90 + bgRateCT)
-errStatBGRateEst = sqrt(errStatBGRateN90*errStatBGRateN90 +
-                        errStatBGRateCT*errStatBGRateCT)
-errSystBGRateEst = 0.5 * sqrt(2*errSystRateCoeff*errSystRateCoeff +
-                              errCtrlN90NM1Rate*errCtrlN90NM1Rate +
-                              errCtrlCTNM1Rate*errCtrlCTNM1Rate +
-                              4*errCtrlFinRate*errCtrlFinRate)
-
-
-print '  Combined      : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (bgRateEst, bgRateEst*errStatBGRateEst, bgRateEst*errSystBGRateEst)
+print '  Combined      : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (Nexp/time, Nexp*Nexp_stat/time, Nexp*Nexp_syst/time) 
 print
 
-
-# expected counts
-print 'Expected BG counts : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (bgRateEst*time, bgRateEst*errStatBGRateEst*time, bgRateEst*errSystBGRateEst*time)
+# expected rate & total error
+bgRate_exp     = Nexp/time
+bgRate_exp_err = (Nexp/time)*sqrt( pow(Nexp_stat, 2) +
+                                   pow(Nexp_syst, 2) )
+print "Expected rate for simulation :  %.3e +/- %.3e" % (bgRate_exp, bgRate_exp_err)
 print
+
 
 
 # get lists of runs, fills
@@ -184,8 +215,6 @@ runlist = runsStr.split(',')
 
 
 # now write Toy MC file
-bgRateTotErr = sqrt(pow(bgRateEst*errStatBGRateEst, 2) + pow(bgRateEst*errSystBGRateEst, 2))
-
 ofile = open(dataset+"/parameters.txt", 'w')
 ofile.write("mass\t\t\t200\n")
 ofile.write("crossSection\t\t606\n")
@@ -193,10 +222,11 @@ ofile.write("lifetime\t\t1\n")
 ofile.write("signalEff\t\t0.033652\n")
 ofile.write("signalEff_e\t\t0.0\n")
 ofile.write("bgRate\t\t\t")
-ofile.write(str(bgRateEst)+"\n")
+ofile.write(str(bgRate_exp)+"\n")
 ofile.write("bgRate_e\t\t")
-ofile.write(str(bgRateTotErr)+"\n")
-ofile.write("scaleUncert\t\t0.13\n")
+ofile.write(str(bgRate_exp_err)+"\n")
+ofile.write("scaleUncert\t\t")
+ofile.write(str(scaleUncert) +"\n")
 ofile.write("optimizeTimeCut\t\t1\n")
 ofile.write("histFile\t\t")
 ofile.write(ddir+"/histograms.root\n")

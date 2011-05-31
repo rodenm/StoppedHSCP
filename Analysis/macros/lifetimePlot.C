@@ -37,7 +37,7 @@ void lifetimePlot(char* filename, char* filename2="", char* filename3="") {
   unsigned stopIndex = 2;  // point 3 -> m_stop=300
 
   // some numbers need to be set buy hand
-  double lumi_tp = 131;  // lumi figure to use for time-profile fit
+  double lumi_tp = 132;  // lumi figure to use for time-profile fit
 
   unsigned nGluino      = 7;
   double m_g[10]        = { 150.,     200.,      300.,      400.,      500.,     600.,    900. };
@@ -287,7 +287,7 @@ TCanvas *makeLifetimePlot(TGraph *g_obs,
 
   blurb = new TPaveText(9e-8, 8e1, 2e-3, 4e3);
   blurb->AddText("CMS Preliminary 2011");
-  blurb->AddText("#int L dt = 131 pb^{-1}");
+  blurb->AddText("#int L dt = 132 pb^{-1}");
   blurb->AddText("L^{max}_{inst} = 5 x 10^{32} cm^{-2}s^{-1}");
   blurb->AddText("#sqrt{s} = 7 TeV");
   blurb->AddText("m_{#tilde{g}} - m_{#tilde{#chi}^{0}} = 100 GeV/c^{2}");
@@ -438,7 +438,7 @@ TCanvas *makeBasicPlot(TGraph *g1,
 
   blurb = new TPaveText(1e-6, 3e0, 1e-2, 1e1);
   blurb->AddText("CMS Preliminary 2011");
-  blurb->AddText("#int L dt = 131 pb^{-1}");
+  blurb->AddText("#int L dt = 132 pb^{-1}");
   blurb->AddText("L^{max}_{inst} = 7 x 10^{32}");
   blurb->AddText("#sqrt{s} = 7 TeV");
   blurb->SetTextFont(42);
