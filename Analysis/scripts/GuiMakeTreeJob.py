@@ -567,11 +567,12 @@ class TreeJobGui:
         except KeyError:
             self.Print("ERROR!  CRAB DOES NOT APPEAR TO HAVE BEEN SET UP!")
             return
-        CopyFiles(user=self.user.get(),
-                  gridroot=self.gridroot.get(),
-                  gridloc=self.gridloc.get(),
-                  dataset=self.copydataset.get(),
-                  odir=self.copyoutputdir.get(),
+        # use string strip to avoid white spaces that confuse copyFiles
+        CopyFiles(user=string.strip(self.user.get()),
+                  gridroot=string.strip(self.gridroot.get()),
+                  gridloc=string.strip(self.gridloc.get()),
+                  dataset=string.strip(self.copydataset.get()),
+                  odir=string.strip(self.copyoutputdir.get()),
                   verbose=self.verbose.get(),
                   overwrite=self.overwrite.get(),
                   listfiles=self.listfiles.get())
