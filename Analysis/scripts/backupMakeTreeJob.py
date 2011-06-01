@@ -119,6 +119,29 @@ def makeTreeJob(era,
     crab = open(cfgname, 'w')
     crab.write(mystring)
     crab.close()
+    thisdata="unknown"
+    if datatype=="RAWRECO":
+        thisdata="raw"
+    elif datatype=="RECO":
+        thisdata="reco"
+    elif datatype=="MC":
+        thisdata="mc"
+    
+    cmdtext= "makeTreeJob.py"
+    if (scheduler=="caf"):
+        cmdtext=cmdtext+" -c"
+    if (useJSON==True):
+        cmdtext=cmdtext+" -j"
+    cmdtext=cmdtext+" --%s --%s %s %s %s %s %s"%(thisdata,
+                                                 trigger,
+                                                 era,
+                                                 label,
+                                                 dataset,
+                                                 gtag,
+                                                 runjsonfile)
+    print
+    print cmdtext
+    print
     print "Successfully created file '%s'"%cfgname
 
     # create CMSSW variables
