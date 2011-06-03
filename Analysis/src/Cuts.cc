@@ -116,7 +116,15 @@ Cuts::~Cuts() {
 
 
 bool Cuts::triggerCut() const {      // require event passed main trigger
-  return event_->hltJetNoBptx3BXNoHalo;
+  //1) in Run2010A, require hltJetNoBptx only
+  if (event_->fill<1711)
+    return event_->hltJetNoBptx;
+  //2) in Run2011A, before tech stop (fills 1711-1749) require hltJetNoBptx3BXNoHalo only
+  else if (event_->fill<1750)
+    return event_->hltJetNoBptx3BXNoHalo;
+  //3) in Run2011A, post tech stop (fills 1795 onwards) require hltJetE50NoBptx3BXNoHalo only
+  else
+    return event_->hltJetE50NoBptx3BXNoHalo;
 }
 
 bool Cuts::trigger2010Cut() const {  // require event passed main trigger
@@ -158,6 +166,7 @@ bool Cuts::cosmicVeto() const {      // no cosmic muon
 }
 
 bool Cuts::hcalNoiseVeto() const {   // std HCAL noise veto
+  //std::cout <<"TRIGDEC:"<<event_->run<<":"<<event_->lb<<":"<<event_->id<<":"<<event_->bx<<":"<<event_->noiseFilterResult<<std::endl;
   return event_->noiseFilterResult;
 }
 
