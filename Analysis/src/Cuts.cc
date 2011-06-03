@@ -177,7 +177,8 @@ bool Cuts::looseJetCut() const {     // low Et threshold
 }
 
 bool Cuts::jetEnergyCut() const {    // require jet above Et threshold
-  return event_->jet_N>0 && event_->jetE[0]>50. && fabs(event_->jetEta[0])<1.3;
+  // raise jet energy cut to 70, since we're using a 50-GeV trigger?
+  return event_->jet_N>0 && event_->jetE[0]>70. && fabs(event_->jetEta[0])<1.3;
 }
 
 bool Cuts::jetN60Cut() const {       // jet n60
