@@ -180,12 +180,18 @@ class TreeJobGui:
                           dest="storage",
                           default="T2_UK_SGrid_RALPP",
                           help="Specify storage location (default is T2_UK_SGrid_RALPP")
+        parser.add_option("--hltL3Tag",
+                          dest="hltL3Tag",
+                          default="Default",
+                          help="Specify hltL3Tag  (default is 'Default', which will use whatever is already specified in cfg file.")
 
         (options, args) = parser.parse_args()
 
         self.INuseLocalDBS=options.useLocalDBS
         self.INuseJSON=options.useJSON
         self.INscheduler=options.scheduler
+        self.INhltL3Tag=options.hltL3Tag
+        
         if options.useCAF==True and options.useCONDOR==True:
             self.Print( "Error!  Both CAF and CONDOR cannot be set to True!")
             sys.exit()
@@ -404,6 +410,21 @@ class TreeJobGui:
         self.datatypeL.grid(row=row,column=0)
         self.datatypeMenu.grid(row=row,column=1)
         row=row+1
+        self.hltL3Tag=StringVar()
+        self.hltL3Tagchoices=["Default","hltStoppedHSCPTight1CaloJetEnergy30","hltStoppedHSCPCaloJetEnergy50"]
+        if self.INhltL3Tag not in self.hltL3Tagchoices:
+            self.hltL3Tagchoices.append(self.INhltL3Tag)
+        self.hltL3Tag.set(self.INhltL3Tag)
+        self.hltL3TagMenu=OptionMenu(self.CrabFrame,self.hltL3Tag,
+                                      *self.hltL3Tagchoices)
+        self.hltL3TagMenu["width"]=35
+        self.hltL3TagL=Label(self.CrabFrame,text="hltL3Tag:")
+        self.hltL3TagL.grid(row=row,column=0)
+        self.hltL3TagMenu.grid(row=row,column=1)
+        row=row+1
+
+
+
 
         self.MakeTreeButton=Button(self.CrabFrame,text="Make\nTree\nJob",
                                    command=lambda x=self:x.MakeTreeJob(),
@@ -430,7 +451,7 @@ class TreeJobGui:
             self.Print("Must explicitly specify JSON file!  \n(Toggle useJSON variable to activate)")
             return
 
-        if (self.useJSON.get()==False and self.runE.cget("state")=="disabled"):
+        if (self.useJSON.get()==False and self.runsE.cget("state")=="disabled"):
             self.Print("Must explicitly specify RUN file \n(Toggle useJSON variable to activate)")
             return
         
@@ -450,21 +471,22 @@ class TreeJobGui:
             myfile=self.runs.get()
 
         if not os.path.isfile(myfile):
-            self.Print ("ERROR!  File '%s' does not exist!"%myfile)
+            self.Print ("ERROR!  Runs/Json File '%s' does not exist!"%myfile)
             return
         
-        x=makeTreeJob(self.era.get(),
-                      self.label.get(),
-                      self.dataset.get(),
-                      self.gtag.get(),
-                      myfile,
-                      self.scheduler.get(),
-                      self.storage.get(),
-                      self.useLocalDBS.get(),
-                      self.useJSON.get(),
-                      self.trigger.get(),
-                      self.datatype.get(),
-                      self.whitelist.get())
+        x=makeTreeJob(era=self.era.get(),
+                      label=self.label.get(),
+                      dataset=self.dataset.get(),
+                      gtag=self.gtag.get(),
+                      runjsonfile= myfile,
+                      scheduler=self.scheduler.get(),
+                      storage=self.storage.get(),
+                      useLocalDBS=self.useLocalDBS.get(),
+                      useJSON=self.useJSON.get(),
+                      trigger=self.trigger.get(),
+                      datatype=self.datatype.get(),
+                      whitelist=self.whitelist.get(),
+                      hltL3Tag=self.hltL3Tag.get())
         if (x==True):
             self.Print("cfg files successfully produced!")
         return

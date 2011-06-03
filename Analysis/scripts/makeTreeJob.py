@@ -18,6 +18,8 @@ def usage():
     print "   --raw   : use RAW+RECO config"
     print "   --reco  : use RECO config (default)"
     print "   --mc    : use MC config"
+    print "   --newhlttag  :  use HLTL3Tag hltStoppedHSCPCaloJetEnergy50 "
+    print "   --oldhlttag : use HLTL3Tag hltStoppedHSCPTight1CaloJetEnergy30"
     print
 
 try:
@@ -31,6 +33,8 @@ useJSON = False
 useCAF = False
 trigger = '2011'
 datatype = 'RECO'
+HLTL3Tag = "Default"
+
 
 for opt, arg in opts:
     if opt=='-l':
@@ -54,7 +58,11 @@ for opt, arg in opts:
         datatype = 'MC'
     if opt=='-m':
         datatype = 'MC'
-
+    if opt=="--newhlttag":
+        HLTL3Tag="hltStoppedHSCPCaloJetEnergy50"
+    if opt=="--oldhlttag":
+        HLTL3Tag="hltStoppedHSCPTight1CaloJetEnergy30"
+        
 # arguments
 if (len(args)!=5):
     usage()
@@ -150,6 +158,8 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )\n\
 readFiles.extend( [\n\
 ] )\n\
 "
+if (HLTL3Tag<>"Default"):
+    cmsswStr=cmsswStr+'\nprocess.hltL3Tag= cms.untracked.InputTag("%s","","HLT")\n\n'%HLTL3Tag
 
 # create CMSSW config
 cmssw =open(jobStr, 'w')

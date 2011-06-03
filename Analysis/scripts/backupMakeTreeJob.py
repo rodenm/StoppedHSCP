@@ -20,6 +20,8 @@ def usage():
     print "   --raw   : use RAW+RECO config"
     print "   --reco  : use RECO config (default)"
     print "   --mc    : use MC config"
+    print "   --newhlttag  :  use HLTL3Tag hltStoppedHSCPCaloJetEnergy50 "
+    print "   --oldhlttag : use HLTL3Tag hltStoppedHSCPTight1CaloJetEnergy30"
     print
 
 def makeTreeJob(era,
@@ -33,7 +35,8 @@ def makeTreeJob(era,
                 useJSON=False,
                 trigger='2011',
                 datatype='RECO',
-                whitelist='heplnx206.pp.rl.ac.uk,heplnx207.pp.rl.ac.uk'):
+                whitelist='heplnx206.pp.rl.ac.uk,heplnx207.pp.rl.ac.uk',
+                hltL3Tag="Default"):
 
 
     # create CRAB variables
@@ -139,6 +142,12 @@ def makeTreeJob(era,
                                                  dataset,
                                                  gtag,
                                                  runjsonfile)
+
+    if (hltL3Tag=="hltStoppedHSCPCaloJetEnergy50"):
+        cmdtext=cmdtext+ " --newhlttag"
+    if (hltL3Tag=="hltStoppedHSCPTight1CaloJetEnergy30"):
+        cmdtext=cmdtext+ " --oldhlttag"
+   
     print
     print cmdtext
     print
@@ -155,6 +164,9 @@ def makeTreeJob(era,
     "readFiles.extend( [\n"\
     "] )\n"
     
+
+    if (hltL3Tag<>"Default"):
+        cmsswStr=cmsswStr+'\nprocess.hltL3Tag= cms.untracked.InputTag("%s","","HLT")\n\n'%hltL3Tag
 
     # create CMSSW config
     cmssw =open(jobStr, 'w')
@@ -180,6 +192,8 @@ if __name__=="__main__":
     datatype = 'RECO'
     scheduler='glite'
 
+    hltl3tag="Default"
+
     for opt, arg in opts:
         if opt=='-l':
             useLocalDBS=True
@@ -204,7 +218,11 @@ if __name__=="__main__":
             datatype = 'MC'
         if opt=='-m':
             datatype = 'MC'
-
+        if opt=="--newhlttag":
+            hltl3tag = "hltStoppedHSCPCaloJetEnergy50"
+        if opt=="--oldhlttag":
+            hltl3Tag="hltStoppedHSCPTight1CaloJetEnergy30"
+        
     # arguments
     if (len(args)!=5):
         usage()
@@ -217,13 +235,15 @@ if __name__=="__main__":
     runs = args[4]
     #jsonfile = args[4]  # same as "runs"; controlled by "useJSON"
 
-    makeTreeJob(era,
-                label,
-                dataset,
-                gtag,
-                runs,
-                scheduler,
-                useLocalDBS,
-                useJSON,
-                trigger,
-                datatype)
+    makeTreeJob(era=era,
+                label=label,
+                dataset=dataset,
+                gtag=gtag,
+                runjsonfile=runs,
+                scheduler=scheduler,
+                useLocalDBS=useLocalDBS,
+                useJSON=useJSON,
+                trigger=trigger,
+                datatype=datatype,
+                whitelist='heplnx206.pp.rl.ac.uk,heplnx207.pp.rl.ac.uk',
+                hltL3Tag=hltl3tag)
