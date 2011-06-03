@@ -123,8 +123,10 @@ bool Cuts::triggerCut() const {      // require event passed main trigger
   else if (event_->fill<1750)
     return event_->hltJetNoBptx3BXNoHalo;
   //3) in Run2011A, post tech stop (fills 1795 onwards) require hltJetE50NoBptx3BXNoHalo only
-  else
+  else if (event_->fill>=1795)
     return event_->hltJetE50NoBptx3BXNoHalo;
+  else
+    return false; // what should default behavior for fills 1750-1794 be?
 }
 
 bool Cuts::trigger2010Cut() const {  // require event passed main trigger
