@@ -166,7 +166,7 @@ def makeTreeJob(era,
     
 
     if (hltL3Tag<>"Default"):
-        cmsswStr=cmsswStr+'\nprocess.hltL3Tag= cms.untracked.InputTag("%s","","HLT")\n\n'%hltL3Tag
+        cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.hltL3Tag= cms.untracked.InputTag("%s","","HLT")\n\n'%hltL3Tag
 
     # create CMSSW config
     cmssw =open(jobStr, 'w')
