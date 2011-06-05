@@ -29,9 +29,10 @@ def RunAnalysis(outdir, indir, version=0,steps=[]):
         GenericCommand(cmd)
 
     if 1 in steps:
+        print "NO"
         # Step 1:  make basic plots
         cmd="python %s/src/StoppedHSCP/Analysis/python/basicPlots.py %s > %s"%(os.environ["CMSSW_BASE"],outdir, os.path.join(outdir,"plots.log"))
-    GenericCommand(cmd)
+        GenericCommand(cmd)
 
     if 2 in steps:
         # Step 2:  make per-run plots
@@ -69,6 +70,7 @@ def RunAnalysis(outdir, indir, version=0,steps=[]):
                     myfile="runAll.sh")  # does not yet support log file
 
     if 8 in steps:
+        print "YO"
         # Step 8:   make limit plots
         cmd="makeFinalPlots.sh %s"%outdir
         GenericCommand(cmd)
@@ -106,6 +108,7 @@ if __name__=="__main__":
     parser=OptionParser()
     parser.add_option("-i","--inputdir",
                       default=None,
+                      #action="append",
                       dest="inputdir",
                       help="Input directory where root tuples exist")
     parser.add_option("-o","--outputdir",
@@ -135,7 +138,7 @@ if __name__=="__main__":
         if i==0:
             options.outputdir=args[i]
         elif i==1:
-            options.inputdir=args[i]
+            options.inputdir.append(args[i])
         elif i==2:
             options.version=args[i]
         
