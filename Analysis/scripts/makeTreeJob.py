@@ -64,7 +64,7 @@ for opt, arg in opts:
         HLTL3Tag="hltStoppedHSCPTight1CaloJetEnergy30"
         
 # arguments
-if (len(args)!=5):
+if (len(args)!=6):
     usage()
     sys.exit()
     
