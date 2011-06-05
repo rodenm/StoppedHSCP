@@ -55,12 +55,19 @@ def Main(startingdir=os.getcwd(),
         print "runAll.py ERROR:  working directory '%s' does not exist"%workingdir
         return False
     os.chdir(workingdir)
-    
+
     # Remove old versions of summary.txt
     if os.path.exists("summary.txt"):
-        x=raw_input("'summary.txt' already exists!  Remove it (Y/N)? ")
-        if x.upper().startswith("Y"):
-            os.system("rm -f summary.txt")
+        # Main program; allow user interface
+        if __name__=="__main__":
+            x=raw_input("'summary.txt' already exists!  Remove it (Y/N)? ")
+            if x.upper().startswith("Y"):
+                os.system("rm -f summary.txt")
+        else:
+            print "<runAll.py::Main> summary.txt file already exists in directory '%s'"%workingdir
+            currenttime=time.strftime("%-M-%H-%S_%m_%d_%Y",time.localtime())
+            print "\t Moving old file to summary.txt_%s"%currenttime
+            os.system("mv summary.txt summary.txt_%s"%currenttime)
     starttime=time.time()
     # Read from runAll.sh
     myfile="runAll.sh"
@@ -106,6 +113,11 @@ def Main(startingdir=os.getcwd(),
         return False
 
     myfile=open(mysummary,'r').readlines()
+    goodfiles=[]  # ignore any empty lines
+    for i in myfile:
+        if string.strip(i)<>"":
+            goodfiles.append(i)
+    myfile=goodfiles
     myfile.sort(sortsummary)
     out=open(mysummary,'w')
     for i in myfile:
