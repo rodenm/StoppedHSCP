@@ -10,6 +10,9 @@ except:
     print "Have you remembered to check out StoppedHSCP/ToyMC from CVS?"
     sys.exit()
 
+# Get BuildToyMCSummary code
+import BuildToyMCSummary
+
 from optparse import OptionParser
 
 
@@ -29,7 +32,6 @@ def RunAnalysis(outdir, indir, version=0,steps=[]):
         GenericCommand(cmd)
 
     if 1 in steps:
-        print "NO"
         # Step 1:  make basic plots
         cmd="python %s/src/StoppedHSCP/Analysis/python/basicPlots.py %s > %s"%(os.environ["CMSSW_BASE"],outdir, os.path.join(outdir,"plots.log"))
         GenericCommand(cmd)
@@ -68,9 +70,11 @@ def RunAnalysis(outdir, indir, version=0,steps=[]):
         #GenericCommand(cmd)
         runAll.Main(workingdir="%s/toymc/"%outdir,
                     myfile="runAll.sh")  # does not yet support log file
+        # Once job is written, overwrite summary file
+        BuildToyMCSummary.Main(outdir,
+                               outputfile="summaryTEMP.txt")
 
     if 8 in steps:
-        print "YO"
         # Step 8:   make limit plots
         cmd="makeFinalPlots.sh %s"%outdir
         GenericCommand(cmd)

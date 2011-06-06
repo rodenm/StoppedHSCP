@@ -90,21 +90,25 @@ def CopyFiles(user="jbrooke",
 
     cmdThreads=[]
     for file in allfiles:
+        #if (counter>1):           continue
         basename=os.path.basename(file)
         #command = "lcg-cp "+gridroot+"/"+file+" "+os.path.join(odir,basename)
         command = "lcg-cp %s/%s %s"%(gridroot,file,os.path.join(odir,basename))
         print "\n%s\n"%command
         print "Copying %s -- file %i of %i"%(os.path.join(odir,basename),counter,filecount)
         counter=counter+1
+
         # Protection against overwriting existing files -- ask if conflicting files should be overwritten
         if overwrite==False:
-            #print os.path.join(odir,basename), os.path.exists(os.path.join(odir,basename))
-            if os.path.exists(os.path.join(odir,basename)):
-                print "WARNING!  File '%s' already exists!"%os.path.join(odir,basename)
-                cont=raw_input("Overwrite (y/n)? :  ")
-                if not (cont.upper()).startswith("Y"):
+            if os.path.exists(os.path.join(odir,basename)):  
+                if __name__<>"__main__":   # run from a separate program -- don't overwrite
                     continue
-                print "Overwriting '%s'..."%basename
+                else:  # run in stand-alone mode; ask user for input
+                    print "WARNING!  File '%s' already exists!"%os.path.join(odir,basename)
+                    cont=raw_input("Overwrite (y/n)? :  ")
+                    if not (cont.upper()).startswith("Y"):
+                        continue
+                    print "Overwriting '%s'..."%basename
 
         cmdThreads.append(CopyFileThread(command))
         cmdThreads[-1].start()
