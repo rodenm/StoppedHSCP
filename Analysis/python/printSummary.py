@@ -55,9 +55,15 @@ if (not isMC):
     htime=hfile.Get("runs/hlivetime")
     hnlb=hfile.Get("runs/hnlb")
     
-#    print "Run\tLS\tLivetime"
-#    for i in range(1,htime.GetNbinsX()+1):
-#        print htime.GetXaxis().GetBinLabel(i)+"\t"+str(hnlb.GetBinContent(i))+"\t"+str(htime.GetBinContent(i))
+    print "Run\tLS\tLivetime"
+    runlivetime={}
+    for i in range(1,htime.GetNbinsX()+1):
+        runlivetime[htime.GetXaxis().GetBinLabel(i)] = (hnlb.GetBinContent(i),htime.GetBinContent(i))
+        #print htime.GetXaxis().GetBinLabel(i)+"\t"+str(hnlb.GetBinContent(i))+"\t"+str(htime.GetBinContent(i))
+    runlivekeys=runlivetime.keys()
+    runlivekeys.sort()
+    for key in runlivekeys:
+        print "%s\t%s\t%s"%(key,runlivetime[key][0],runlivetime[key][1])
 
 
     # total time
