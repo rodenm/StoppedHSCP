@@ -7,7 +7,7 @@ import sys
 import getopt
 
 def usage():
-    print "makeTreeJob.py [-hjlc] [-raw|-reco|-mc] [-2010|-2011] <era> <label> <dataset> <global tag> <runlist|JSON file>"
+    print "makeTreeJob.py [-hjlc] [--raw|--reco|--mc] [--2010|--2011] <era> <label> <dataset> <global tag> <runlist|JSON file>"
     print " Options   :"
     print "   -h      : prints this message"
     print "   -l      : use local DBS (http://cmsdbsprod.cern.ch/cms_dbs_ph_analysis_02/servlet/DBSServlet)"
@@ -23,7 +23,7 @@ def usage():
     print
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "hjlcm", ['2010','2011','raw','reco','mc'])
+    opts, args = getopt.getopt(sys.argv[1:], "hjlcm", ['2010','2011','raw','reco','mc','oldhlttag','newhlttag'])
 except getopt.GetoptError:
     usage()
     sys.exit(2)
@@ -34,7 +34,6 @@ useCAF = False
 trigger = '2011'
 datatype = 'RECO'
 HLTL3Tag = "Default"
-
 
 for opt, arg in opts:
     if opt=='-l':
@@ -64,7 +63,7 @@ for opt, arg in opts:
         HLTL3Tag="hltStoppedHSCPTight1CaloJetEnergy30"
         
 # arguments
-if (len(args)!=6):
+if (len(args)!=5):
     usage()
     sys.exit()
     
