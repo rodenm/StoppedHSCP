@@ -82,7 +82,13 @@ int main(int argc, char* argv[]) {
   std::ofstream summaryfile;
   summaryfile.open("../summary.txt", std::ios::app);
   e->summary(summaryfile);
+  summaryfile.close();
 
+  // Write to individual files
+  std::ofstream jobsummaryfile;
+  jobsummaryfile.open("summary.txt",std::ios::out);
+  e->summary(jobsummaryfile);
+  jobsummaryfile.close();
 
   std::cout << *e << std::endl;
 
