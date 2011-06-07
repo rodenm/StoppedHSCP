@@ -10,7 +10,7 @@
 // Get MAXINSTLUMI directly from https://cmswbm.web.cern.ch/cmswbm/cmsdb/servlet/FillReport  
 // (PeakInstLumi). 
 // Units are 10^30 cm^-2 s^-1
-#define MAXINSTLUMI 1036.
+#define MAXINSTLUMI 1106.
 // *********************************
 
 #include <cstdlib>
