@@ -74,7 +74,7 @@ def RunAnalysis(outdir, indir, version=0,steps=[]):
                     myfile="runAll.sh")  # does not yet support log file
         # Once job is written, overwrite summary file
         BuildToyMCSummary.Main(outdir,
-                               outputfile="summaryTEMP.txt")
+                               outputfile="summary.txt")
 
     if 8 in steps:
         # Step 8:   make limit plots
