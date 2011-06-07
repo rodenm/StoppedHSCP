@@ -7,7 +7,7 @@ import sys
 import getopt
 
 def usage():
-    print "makeTreeJob.py [-hjlc] [--raw|--reco|--mc] [--2010|--2011] <era> <label> <dataset> <global tag> <runlist|JSON file>"
+    print "makeTreeJob.py [-hjlc] [--raw|--reco|--mc] [--2010|--2011] [--newhlttag] [--oldhlttag] <era> <label> <dataset> <global tag> <runlist|JSON file>"
     print " Options   :"
     print "   -h      : prints this message"
     print "   -l      : use local DBS (http://cmsdbsprod.cern.ch/cms_dbs_ph_analysis_02/servlet/DBSServlet)"

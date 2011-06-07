@@ -245,7 +245,7 @@ if __name__=="__main__":
                       dest="fillschemetext",
                       default=os.path.join(os.environ["CMSSW_BASE"],
                                            "src/StoppedHSCP/Analysis/data/fillingSchemes.txt"),
-                      help="Specify filling schemes file (default is ....data/fillingSchemes.txt)")
+                      help="Specify filling schemes file (default is ../StoppedHSCP/Analysis/data/fillingSchemes.txt)")
     parser.add_option("-w","--website",
                       action="append",
                       default=["http://lpc.web.cern.ch/lpc/documents/FillPatterns",

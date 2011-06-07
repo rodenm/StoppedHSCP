@@ -56,8 +56,9 @@ def CopyFiles(user="jbrooke",
     # Specify output directory from base and dataset
     gridloc=os.path.join(gridloc,user,dataset)
     odir=os.path.join(odir,dataset)
-    if not os.path.exists(odir):  # Create output dir if it doesn't exist
-        os.makedirs(odir)
+    if (listfiles==False):
+        if not os.path.exists(odir):  # Create output dir if it doesn't exist; not necessary for listfiles option
+            os.makedirs(odir)
 
     if (listfiles==True):
         print "Listing files from :"

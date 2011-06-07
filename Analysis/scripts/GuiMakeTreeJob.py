@@ -60,8 +60,11 @@ class TreeJobGui:
 
     def Print(self,message):
         print message
-        self.Comments.configure(text=message)
-        self.Comments.update()
+        try:
+            self.Comments.configure(text=message)
+            self.Comments.update()
+        except:
+            print "Could not configure Comments window for message '%s'"%message
         return
 
 
@@ -97,7 +100,7 @@ class TreeJobGui:
                           help="Use Local DBS (http://cmsdbsprod.cern.ch/cms_dbs_ph_analysis_02/servlet/DBSServlet)"
                           )
         parser.add_option("-j",action="store_true",
-                          default=False,
+                          default=True,
                           dest="useJSON",
                           help="use JSON file to run on good LS")
         parser.add_option("-c",action="store_true",
@@ -564,26 +567,37 @@ class TreeJobGui:
         Label(self.CopyFrame2,text="List (don't copy) files:").grid(row=row,column=0)
         self.listfileMenu=OptionMenu(self.CopyFrame2,
                                      self.listfiles,
-                                     True, False)
+                                     True, False,
+                                     command=lambda x=self:self.SwitchListFileButtonName())
         self.listfileMenu.grid(row=row,column=1,sticky=EW)
         self.CopyButton=Button(self.CopyFrame2,text="\nCopy\nFiles\n",command = lambda x=self:x.CopyFiles(),width=20,bg="blue",fg="white")
         row=row+1
         self.CopyButton.grid(row=row,column=1)
         return
 
+    def SwitchListFileButtonName(self):
+        if self.listfiles.get()==True:
+            self.CopyButton.configure(text="\nList\nFiles\n")
+        else:
+            self.CopyButton.configure(text="\nCopy\nFiles\n")
+        self.CopyButton.update()
+        return
+
     def CopyFiles(self):
+
         if self.gridroot.get()=="":
             self.Print("ERROR:  No grid root value specified!  Default is:\n"%self.defaultgridroot)
             return
         if self.gridloc.get()=="":
             self.Print("ERROR:  No grid loc value specified!  Default is:\n"%self.defaultgridloc)
             return
-        if self.copydataset.get()=="":
-            self.Print("ERROR:  No copy dataset value specified!")
-            return
-        if not os.path.isdir(self.copyoutputdir.get()):
-            self.Print("ERROR!  Copy Output directory '%s' does not exist!"%self.copyoutputdir.get())
-            return
+        if (self.listfiles.get()==False):
+            if self.copydataset.get()=="":
+                self.Print("ERROR:  No copy dataset value specified!")
+                return
+            if not os.path.isdir(self.copyoutputdir.get()):
+                self.Print("ERROR!  Copy Output directory '%s' does not exist!"%self.copyoutputdir.get())
+                return
         try:
             crabdir=os.environ["CRABDIR"]
         except KeyError:
