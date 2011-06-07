@@ -19,10 +19,56 @@ import time
 
 from optparse import OptionParser
 
+def ParseAndCleanFillFile(fillfile):
+    '''
+    This gets all filling schemes from a "fills.txt"-style file.
+    It also "cleans" the fills.txt file, so that commas are added instead of spaces for any runs in the runlist for each fill.
+    '''
+
+    SchemesVsFills={}
+    schemes=[]  # Store all schemes in the file
+    if not os.path.isfile(fillfile):
+        print "<pyGetFillScheme::ParseAndCleanFillFile::ERROR>  Input file '%s' does not exist"%fillfile
+        return (schemes,SchemesVsFills)
+    thefile=open(fillfile,'r').readlines()  # open file
+    for i in range(len(thefile)):
+        try:
+            line=string.split(thefile[i])
+            fill=string.atoi(line[0])
+            scheme=line[1]  # identify scheme
+            if scheme not in SchemesVsFills:
+                SchemesVsFills[scheme]=[]
+            SchemesVsFills[scheme].append(fill)
+            if scheme not in schemes:  # add to list
+                schemes.append(scheme)
+            runs=line[2:]  # list of all runs
+            
+            # Change space-separated runs to comma-separated runs
+            runtext=""
+            for run in runs:
+                runtext=runtext+"%s,"%run
+            while runtext.endswith(","): # remove trailing comma
+                runtext=runtext[:-1]
+            newline=string.split(thefile[i],runs[0])[0]
+            newline=newline+"%s\n"%runtext
+            # replace original line with edited version
+            thefile[i]=newline
+        except ValueError: # can't read fill number
+            print "Could not parse line '%s'"%line
+
+    # Write fixed version of file
+    fixedfile=open(fillfile,'w')
+    for i in thefile:
+        fixedfile.write(i)
+    fixedfile.close()
+    # Return schemes found
+    return (schemes,  SchemesVsFills)
+
+
 
 def GetFillScheme(scheme,
-                  website="http://lpc.web.cern.ch/lpc/documents/FillPatterns",
-                  backupwebsite="http://lpc-afs.web.cern.ch/lpc-afs/FILLSCHEMES",
+                  websites=["http://lpc.web.cern.ch/lpc/documents/FillPatterns",
+                            "http://lpc-afs.web.cern.ch/lpc-afs/FILLSCHEMES"],
                   verbose=False):
 
     '''
@@ -37,10 +83,10 @@ def GetFillScheme(scheme,
     fillingScheme=None  # store beams1, beam2 ntuple
 
     goodread=True  # Check whether file can be read with valid info
-    for site in [website,backupwebsite]:
+    for site in websites:
         if site==None or not site.startswith("http"):
             continue
-        os.system("curl %s/%s.txt > scheme.tmp"%(website,scheme))
+        os.system("curl %s/%s.txt > scheme.tmp"%(site,scheme))
         # Check to see whether valid output read
         goodread=True
         schemefile=None
@@ -115,13 +161,18 @@ def GetFillScheme(scheme,
 
 
 def Main(scheme,fillschemetext=None,overwrite=False,verbose=False):
-    ''' Check whether "scheme" exists in input file "fillschemetext".  If so, do not add it to file
-    (unless overwrite=True, in which case the new scheme will be added, but old will not (yet) be removed).
-    If scheme does not exist, add it to text file using the getFillScheme.sh script.)
+    '''
+    Check whether "scheme" exists in input file "fillschemetext".
+    If so, do not add it to file
+    (unless overwrite=True, in which case the new scheme will be added,
+    but old will not (yet) be removed).
+    If scheme does not exist in file, add it to text file using
+    the GetFillScheme method.)
     '''
     #  Default location of fillingSchemes file
     if fillschemetext==None:
-        fillschemetext=os.path.join(os.environ["CMSSW_BASE"],"src/StoppedHSCP/Analysis/data/fillingSchemes.txt")
+        fillschemetext=os.path.join(os.environ["CMSSW_BASE"],
+                                    "src/StoppedHSCP/Analysis/data/fillingSchemes.txt")
 
     # Check to see whether scheme is already defined in file
     foundscheme=False
@@ -181,33 +232,44 @@ if __name__=="__main__":
     
     # Read command-line options
     parser = OptionParser()
-    parser.add_option("-w","--write",
-                      action="store_true",
-                      default=False,
-                      dest="write",
-                      help="write scheme to file, even if it already exists in file.  (Default is False.)")
-    parser.add_option("-o","--fillschemetext",
-                      dest="fillschemetext",
-                      default=os.path.join(os.environ["CMSSW_BASE"],"src/StoppedHSCP/Analysis/data/fillingSchemes.txt"),
-                      help="Specify filling schemes file (default is ....data/fillingSchemes.txt)")
+    parser.add_option("-s","--scheme",
+                      dest="schemes",
+                      default=[],
+                      action="append",
+                      help="Specify a single scheme to get.  Multiple schemes can be added at once.")
     parser.add_option("-i","--inputfile",
                       dest="input",
                       default=None,
-                      help="Specify input file (fills.txt) from which the filling schemes should be taken")
+                      help="Specify input file from which the filling schemes should be taken.  Default is no file, but fills.txt will usually be the desired choice.")
+    parser.add_option("-o","--fillschemetext",
+                      dest="fillschemetext",
+                      default=os.path.join(os.environ["CMSSW_BASE"],
+                                           "src/StoppedHSCP/Analysis/data/fillingSchemes.txt"),
+                      help="Specify filling schemes file (default is ....data/fillingSchemes.txt)")
+    parser.add_option("-w","--website",
+                      action="append",
+                      default=["http://lpc.web.cern.ch/lpc/documents/FillPatterns",
+                               "http://lpc-afs.web.cern.ch/lpc-afs/FILLSCHEMES"],
+                      help="Specify websites to search for fill scheme info.  Defaults are: http://lpc.web.cern.ch/lpc/documents/FillPattern  and http://lpc-afs.web.cern.ch/lpc-afs/FILLSCHEMES")
+    parser.add_option("-c","--clean",
+                      action="store_true",
+                      default=False,
+                      dest="clean",
+                      help="Only clean the input txt file (adding commas where necessary, etc.)  Don't run the actual scheme-getting code.  Default is False.")
+    parser.add_option("-r","--rewrite",
+                      action="store_true",
+                      default=False,
+                      dest="write",
+                      help="write scheme to file, even if it already exists in file. Previous scheme will not be removed.  (Default is False.)")
     parser.add_option("-v","--verbose",
                       dest="verbose",
                       default=False,
                       action="store_true",
                       help="Turn on verbose debugging")
-    parser.add_option("-s","--scheme",
-                      dest="schemes",
-                      default=[],
-                      action="append",
-                      help="Specify a single scheme to get")
     
     (options,args)=parser.parse_args()
 
-    # List of all schemes
+    # List of all schemes specified with "-s"
     schemes=options.schemes
 
     # Schemes on command line
@@ -215,20 +277,18 @@ if __name__=="__main__":
         schemes.append(i)
 
     # Check fills.txt file (if provided)
+    SchemesVsFills={}
     if options.input<>None:
         if not os.path.isfile(options.input):
             print "Sorry,  fills file '%s' does not exist!"%options.input
         else:
-            temp=open(options.input,'r').readlines()
-            for i in temp:
-                # Try to read input line
-                try:
-                    line=string.split(i)
-                    fill=string.atoi(line[0])
-                    scheme=line[1]
-                    schemes.append(scheme)
-                except:
-                    print "Could not parse line '%s'"%line
+            newschemes=ParseAndCleanFillFile(options.input)
+            if options.clean==True:
+                print "Input file %s has been cleaned"%options.input
+                sys.exit()
+            SchemesVsFills=newschemes[1]
+            for n in newschemes[0]:
+                schemes.append(n)
 
     FalseFiles=[]
     # Add all new schems to fillschemetext file
@@ -245,10 +305,16 @@ if __name__=="__main__":
             FalseFiles.append(scheme)
 
     if len(FalseFiles)>0:
-        print "The following schemes could not be added:"
+        print "\nThe following schemes could not be added:"
+        print "\t%s\t\t%s"%("Scheme","Fills")
+        print "\t------\t\t------"
         for i in FalseFiles:
-            print "\t%s"%i
-
+            if i in SchemesVsFills.keys():
+                print "\t%s\t\t%s"%(i,SchemesVsFills[i])
+            else:
+                print "\t%s\t\tUnknown Fills"%(i)
+        print
+        
     # Now get rid of trailing commas
     # Shouldn't be necessary now
     if os.path.isfile(options.fillschemetext):
@@ -261,5 +327,6 @@ if __name__=="__main__":
         for i in mylines:
             outfile.write(i)
         outfile.close()
+        print "Completed writing of schemes to '%s'"%options.fillschemetext
     else:
         print "Hmm... output file '%s' doesn't exist"%options.fillschemetext
