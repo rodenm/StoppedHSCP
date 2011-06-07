@@ -1,9 +1,22 @@
 // .L lifetimePlot.C+
 // lifetimePlot("limit_summary.txt")
 
+
+// *********************************
+// The following parameters (LUMI, MAXLUMI) need to be set by hand:
+// LUMI is a double
+#define LUMI 267.
+// MAXINSTLUMI is a double
+// Get MAXINSTLUMI directly from https://cmswbm.web.cern.ch/cmswbm/cmsdb/servlet/FillReport  
+// (PeakInstLumi). 
+// Units are 10^30 cm^-2 s^-1
+#define MAXINSTLUMI 1036.
+// *********************************
+
 #include <cstdlib>
 #include <fstream>
 #include <iostream> 
+#include <sstream>
 
 #include "TGraph.h"
 #include "TGraphAsymmErrors.h"
@@ -15,17 +28,18 @@
 #include "TLatex.h"
 #include "TPaveText.h"
 
-
 TCanvas *makeLifetimePlot(TGraph *g_cl95,
 			  TGraph *g_exp_1sig=NULL,
 			  TGraph *g_exp_2sig=NULL,
 			  TGraph *g_cl95_em=NULL,
 			  TGraph *g_cl95_nb=NULL,
 			  TGraph *g_cl95_stop=NULL,
-			  TGraph *g_cl95_tp=NULL);
+			  TGraph *g_cl95_tp=NULL,
+			  double lumi_tp=0.);
 
 TCanvas *makeBasicPlot(TGraph *g1,
-		       TGraph *g2);
+		       TGraph *g2,
+		       double lumi_tp=0);
 
 // filename 1 = counting experiment output
 // filename 2 = time profile fit output (if null do not plot curve)
@@ -36,8 +50,8 @@ void lifetimePlot(char* filename, char* filename2="", char* filename3="") {
   unsigned massIndex = 3;  // point 3 -> m_gluino=400, m_neutralino=300
   unsigned stopIndex = 2;  // point 3 -> m_stop=300
 
-  // some numbers need to be set buy hand
-  double lumi_tp = 132;  // lumi figure to use for time-profile fit
+  // some numbers need to be set by hand
+  double lumi_tp = LUMI;  // lumi figure to use for time-profile fit
 
   unsigned nGluino      = 7;
   double m_g[10]        = { 150.,     200.,      300.,      400.,      500.,     600.,    900. };
@@ -226,7 +240,8 @@ void lifetimePlot(char* filename, char* filename2="", char* filename3="") {
 				   g_cl95_em,
 				   g_cl95_nb,
 				   g_cl95_stop,
-				   g_cl95_tp);
+				   g_cl95_tp,
+				   lumi_tp);
   
   plot->Print("lifetimeLimit.png");
   plot->Print("lifetimeLimit.pdf");
@@ -245,7 +260,7 @@ void lifetimePlot(char* filename, char* filename2="", char* filename3="") {
   TGraph* g1    = new TGraph(count, lifetime, xs1);
   TGraph* g2    = new TGraph(count, lifetime, xs2);
 
-  TCanvas *plot2 = makeBasicPlot(g1, g2);
+  TCanvas *plot2 = makeBasicPlot(g1, g2,lumi_tp);
 
   plot2->Print("basicLimit.png");
   plot2->Print("basicLimit.pdf");
@@ -265,7 +280,8 @@ TCanvas *makeLifetimePlot(TGraph *g_obs,
 			  TGraph *g_obs_em,
 			  TGraph *g_obs_nb,
 			  TGraph *g_obs_stop,
-			  TGraph *g_obs_tp) {
+			  TGraph *g_obs_tp,
+			  double lumi_tp) {
 
   // expected limit
   TGraph* g_exp = 0;
@@ -287,8 +303,22 @@ TCanvas *makeLifetimePlot(TGraph *g_obs,
 
   blurb = new TPaveText(9e-8, 8e1, 2e-3, 4e3);
   blurb->AddText("CMS Preliminary 2011");
-  blurb->AddText("#int L dt = 132 pb^{-1}");
-  blurb->AddText("L^{max}_{inst} = 5 x 10^{32} cm^{-2}s^{-1}");
+  std::stringstream label;
+  label<<"#int L dt = "<<lumi_tp<<" pb^{-1}";
+  blurb->AddText(label.str().c_str());
+  label.str("");
+  // Where do we get max inst value from?
+  double peakInstLumi=MAXINSTLUMI;
+  int exponent=30;
+  while (peakInstLumi>10)
+    {
+      peakInstLumi/=10;
+      ++exponent;
+    }
+  label<<"L^{max}_{inst} = "<<peakInstLumi<<" x 10^{"<<exponent<<"} cm^{-2}s^{-1}";
+  //blurb->AddText("L^{max}_{inst} = 5 x 10^{32} cm^{-2}s^{-1}");
+  blurb->AddText(label.str().c_str());
+  label.str("");
   blurb->AddText("#sqrt{s} = 7 TeV");
   blurb->AddText("m_{#tilde{g}} - m_{#tilde{#chi}^{0}} = 100 GeV/c^{2}");
   //blurb->AddText("m_{#tilde{g}} = 300 GeV/c^{2}");
@@ -420,7 +450,8 @@ TCanvas *makeLifetimePlot(TGraph *g_obs,
 
 
 TCanvas *makeBasicPlot(TGraph *g1,
-		       TGraph* g2) {
+		       TGraph* g2,
+		       double lumi_tp) {
 
   TCanvas *canvas;
   canvas = new TCanvas("basicPlot");
@@ -438,8 +469,23 @@ TCanvas *makeBasicPlot(TGraph *g1,
 
   blurb = new TPaveText(1e-6, 3e0, 1e-2, 1e1);
   blurb->AddText("CMS Preliminary 2011");
-  blurb->AddText("#int L dt = 132 pb^{-1}");
-  blurb->AddText("L^{max}_{inst} = 7 x 10^{32}");
+  std::stringstream label;
+  label<<"#int L dt = "<<lumi_tp<<" pb^{-1}";
+  blurb->AddText(label.str().c_str());
+  label.str("");
+
+  // Where do we get max inst value from?
+  double peakInstLumi=MAXINSTLUMI;
+  int exponent=30;
+  while (peakInstLumi>10)
+    {
+      peakInstLumi/=10.;
+      ++exponent;
+    }
+  label<<"L^{max}_{inst} = "<<peakInstLumi<<" x 10^{"<<exponent<<"} cm^{-2}s^{-1}";
+  blurb->AddText(label.str().c_str());
+  label.str("");
+
   blurb->AddText("#sqrt{s} = 7 TeV");
   blurb->SetTextFont(42);
   blurb->SetBorderSize(0);
@@ -450,7 +496,7 @@ TCanvas *makeBasicPlot(TGraph *g1,
   blurb->Draw();
 
   TPaveText* cms = new TPaveText(1e-6, 1.5e1, 1e-2, 2e1);
-  cms->AddText("CMS 2010");
+  cms->AddText("CMS 2011");
   cms->SetTextFont(62);
   cms->SetBorderSize(0);
   cms->SetFillColor(0);

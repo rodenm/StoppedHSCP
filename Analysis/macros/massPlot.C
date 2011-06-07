@@ -1,9 +1,22 @@
 /// .L massPlot.C+
 // lifetimePlot("limit_summary.txt", "time_profile_summary.txt")
 
+// ***********************************************
+// The following parameters (LUMI, MAXLUMI) need to be set by hand:
+// LUMI is a double
+#define LUMI 267.
+// MAXINSTLUMI is a double
+// Get MAXINSTLUMI directly from https://cmswbm.web.cern.ch/cmswbm/cmsdb/servlet/FillReport 
+// (PeakInstLumi).  
+// Units are 10^30 cm^-2 s^-1
+#define MAXINSTLUMI 1036.
+// ***********************************************
+
+
 #include <cstdlib>
 #include <fstream>
 #include <iostream> 
+#include <sstream>
 
 #include "TGraph.h"
 #include "TGraphErrors.h"
@@ -24,8 +37,8 @@ void massPlot(char* filename, char* filename2) {
   // .X massPlot.C
 
   // stuff that has to be set by hand
-  // some numbers need to be set buy hand
-  double lumi_tp = 132.0;  // lumi figure to use for time-profile fit
+  // some numbers need to be set by hand
+  double lumi_tp = 267.0;  // lumi figure to use for time-profile fit
 
   // set which bin to use for intercept calculation (mass limit)
   unsigned theoryBin = 5;
@@ -207,9 +220,24 @@ void massPlot(char* filename, char* filename2) {
   
   // details
   TPaveText* blurb = new TPaveText(110., 1.e1, 350., 4.5e2);
-  //blurb->AddText("CMS Preliminary 2010");
-  blurb->AddText("#int L dt = 132 pb^{-1}");
-  blurb->AddText("L^{max}_{inst} = 5 x 10^{32} cm^{-2}s^{-1}");
+  blurb->AddText("CMS Preliminary 2011");
+
+  std::stringstream label;
+  label<<"#int L dt = "<<LUMI<<" pb^{-1}";
+  blurb->AddText(label.str().c_str());
+  label.str("");
+  // Where do we get max inst value from?
+  double peakInstLumi=MAXINSTLUMI;
+  int exponent=30;
+  while (peakInstLumi>10)
+    {
+      peakInstLumi/=10.;
+      ++exponent;
+    }
+  label<<"L^{max}_{inst} = "<<peakInstLumi<<" x 10^{"<<exponent<<"} cm^{-2}s^{-1}";
+  blurb->AddText(label.str().c_str());
+  label.str("");
+
   blurb->AddText("#sqrt{s} = 7 TeV");
   blurb->AddText("m_{#tilde{g}} - m_{#tilde{#chi}^{0}} = 100 GeV/c^{2}");
   blurb->SetTextFont(42);
