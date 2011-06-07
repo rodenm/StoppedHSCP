@@ -25,9 +25,21 @@ scaleUncert       = 0.13     # combined JES, lumi systematic
 #N_n90_ctrl      = 202
 #N_ct_ctrl       = 1216
 
-N_ctrl          = 29    # from Run2010A_Apr21_423p2_v4_1117_1309
-N_n90_ctrl      = 257
-N_ct_ctrl       = 1982
+#N_ctrl          = 29    # from Run2010A_Apr21_423p2_v4_1117_1309
+#N_n90_ctrl      = 257
+#N_ct_ctrl       = 1982
+
+# from Run 2010A_Apr21_423p2_v4_1117_1309, using 70 GeV threshold
+N_ctrl           = 13
+N_n90_ctrl       = 131
+N_ct_ctrl        = 1415
+
+## from Run 2010A_Apr21_423p2_v5_1117_1309, using 70 GeV threshold
+## We believe v5 files missing some LS...
+##N_ctrl           = 13
+##N_n90_ctrl       = 128
+##N_ct_ctrl        = 1358
+
 
 # errors (fractional)
 N_ctrl_stat     = 1/sqrt(N_ctrl)
