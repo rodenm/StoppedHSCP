@@ -26,6 +26,8 @@ def RunAnalysis(outdir, indir, version=0,steps=[]):
     if len(steps)==0:
         steps=range(10)
 
+    # TO DO:  Edit python methods to return True/False, depending on output results, and call the methods directly via import, rather than executing os.system calls
+
     if 0 in steps:
         # Step 0:  Make Histograms
         cmd="makeHistograms -c %s %s %s/*root > %s"%(version, outdir, indir, os.path.join(outdir,"histogrammer.log"))
@@ -145,19 +147,27 @@ if __name__=="__main__":
             options.inputdir.append(args[i])
         elif i==2:
             options.version=args[i]
-        
-    if options.outputdir==None or options.inputdir==None:
-        print "No input/output directories found!"
-        print "Usage is: 'runAnalysis.py <outputdir> <inputdir> [version]"
-        print "( [version] is optional. )"
+
+    # Output directory always necessary
+    if options.outputdir==None:
+        print "No output directory found!"
+        print "Usage is: 'runAnalysis.py <outputdir> [inputdir] [version] [analysis steps]"
         parser.print_help()
         print 
         help()
         sys.exit()
-
-    if not os.path.isdir(options.inputdir):
-        print "Error!  Input directory '%s' does not exist!"%options.inputdir
-        sys.exit()
+        
+    if 0 in steps:  # first step (making a histogram) requires files from an input directory
+        if options.inputdir==None:
+            print "Error!  Input directory has not been specified!"
+            parser.print_help()
+            print
+            help()
+            sys.exit()
+        if not os.path.isdir(options.inputdir):
+            print "Error!  Input directory '%s' does not exist!"%options.inputdir
+            sys.exit()
+            
     if not os.path.isdir(options.outputdir):
         print "Error!  Output directory '%s' does not exist!"%options.outputdir
         yesno=raw_input("Create directory (y/n)? ")
