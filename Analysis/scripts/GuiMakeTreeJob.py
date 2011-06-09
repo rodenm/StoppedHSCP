@@ -214,13 +214,13 @@ class TreeJobGui:
             self.INtrigger=options.triggerType
 
         if options.rawtype==True:
-            self.INrecotype="RAWRECO"
+            self.INdatatype="RAWRECO"
         elif options.recotype==True:
-            self.INrecotype="RECO"
+            self.INdatatype="RECO"
         elif options.mctype==True:
-            self.INrecotype=="MC"
+            self.INdatatype=="MC"
         else:
-            self.INrecotype=options.myreco
+            self.INdatatype=options.myreco
 
         if options.BristolWhiteList==True:
             self.INwhitelist="heplnx206.pp.rl.ac.uk,heplnx207.pp.rl.ac.uk"
