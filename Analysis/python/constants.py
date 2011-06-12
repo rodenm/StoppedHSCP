@@ -30,9 +30,10 @@ scaleUncert       = 0.13     # combined JES, lumi systematic
 #N_ct_ctrl       = 1982
 
 # from Run 2010A_Apr21_423p2_v4_1117_1309, using 70 GeV threshold
+# Adjustment to n_ct_ctrl is result of study in Elog 323
 N_ctrl           = 13
 N_n90_ctrl       = 131
-N_ct_ctrl        = 1415
+N_ct_ctrl        = 1415-365
 
 ## from Run 2010A_Apr21_423p2_v5_1117_1309, using 70 GeV threshold
 ## We believe v5 files missing some LS...
