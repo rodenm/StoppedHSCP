@@ -179,7 +179,9 @@ Nexp_err  = sqrt(pow(Nexp_stat, 2) +
                  pow(Nexp_syst, 2) )
 
 print 'Expected BG counts : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (Nexp, Nexp*Nexp_stat, Nexp*Nexp_syst)
-print
+print 'Expected N90-only BG counts : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (Nexp_n90, Nexp_n90*Nexp_n90_stat, Nexp_n90*Nexp_n90_syst)
+print 'Expected CT-only BG counts : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (Nexp_ct, Nexp_ct*Nexp_ct_stat, Nexp_ct*Nexp_ct_syst)
+
 
 
 print "Background rates"
