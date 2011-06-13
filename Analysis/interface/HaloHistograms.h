@@ -2,8 +2,9 @@
 #define HaloHistograms_h
 
 
-#include "StoppedHSCP/Analysis/interface/StoppedHSCPEvent.h"
 #include "StoppedHSCP/Analysis/interface/Cuts.h"
+
+#include "StoppedHSCP/Ntuples/interface/StoppedHSCPEvent.h"
 
 #include "TFile.h"
 #include "TH1D.h"

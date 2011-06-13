@@ -3,7 +3,6 @@
 
 // class to run an event loop on StoppedHSCP ntuples
 
-#include "StoppedHSCP/Analysis/interface/StoppedHSCPEvent.h"
 #include "StoppedHSCP/Analysis/interface/Cuts.h"
 #include "StoppedHSCP/Analysis/interface/Histograms.h"
 #include "StoppedHSCP/Analysis/interface/ControlHistograms.h"
@@ -15,7 +14,9 @@
 #include "StoppedHSCP/Analysis/interface/CosmicsHistograms.h"
 #include "StoppedHSCP/Analysis/interface/NoiseHistograms.h"
 #include "StoppedHSCP/Analysis/interface/SignalHistograms.h"
-#include "StoppedHSCP/Analysis/interface/LhcFills.h"
+
+#include "StoppedHSCP/Ntuples/interface/StoppedHSCPEvent.h"
+#include "StoppedHSCP/Ntuples/interface/LhcFills.h"
 
 #include "TFile.h"
 //#include "TTree.h"

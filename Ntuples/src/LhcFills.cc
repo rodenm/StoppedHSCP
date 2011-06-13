@@ -1,7 +1,7 @@
 
-#include "StoppedHSCP/Analysis/interface/LhcFills.h"
+#include "StoppedHSCP/Ntuples/interface/Constants.h"
 
-#include "StoppedHSCP/Analysis/interface/Constants.h"
+#include "StoppedHSCP/Ntuples/interface/LhcFills.h"
 
 #include <iostream>
 #include <fstream>

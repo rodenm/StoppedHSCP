@@ -7,5 +7,4 @@
 
 <bin name="makeHistograms" file="MakeHistograms.cpp"/>
 
-<bin name="background" file="background.cpp"/>
-
+<bin name="makeFinalPlots" file="MakeLimitPlots.cpp"/>

@@ -1,6 +1,6 @@
 #include "StoppedHSCP/Analysis/interface/RunHistograms.h"
 
-#include "StoppedHSCP/Analysis/interface/Constants.h"
+#include "StoppedHSCP/Ntuples/interface/Constants.h"
 
 #include "TMath.h"
 

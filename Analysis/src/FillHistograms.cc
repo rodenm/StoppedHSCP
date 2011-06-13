@@ -11,7 +11,8 @@ FillHistograms::FillHistograms(TFile* file, Cuts* cuts) :
   fills_(0),
   hbx_(0),
   horb_(0),
-  hlb_(0)
+  hlb_(0),
+  hnm1_(0)
 {
  
   // create directory structure
@@ -42,10 +43,12 @@ FillHistograms::~FillHistograms() {
   for (itr=hbx_.begin(); itr!=hbx_.end(); ++itr) delete (*itr);
   for (itr=horb_.begin(); itr!=horb_.end(); ++itr) delete (*itr);
   for (itr=hlb_.begin(); itr!=hlb_.end(); ++itr) delete (*itr);
+  for (itr=hnm1_.begin(); itr!=hnm1_.end(); ++itr) delete (*itr);
 
   hbx_.clear();
   horb_.clear();
   hlb_.clear();
+  hnm1_.clear();
 
 }
 
@@ -68,12 +71,14 @@ void FillHistograms::book(unsigned long fill) {
   if (hbx_.size() < fill+1) hbx_.resize(fill+1, 0);
   if (horb_.size() < fill+1) horb_.resize(fill+1, 0);
   if (hlb_.size() < fill+1) hlb_.resize(fill+1, 0);
+  if (hnm1_.size() < fill+1) hnm1_.resize(fill+1, 0);
 
   // and book histograms
   hbx_.at(fill) = new TH1D((std::string("hbx")+fillstr.str()).c_str(), "BX number", 3564, 0., 3564.);
   horb_.at(fill) = new TH1D((std::string("horb")+fillstr.str()).c_str(), "Orbit number", 100, 0., 10000.);
   hlb_.at(fill) = new TH1D((std::string("hlb")+fillstr.str()).c_str(), "Lumi block", 5000, 0., 5000.);
-  
+  hnm1_.at(fill) = new TH1D((std::string("hnm1")+fillstr.str()).c_str(), "N-1 counts", 20, 0., 20.);
+
   // record the fact we booked this fill already
   fills_.push_back(fill);
 
@@ -93,6 +98,12 @@ void FillHistograms::fill(StoppedHSCPEvent& event) {
   horb_.at(fill)->Fill(event.orbit);
   hlb_.at(fill)->Fill(event.lb);
 
+  // N-1 histo
+  for (unsigned cut=0; cut<cuts_->nCuts(); ++cut) {
+    if (cuts_->cutNMinusOne(cut)) hnm1_.at(fill)->Fill(cut);
+  }
+
+
 }
 
 
@@ -111,6 +122,7 @@ void FillHistograms::save() {
     hbx_.at(*itr)->Write("",TObject::kOverwrite);
     horb_.at(*itr)->Write("",TObject::kOverwrite);
     hlb_.at(*itr)->Write("",TObject::kOverwrite);
+    hnm1_.at(*itr)->Write("",TObject::kOverwrite);
 
   }
 

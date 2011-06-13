@@ -152,6 +152,10 @@ void Histograms::book() {
     //    hlifetime_cuts.push_back(new TH1D((std:;string("hlifetime")+istr.str()).c_str(), (std::string("Lifetime after ")+cstr).c_str(), 100, 0., 1.e-3);
   }
 
+  hCTNM1EtaPhi_ = new TH2D("hCTNM1EtaPhi", "Eta vs phi CT(N-1)", 70, -1.5, 1.5, 72, -1 * TMath::Pi(),  TMath::Pi());
+  hCTNM1IEtaIPhi_ = new TH2D("hCTNM1IEtaIPhi", "Eta vs phi CT(N-1)", 100, -50., 50., 75, 0., 75.);
+  hCTNM1LeadingIPhi_ = new TH1D("hCTNM1LeadingIPhi", "Leading iPhi CT(N-1)", 75, -0.5, 74.5);
+
 }
 
 
@@ -329,6 +333,12 @@ void Histograms::fill(StoppedHSCPEvent& event) {
     if (cuts_->cut()) hjetemf_nmo_->Fill(event.jetEEm.at(0)/event.jetE.at(0));
   }
 
+  if (cuts_->cutNMinusOne(11)) {
+    hCTNM1EtaPhi_->Fill(event.jetEta[0], event.jetPhi[0]);
+    hCTNM1IEtaIPhi_->Fill(event.towerIEta[0], event.towerIPhi[0]);
+    hCTNM1LeadingIPhi_->Fill(event.nTowerLeadingIPhi);
+  }
+
 }
 
 
@@ -420,6 +430,10 @@ void Histograms::save() {
     hbx_cuts_.at(i)->Write("",TObject::kOverwrite);
     hjetemf_cuts_.at(i)->Write("",TObject::kOverwrite);
   }
+  
+    hCTNM1EtaPhi_->Write("",TObject::kOverwrite);
+    hCTNM1IEtaIPhi_->Write("",TObject::kOverwrite);
+    hCTNM1LeadingIPhi_->Write("",TObject::kOverwrite);
 
 }
 

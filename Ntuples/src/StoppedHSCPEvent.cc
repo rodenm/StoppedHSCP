@@ -1,4 +1,5 @@
-#include "StoppedHSCP/Analysis/interface/StoppedHSCPEvent.h"
+#include "StoppedHSCP/Ntuples/interface/StoppedHSCPEvent.h"
+
 #include "DataFormats/HcalDigi/interface/HBHEDataFrame.h"
 
 #include <iostream>

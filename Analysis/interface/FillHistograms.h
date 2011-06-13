@@ -4,8 +4,9 @@
 
 // a set of histograms that are filled for each Fill
 
-#include "StoppedHSCP/Analysis/interface/StoppedHSCPEvent.h"
 #include "StoppedHSCP/Analysis/interface/Cuts.h"
+
+#include "StoppedHSCP/Ntuples/interface/StoppedHSCPEvent.h"
 
 #include "TFile.h"
 #include "TH1D.h"
@@ -43,8 +44,8 @@ class FillHistograms {
   std::vector<TH1D*> hbx_;
   std::vector<TH1D*> horb_;
   std::vector<TH1D*> hlb_;
+  std::vector<TH1D*> hnm1_;
 
-  TH1D* hjete_;
 
 };
 

@@ -4,7 +4,8 @@
 // 
 
 #include "StoppedHSCP/Analysis/interface/Analyser.h"
-#include "StoppedHSCP/Analysis/interface/StoppedHSCPEvent.h"
+
+#include "StoppedHSCP/Ntuples/interface/StoppedHSCPEvent.h"
 
 
 #include <vector>

@@ -1,6 +1,6 @@
 #include "StoppedHSCP/Analysis/interface/Analyser.h"
 
-#include "StoppedHSCP/Analysis/interface/Constants.h"
+#include "StoppedHSCP/Ntuples/interface/Constants.h"
 
 #include <iostream>
 #include <boost/algorithm/string.hpp>

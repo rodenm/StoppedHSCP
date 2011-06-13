@@ -14,7 +14,7 @@
 #include "StoppedHSCP/ToyMC/interface/Events.h"
 #include "StoppedHSCP/ToyMC/interface/Experiment.h"
 
-#include "StoppedHSCP/Analysis/interface/LhcFills.h"
+#include "StoppedHSCP/Ntuples/interface/LhcFills.h"
 
 
 class Simulator {

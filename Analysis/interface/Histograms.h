@@ -2,8 +2,9 @@
 #define Histograms_h
 
 
-#include "StoppedHSCP/Analysis/interface/StoppedHSCPEvent.h"
 #include "StoppedHSCP/Analysis/interface/Cuts.h"
+
+#include "StoppedHSCP/Ntuples/interface/StoppedHSCPEvent.h"
 
 #include "TFile.h"
 #include "TH1D.h"
@@ -123,6 +124,10 @@ class Histograms {
   std::vector<TH1D*> hbx_cuts_;
   std::vector<TH1D*> hjetemf_cuts_;
   std::vector<TH1D*> hlifetime_cuts_;
+
+  TH2D* hCTNM1EtaPhi_;
+  TH2D* hCTNM1IEtaIPhi_;
+  TH1D* hCTNM1LeadingIPhi_;
 
 };
 

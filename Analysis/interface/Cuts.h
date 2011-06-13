@@ -1,8 +1,6 @@
 #ifndef Cuts_h
 #define Cuts_h
 
-#include "StoppedHSCP/Analysis/interface/StoppedHSCPEvent.h"
-
 #include <string>
 #include <vector>
 

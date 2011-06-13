@@ -1,7 +1,7 @@
 #include "StoppedHSCP/Analysis/interface/Cuts.h"
 
-#include "StoppedHSCP/Analysis/interface/StoppedHSCPEvent.h"
-#include "StoppedHSCP/Analysis/interface/LhcFills.h"
+#include "StoppedHSCP/Ntuples/interface/StoppedHSCPEvent.h"
+#include "StoppedHSCP/Ntuples/interface/LhcFills.h"
 
 
 #include <iostream>

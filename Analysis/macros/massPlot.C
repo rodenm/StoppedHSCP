@@ -324,7 +324,7 @@ void massPlot(char* filename, char* filename2) {
   graph_tp->SetLineColor(kRed);
   graph_tp->SetLineStyle(3);
   graph_tp->SetLineWidth(3);
-  graph_tp->Draw("l");
+  //graph_tp->Draw("l");
   
   // theory line
   theory->SetLineColor(kBlue);
