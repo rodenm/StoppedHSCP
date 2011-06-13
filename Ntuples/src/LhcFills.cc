@@ -263,8 +263,9 @@ double LhcFills::getLiveFraction(unsigned long fill) {
 
   // count number of unmasked bunches
   unsigned nLiveBx = 0;
+  std::vector<bool> mask = getMask(fill);
   for (unsigned bx=0; bx<NBX_PER_ORBIT; ++bx) {
-    if ( !getMask(fill).at(bx) ) nLiveBx++;
+    if ( !mask.at(bx) ) nLiveBx++;
   }
 
   return (double) nLiveBx / (double) NBX_PER_ORBIT;
@@ -303,22 +304,14 @@ const std::vector<bool>& LhcFills::getMaskFromRun(unsigned long run) {
   return getMask(getFillFromRun(run));
 }
 
+
 const std::vector<bool>& LhcFills::getLifetimeMaskFromRun(unsigned long run) {
   return getLifetimeMask(getFillFromRun(run));
 }
 
 
-
 double LhcFills::getLiveFractionFromRun(unsigned long run) {
-
-  // count number of unmasked bunches
-  unsigned nLiveBx = 0;
-  for (unsigned bx=0; bx<NBX_PER_ORBIT; ++bx) {
-    if ( !getMaskFromRun(run).at(bx) ) nLiveBx++;
-  }
-
-  return (double) nLiveBx / (double) NBX_PER_ORBIT;
-
+  return getLiveFraction(getFillFromRun(run));
 }
 
 

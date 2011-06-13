@@ -30,6 +30,7 @@ class LhcFills {
   const std::vector<unsigned long>& getBunches(unsigned long fill);
   const std::vector<bool>& getMask(unsigned long fill);
   const std::vector<bool>& getLifetimeMask(unsigned long fill);
+  double getLiveFraction(unsigned long fill);
 
   // get info about a particular run
   unsigned long getFillFromRun(unsigned long run);
