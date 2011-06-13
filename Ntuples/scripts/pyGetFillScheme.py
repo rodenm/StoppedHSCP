@@ -172,7 +172,7 @@ def Main(scheme,fillschemetext=None,overwrite=False,verbose=False):
     #  Default location of fillingSchemes file
     if fillschemetext==None:
         fillschemetext=os.path.join(os.environ["CMSSW_BASE"],
-                                    "src/StoppedHSCP/Analysis/data/fillingSchemes.txt")
+                                    "src/StoppedHSCP/Ntuples/data/fillingSchemes.txt")
 
     # Check to see whether scheme is already defined in file
     foundscheme=False
@@ -244,8 +244,8 @@ if __name__=="__main__":
     parser.add_option("-o","--fillschemetext",
                       dest="fillschemetext",
                       default=os.path.join(os.environ["CMSSW_BASE"],
-                                           "src/StoppedHSCP/Analysis/data/fillingSchemes.txt"),
-                      help="Specify filling schemes file (default is ../StoppedHSCP/Analysis/data/fillingSchemes.txt)")
+                                           "src/StoppedHSCP/Ntuples/data/fillingSchemes.txt"),
+                      help="Specify filling schemes file (default is ../StoppedHSCP/Ntuples/data/fillingSchemes.txt)")
     parser.add_option("-w","--website",
                       action="append",
                       default=["http://lpc.web.cern.ch/lpc/documents/FillPatterns",

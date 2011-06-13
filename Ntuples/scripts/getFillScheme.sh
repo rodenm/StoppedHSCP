@@ -3,7 +3,7 @@
 scheme=$1
 
 # Allow user to specify fillingSchemes file
-fillingtext=$CMSSW_BASE/src/StoppedHSCP/Analysis/data/fillingSchemes.txt
+fillingtext=$CMSSW_BASE/src/StoppedHSCP/Ntuples/data/fillingSchemes.txt
 
 if [ $# -ge 2 ]
 then
