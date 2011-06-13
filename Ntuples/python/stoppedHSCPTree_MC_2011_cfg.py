@@ -3,7 +3,7 @@
 
 import FWCore.ParameterSet.Config as cms
 
-from StoppedHSCP.Analysis.stoppedHSCPTree_Master_cfg import *
+from StoppedHSCP.Ntuples.stoppedHSCPTree_Master_cfg import *
 
 process.stoppedHSCPTree.isMC = cms.untracked.bool(True)
 
@@ -20,7 +20,7 @@ process.ntuple.remove(process.hcalDigis)
 
 # 2011 trigger config  (although it's irrelevant for MC as BPTX assumed to fire for all MC)
 
-from StoppedHSCP.Analysis.StoppedHSCP_Trigger2011_cff import *
+from StoppedHSCP.Ntuples.StoppedHSCP_Trigger2011_cff import *
 
 process.hltHighLevel.HLTPaths = HLTPaths
 process.stoppedHSCPTree.hltPathJetNoBptx = hltPathJetNoBptx

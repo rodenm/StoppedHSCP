@@ -148,7 +148,7 @@ crab.close()
 # create CMSSW variables
 cmsswStr="import FWCore.ParameterSet.Config as cms\n\
 \n\
-from StoppedHSCP.Analysis.stoppedHSCPTree_"+datatype+"_"+trigger+"_cfg import *\n\
+from StoppedHSCP.Ntuples.stoppedHSCPTree_"+datatype+"_"+trigger+"_cfg import *\n\
 \n\
 process.MessageLogger.cerr.threshold = ''\n\
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000\n\
