@@ -5,12 +5,12 @@
 // *********************************
 // The following parameters (LUMI, MAXLUMI) need to be set by hand:
 // LUMI is a double
-#define LUMI 267.
+#define LUMI 417.
 // MAXINSTLUMI is a double
 // Get MAXINSTLUMI directly from https://cmswbm.web.cern.ch/cmswbm/cmsdb/servlet/FillReport  
 // (PeakInstLumi). 
 // Units are 10^30 cm^-2 s^-1
-#define MAXINSTLUMI 1106.
+#define MAXINSTLUMI 1274.
 // *********************************
 
 #include <cstdlib>
