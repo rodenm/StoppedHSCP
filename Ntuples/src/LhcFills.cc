@@ -48,13 +48,13 @@ void LhcFills::readFiles() {
 
   // open fills file
   std::string fillsname(getenv("CMSSW_BASE"));
-  fillsname+=std::string("/src/StoppedHSCP/Analysis/data/fills.txt");
+  fillsname+=std::string("/src/StoppedHSCP/Ntuples/data/fills.txt");
   std::cout << "Getting fills from " << fillsname << std::endl;
   std::ifstream fills(fillsname.c_str(), std::ifstream::in);
 
   // open filling schemes file
   std::string schemesname(getenv("CMSSW_BASE"));
-  schemesname+=("/src/StoppedHSCP/Analysis/data/fillingSchemes.txt");
+  schemesname+=("/src/StoppedHSCP/Ntuples/data/fillingSchemes.txt");
   std::cout << "Getting filling scheme from " << schemesname << std::endl;
   std::ifstream schemes(schemesname.c_str(), std::ifstream::in);
 
@@ -258,6 +258,19 @@ const std::vector<bool>& LhcFills::getMask(unsigned long fill) {
 const std::vector<bool>& LhcFills::getLifetimeMask(unsigned long fill) {
   return fills_.at(getIndexFromFill(fill)).lifetimeMask;
 }
+
+double LhcFills::getLiveFraction(unsigned long fill) {
+
+  // count number of unmasked bunches
+  unsigned nLiveBx = 0;
+  for (unsigned bx=0; bx<NBX_PER_ORBIT; ++bx) {
+    if ( !getMask(fill).at(bx) ) nLiveBx++;
+  }
+
+  return (double) nLiveBx / (double) NBX_PER_ORBIT;
+
+}
+
 
 unsigned long LhcFills::getFillFromRun(unsigned long run) {
 
