@@ -22,7 +22,7 @@ import os
 
 # help message
 def usage():
-    print "Usage : background.py <input file>"    
+    print "Usage : nMinusOnePlots.py <dataset>"    
 
 
 # the main program
