@@ -45,10 +45,9 @@ class RunHistograms {
 
   std::vector<unsigned long> runs_;
 
-  std::vector<TH1D*> hbx_;
-  std::vector<TH1D*> horb_;
+  std::vector<unsigned long> nEvts_;
+
   std::vector<TH1D*> hlb_;
-  std::vector<TH1D*> hlivetime_;
 
 };
 

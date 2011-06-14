@@ -52,10 +52,10 @@ hfile=TFile(dataset+"/histograms.root")
 # run info
 time=0
 if (not isMC):
-    htime=hfile.Get("runs/hlivetime")
-    hnlb=hfile.Get("runs/hnlb")
+    htime=hfile.Get("runs/hruntime")
+    hnlb=hfile.Get("runs/hrunlb")
     
-    print "Run\tLS\tLivetime"
+    print "Run\t# LS\tTime(s)\tLive frac"
     runlivetime={}
     for i in range(1,htime.GetNbinsX()+1):
         runlivetime[htime.GetXaxis().GetBinLabel(i)] = (hnlb.GetBinContent(i),htime.GetBinContent(i))
@@ -63,12 +63,15 @@ if (not isMC):
     runlivekeys=runlivetime.keys()
     runlivekeys.sort()
     for key in runlivekeys:
-        print "%s\t%s\t%s"%(key,runlivetime[key][0],runlivetime[key][1])
+        nLS = runlivetime[key][0]
+        time = runlivetime[key][1]
+        frac = time/(nLS*TIME_PER_LS)
+        print "%s\t%i\t%d\t%f"%(key,nLS,time,frac)
 
 
     # total time
     time=htime.Integral()
-    print "Total live time : "+str(time)+" s"
+    print "Total live time (s) : %i"%(time)
 
 
 hcutcum=hfile.Get("histograms/Cuts/hncutcum")
@@ -88,7 +91,7 @@ print '[TABLE border=1]'
 if isMC:
     print "|Cut\t|N\t|cum %\t|N-1 % |-"
 else:
-    print "|Cut\t|N\t|Rate (Hz) |ind %\t|cum %\t|N-1 % |N-1 (Hz)|-"
+    print "|Cut\t|N\t|Rate (Hz) |N-1 % |N-1 (Hz)|-"
 
 for i in range(0,nCuts):
     ncum = hcutcum.GetBinContent(i+1)
@@ -102,12 +105,14 @@ for i in range(0,nCuts):
             print '|%i %s | %i | N/A | N/A |' % (i, label, ncum)
     else:
         if (ntot<>0):
-            print '|%i %s | %i | %.2e | %.2e | %.2e | %.2e | %.2e |-' % (i, label, ncum, ncum/time, 100.*nind/ntot, 100.*ncum/ntot, 100.*nnmo/ntot, nnmo/time)
+            print '|%i %s | %i | %.2e +/- %.2e | %i | %.2e +/- %.2e |-' % (i, label, ncum, ncum/time, sqrt(ncum)/time, nnmo, nnmo/time, sqrt(nnmo)/time)
         else:
-            print '|%i %s | %i | N/A | N/A |' % (i, label, ncum)
+            print '|%i %s | %i | N/A | N/A | N/A |' % (i, label, ncum)
             
 print '[/TABLE]'
 print
+
+
 
 # backgrounds
 N_n90   = int(hcutnmo.GetBinContent(in90+1))

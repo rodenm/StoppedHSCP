@@ -32,7 +32,7 @@ Cuts::Cuts(StoppedHSCPEvent* event, bool isMC, unsigned version, LhcFills* fills
     addCut(&Cuts::cosmicVeto, "Cosmic veto");
     addCut(&Cuts::hcalNoiseVeto, "Noise veto");
     addCut(&Cuts::looseJetCut, "E30");
-    addCut(&Cuts::jetEnergyCut, "E50");
+    addCut(&Cuts::jetEnergyCut, "E70");
     addCut(&Cuts::jetN60Cut, "n60");
     addCut(&Cuts::jetN90Cut, "n90");
     addCut(&Cuts::towersIPhiCut, "nTowiPhi");
@@ -53,7 +53,7 @@ Cuts::Cuts(StoppedHSCPEvent* event, bool isMC, unsigned version, LhcFills* fills
     addCut(&Cuts::cosmicVeto, "Cosmic veto");
     addCut(&Cuts::hcalNoiseVeto, "Noise veto");
     addCut(&Cuts::looseJetCut, "E30");
-    addCut(&Cuts::jetEnergyCut, "E50");
+    addCut(&Cuts::jetEnergyCut, "E70");
     addCut(&Cuts::jetN60Cut, "n60");
     addCut(&Cuts::jetN90Cut, "n90");
     addCut(&Cuts::towersIPhiCut, "nTowiPhi");
@@ -74,7 +74,7 @@ Cuts::Cuts(StoppedHSCPEvent* event, bool isMC, unsigned version, LhcFills* fills
     addCut(&Cuts::cosmicVeto, "Cosmic veto");
     addCut(&Cuts::hcalNoiseVeto, "Noise veto");
     addCut(&Cuts::looseJetCut, "E30");
-    addCut(&Cuts::jetEnergyCut, "E50");
+    addCut(&Cuts::jetEnergyCut, "E70");
     addCut(&Cuts::jetN60Cut, "n60");
     addCut(&Cuts::jetN90Cut, "n90");
     addCut(&Cuts::towersIPhiCut, "nTowiPhi");
@@ -97,7 +97,7 @@ Cuts::Cuts(StoppedHSCPEvent* event, bool isMC, unsigned version, LhcFills* fills
     addCut(&Cuts::hfVeto, "HF veto");
     addCut(&Cuts::trackVeto, "Track veto");
     addCut(&Cuts::looseJetCut, "E30");
-    addCut(&Cuts::jetEnergyCut, "E50");
+    addCut(&Cuts::jetEnergyCut, "E70");
     addCut(&Cuts::jetN60Cut, "n60");
     addCut(&Cuts::jetN90Cut, "n90");
     addCut(&Cuts::towersIPhiCut, "nTowiPhi");
@@ -142,9 +142,8 @@ bool Cuts::bptxVeto() const {        // cut on time wrt BPTX signal
 }
 
 bool Cuts::bxVeto() const {          // cut on BX wrt expected collisions
-
-  return isMC_ || !(fills_->getMaskFromRun(event_->run).at(event_->bx));
-  //return abs(event_->bxWrtCollision) > 2;
+  //return isMC_ || !(fills_->getMaskFromRun(event_->run).at(event_->bx));
+  return isMC_ || abs(event_->bxWrtBunch) > 2;
 }
 
 bool Cuts::vertexVeto() const {      // no vertex

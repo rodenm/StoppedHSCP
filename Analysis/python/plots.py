@@ -11,7 +11,7 @@ from math import pi
 
 
 # just plot one quantity
-def histPlot(hist, file, ofilename, scale=0, log=False, title="histogram", xtitle="", ytitle="", opt="HIST") :
+def histPlot(hist, file, ofilename, scale=0, log=False, title="histogram", xtitle="", ytitle="", opt="") :
     
     canvas=TCanvas("canvas")
 
@@ -148,7 +148,7 @@ def multiPlot(hists, labels, ofile, ymin=0., ymax=0., title="histogram", xtitle=
             if s.norm:
                 max = 1.1*h.GetMaximum()/h.Integral()
             else:
-                max = 1.1*h.GetMaximum()
+                max = 1.1*(h.GetMaximum()+h.GetBinError(h.GetMaximumBin()))
             if max > ymax:
                 ymax = max
 
@@ -193,6 +193,7 @@ def multiPlot(hists, labels, ofile, ymin=0., ymax=0., title="histogram", xtitle=
             if (not (xtitle == "")) :
                 h.SetXTitle(xtitle)
             h.SetMaximum(ymax)
+            h.SetMinimum(ymin)
             h.Draw(opt)
             first=False
         else:

@@ -7,6 +7,7 @@
 #include "StoppedHSCP/Analysis/interface/Cuts.h"
 
 #include "StoppedHSCP/Ntuples/interface/StoppedHSCPEvent.h"
+#include "StoppedHSCP/Ntuples/interface/LhcFills.h"
 
 #include "TFile.h"
 #include "TH1D.h"
@@ -20,7 +21,7 @@ class FillHistograms {
 
  public:
 
-  FillHistograms(TFile* file, Cuts* cuts);
+  FillHistograms(TFile* file, Cuts* cuts, LhcFills* fills);
   ~FillHistograms();
 
   void book(unsigned long fill);
@@ -39,11 +40,17 @@ class FillHistograms {
   Cuts* cuts_;
   TDirectory* base_;
 
+  LhcFills* lhcFills_;
+
   std::vector<unsigned long> fills_;
 
+  std::vector<unsigned long> nEvts_;
+  std::vector< std::pair<unsigned long, unsigned long> > lb_;
+  std::vector<unsigned long> nLB_;
+  std::vector< std::vector<unsigned long> > nm1_;  // nm1(cut, fill);
+  std::vector<unsigned long> nFin_;
+
   std::vector<TH1D*> hbx_;
-  std::vector<TH1D*> horb_;
-  std::vector<TH1D*> hlb_;
   std::vector<TH1D*> hnm1_;
 
 
