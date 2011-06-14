@@ -5,7 +5,7 @@
 #
 import FWCore.ParameterSet.Config as cms
 
-from StoppedHSCP.Analysis.stoppedHSCPTree_RECO_2011_cfg import *
+from StoppedHSCP.Ntuples.stoppedHSCPTree_MC_2011_cfg import *
 
 process.MessageLogger.cerr.INFO.limit = cms.untracked.int32(10)
 
@@ -19,8 +19,9 @@ readFiles = cms.untracked.vstring()
 secFiles = cms.untracked.vstring()
 process.source = cms.Source ("PoolSource",fileNames = readFiles, secondaryFileNames = secFiles)
 readFiles.extend( [
+    'file:/storage/phjjb/stoppedHSCP/StoppedGluino300-Neutralino100-423-test/Stopped_HSCP_stage2_reco_gluino300_100.root'
     #'file:/tmp/jbrooke/SD_HSCP_2011.root'
-    '/store/data/Run2011A/MinimumBias/RECO/PromptReco-v2/000/163/302/C205190F-646F-E011-840D-0019DB2F3F9A.root'
+    #'/store/data/Run2011A/MinimumBias/RECO/PromptReco-v2/000/163/302/C205190F-646F-E011-840D-0019DB2F3F9A.root'
     #'/store/data/Run2011A/MinimumBias/RECO/PromptReco-v2/000/162/826/0211C136-8B69-E011-82D8-001D09F251BD.root',
     #'/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/224/343051B9-B756-E011-A0D5-001D09F2512C.root',
     #'/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/222/EC327C19-AE56-E011-8F3C-003048F118DE.root',
