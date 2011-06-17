@@ -12,6 +12,8 @@ Jeff Temple
 pythonized-version of getFillScheme.sh script.  This version allows users simply to provide input file "fills.txt",
 and only the filling schemes in that file that have not already been defined (in "fillingSchemes.txt") will be added.
 Users can also specify list of schemes on command line, and change input/output from default fills.txt and fillingSchemes.txt files
+
+If website for a given fill scheme does not exist, it may be that the name in fills.txt is incorrect.  Check against scheme names in /afs/cern.ch/user/l/lpc/2011/stablebeams2011, which should be correct.
 '''
 
 import sys,os,string
@@ -50,7 +52,20 @@ def ParseAndCleanFillFile(fillfile):
             while runtext.endswith(","): # remove trailing comma
                 runtext=runtext[:-1]
             newline=string.split(thefile[i],runs[0])[0]
-            newline=newline+"%s\n"%runtext
+            newline=newline+"%s"%runtext
+            # now parse original line, and keep trailing \n, \t, space
+            # No reason to keep them, except that 'diff' becomes simpler
+            endline=""
+            for char in range(len(thefile[i])-1,-1,-1):
+                if thefile[i][char] not in ["\t","\n"," "]:
+                    break
+
+                endline=thefile[i][char]+endline
+            if not endline.endswith("\n"):
+                endline=endline+"\n"
+            newline=newline+endline
+
+            
             # replace original line with edited version
             thefile[i]=newline
         except ValueError: # can't read fill number
