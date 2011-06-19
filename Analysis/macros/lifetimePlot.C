@@ -47,7 +47,7 @@ TCanvas *makeBasicPlot(TGraph *g1,
 void lifetimePlot(char* filename, char* filename2="", char* filename3="") {
 
   // which mass point ?
-  unsigned massIndex = 3;  // point 3 -> m_gluino=400, m_neutralino=300
+  unsigned massIndex = 4;  // point 3 -> m_gluino=500, m_neutralino=400
   unsigned stopIndex = 2;  // point 3 -> m_stop=300
 
   // some numbers need to be set by hand
@@ -56,10 +56,10 @@ void lifetimePlot(char* filename, char* filename2="", char* filename3="") {
   unsigned nGluino      = 7;
   double m_g[10]        = { 150.,     200.,      300.,      400.,      500.,     600.,    900. };
   double m_chi[10]      = { 50.,      100.,      200.,      300.,      400.,     500.,    800. };
-  double stopEff_cm[10] = { 0.219*2., 0.198*2.,  0.205*2.,  0.207*2.,  0.209*2.  };  // cloud model
+  double stopEff_cm[10] = { 0.4188,   0.3927,    0.3936,   0.3946,    0.4043,   0.4282,  0.4838 };  // cloud model
   double stopEff_em[10] = { 0.062*2., 0.0591*2., 0.0596*2., 0.0601*2., 0.0634*2. };  // EM only
   double stopEff_nb[10] = { 0.120*2., 0.0115*2., 0.0128*2., 0.0141*2., 0.0147*2. };  // neutral baryon
-  double recoEff[10]    = { 0.146,    0.157,     0.170,     0.175,     0.175,    0.175,   0.175 };
+  double recoEff[10]    = { 0.146,    0.157,     0.1555,    0.1555,    0.1534,    0.1582,   0.1582 };
  
   unsigned nStop          = 7;
   double m_stop[10]       = { 130,   200,   300,   500,   600,   800,   1200 };
@@ -463,7 +463,7 @@ TCanvas *makeBasicPlot(TGraph *g1,
   TH1 * h;
   TPaveText *blurb;
 
-  h = canvas->DrawFrame(7.5e-8, .3, 1e6, 3e1);
+  h = canvas->DrawFrame(7.5e-8, 3e-2, 1e6, 3e1);
   //  h->SetTitle("Beamgap Expt;#tau_{#tilde{g}} [s]; #sigma(pp #rightarrow #tilde{g}#tilde{g}) [cm^{2}]");
   h->SetTitle("Beamgap Expt;#tau_{#tilde{g}} [s]; #sigma(pp #rightarrow #tilde{g}#tilde{g}) #times BR(#tilde{g} #rightarrow g#tilde{#chi}^{0}) #times #varepsilon^{#tilde{g}#tilde{g}}_{stop} [pb]");
 

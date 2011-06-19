@@ -53,16 +53,17 @@ void massPlot(char* filename, char* filename2) {
 
   double m_g[10]        = { 150.,     200.,      300.,      400.,      500.,     600.,    900. };
   double m_chi[10]      = { 50.,      100.,      200.,      300.,      400.,     500.,    800. };
-  double stopEff_cm[10] = { 0.219*2., 0.198*2.,  0.205*2.,  0.207*2.,  0.209*2., 0.216*2, 0.255*2 };  // cloud model
+  double stopEff_cm[10] = { 0.4188,   0.3927,    0.3936,   0.3946,    0.4043,   0.4282,  0.4838 };  // cloud model
   double stopEff_em[10] = { 0.062*2., 0.0591*2., 0.0596*2., 0.0601*2., 0.0634*2. };  // EM only
   double stopEff_nb[10] = { 0.120*2., 0.0115*2., 0.0128*2., 0.0141*2., 0.0147*2. };  // neutral baryon
-  double recoEff[10]    = { 0.146,    0.157,     0.170,     0.175,     0.175,    0.175,   0.175 };
+  double recoEff[10]    = { 0.146,    0.157,     0.1555,    0.1555,    0.1534,    0.1582,   0.1582 };
  
   unsigned nStop          = 7;
   double m_stop[10]       = { 130,   200,   300,   500,   600,   800,   1200 };
   double m_chi_stop[10]   = { 30,    100,   200,   400,   500,   700,   1100 };
   double stopEff_stop[10] = { .2962, .2656, .2438, .2060, .1949, .1835, .1853 };
   double recoEff_stop[10] = { 0.146, 0.157, 0.170, 0.175, 0.175, 0.175, 0.175 };
+
 
   unsigned nTheory = 10;
   double theoryUncertainty = 0.0;
