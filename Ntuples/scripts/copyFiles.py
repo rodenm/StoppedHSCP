@@ -111,9 +111,20 @@ def CopyFiles(user="jbrooke",
     counter=1
 
     cmdThreads=[]
+    filenames={}
     for file in allfiles:
         #if (counter>1):           continue
         basename=os.path.basename(file)
+        if basename.endswith("stoppedHSCP"):
+            dictname=string.split(basename,"_")
+            if len(dictname)>2:
+                key="%s_%s_%s"%(dictname[0],dictname[1],dictname[2])
+            else:
+                key=dictname
+            if key not in filenames:
+                filenames[key]=[]
+            filenames[key].append(basename)
+            
         #command = "lcg-cp "+gridroot+"/"+file+" "+os.path.join(odir,basename)
         if (srmcp==False):
             command = "lcg-cp %s/%s %s"%(gridroot,file,os.path.join(odir,basename))
@@ -165,7 +176,12 @@ def CopyFiles(user="jbrooke",
         
     endtime=time.time()
     print "Total time taken: %i min %.2f sec"%((endtime-starttime)/60, (endtime-starttime)%60)
-
+    for x in filenames.keys():
+        if len(filenames[x])>1:
+            print "*************************************************"
+            print "MAJOR ERROR!  Multiple files with same base name!"
+            for i in filenames[x]:
+                print "\t\t",i
     return True
 
 
