@@ -7,6 +7,17 @@ import re
 
 from constants import *
 
+
+class BGnminus1:
+    ''' Stores number events passing N-1 cut for a cut in a given bin.'''
+    def __init__(self,histogram, bin):
+        self.name=histogram.GetXaxis().GetBinLabel(bin)
+        self.value=histogram.GetBinContent(bin)
+        self.bin=bin  # stores histogram bin
+        self.cutnumber=bin-1
+        return
+
+    
 # help message
 def usage():
     print "Usage : printSummary.py [-h] <input dataset>"
@@ -114,6 +125,19 @@ print '[/TABLE]'
 print
 
 
+# This should get all the actual (i.e., labeled) cuts in hcutnmo.
+# The resulting dictionary should have a size equal to nCuts.
+# In principle, we could remove nCuts, iAllCuts from constants.py
+# We could also use labels to indicate cut positions, instead of needing iJet50, in90, etc.
+nminus1dict={}
+for i in range(1,hcutnmo.GetNbinsX()):
+    temp=BGnminus1(hcutnmo,i)
+    if len(temp.name)==0:
+        break
+    nminus1dict[temp.name]=temp
+
+
+
 print 'Combined cuts N-1'
 print
 print '[TABLE border=1]'
@@ -174,7 +198,8 @@ Rn90_ctrl = float(N_ctrl)/N_n90_ctrl
 Rct_ctrl  = float(N_ctrl)/N_ct_ctrl
 print "Rate coefficients from control sample"
 print "  N90 : ", Rn90_ctrl
-print "  CT  : ", Rct_ctrl
+if (Rct_ctrl)<=1:   # rates > 0 are nonsensical
+    print "  CT  : ", Rct_ctrl
 print
 
 # calculate expected final counts
@@ -188,45 +213,51 @@ Nexp_n90_syst = sqrt( pow(N_n90_ctrl_stat, 2) +
                       pow(N_ctrl_stat, 2) )
 
 # using CT only
-Nexp_ct       = Rct_ctrl * N_ct
-if (N_ct > 0):
-    Nexp_ct_stat = 1/sqrt(N_ct)
-else:
-    Nexp_ct_stat = 99999999
-Nexp_ct_syst = sqrt( pow(N_ct_ctrl_stat, 2) +
-                     pow(N_ctrl_stat, 2) )
+if (Rct_ctrl)<=1:
+    Nexp_ct       = Rct_ctrl * N_ct
+    if (N_ct > 0):
+        Nexp_ct_stat = 1/sqrt(N_ct)
+    else:
+        Nexp_ct_stat = 99999999
+        Nexp_ct_syst = sqrt( pow(N_ct_ctrl_stat, 2) +
+                             pow(N_ctrl_stat, 2) )
 
 
 # combined
-Nexp       = 0.5 * ((Rn90_ctrl * N_n90) + (Rct_ctrl * N_ct))
-Nexp_stat  = sqrt( pow(N_n90_ctrl_stat, 2) +
-                   pow(N_ct_ctrl_stat, 2) )
-
+if (Rct_ctrl)<=1:
+    Nexp       = 0.5 * ((Rn90_ctrl * N_n90) + (Rct_ctrl * N_ct))
+    Nexp_stat  = sqrt( pow(N_n90_ctrl_stat, 2) +
+                       pow(N_ct_ctrl_stat, 2) )
     
-Nexp_syst = 0.5 * sqrt( 2*pow(errSystRateCoeff, 2) +
-                              pow(N_n90_ctrl_stat, 2) +
-                              pow(N_ct_ctrl_stat, 2) +
-                              4*pow(N_ctrl_stat, 2) )
+    
+    Nexp_syst = 0.5 * sqrt( 2*pow(errSystRateCoeff, 2) +
+                            pow(N_n90_ctrl_stat, 2) +
+                            pow(N_ct_ctrl_stat, 2) +
+                            4*pow(N_ctrl_stat, 2) )
 
-Nexp_err  = sqrt(pow(Nexp_stat, 2) +
-                 pow(Nexp_syst, 2) )
+    Nexp_err  = sqrt(pow(Nexp_stat, 2) +
+                     pow(Nexp_syst, 2) )
+else:
+    Nexp = Nexp_n90
+    Nexp_stat = Nexp_n90_stat
+    Nexp_syst = Nexp_n90_syst
 
-print 'Expected BG counts : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (Nexp, Nexp*Nexp_stat, Nexp*Nexp_syst)
-print 'Expected N90-only BG counts : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (Nexp_n90, Nexp_n90*Nexp_n90_stat, Nexp_n90*Nexp_n90_syst)
-print 'Expected CT-only BG counts : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (Nexp_ct, Nexp_ct*Nexp_ct_stat, Nexp_ct*Nexp_ct_syst)
+print 'Expected BG counts : %.3e +/- %.3e (stat) +/- %.3e (syst)' % (Nexp, Nexp*Nexp_stat, Nexp*Nexp_syst)
+print 'Expected N90-only BG counts : %.3e +/- %.3e (stat) +/- %.3e (syst)' % (Nexp_n90, Nexp_n90*Nexp_n90_stat, Nexp_n90*Nexp_n90_syst)
+if (Rct_ctrl<=1):
+    print 'Expected CT-only BG counts : %.3e +/- %.3e (stat) +/- %.3e (syst)' % (Nexp_ct, Nexp_ct*Nexp_ct_stat, Nexp_ct*Nexp_ct_syst)
 
-
-
-print "Background rates"
+print "\nBackground rates"
 if (N_n90>0):
-    print '  N90 method    : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (Nexp_n90/time, Nexp*Nexp_n90_stat/time, Nexp*Nexp_n90_syst/time) 
+    print '  N90 method    : %.3e +/- %.3e (stat) +/- %.3e (syst)' % (Nexp_n90/time, Nexp*Nexp_n90_stat/time, Nexp*Nexp_n90_syst/time) 
 else:
     print '  N90 method    : n90nmo = 0! '
-if (N_ct>0):
-    print '  CT method     : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (Nexp_ct/time, Nexp*Nexp_ct_stat/time, Nexp*Nexp_ct_syst/time) 
-else:
-    print '  CT method     :  ctnmo = 0!'
-print '  Combined      : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (Nexp/time, Nexp*Nexp_stat/time, Nexp*Nexp_syst/time) 
+if (Rct_ctrl<=1):
+    if (N_ct>0):
+        print '  CT method     : %.3e +/- %.3e (stat) +/- %.3e (syst)' % (Nexp_ct/time, Nexp*Nexp_ct_stat/time, Nexp*Nexp_ct_syst/time) 
+    else:
+        print '  CT method     :  ctnmo = 0!'
+    print '  Combined      : %.3e +/- %.3e (stat) +/- %.3e (syst)' % (Nexp/time, Nexp*Nexp_stat/time, Nexp*Nexp_syst/time) 
 print
 
 # expected rate & total error
