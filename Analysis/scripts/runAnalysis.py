@@ -36,7 +36,7 @@ def RunAnalysis(outdir, indir, version=0,steps=[],makeHistsOptions={}):
         for k in keys:# add individual options
             cmd = cmd +" %s %s"%(k,makeHistsOptions[k])
         cmd =cmd +" %s %s/*root > %s"%(outdir, indir, os.path.join(outdir,"histogrammer.log"))
-        print cmd
+        #print cmd
         GenericCommand(cmd)
 
     if 1 in steps:
