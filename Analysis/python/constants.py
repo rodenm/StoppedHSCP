@@ -38,7 +38,7 @@ scaleUncert       = 0.0922     # combined JES, lumi systematic
 # from Run2010A_Apr21_423p5_V1_1117_1309 + Run2010B_Apr21_423p5_v1_1364_1459
 N_ctrl           = 22
 N_n90_ctrl       = 183
-N_ct_ctrl        = 1
+N_ct_ctrl        = 1   # dummy value; not really 1!
 
 # errors (fractional)
 N_ctrl_stat     = 1/sqrt(N_ctrl)
