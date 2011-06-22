@@ -219,6 +219,17 @@ bool Analyser::isWatchedEvent() {
 
 void Analyser::loop(ULong64_t maxEvents) {
 
+  // Dumps selected events to new ntuple
+  TTree * OUTtree_=0;
+  if (watchedEvents_.size()>0)
+    {
+      outfile_->mkdir("stoppedHSCPTree");
+      outfile_->cd("stoppedHSCPTree");
+      OUTtree_ = new TTree("StoppedHSCPTree", ""); 
+      OUTtree_->Branch("events", "StoppedHSCPEvent", &event_, 64000, 1);
+    }
+
+
   reset();
  
   unsigned long currentRun=0;
@@ -252,10 +263,14 @@ void Analyser::loop(ULong64_t maxEvents) {
     cosmicsHistos_.fill(*event_);
     noiseHistos_.fill(*event_);
     signalHistos_.fill(*event_);
-    
+    // Fill user-specific histograms without affecting other histograms
+    userHistos_.fill(*event_);
+
     // check if this is an event we're watching for and do something if so
     if (isWatchedEvent()) {
       printCutValues(dumpFile_);
+      // Write ntuple event to output root file
+      if (watchedEvents_.size()>0) OUTtree_->Fill();
     }
 
     // check if this event passes all cuts and do something if so
@@ -284,6 +299,7 @@ void Analyser::loop(ULong64_t maxEvents) {
   cosmicsHistos_.save();
   noiseHistos_.save();
   signalHistos_.save();
+  userHistos_.save();
 
   haloHistos_.summarise();
   beamGasHistos_.summarise();
@@ -291,5 +307,5 @@ void Analyser::loop(ULong64_t maxEvents) {
   cosmicsHistos_.summarise();
   noiseHistos_.summarise();
   signalHistos_.summarise();
-
+  userHistos_.summarise();
 }
