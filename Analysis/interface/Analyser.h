@@ -14,6 +14,7 @@
 #include "StoppedHSCP/Analysis/interface/CosmicsHistograms.h"
 #include "StoppedHSCP/Analysis/interface/NoiseHistograms.h"
 #include "StoppedHSCP/Analysis/interface/SignalHistograms.h"
+#include "StoppedHSCP/Analysis/interface/UserHistograms.h"
 
 #include "StoppedHSCP/Ntuples/interface/StoppedHSCPEvent.h"
 #include "StoppedHSCP/Ntuples/interface/LhcFills.h"
@@ -106,7 +107,8 @@ class Analyser {
   CosmicsHistograms cosmicsHistos_;
   NoiseHistograms noiseHistos_;
   SignalHistograms signalHistos_;
-
+  UserHistograms   userHistos_;
+  
   // "per-run" histograms
   RunHistograms runHistos_;
 
@@ -125,6 +127,8 @@ class Analyser {
   std::ofstream dumpFile_;
   std::ofstream lifetimeFile_;
 
+  TFile *outfile_;
+  std::string outfilename_;
 };
 
 #endif
