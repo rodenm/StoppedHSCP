@@ -5,6 +5,7 @@
 import getopt
 import sys
 import os
+import string
 from subprocess import *
 
 from optparse import OptionParser
@@ -102,7 +103,7 @@ def CopyFiles(user="jbrooke",
     if listfiles==True:
         for file in allfiles:
             basename=os.path.basename(file)
-            if basename.endswith("stoppedHSCP"):
+            if basename.endswith(".root"):
                 dictname=string.split(basename,"_")
                 if len(dictname)>2:
                     key="%s_%s_%s"%(dictname[0],dictname[1],dictname[2])
@@ -115,13 +116,16 @@ def CopyFiles(user="jbrooke",
         endtime=time.time()
         print "A total of %i files found."%filecount
         print "Total time taken: %i min %.2f sec"%((endtime-starttime)/60, (endtime-starttime)%60)
+        errors=0
         for x in filenames.keys():
             if len(filenames[x])>1:
                 print "*************************************************"
                 print "MAJOR ERROR!  Multiple files with same base name!"
+                errors=errors+1
                 for i in filenames[x]:
                     print "\t\t",i
-        
+        if (errors>0):
+            print "There were a total of %i duplication errors!"%errors
         return True
 
     print "A total of %i files will be copied."%filecount
