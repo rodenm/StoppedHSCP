@@ -1,4 +1,4 @@
-
+ 
 import sys
 import getopt
 import string
@@ -193,8 +193,7 @@ if (N_ct > 0):
     Nexp_ct_stat = 1/sqrt(N_ct)
 else:
     Nexp_ct_stat = 99999999
-Nexp_ct_syst = sqrt( pow(errSystRateCoeff, 2) +
-                     pow(N_ct_ctrl_stat, 2) +
+Nexp_ct_syst = sqrt( pow(N_ct_ctrl_stat, 2) +
                      pow(N_ctrl_stat, 2) )
 
 
