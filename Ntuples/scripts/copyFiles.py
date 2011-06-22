@@ -12,6 +12,22 @@ from optparse import OptionParser
 import threading
 import time
 
+
+###  'copySites' variables is a dictionary storing some common locations of ntuples
+
+global copySites
+copySites={}
+# Add labels here for any other sites.
+# Add ntuple of [gridroot, gridloc]
+copySites["RAL"]=["srm://heplnx204.pp.rl.ac.uk:8443/srm/managerv2?SFN=",
+                  "/pnfs/pp.rl.ac.uk/data/cms/store/user/"]
+
+copySites["PUR"]=["srm://srm-dcache.rcac.purdue.edu:8443/srm/managerv2?SFN=",
+                  "/store/user/"]
+copySites["CAF"]=["srm://srm-cms.cern.ch:8443/srm/managerv2?SFN=",
+                  "/castor/cern.ch/cms/store/caf/user/"]
+
+
 class CopyFileThread(threading.Thread):
     ''' Class that will run each copy command independently, rather than sequentially.'''
     
@@ -49,7 +65,8 @@ def CopyFiles(user="jbrooke",
               odir="/storage/phjjb/stoppedHSCP/",
               verbose=False,
               overwrite=False,
-              listfiles=False):
+              listfiles=False,
+              srmcp=False):
 
     starttime=time.time()
     # Specify grid location using base gridloc, user and dataset
@@ -67,9 +84,13 @@ def CopyFiles(user="jbrooke",
     print gridroot+gridloc
 
     # get file list
-    ls = Popen("lcg-ls "+gridroot+gridloc, shell=True, stdout=PIPE)
+    if (srmcp==False):
+        ls = Popen("lcg-ls "+gridroot+gridloc, shell=True, stdout=PIPE)
+    else:
+        ls = Popen("srmls "+gridroot+gridloc,
+                   shell=True,
+                   stdout=PIPE)
     lsop=ls.communicate()
-
     files=lsop[0]
 
     allfiles=files.splitlines()
@@ -94,7 +115,15 @@ def CopyFiles(user="jbrooke",
         #if (counter>1):           continue
         basename=os.path.basename(file)
         #command = "lcg-cp "+gridroot+"/"+file+" "+os.path.join(odir,basename)
-        command = "lcg-cp %s/%s %s"%(gridroot,file,os.path.join(odir,basename))
+        if (srmcp==False):
+            command = "lcg-cp %s/%s %s"%(gridroot,file,os.path.join(odir,basename))
+        else:
+            if not file.endswith(".root"):  # only copy root files?
+                continue
+            temp=string.split(file)
+            temp=string.strip(temp[-1])
+            command = "srmcp -2 \"%s/%s\" %s%s"%(gridroot,temp,"file:///",os.path.join(odir,basename))
+        
         print "\n%s\n"%command
         print "Copying %s -- file %i of %i"%(os.path.join(odir,basename),counter,filecount)
         counter=counter+1
@@ -147,6 +176,8 @@ def PrintHelp(parser):
 
 if __name__=="__main__":
 
+
+
     parser = OptionParser()
     parser.add_option("-v","--verbose",
                       action="store_true",
@@ -194,6 +225,16 @@ if __name__=="__main__":
                       default=False,
                       action="store_true",
                       help="Only list the files in the initial location, rather than copying them")
+    parser.add_option("-s","--site",
+                      dest="site",
+                      default=None,
+                      help="Specify site where files located.  Options are: %s "%copySites.keys())
+    parser.add_option("-p","--srmcp",
+                      dest="srmcp",
+                      default=False,
+                      action="store_true",
+                      help="Use srmcp to copy files.  Default is false (lcg is used by default.)")
+    
     (options,args)=parser.parse_args()
 
     if options.help==True:
@@ -207,9 +248,20 @@ if __name__=="__main__":
             print "Warning!  Dataset '%s' has already been specified!  No need to enter it again!"%i
 
     if len(options.datasets)==0:
-        print "ERROR!  No datasets have been specified!"
-        sys.exit()
+        print "WARNING!  No datasets have been specified!"
+        options.datasets=[""]
+        #sys.exit()
         
+    if options.site<>None:
+        if options.site not in copySites.keys():
+            print "ERROR!  User-specified site '%s' is not recognized!"%options.site
+            print "Allowed sites are: %s"%copySites.keys()
+            print "Proceeding with default gridroot, gridloc values"
+        else:
+            thisloc=copySites[options.site]
+            options.gridroot=thisloc[0]
+            options.gridloc=thisloc[1]
+
     if options.gridloc==None:
         if options.useCAF==True:
             options.gridloc = "/castor/cern.ch/cms/store/caf/user/"
@@ -254,4 +306,5 @@ if __name__=="__main__":
                   odir=options.outputdir,
                   verbose=options.verbose,
                   overwrite=options.overwrite,
-                  listfiles=options.listfiles)
+                  listfiles=options.listfiles,
+                  srmcp=options.srmcp)

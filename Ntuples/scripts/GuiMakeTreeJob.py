@@ -8,13 +8,14 @@ sys.path.append(os.path.join(os.environ["CMSSW_BASE"],
 #sys.path.append(os.path.join(os.environ["CMSSW_BASE"],
 #                             "src/StoppedHSCP/Analysis/scripts"))
 from make_tree_job_for_gui import makeTreeJob
-from copyFiles import CopyFiles
+from copyFiles import CopyFiles, copySites
 
 class TreeJobGui:
 
     def __init__(self, parent=None):
 
         self.ReadInputs()
+
         if parent==None:
             self.main=Tk()
             self.main.title("TreeJob Generator")
@@ -71,19 +72,6 @@ class TreeJobGui:
 
 
     def usage(self):
-        print "makeTreeJob.py [-hjlcf] [--raw|--reco|--mc] [--2010|--2011] <era> <label> <dataset> <global tag> <runlist|JSON file>"
-        print " Options   :"
-        print "   -h      : prins this message"
-        print "   -l      : use local DBS (http://cmsdbsprod.cern.ch/cms_dbs_ph_analysis_02/servlet/DBSServlet)"
-        print "   -j      : use JSON file to run on good LS"
-        print "   -c      : use CAF"
-        print "   -f      : use FNAL (condor)"
-        print "   --2010  : use 2010 trigger config"
-        print "   --2011  : use 2011 trigger config (default)"
-        print "   --raw   : use RAW+RECO config"
-        print "   --reco  : use RECO config (default)"
-        print "   --mc    : use MC config"
-        print
         return
 
     def ReadInputs(self):
@@ -113,7 +101,7 @@ class TreeJobGui:
                           default=False,
                           dest="useCONDOR",
                           help="Use FNAL (condor)")
-        parser.add_option("-s",default="glite",
+        parser.add_option("-g",default="glite",
                           dest="scheduler",
                           help="Specify scheduler (default=glite)")
         parser.add_option("-t",dest="triggerType",
@@ -199,6 +187,16 @@ class TreeJobGui:
                           default=False,
                           action="store_true",
                           help="Specify old hltL3Tag (hltStoppedHSCPTight1CaloJetEnergy30)")
+        parser.add_option("-s",
+                          "--site",
+                          default="RAL",
+                          help="Specify copysite location.  Choices are: %s"%copySites.keys()
+                          )
+        parser.add_option("-p",
+                          "--srmcp",
+                          default=False,
+                          action="store_true",
+                          help="Use srmcp to copy files.  Default is false (lcg is used by default.)")
 
         (options, args) = parser.parse_args()
 
@@ -223,6 +221,8 @@ class TreeJobGui:
         self.INuseJSON=options.useJSON
         self.INscheduler=options.scheduler
         self.INhltL3Tag=options.hltL3Tag
+        self.site=options.site
+        self.srmcp=options.srmcp
         
         if options.useCAF==True and options.useCONDOR==True:
             self.Print( "Error!  Both CAF and CONDOR cannot be set to True!")
@@ -538,7 +538,7 @@ class TreeJobGui:
 
         self.user.set("jbrooke")
         self.gridroot.set("srm://heplnx204.pp.rl.ac.uk:8443/srm/managerv2?SFN=")
-        self.gridloc.set("/pnfs/pp.rl.ac.uk/data/cms/store/user")
+        self.gridloc.set("/pnfs/pp.rl.ac.uk/data/cms/store/user/")
         self.copydataset.set("")
         if (os.path.isdir("/storage/phjjb/stoppedHSCP/")):
             self.odir.set("/storage/phjjb/stoppedHSCP/")
@@ -599,9 +599,40 @@ class TreeJobGui:
                                      True, False,
                                      command=lambda x=self:self.SwitchListFileButtonName())
         self.listfileMenu.grid(row=row,column=1,sticky=EW)
+        row=row+1
+        Label(self.CopyFrame2,text="Specify copy location").grid(row=row,column=0)
+        self.sourceLocationVar=StringVar()
+        self.sourceLocationVar.set(self.site)
+        self.sourceLocation=OptionMenu(self.CopyFrame2,
+                                       self.sourceLocationVar,
+                                       "RAL","CAF","PUR","",  # How do we specify these from *copySites
+                                       command=lambda x=self:self.SwitchSourceLocation() ,
+                                      )
+
+        self.sourceLocation.grid(row=row,column=1,sticky=EW)
+        row=row+1
+
+        self.copyTypeVar=StringVar()
+        if self.srmcp==True:
+            self.copyTypeVar.set("srmcp")
+        else:
+            self.copyTypeVar.set("lcg")
+        self.CopyType=OptionMenu(self.CopyFrame2,
+                                 self.copyTypeVar,
+                                 "lcg","srmcp")
+        Label(self.CopyFrame2,text="Copy type:").grid(row=row,column=0)
+        self.CopyType.grid(row=row,column=1,sticky=EW)
+        row=row+1
         self.CopyButton=Button(self.CopyFrame2,text="\nCopy\nFiles\n",command = lambda x=self:x.CopyFiles(),width=20,bg="blue",fg="white")
         row=row+1
         self.CopyButton.grid(row=row,column=1)
+        return
+
+    def SwitchSourceLocation(self):
+        if self.sourceLocationVar.get() in copySites.keys():
+            temp=copySites[self.sourceLocationVar.get()]
+            self.gridroot.set(temp[0])
+            self.gridloc.set(temp[1])
         return
 
     def SwitchListFileButtonName(self):
@@ -633,6 +664,9 @@ class TreeJobGui:
             self.Print("ERROR!  CRAB DOES NOT APPEAR TO HAVE BEEN SET UP!")
             return
         # use string strip to avoid white spaces that confuse copyFiles
+        srmcp=False
+        if (self.copyTypeVar.get()=="srmcp"):
+            srmcp=True
         CopyFiles(user=string.strip(self.user.get()),
                   gridroot=string.strip(self.gridroot.get()),
                   gridloc=string.strip(self.gridloc.get()),
@@ -640,7 +674,8 @@ class TreeJobGui:
                   odir=string.strip(self.copyoutputdir.get()),
                   verbose=self.verbose.get(),
                   overwrite=self.overwrite.get(),
-                  listfiles=self.listfiles.get())
+                  listfiles=self.listfiles.get(),
+                  srmcp=srmcp)
 
     ###############################################################
 
