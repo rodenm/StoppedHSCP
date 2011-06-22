@@ -13,7 +13,7 @@ except:
 # Get BuildToyMCSummary code
 import BuildToyMCSummary
 
-from optparse import OptionParser
+from optparse import OptionParser, OptionGroup
 
 
 def GenericCommand(cmd):
@@ -22,7 +22,7 @@ def GenericCommand(cmd):
     os.system(cmd)
     return
     
-def RunAnalysis(outdir, indir, version=0,steps=[]):
+def RunAnalysis(outdir, indir, version=0,steps=[],makeHistsOptions={}):
     if len(steps)==0:
         steps=range(10)
 
@@ -30,7 +30,13 @@ def RunAnalysis(outdir, indir, version=0,steps=[]):
 
     if 0 in steps:
         # Step 0:  Make Histograms
-        cmd="makeHistograms -c %s %s %s/*root > %s"%(version, outdir, indir, os.path.join(outdir,"histogrammer.log"))
+        cmd="makeHistograms -c %s"%version
+        keys=makeHistsOptions.keys()
+        keys.sort()
+        for k in keys:# add individual options
+            cmd = cmd +" %s %s"%(k,makeHistsOptions[k])
+        cmd =cmd +" %s %s/*root > %s"%(outdir, indir, os.path.join(outdir,"histogrammer.log"))
+        print cmd
         GenericCommand(cmd)
 
     if 1 in steps:
@@ -131,6 +137,33 @@ if __name__=="__main__":
                           help=labels(i),
                           default=False,
                           action="store_true")
+    #makeHistograms options
+    makeHistGroup = OptionGroup(parser,
+                                "Options for 'makeHistograms'",
+                                "Optional arguments below are used in Step 0 (makeHistograms)."
+                                )
+    makeHistGroup.add_option("-b","--doControl",
+                             dest="doControl",
+                             action="store_true",
+                             default=False,
+                             help="Run on control triggers only.")
+    makeHistGroup.add_option("-s","--doSearch",
+                             dest="doSearch",
+                             action="store_true",
+                             default=False,
+                             help="Run on search triggers only.")
+    makeHistGroup.add_option("-p","--dump",
+                             dest="dump",
+                             action="store_true",
+                             default=False,
+                             help="Dump specified events.")
+    makeHistGroup.add_option("-n","--num",
+                             dest="num",
+                             type="int",
+                             default=-1,
+                             help="Specify number of events.")
+    parser.add_option_group(makeHistGroup)
+    
 
     options,args=parser.parse_args()
     steps=[]
@@ -156,8 +189,22 @@ if __name__=="__main__":
         print 
         help()
         sys.exit()
+
+
+    #Get special options for makeHistograms
+    makehistopt={}
+    if options.doControl==True:
+        makehistopt["--doControl"]=""
+    if options.doSearch==True:
+        makehistopt["--doSearch"]=""
+    if options.dump==True:
+        makehistopt["--dump"]=""
+    if options.num>-1:
+        makehistopt["--num"]=options.num
         
+
     if 0 in steps:  # first step (making a histogram) requires files from an input directory
+
         if options.inputdir==None:
             print "Error!  Input directory has not been specified!"
             parser.print_help()
@@ -181,4 +228,9 @@ if __name__=="__main__":
         else:
             sys.exit()
             
-    RunAnalysis(options.outputdir,options.inputdir, options.version,steps)
+    RunAnalysis(options.outputdir,
+                options.inputdir,
+                options.version,
+                steps,
+                makeHistsOptions=makehistopt
+                )
