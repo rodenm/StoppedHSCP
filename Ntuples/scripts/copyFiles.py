@@ -2,6 +2,16 @@
 
 # copy all files from a GRID directory to local disk
 
+
+'''
+To do:  Add srm-copy functionality (from storage element to storage element)
+
+syntax is:
+srm-copy "srm://heplnx204.pp.rl.ac.uk:8443/srm/managerv2?SFN=/pnfs/pp.rl.ac.uk/data/cms/store/user/temple/stoppedHSCP_tree_Run2011A_423p5_v1_1795_1864/stoppedHSCPTree_7_1_rYY.root" "srm://hepcms-0.umd.edu:8443/srm/v2/server?SFN=/data/se/store/user/temple/dummy.root" -3partycopy -delegation false -mkdir -debug -retry_num=2 -dcau false -connectiontimeout 3600
+
+
+'''
+
 import getopt
 import sys
 import os
@@ -27,7 +37,8 @@ copySites["PUR"]=["srm://srm-dcache.rcac.purdue.edu:8443/srm/managerv2?SFN=",
                   "/store/user/"]
 copySites["CAF"]=["srm://srm-cms.cern.ch:8443/srm/managerv2?SFN=",
                   "/castor/cern.ch/cms/store/caf/user/"]
-
+copySites["UMD"]=["srm://hepcms-0.umd.edu:8443/srm/v2/server?SFN=",
+                  "/data/se/store/user"]
 
 class CopyFileThread(threading.Thread):
     ''' Class that will run each copy command independently, rather than sequentially.'''
@@ -68,6 +79,10 @@ def CopyFiles(user="jbrooke",
               overwrite=False,
               listfiles=False,
               srmcp=False):
+
+    # This sets the BDII variable to the current (June 22, 2011) CERN default
+    # Temporary fix to remove issue with CERN 
+    os.putenv("LCG_GFAL_INFOSYS","lcg-bdii.cern.ch:2170")
 
     starttime=time.time()
     # Specify grid location using base gridloc, user and dataset
@@ -137,7 +152,7 @@ def CopyFiles(user="jbrooke",
     cmdThreads=[]
 
     for file in allfiles:
-        #if (counter>1):           continue
+        if (counter>1):           continue
         basename=os.path.basename(file)
         if basename.endswith("stoppedHSCP"):
             dictname=string.split(basename,"_")
@@ -160,8 +175,8 @@ def CopyFiles(user="jbrooke",
             command = "srmcp -2 \"%s/%s\" %s%s"%(gridroot,temp,"file:///",os.path.join(odir,basename))
         
         print "\n%s\n"%command
+        
         print "Copying %s -- file %i of %i"%(os.path.join(odir,basename),counter,filecount)
-        counter=counter+1
 
         # Protection against overwriting existing files -- ask if conflicting files should be overwritten
         if overwrite==False:
@@ -175,6 +190,7 @@ def CopyFiles(user="jbrooke",
                         continue
                     print "Overwriting '%s'..."%basename
 
+        counter=counter+1
         cmdThreads.append(CopyFileThread(command))
         cmdThreads[-1].start()
 

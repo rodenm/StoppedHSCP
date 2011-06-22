@@ -605,8 +605,8 @@ class TreeJobGui:
         self.sourceLocationVar.set(self.site)
         self.sourceLocation=OptionMenu(self.CopyFrame2,
                                        self.sourceLocationVar,
-                                       "RAL","CAF","PUR","",  # How do we specify these from *copySites
-                                       command=lambda x=self:self.SwitchSourceLocation() ,
+                                       "RAL","CAF","PUR","UMD","",  # How do we specify these from *copySites?
+                                       command=lambda x=self:self.SwitchSourceLocation() 
                                       )
 
         self.sourceLocation.grid(row=row,column=1,sticky=EW)
