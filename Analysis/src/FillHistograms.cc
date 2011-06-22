@@ -150,11 +150,12 @@ void FillHistograms::fill(StoppedHSCPEvent& event) {
   noise.push_back(6);
   noise.push_back(9);
   noise.push_back(11);
+  noise.push_back(12);
   std::vector<unsigned> timing;
-  timing.push_back(12);
   timing.push_back(13);
   timing.push_back(14);
   timing.push_back(15);
+  timing.push_back(16);
   if (cuts_->cutNMinusOne(2)) nm1Test0_.at(fill) += 1.;
   if (cuts_->cutNMinusOne(3)) nm1Test1_.at(fill) += 1.;
   if (cuts_->cutNMinusOne(4)) nm1Test2_.at(fill) += 1.;

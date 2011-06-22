@@ -6,7 +6,7 @@ edges = [ 0, 4, 13, 26 ] # this is for Run2010B 1364-1459
 #edges = [ 0, 9, 14, 26, 44 ] # this is for Run2011A 1711 - 1851
 nHist = 16
 
-cutName = ["trigger", "BPTX veto", "BX veto", "Vertex veto", "Halo veto", "Cosmic Veto", "Noise veto", "E30", "E70", "n60", "n90", "nTowIPhi", "R1", "R2", "R_{peak}", "R_{outer}" ]
+cutName = ["trigger", "BPTX veto", "BX veto", "Vertex veto", "Halo veto", "Cosmic Veto", "Noise veto", "E30", "E70", "n60", "n90", "nTowiPhi", "iPhiFrac", "R1", "R2", "R_{peak}", "R_{outer}" ]
 
 dontUse = [0,1,2,7]
 

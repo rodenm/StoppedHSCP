@@ -236,7 +236,7 @@ void Histograms::fill(StoppedHSCPEvent& event) {
   }
 
   // plots after jet and mu cuts
-  if (cuts_->allCutN(11)) {
+  if (cuts_->allCutN(12)) {
     hpksample_->Fill(event.top5DigiPeakSample);
     hr1_->Fill(event.top5DigiR1);
     hr2_->Fill(event.top5DigiR2);
@@ -326,10 +326,10 @@ void Histograms::fill(StoppedHSCPEvent& event) {
 
   if (cuts_->cutNMinusOne(10)) hntowiphi_nmo_->Fill(event.nTowerSameiPhi);
   if (cuts_->cutNMinusOne(5)) hnmu_nmo_->Fill(event.mu_N);
-  if (cuts_->cutNMinusOne(12)) hr1_nmo_->Fill(event.top5DigiR1);
-  if (cuts_->cutNMinusOne(13)) hr2_nmo_->Fill(event.top5DigiR2);
-  if (cuts_->cutNMinusOne(14)) hrpk_nmo_->Fill(event.top5DigiRPeak);
-  if (cuts_->cutNMinusOne(15)) hrout_nmo_->Fill(event.top5DigiROuter);
+  if (cuts_->cutNMinusOne(13)) hr1_nmo_->Fill(event.top5DigiR1);
+  if (cuts_->cutNMinusOne(14)) hr2_nmo_->Fill(event.top5DigiR2);
+  if (cuts_->cutNMinusOne(15)) hrpk_nmo_->Fill(event.top5DigiRPeak);
+  if (cuts_->cutNMinusOne(16)) hrout_nmo_->Fill(event.top5DigiROuter);
   if (event.jet_N > 0) {
     if (cuts_->cutNMinusOne(8)) hjete_nmo_->Fill(event.jetE.at(0));
     if (cuts_->cutNMinusOne(9)) hjetn60_nmo_->Fill(event.jetN60.at(0));
@@ -360,11 +360,12 @@ void Histograms::fill(StoppedHSCPEvent& event) {
   noise.push_back(6);
   noise.push_back(9);
   noise.push_back(11);
+  noise.push_back(12);
   std::vector<unsigned> timing;
-  timing.push_back(12);
   timing.push_back(13);
   timing.push_back(14);
   timing.push_back(15);
+  timing.push_back(16);
   if (cuts_->cutNMinusOne(2)) hNM1Test_->Fill("BX veto", 1.);
   if (cuts_->cutNMinusOne(3)) hNM1Test_->Fill("Vertex veto", 1.);
   if (cuts_->cutNMinusOne(4)) hNM1Test_->Fill("Halo veto", 1.);

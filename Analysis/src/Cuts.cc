@@ -24,23 +24,23 @@ Cuts::Cuts(StoppedHSCPEvent* event, bool isMC, unsigned version, LhcFills* fills
 
   // default
   if (version_ == 0) {
-    addCut(&Cuts::triggerCut, "trigger");
-    addCut(&Cuts::bptxVeto, "BPTX veto");
-    addCut(&Cuts::bxVeto, "BX veto");
-    addCut(&Cuts::vertexVeto, "Vertex veto");
-    addCut(&Cuts::haloVeto, "Halo veto");
-    addCut(&Cuts::cosmicVeto, "Cosmic veto");
-    addCut(&Cuts::hcalNoiseVeto, "Noise veto");
-    addCut(&Cuts::looseJetCut, "E30");
-    addCut(&Cuts::jetEnergyCut, "E70");
-    addCut(&Cuts::jetN60Cut, "n60");
-    addCut(&Cuts::jetN90Cut, "n90");
-    addCut(&Cuts::towersIPhiCut, "nTowiPhi");
-    //addCut(&Cuts::iPhiFractionCut, "iPhiFrac");
-    addCut(&Cuts::hpdR1Cut, "R1");
-    addCut(&Cuts::hpdR2Cut, "R2");
-    addCut(&Cuts::hpdRPeakCut, "Rpeak");
-    addCut(&Cuts::hpdROuterCut, "Router");
+    addCut(&Cuts::triggerCut, "trigger");      // 0
+    addCut(&Cuts::bptxVeto, "BPTX veto");      // 1
+    addCut(&Cuts::bxVeto, "BX veto");          // 2
+    addCut(&Cuts::vertexVeto, "Vertex veto");  // 3
+    addCut(&Cuts::haloVeto, "Halo veto");      // 4
+    addCut(&Cuts::cosmicVeto, "Cosmic veto");  // 5
+    addCut(&Cuts::hcalNoiseVeto, "Noise veto");// 6
+    addCut(&Cuts::looseJetCut, "E30");         // 7
+    addCut(&Cuts::jetEnergyCut, "E70");        // 8
+    addCut(&Cuts::jetN60Cut, "n60");           // 9
+    addCut(&Cuts::jetN90Cut, "n90");           // 10
+    addCut(&Cuts::towersIPhiCut, "nTowiPhi");  // 11
+    addCut(&Cuts::iPhiFractionCut, "iPhiFrac");// 12
+    addCut(&Cuts::hpdR1Cut, "R1");             // 13
+    addCut(&Cuts::hpdR2Cut, "R2");             // 14
+    addCut(&Cuts::hpdRPeakCut, "Rpeak");       // 15
+    addCut(&Cuts::hpdROuterCut, "Router");     // 16
   }
 
   // digi-based timing cuts
@@ -57,95 +57,11 @@ Cuts::Cuts(StoppedHSCPEvent* event, bool isMC, unsigned version, LhcFills* fills
     addCut(&Cuts::jetN60Cut, "n60");
     addCut(&Cuts::jetN90Cut, "n90");
     addCut(&Cuts::towersIPhiCut, "nTowiPhi");
-    //addCut(&Cuts::iPhiFractionCut, "iPhiFrac");
+    addCut(&Cuts::iPhiFractionCut, "iPhiFrac");
     addCut(&Cuts::digiR1Cut, "R1 digi");
     addCut(&Cuts::digiR2Cut, "R2 digi");
     addCut(&Cuts::digiRPeakCut, "Rpeak digi");
     addCut(&Cuts::digiROuterCut, "Router digi");
-  }
-
-  // 2010 trigger
-  if (version_ == 2) {
-    addCut(&Cuts::trigger2010Cut, "trigger");
-    addCut(&Cuts::bptxVeto, "BPTX veto");
-    addCut(&Cuts::bxVeto, "BX veto");
-    addCut(&Cuts::vertexVeto, "Vertex veto");
-    addCut(&Cuts::haloVeto, "Halo veto");
-    addCut(&Cuts::cosmicVeto, "Cosmic veto");
-    addCut(&Cuts::hcalNoiseVeto, "Noise veto");
-    addCut(&Cuts::looseJetCut, "E30");
-    addCut(&Cuts::jetEnergyCut, "E70");
-    addCut(&Cuts::jetN60Cut, "n60");
-    addCut(&Cuts::jetN90Cut, "n90");
-    addCut(&Cuts::towersIPhiCut, "nTowiPhi");
-    //addCut(&Cuts::iPhiFractionCut, "iPhiFrac");
-    addCut(&Cuts::hpdR1Cut, "R1");
-    addCut(&Cuts::hpdR2Cut, "R2");
-    addCut(&Cuts::hpdRPeakCut, "Rpeak");
-    addCut(&Cuts::hpdROuterCut, "Router");
-  }
-
-  // added HF veto and N tracks cuts
-  if (version_ == 3) {
-    addCut(&Cuts::triggerCut, "trigger");
-    addCut(&Cuts::bptxVeto, "BPTX veto");
-    addCut(&Cuts::bxVeto, "BX veto");
-    addCut(&Cuts::vertexVeto, "Vertex veto");
-    addCut(&Cuts::haloVeto, "Halo veto");
-    addCut(&Cuts::cosmicVeto, "Cosmic veto");
-    addCut(&Cuts::hcalNoiseVeto, "Noise veto");
-    addCut(&Cuts::hfVeto, "HF veto");
-    addCut(&Cuts::trackVeto, "Track veto");
-    addCut(&Cuts::looseJetCut, "E30");
-    addCut(&Cuts::jetEnergyCut, "E70");
-    addCut(&Cuts::jetN60Cut, "n60");
-    addCut(&Cuts::jetN90Cut, "n90");
-    addCut(&Cuts::towersIPhiCut, "nTowiPhi");
-    //addCut(&Cuts::iPhiFractionCut, "iPhiFrac");
-    addCut(&Cuts::hpdR1Cut, "R1");
-    addCut(&Cuts::hpdR2Cut, "R2");
-    addCut(&Cuts::hpdRPeakCut, "Rpeak");
-    addCut(&Cuts::hpdROuterCut, "Router");
-  }
-
-  if (version_ == 4) {
-    addCut(&Cuts::triggerCut, "trigger");
-    addCut(&Cuts::bptxVeto, "BPTX veto");
-    addCut(&Cuts::bxVeto, "BX veto");
-    addCut(&Cuts::vertexVeto, "Vertex veto");
-    addCut(&Cuts::haloVeto, "Halo veto");
-    addCut(&Cuts::cosmicVeto, "Cosmic veto");
-    addCut(&Cuts::hcalNoiseVeto, "Noise veto");
-    addCut(&Cuts::looseJetCut, "E30");
-    addCut(&Cuts::jetEnergyCut, "E70");
-    addCut(&Cuts::jetN60Cut, "n60");
-    addCut(&Cuts::jetN90Cut, "n90");
-    addCut(&Cuts::towersIPhiCut, "nTowiPhi");
-    addCut(&Cuts::iPhiFractionCut, "iPhiFrac");
-    addCut(&Cuts::hpdR1Cut, "R1");
-    addCut(&Cuts::hpdR2Cut, "R2");
-    addCut(&Cuts::hpdRPeakCut, "Rpeak");
-    addCut(&Cuts::hpdROuterCut, "Router");
-  }
-
-  // control trigger
-  if (version_ == 5) {
-    addCut(&Cuts::controlTrigger, "ctrl trig");
-    addCut(&Cuts::bptxVeto, "BPTX veto");
-    addCut(&Cuts::bxVeto, "BX veto");
-    addCut(&Cuts::vertexVeto, "Vertex veto");
-    addCut(&Cuts::haloVeto, "Halo veto");
-    addCut(&Cuts::cosmicVeto, "Cosmic veto");
-    addCut(&Cuts::hcalNoiseVeto, "Noise veto");
-    addCut(&Cuts::looseJetCut, "E30");
-    addCut(&Cuts::jetEnergyCut, "E70");
-    addCut(&Cuts::jetN60Cut, "n60");
-    addCut(&Cuts::jetN90Cut, "n90");
-    addCut(&Cuts::towersIPhiCut, "nTowiPhi");
-    addCut(&Cuts::hpdR1Cut, "R1");
-    addCut(&Cuts::hpdR2Cut, "R2");
-    addCut(&Cuts::hpdRPeakCut, "Rpeak");
-    addCut(&Cuts::hpdROuterCut, "Router");
   }
 
 }
@@ -160,17 +76,20 @@ bool Cuts::triggerCut() const {      // require event passed main trigger
   //  bool trigBX = 
 
   bool trigger = false;
+
   //1) in Run2010A, require hltJetNoBptx only
   if (event_->fill<1711)
     trigger = event_->hltJetNoBptx && abs(event_->bxWrtBunch) > 1;
+
   //2) in Run2011A, before tech stop (fills 1711-1749) require hltJetNoBptx3BXNoHalo only
   else if (event_->fill<1750)
     trigger = event_->hltJetNoBptx3BXNoHalo;
+
   //3) in Run2011A, post tech stop (fills 1795 onwards) require hltJetE50NoBptx3BXNoHalo only
   else if (event_->fill>=1795)
     trigger = event_->hltJetE50NoBptx3BXNoHalo;
 
-  return isMC_ || (trigger);
+  return isMC_ || trigger;
 
 }
 
@@ -234,7 +153,7 @@ bool Cuts::jetN90Cut() const {       // jet n90
 }
 
 bool Cuts::towersIPhiCut() const {   // cut on N leading towers at same iphi
-  return event_->nTowerSameiPhi<5 && event_->leadingIPhiFraction()<0.95;
+  return event_->nTowerSameiPhi<5;
 }
 
 bool Cuts::iPhiFractionCut() const { // Et fraction at leading iphi

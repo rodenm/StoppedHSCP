@@ -1,6 +1,6 @@
 
 
-cutName = ["trigger", "BPTX veto", "BX veto", "Vertex veto", "Halo veto", "Cosmic Veto", "Noise veto", "E30", "E70", "n60", "n90", "nTowIPhi", "R1", "R2", "R_{peak}", "R_{outer}" ]
+cutName = ["trigger", "BPTX veto", "BX veto", "Vertex veto", "Halo veto", "Cosmic Veto", "Noise veto", "E30", "E70", "n60", "n90", "nTowIPhi", "iPhiFrac", "R1", "R2", "R_{peak}", "R_{outer}" ]
 
 dontUse = [0,1,2,7]
 
