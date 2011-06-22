@@ -158,7 +158,7 @@ void Histograms::book() {
 
   hNM2_ = new TH2D("hNM2", "N-2 counts", cuts_->nCuts(), 0, cuts_->nCuts(), cuts_->nCuts(), 0, cuts_->nCuts());
   hNM1Test_ = new TH1D("hNM1Test", "", 10, 0., 0.);
-  hNM1Test2_ = new TH1D("hNM1Test", "", 10, 0., 0.);
+  hNM1Test2_ = new TH1D("hNM1Test2", "", 10, 0., 0.);
 
 }
 
