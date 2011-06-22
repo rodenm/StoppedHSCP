@@ -31,6 +31,7 @@ void HaloHistograms::book() {
 
   // time
   hbx_ = new TH1D("hhalobx", "BX number", 3564, 0., 3564.);
+  hjete_ = new TH1D("hjete", "Jet E", 50, 0., 100.);
 
 }
 
@@ -41,6 +42,8 @@ void HaloHistograms::fill(StoppedHSCPEvent& event) {
 
     hbx_->Fill(event.bx);
 
+    if (event.jet_N > 0) hjete_->Fill(event.jetE[0]);
+
   }
 }
 
@@ -50,6 +53,7 @@ void HaloHistograms::save() {
   base_->cd("");
 
   hbx_->Write("",TObject::kOverwrite);
+  hjete_->Write("",TObject::kOverwrite);
 
 }
 

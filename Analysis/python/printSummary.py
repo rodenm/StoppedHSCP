@@ -85,6 +85,7 @@ if isMC:
 
 # if (ntot==0):  print "ERROR!  Total number of entries = 0!"  # EXIT?
 
+# ELOG table
 print
 print '[TABLE border=1]'
 
@@ -108,6 +109,35 @@ for i in range(0,nCuts):
             print '|%i %s | %i | %.2e +/- %.2e | %i | %.2e +/- %.2e |-' % (i, label, ncum, ncum/time, sqrt(ncum)/time, nnmo, nnmo/time, sqrt(nnmo)/time)
         else:
             print '|%i %s | %i | N/A | N/A | N/A |' % (i, label, ncum)
+            
+print '[/TABLE]'
+print
+
+
+print 'Combined cuts N-1'
+print
+print '[TABLE border=1]'
+
+if isMC:
+    print "|Cut\t|N-1 % |-"
+else:
+    print "|Cut\t|N-1 (Hz)|-"
+
+hnm1Test = hfile.Get("histograms/Cuts/hNM1Test")
+
+for i in range(0,7):
+    nnmo = hnm1Test.GetBinContent(i+1)
+    label = hnm1Test.GetXaxis().GetBinLabel(i+1)
+    if isMC:
+        if (ntot<>0):
+            print '|%i %s | %i | %.2e |' % (i, label, nnmo, 100.*nnmo/ntot)
+        else:
+            print '|%i %s | N/A |' % (i, label)
+    else:
+        if (ntot<>0):
+            print '|%i %s | %i | %.2e +/- %.2e |-' % (i, label, nnmo, nnmo/time, sqrt(nnmo)/time)
+        else:
+            print '|%i %s | N/A |' % (i, label, ncum)
             
 print '[/TABLE]'
 print
@@ -154,8 +184,7 @@ if (N_n90 > 0):
     Nexp_n90_stat = 1/sqrt(N_n90)
 else:
     Nexp_n90_stat = 99999999
-Nexp_n90_syst = sqrt( pow(errSystRateCoeff, 2) +
-                      pow(N_n90_ctrl_stat, 2) +
+Nexp_n90_syst = sqrt( pow(N_n90_ctrl_stat, 2) +
                       pow(N_ctrl_stat, 2) )
 
 # using CT only
@@ -202,6 +231,9 @@ print '  Combined      : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (Nexp/time, Nex
 print
 
 # expected rate & total error
+n90Rate_exp     = Nexp_n90/time
+n90Rate_exp_err = (Nexp_n90/time)*sqrt( pow(Nexp_n90_stat, 2) + pow(Nexp_n90_syst, 2) )
+
 bgRate_exp     = Nexp/time
 bgRate_exp_err = (Nexp/time)*sqrt( pow(Nexp_stat, 2) +
                                    pow(Nexp_syst, 2) )
@@ -226,6 +258,30 @@ for line in logfile.readlines():
 
 runlist = runsStr.split(',')
 
+# write TeX file
+texfile = open(dataset+"/table.tex", "w")
+if isMC:
+    texfile.write( "& Cut & cum \% & N-1 \% & \\\ \hline \n" )
+else:
+    texfile.write( "& Cut & Rate (Hz) & N-1 rate (Hz) & \\\ \hline \n" )
+
+for i in range(0,nCuts):
+    ncum = hcutcum.GetBinContent(i+1)
+    nind = hcutind.GetBinContent(i+1)
+    nnmo = hcutnmo.GetBinContent(i+1)
+    label = hcutcum.GetXaxis().GetBinLabel(i+1)
+    if isMC:
+        if (ntot<>0):
+            texfile.write( '& %s & %.2e & %.2e & \\\ \n' % (label, 100.*ncum/ntot, 100.*nnmo/ntot) )
+        else:
+            texfile.write('& %s & N/A | N/A | \\\ \n' % (label) )
+    else:
+        if (ntot<>0):
+            texfile.write( '& %s & %.2e \pm %.2e & %.2e \pm %.2e & \\\ \n' % (label, ncum/time, sqrt(ncum)/time, nnmo/time, sqrt(nnmo)/time) )
+        else:
+            texfile.write( '& %s & N/A & N/A & \\\ \n' % (label) )
+texfile.close()
+
 
 # now write Toy MC file
 ofile = open(dataset+"/parameters.txt", 'w')
@@ -235,9 +291,9 @@ ofile.write("lifetime\t\t1\n")
 ofile.write("signalEff\t\t0.033652\n")
 ofile.write("signalEff_e\t\t0.0\n")
 ofile.write("bgRate\t\t\t")
-ofile.write(str(bgRate_exp)+"\n")
+ofile.write(str(n90Rate_exp)+"\n")
 ofile.write("bgRate_e\t\t")
-ofile.write(str(bgRate_exp_err)+"\n")
+ofile.write(str(n90Rate_exp_err)+"\n")
 ofile.write("scaleUncert\t\t")
 ofile.write(str(scaleUncert) +"\n")
 ofile.write("optimizeTimeCut\t\t1\n")

@@ -17,7 +17,9 @@ FillHistograms::FillHistograms(TFile* file, Cuts* cuts, LhcFills* fills) :
   nm1_(),
   nFin_(0),
   hbx_(0),
-  hnm1_(0)
+  hnm1_(0),
+  hcolls_(0),
+  hbunches_(0)
 {
  
   // create directory structure
@@ -46,10 +48,16 @@ FillHistograms::~FillHistograms() {
   std::vector<TH1D*>::iterator itr;
 
   for (itr=hbx_.begin(); itr!=hbx_.end(); ++itr) delete (*itr);
+  for (itr=hbxB_.begin(); itr!=hbxB_.end(); ++itr) delete (*itr);
   for (itr=hnm1_.begin(); itr!=hnm1_.end(); ++itr) delete (*itr);
+  for (itr=hcolls_.begin(); itr!=hcolls_.end(); ++itr) delete (*itr);
+  for (itr=hbunches_.begin(); itr!=hbunches_.end(); ++itr) delete (*itr);
 
   hbx_.clear();
+  hbxB_.clear();
   hnm1_.clear();
+  hcolls_.clear();
+  hbunches_.clear();
 
 }
 
@@ -74,12 +82,39 @@ void FillHistograms::book(unsigned long fill) {
   if (nm1_.size() < fill+1) nm1_.resize(fill+1, std::vector<unsigned long>(cuts_->nCuts()));
   if (nFin_.size() < fill+1) nFin_.resize(fill+1, 0);
 
+  if (nm1Test0_.size() < fill+1) nm1Test0_.resize(fill+1, 0);
+  if (nm1Test1_.size() < fill+1) nm1Test1_.resize(fill+1, 0);
+  if (nm1Test2_.size() < fill+1) nm1Test2_.resize(fill+1, 0);
+  if (nm1Test3_.size() < fill+1) nm1Test3_.resize(fill+1, 0);
+  if (nm1Test4_.size() < fill+1) nm1Test4_.resize(fill+1, 0);
+  if (nm1Test5_.size() < fill+1) nm1Test5_.resize(fill+1, 0);
+  if (nm1Test6_.size() < fill+1) nm1Test6_.resize(fill+1, 0);
+
   if (hbx_.size() < fill+1) hbx_.resize(fill+1, 0);
+  if (hbxB_.size() < fill+1) hbxB_.resize(fill+1, 0);
   if (hnm1_.size() < fill+1) hnm1_.resize(fill+1, 0);
+  if (hcolls_.size() < fill+1) hcolls_.resize(fill+1, 0);
+  if (hbunches_.size() < fill+1) hbunches_.resize(fill+1, 0);
 
   // and book histograms
   hbx_.at(fill) = new TH1D((std::string("hbx")+fillstr.str()).c_str(), "BX number", 3564, 0., 3564.);
+  hbxB_.at(fill) = new TH1D((std::string("hbxB")+fillstr.str()).c_str(), "BX number", 3564, 0., 3564.);
   //hnm1_.at(fill) = new TH1D((std::string("hnm1")+fillstr.str()).c_str(), "N-1 counts", 20, 0., 20.);
+
+
+  // book and fill filling scheme histos
+  hcolls_.at(fill) = new TH1D((std::string("hcolls")+fillstr.str()).c_str(), "BX number", 3564, 0., 3564.);
+  hbunches_.at(fill) = new TH1D((std::string("hbunches")+fillstr.str()).c_str(), "BX number", 3564, 0., 3564.);
+
+  std::vector<unsigned long> colls = lhcFills_->getCollisions(fill);
+  std::vector<unsigned long> bunches = lhcFills_->getBunches(fill);
+
+  for (unsigned i=0; i<colls.size(); ++i) {
+    hcolls_.at(fill)->Fill(colls.at(i));
+  }
+  for (unsigned i=0; i<bunches.size(); ++i) {
+    hbunches_.at(fill)->Fill(bunches.at(i));
+  }
 
   // record the fact we booked this fill already
   fills_.push_back(fill);
@@ -110,9 +145,31 @@ void FillHistograms::fill(StoppedHSCPEvent& event) {
   }
 
   if (cuts_->cut()) nFin_.at(fill) += 1;
-  
+
+  std::vector<unsigned> noise;
+  noise.push_back(6);
+  noise.push_back(9);
+  noise.push_back(11);
+  std::vector<unsigned> timing;
+  timing.push_back(12);
+  timing.push_back(13);
+  timing.push_back(14);
+  timing.push_back(15);
+  if (cuts_->cutNMinusOne(2)) nm1Test0_.at(fill) += 1.;
+  if (cuts_->cutNMinusOne(3)) nm1Test1_.at(fill) += 1.;
+  if (cuts_->cutNMinusOne(4)) nm1Test2_.at(fill) += 1.;
+  if (cuts_->cutNMinusOne(5)) nm1Test3_.at(fill) += 1.;
+  if (cuts_->cutNMinusSome(noise)) nm1Test4_.at(fill) += 1.;
+  if (cuts_->cutNMinusOne(10)) nm1Test5_.at(fill) += 1.;
+  if (cuts_->cutNMinusSome(timing)) nm1Test6_.at(fill) += 1.;
+ 
   // fill histos
   hbx_.at(fill)->Fill(event.bx);
+
+
+  if (cuts_->allCutN(8)) {
+    hbxB_.at(fill)->Fill(event.bx);
+  }
 
 }
 
@@ -130,7 +187,11 @@ void FillHistograms::save() {
 
     // save histograms
     hbx_.at(*itr)->Write("",TObject::kOverwrite);
+    hbxB_.at(*itr)->Write("",TObject::kOverwrite);
     //    hnm1_.at(*itr)->Write("",TObject::kOverwrite);
+
+    hcolls_.at(*itr)->Write("",TObject::kOverwrite);
+    hbunches_.at(*itr)->Write("",TObject::kOverwrite);
 
   }
 
@@ -163,6 +224,18 @@ void FillHistograms::summarise() {
     str.str("");
   }
 
+  // N-1 test histos
+  std::vector<TH1D*> hnm1test;
+  std::string nametest("hfillnm1test_");
+  std::string labeltest("N-1 rate : ");
+  hnm1test.push_back(new TH1D("hfilltest_bx", "BX N-1", nFills, 0., 0.));
+  hnm1test.push_back(new TH1D("hfilltest_vtx", "Vtx N-1", nFills, 0., 0.));
+  hnm1test.push_back(new TH1D("hfilltest_halo", "Halo N-1", nFills, 0., 0.));
+  hnm1test.push_back(new TH1D("hfilltest_cos", "Cosmic N-1", nFills, 0., 0.));
+  hnm1test.push_back(new TH1D("hfilltest_noise", "Wide Noise N-1", nFills, 0., 0.));
+  hnm1test.push_back(new TH1D("hfilltest_n90", "n90 N-1", nFills, 0., 0.));
+  hnm1test.push_back(new TH1D("hfilltest_timing", "Timing N-1", nFills, 0., 0.));
+
   // fill them
   std::vector<unsigned long>::const_iterator itr;
   unsigned bin=1;
@@ -189,19 +262,60 @@ void FillHistograms::summarise() {
     
     for (unsigned cut=0; cut<cuts_->nCuts(); ++cut) {
       unsigned long count = nm1_.at(fill).at(cut);
+
       hnm1counts.at(cut)->Fill(fillstr.c_str(), count);
       if (count > 0) hnm1counts.at(cut)->SetBinError(bin, sqrt(count));
       else hnm1counts.at(cut)->SetBinError(bin, 1.);
+
       hnm1rates.at(cut)->Fill(fillstr.c_str(), count/livetime);
       if (count > 0) hnm1rates.at(cut)->SetBinError(bin, sqrt(count)/livetime);
       else hnm1rates.at(cut)->SetBinError(bin, 1/livetime);
     }
 
     // final counts
-    hnfin->Fill(fillstr.c_str(), nFin_.at(fill));
-    hnfin->SetBinError(bin, sqrt(nFin_.at(fill)));
+    unsigned long nfin = nFin_.at(fill);
+    hnfin->Fill(fillstr.c_str(), nfin);
+    if (nfin>0) hnfin->SetBinError(bin, sqrt(nfin));
+    else hnfin->SetBinError(bin, 1.);
+
+    unsigned long count = nm1Test0_.at(fill);
+    hnm1test.at(0)->Fill(fillstr.c_str(), count);
+    if (count > 0) hnm1test.at(0)->SetBinError(bin, sqrt(count));
+    else hnm1test.at(0)->SetBinError(bin, 1.);
+
+    count = nm1Test1_.at(fill);
+    hnm1test.at(1)->Fill(fillstr.c_str(), count);
+    if (count > 0) hnm1test.at(1)->SetBinError(bin, sqrt(count));
+    else hnm1test.at(1)->SetBinError(bin, 1.);
+
+    count = nm1Test2_.at(fill);
+    hnm1test.at(2)->Fill(fillstr.c_str(), count);
+    if (count > 0) hnm1test.at(2)->SetBinError(bin, sqrt(count));
+    else hnm1test.at(2)->SetBinError(bin, 1.);
+
+    count = nm1Test3_.at(fill);
+    hnm1test.at(3)->Fill(fillstr.c_str(), count);
+    if (count > 0) hnm1test.at(3)->SetBinError(bin, sqrt(count));
+    else hnm1test.at(3)->SetBinError(bin, 1.);
+
+    count = nm1Test4_.at(fill);
+    hnm1test.at(4)->Fill(fillstr.c_str(), count);
+    if (count > 0) hnm1test.at(4)->SetBinError(bin, sqrt(count));
+    else hnm1test.at(4)->SetBinError(bin, 1.);
+
+    count = nm1Test5_.at(fill);
+    hnm1test.at(5)->Fill(fillstr.c_str(), count);
+    if (count > 0) hnm1test.at(5)->SetBinError(bin, sqrt(count));
+    else hnm1test.at(5)->SetBinError(bin, 1.);
+
+    count = nm1Test6_.at(fill);
+    hnm1test.at(6)->Fill(fillstr.c_str(), count);
+    if (count > 0) hnm1test.at(6)->SetBinError(bin, sqrt(count));
+    else hnm1test.at(6)->SetBinError(bin, 1.);
 
   }
+
+  
 
 
   // save them
@@ -212,8 +326,29 @@ void FillHistograms::summarise() {
   hnfin->Write("",TObject::kOverwrite);
 
   for (unsigned i=0; i<cuts_->nCuts(); ++i) {
-    hnm1counts.at(i)->Write("",TObject::kOverwrite);
-    hnm1rates.at(i)->Write("",TObject::kOverwrite);
+      hnm1counts.at(i)->Write("",TObject::kOverwrite);
+      hnm1rates.at(i)->Write("",TObject::kOverwrite);
+    }
+
+  for (unsigned i=0; i<7; ++i) {
+    hnm1test.at(i)->Write("",TObject::kOverwrite);
   }
 
+
+
+
 }
+
+
+// void FillHistograms::doFillingSchemes() {
+
+//   std::vector<TH1D*> fillSchemes;
+//   std::vector<std::string> fillSchemeNames;
+
+//   for (unsigned i=0; i<lhcFills_.size(); ++i) {
+
+//     if
+
+//   }
+
+// }

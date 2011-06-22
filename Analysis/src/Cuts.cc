@@ -1,4 +1,4 @@
-#include "StoppedHSCP/Analysis/interface/Cuts.h"
+ #include "StoppedHSCP/Analysis/interface/Cuts.h"
 
 #include "StoppedHSCP/Ntuples/interface/StoppedHSCPEvent.h"
 #include "StoppedHSCP/Ntuples/interface/LhcFills.h"
@@ -108,6 +108,46 @@ Cuts::Cuts(StoppedHSCPEvent* event, bool isMC, unsigned version, LhcFills* fills
     addCut(&Cuts::hpdROuterCut, "Router");
   }
 
+  if (version_ == 4) {
+    addCut(&Cuts::triggerCut, "trigger");
+    addCut(&Cuts::bptxVeto, "BPTX veto");
+    addCut(&Cuts::bxVeto, "BX veto");
+    addCut(&Cuts::vertexVeto, "Vertex veto");
+    addCut(&Cuts::haloVeto, "Halo veto");
+    addCut(&Cuts::cosmicVeto, "Cosmic veto");
+    addCut(&Cuts::hcalNoiseVeto, "Noise veto");
+    addCut(&Cuts::looseJetCut, "E30");
+    addCut(&Cuts::jetEnergyCut, "E70");
+    addCut(&Cuts::jetN60Cut, "n60");
+    addCut(&Cuts::jetN90Cut, "n90");
+    addCut(&Cuts::towersIPhiCut, "nTowiPhi");
+    addCut(&Cuts::iPhiFractionCut, "iPhiFrac");
+    addCut(&Cuts::hpdR1Cut, "R1");
+    addCut(&Cuts::hpdR2Cut, "R2");
+    addCut(&Cuts::hpdRPeakCut, "Rpeak");
+    addCut(&Cuts::hpdROuterCut, "Router");
+  }
+
+  // control trigger
+  if (version_ == 5) {
+    addCut(&Cuts::controlTrigger, "ctrl trig");
+    addCut(&Cuts::bptxVeto, "BPTX veto");
+    addCut(&Cuts::bxVeto, "BX veto");
+    addCut(&Cuts::vertexVeto, "Vertex veto");
+    addCut(&Cuts::haloVeto, "Halo veto");
+    addCut(&Cuts::cosmicVeto, "Cosmic veto");
+    addCut(&Cuts::hcalNoiseVeto, "Noise veto");
+    addCut(&Cuts::looseJetCut, "E30");
+    addCut(&Cuts::jetEnergyCut, "E70");
+    addCut(&Cuts::jetN60Cut, "n60");
+    addCut(&Cuts::jetN90Cut, "n90");
+    addCut(&Cuts::towersIPhiCut, "nTowiPhi");
+    addCut(&Cuts::hpdR1Cut, "R1");
+    addCut(&Cuts::hpdR2Cut, "R2");
+    addCut(&Cuts::hpdRPeakCut, "Rpeak");
+    addCut(&Cuts::hpdROuterCut, "Router");
+  }
+
 }
 
 Cuts::~Cuts() {
@@ -116,17 +156,22 @@ Cuts::~Cuts() {
 
 
 bool Cuts::triggerCut() const {      // require event passed main trigger
+
+  //  bool trigBX = 
+
+  bool trigger = false;
   //1) in Run2010A, require hltJetNoBptx only
   if (event_->fill<1711)
-    return event_->hltJetNoBptx;
+    trigger = event_->hltJetNoBptx && abs(event_->bxWrtBunch) > 1;
   //2) in Run2011A, before tech stop (fills 1711-1749) require hltJetNoBptx3BXNoHalo only
   else if (event_->fill<1750)
-    return event_->hltJetNoBptx3BXNoHalo;
+    trigger = event_->hltJetNoBptx3BXNoHalo;
   //3) in Run2011A, post tech stop (fills 1795 onwards) require hltJetE50NoBptx3BXNoHalo only
   else if (event_->fill>=1795)
-    return event_->hltJetE50NoBptx3BXNoHalo;
-  else
-    return false; // what should default behavior for fills 1750-1794 be?
+    trigger = event_->hltJetE50NoBptx3BXNoHalo;
+
+  return isMC_ || (trigger);
+
 }
 
 bool Cuts::trigger2010Cut() const {  // require event passed main trigger

@@ -31,6 +31,7 @@ void CosmicsHistograms::book() {
 
   // time
   hbx_ = new TH1D("hcosbx", "BX number", 3564, 0., 3564.);
+  hjete_ = new TH1D("hcosjete", "Jet E", 50, 0., 100.);
 
 }
 
@@ -40,6 +41,8 @@ void CosmicsHistograms::fill(StoppedHSCPEvent& event) {
   if (!cuts_->cosmicVeto()) {
 
     hbx_->Fill(event.bx);
+
+    if (event.jet_N > 0) hjete_->Fill(event.jetE[0]);
 
   }
 
@@ -51,6 +54,7 @@ void CosmicsHistograms::save() {
   base_->cd("");
 
   hbx_->Write("",TObject::kOverwrite);
+  hjete_->Write("",TObject::kOverwrite);
 
 }
 

@@ -50,8 +50,19 @@ class FillHistograms {
   std::vector< std::vector<unsigned long> > nm1_;  // nm1(cut, fill);
   std::vector<unsigned long> nFin_;
 
+  std::vector<unsigned long> nm1Test0_;
+  std::vector<unsigned long> nm1Test1_;
+  std::vector<unsigned long> nm1Test2_;
+  std::vector<unsigned long> nm1Test3_;
+  std::vector<unsigned long> nm1Test4_;
+  std::vector<unsigned long> nm1Test5_;
+  std::vector<unsigned long> nm1Test6_;
+
   std::vector<TH1D*> hbx_;
+  std::vector<TH1D*> hbxB_;
   std::vector<TH1D*> hnm1_;
+  std::vector<TH1D*> hcolls_;
+  std::vector<TH1D*> hbunches_;
 
 
 };

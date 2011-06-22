@@ -4,6 +4,7 @@
 dataset=$1
 ntupdir=$2
 version=$3
+control=$4
 if [ $# -ne 3 ]
 then
     version=0
@@ -31,6 +32,8 @@ done
 echo "Going to run Stopped Gluino analysis"
 echo "  output  : " $outdir
 echo "  ntuples : " $ntupdir
+echo "  cuts    : " $version
+echo "  control : " $control
 
 # make output dir
 if [ ! -e $outdir ]
@@ -40,8 +43,8 @@ fi
 
 # make histograms
 echo
-echo "makeHistograms -c $version $outdir $ntuples > $outdir/histogrammer.log"
-makeHistograms -c $version $outdir $ntuples > $outdir/histogrammer.log
+echo "makeHistograms $control -c $version $outdir $ntuples > $outdir/histogrammer.log"
+makeHistograms $control -c $version $outdir $ntuples > $outdir/histogrammer.log
 
 # make basic plots
 echo
@@ -74,7 +77,7 @@ makeToyJobs.py $outdir
 # run Toy MC jobs
 echo
 echo "$outdir/runAll.sh >& runAll.log"
-./$outdir/toymc/runAll.sh >& $outdir/toymc/runAll.log &
+#./$outdir/toymc/runAll.sh >& $outdir/toymc/runAll.log &
 
 # make limit plots
 echo

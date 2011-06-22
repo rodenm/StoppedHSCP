@@ -71,6 +71,8 @@ int main(int argc, char* argv[]) {
   ULong64_t nlimit=0;
   bool dump=false;
   bool isMC=false;
+  bool doControl=false;
+  bool doSearch=false;
   unsigned cutVer=0;
 
   po::options_description desc("Allowed options");
@@ -84,6 +86,10 @@ int main(int argc, char* argv[]) {
      "Dump out information (default is false)")
     ("isMC,m",
      "Turn on MC running")
+    ("doControl,b",
+     "Use control trigger only")
+    ("doSearch,s",
+     "Use search trigger only")
     ("cuts,c",po::value<unsigned>()->default_value(0),
      "Set cuts version to apply");
 
@@ -95,6 +101,10 @@ int main(int argc, char* argv[]) {
     nlimit=ULong64_t(vm["num"].as<unsigned long long>());
   if (vm.count("isMC"))
     isMC=true;
+  if (vm.count("doControl"))
+    doControl=true;
+  if (vm.count("doSearch"))
+    doSearch=true;
   if (vm.count("cuts"))
     cutVer=vm["cuts"].as<unsigned>();
       
@@ -182,7 +192,7 @@ int main(int argc, char* argv[]) {
   TH1D::SetDefaultSumw2();
 
   // create analysis
-  Analyser analyser(filenames, outdir, isMC, cutVer);
+  Analyser analyser(filenames, outdir, isMC, cutVer, doControl, doSearch);
 
   analyser.setup();
 

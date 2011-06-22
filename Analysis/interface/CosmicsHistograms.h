@@ -35,6 +35,7 @@ class CosmicsHistograms {
   TDirectory* base_;
 
   TH1D* hbx_;
+  TH1D* hjete_;
 
 };
 

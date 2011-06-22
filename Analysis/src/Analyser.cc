@@ -9,8 +9,12 @@
 Analyser::Analyser(std::vector<std::string> ifiles, 
 		   std::string outdir, 
 		   bool isMC,
-		   unsigned cutVersion) :
+		   unsigned cutVersion,
+		   bool doControl,
+		   bool doSearch) :
   isMC_(isMC),
+  doControl_(doControl),
+  doSearch_(doSearch),
   nEvents_(0),
   iEvent_(0),
   ofile_((outdir+std::string("/histograms.root")).c_str(), "RECREATE"),
@@ -230,6 +234,11 @@ void Analyser::loop(ULong64_t maxEvents) {
     if (i%100000==0) {
       std::cout << "Processing " << i << "th event of " <<maxEvents<< std::endl;
     }
+
+    // check trigger bits if required
+    if (doControl_ && !cuts_.controlTrigger()) continue;
+
+    if (doSearch_ && !cuts_.triggerCut()) continue;
     
     // pass event to histogrammers
     histograms_.fill(*event_);

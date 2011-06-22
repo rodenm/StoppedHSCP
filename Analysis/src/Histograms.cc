@@ -156,6 +156,10 @@ void Histograms::book() {
   hCTNM1IEtaIPhi_ = new TH2D("hCTNM1IEtaIPhi", "Eta vs phi CT(N-1)", 100, -50., 50., 75, 0., 75.);
   hCTNM1LeadingIPhi_ = new TH1D("hCTNM1LeadingIPhi", "Leading iPhi CT(N-1)", 75, -0.5, 74.5);
 
+  hNM2_ = new TH2D("hNM2", "N-2 counts", cuts_->nCuts(), 0, cuts_->nCuts(), cuts_->nCuts(), 0, cuts_->nCuts());
+  hNM1Test_ = new TH1D("hNM1Test", "", 10, 0., 0.);
+  hNM1Test2_ = new TH1D("hNM1Test", "", 10, 0., 0.);
+
 }
 
 
@@ -339,6 +343,49 @@ void Histograms::fill(StoppedHSCPEvent& event) {
     hCTNM1LeadingIPhi_->Fill(event.nTowerLeadingIPhi);
   }
 
+  for (unsigned c1=0; c1<cuts_->nCuts(); ++c1) {
+    for (unsigned c2=0; c2<cuts_->nCuts(); ++c2) {
+      std::vector<unsigned> nm2;
+      nm2.push_back(c1);
+      nm2.push_back(c2);
+      if (cuts_->cutNMinusSome(nm2) ? 1 : 0 ) {
+	hNM2_->Fill(c1, c2);
+      }
+    }
+  }
+
+
+  // test N-1 with overlapping cuts combined
+  std::vector<unsigned> noise;
+  noise.push_back(6);
+  noise.push_back(9);
+  noise.push_back(11);
+  std::vector<unsigned> timing;
+  timing.push_back(12);
+  timing.push_back(13);
+  timing.push_back(14);
+  timing.push_back(15);
+  if (cuts_->cutNMinusOne(2)) hNM1Test_->Fill("BX veto", 1.);
+  if (cuts_->cutNMinusOne(3)) hNM1Test_->Fill("Vertex veto", 1.);
+  if (cuts_->cutNMinusOne(4)) hNM1Test_->Fill("Halo veto", 1.);
+  if (cuts_->cutNMinusOne(2)) hNM1Test_->Fill("Cosmic veto", 1.);
+  if (cuts_->cutNMinusSome(noise)) hNM1Test_->Fill("Wide noise", 1.);
+  if (cuts_->cutNMinusOne(10)) hNM1Test_->Fill("n90", 1);
+  if (cuts_->cutNMinusSome(timing)) hNM1Test_->Fill("Timing", 1.);
+
+
+  // test N-1 with overlapping cuts combined
+  std::vector<unsigned> beam;
+  beam.push_back(2);
+  beam.push_back(3);
+  beam.push_back(4);
+  if (cuts_->cutNMinusSome(beam)) hNM1Test2_->Fill("Beam", 1.);
+  if (cuts_->cutNMinusOne(2)) hNM1Test2_->Fill("Cosmic veto", 1.);
+  if (cuts_->cutNMinusSome(noise)) hNM1Test2_->Fill("Wide noise", 1.);
+  if (cuts_->cutNMinusOne(10)) hNM1Test2_->Fill("n90", 1);
+  if (cuts_->cutNMinusSome(timing)) hNM1Test2_->Fill("Timing", 1.);
+
+
 }
 
 
@@ -431,14 +478,28 @@ void Histograms::save() {
     hjetemf_cuts_.at(i)->Write("",TObject::kOverwrite);
   }
   
-    hCTNM1EtaPhi_->Write("",TObject::kOverwrite);
-    hCTNM1IEtaIPhi_->Write("",TObject::kOverwrite);
-    hCTNM1LeadingIPhi_->Write("",TObject::kOverwrite);
+  hCTNM1EtaPhi_->Write("",TObject::kOverwrite);
+  hCTNM1IEtaIPhi_->Write("",TObject::kOverwrite);
+  hCTNM1LeadingIPhi_->Write("",TObject::kOverwrite);
 
+  hNM2_->Write("",TObject::kOverwrite);
+
+  hNM1Test_->Write("",TObject::kOverwrite);
+  hNM1Test2_->Write("",TObject::kOverwrite);
 }
 
 
 void Histograms::summarise() {
+
+  TH2D* hNM2Diff = new TH2D("hNM2Diff", "N-2 counts", cuts_->nCuts(), 0, cuts_->nCuts(), cuts_->nCuts(), 0, cuts_->nCuts());
+
+  for (unsigned i=0; i<cuts_->nCuts(); ++i) {
+    for (unsigned j=0; j<cuts_->nCuts(); ++j) {
+      hNM2Diff->SetBinContent(i, j, (hNM2_->GetBinContent(i,j) - hNM2_->GetBinContent(i,0)) );    
+    }
+  }
+
+  hNM2Diff->Write("",TObject::kOverwrite);
 
 
 }

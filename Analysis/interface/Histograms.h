@@ -129,6 +129,10 @@ class Histograms {
   TH2D* hCTNM1IEtaIPhi_;
   TH1D* hCTNM1LeadingIPhi_;
 
+  TH2D* hNM2_;
+  TH1D* hNM1Test_;
+  TH1D* hNM1Test2_;
+
 };
 
 #endif

@@ -15,10 +15,7 @@ int main(int argc, char* argv[]) {
   double tpLumi = atof(argv[2]);
   unsigned massIndex = atoi(argv[3]);
 
-  std::string toyFile=dataset+std::string("/toymc/summary.txt");
-  std::string tpFile=dataset+std::string("/time_profile.txt");
-
-  LimitPlots plots(tpLumi, toyFile, tpFile);
+  LimitPlots plots(dataset, tpLumi);
 
   plots.calculateCrossSections(massIndex);
 

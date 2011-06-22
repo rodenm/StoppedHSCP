@@ -33,7 +33,9 @@ class Analyser {
   Analyser(std::vector<std::string> ifiles, 
 	   std::string ofile, 
 	   bool isMC,
-	   unsigned cutVersion);
+	   unsigned cutVersion,
+	   bool doControl,
+	   bool doSearch);
 
   ~Analyser();
 
@@ -76,6 +78,8 @@ class Analyser {
  private:
 
   bool isMC_;
+  bool doControl_;
+  bool doSearch_;
 
   // input files, chains etc
   std::vector<std::string> ifiles_;
