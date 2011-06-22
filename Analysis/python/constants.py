@@ -17,7 +17,7 @@ iAllCuts = 16
 
 # systematics
 errSystRateCoeff  = 0.10691  # dn90/dCT syst error (relative)
-scaleUncert       = 0.081     # combined JES, lumi systematic
+scaleUncert       = 0.0922     # combined JES, lumi systematic
 
 # control sample counts for BG estimation
 
