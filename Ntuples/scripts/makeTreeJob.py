@@ -25,6 +25,7 @@ def usage():
 try:
     opts, args = getopt.getopt(sys.argv[1:], "hjlcm", ['2010','2011','raw','reco','mc','oldhlttag','newhlttag'])
 except getopt.GetoptError:
+    print "Error getting options"
     usage()
     sys.exit(2)
 
@@ -43,6 +44,7 @@ for opt, arg in opts:
     if opt=='-c':
         useCAF = True
     if opt=='-h':
+        print "Printing Help Message"
         usage()
         sys.exit()
     if opt=='--2010':
@@ -64,6 +66,7 @@ for opt, arg in opts:
         
 # arguments
 if (len(args)!=5):
+    print "Wrong number of arguments!"
     usage()
     sys.exit()
     
@@ -142,6 +145,7 @@ ce_white_list = heplnx206.pp.rl.ac.uk,heplnx207.pp.rl.ac.uk\n\
 
 # create CRAB file
 crab = open(cfgname, 'w')
+print "Writing file '%s'"%cfgname
 crab.write(string)
 crab.close()
 
@@ -162,5 +166,7 @@ if (HLTL3Tag<>"Default"):
 
 # create CMSSW config
 cmssw =open(jobStr, 'w')
+print "Writing file '%s'"%jobStr
 cmssw.write(cmsswStr)
 cmssw.close()
+print "Success!"
