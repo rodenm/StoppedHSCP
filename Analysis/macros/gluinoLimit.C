@@ -25,7 +25,8 @@
 #include "TLatex.h"
 #include "TPaveText.h"
 
-#include "LimitPlots.h"
+//#include "LimitPlots.h"
+#include "$CMSSW_BASE/src/StoppedHSCP/Analysis/macros/LimitPlots.h"
 
 void gluinoLimit() {
 
