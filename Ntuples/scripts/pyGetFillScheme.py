@@ -21,6 +21,23 @@ import time
 
 from optparse import OptionParser
 
+
+def readFillNames(inputfile="/afs/cern.ch/user/l/lpc/w0/2011/measurements/stablebeams2011"):
+    dict={}
+    if not os.path.isfile(inputfile):
+        print "<pyGetFillScheme.py  readFillNames> ERROR!  Cannot read input file '%s'"%inputfile
+        return dict
+    temp=open(inputfile,'r').readlines()
+    for i in range(len(temp)):
+        if temp[i].startswith("FillNr"):
+            fill=string.split(temp[i])[1]
+            fill=string.split(fill,",")[0]
+            fill=string.atoi(fill)
+            scheme=string.split(temp[i+1],",")[1]
+            scheme=string.strip(scheme)
+            dict[fill]=scheme
+    return dict
+
 def ParseAndCleanFillFile(fillfile):
     '''
     This gets all filling schemes from a "fills.txt"-style file.
@@ -28,6 +45,7 @@ def ParseAndCleanFillFile(fillfile):
     '''
 
     SchemesVsFills={}
+    FillsVsSchemes={}
     schemes=[]  # Store all schemes in the file
     if not os.path.isfile(fillfile):
         print "<pyGetFillScheme::ParseAndCleanFillFile::ERROR>  Input file '%s' does not exist"%fillfile
@@ -41,6 +59,7 @@ def ParseAndCleanFillFile(fillfile):
             if scheme not in SchemesVsFills:
                 SchemesVsFills[scheme]=[]
             SchemesVsFills[scheme].append(fill)
+            FillsVsSchemes[fill]=scheme
             if scheme not in schemes:  # add to list
                 schemes.append(scheme)
             runs=line[2:]  # list of all runs
@@ -77,7 +96,7 @@ def ParseAndCleanFillFile(fillfile):
         fixedfile.write(i)
     fixedfile.close()
     # Return schemes found
-    return (schemes,  SchemesVsFills)
+    return (schemes,  SchemesVsFills, FillsVsSchemes)
 
 
 
@@ -184,6 +203,8 @@ def Main(scheme,fillschemetext=None,overwrite=False,verbose=False):
     If scheme does not exist in file, add it to text file using
     the GetFillScheme method.)
     '''
+
+    
     #  Default location of fillingSchemes file
     if fillschemetext==None:
         fillschemetext=os.path.join(os.environ["CMSSW_BASE"],
@@ -281,8 +302,23 @@ if __name__=="__main__":
                       default=False,
                       action="store_true",
                       help="Turn on verbose debugging")
+    parser.add_option("-F","--compareFile",
+                      dest="compareFile",
+                      default=None,
+                      help="Specify file that contains 'official' scheme name.   Default is /afs/cern.ch/user/l/lpc/w0/2011/measurements/stablebeams2011.   This command is used for extra checking -- if file not present, extra check will not be done.")
     
     (options,args)=parser.parse_args()
+
+    # Get list of official scheme names to act as a cross-check against those entered into fills.txt input file
+    compareDict={}
+    # If no compareFile specified, but the default /afs/... file exists, use the default for comparisons.
+    if options.compareFile==None and os.path.isfile("/afs/cern.ch/user/l/lpc/w0/2011/measurements/stablebeams2011"):
+        options.compareFile="/afs/cern.ch/user/l/lpc/w0/2011/measurements/stablebeams2011"
+    if options.compareFile<>None:
+        compareDict=readFillNames(options.compareFile)
+    
+
+
 
     # List of all schemes specified with "-s"
     schemes=options.schemes
@@ -293,6 +329,8 @@ if __name__=="__main__":
 
     # Check fills.txt file (if provided)
     SchemesVsFills={}
+    FillsVsSchemes={}
+    CorrectedScheme={}
     if options.input<>None:
         if not os.path.isfile(options.input):
             print "Sorry,  fills file '%s' does not exist!"%options.input
@@ -302,11 +340,12 @@ if __name__=="__main__":
                 print "Input file %s has been cleaned"%options.input
                 sys.exit()
             SchemesVsFills=newschemes[1]
+            FillsVsSchemes=newschemes[2]
             for n in newschemes[0]:
                 schemes.append(n)
 
     FalseFiles=[]
-    # Add all new schems to fillschemetext file
+    # Add all new schemes to fillschemetext file
     for scheme in schemes:
         scheme=string.strip(scheme)
         if (scheme in FalseFiles):
@@ -317,17 +356,24 @@ if __name__=="__main__":
                   overwrite  = options.write,
                   verbose=options.verbose)
         if temp==False:
+            Fills=SchemesVsFills[scheme]
+            for f in Fills:
+                if f in compareDict.keys():
+                    print "fill:  %s\n\t\tWeb scheme name:      '%s'\n\t\tOfficial scheme name: '%s'"%(f,  FillsVsSchemes[f], compareDict[f])
+                    CorrectedScheme[scheme]=compareDict[f]
+                else:
+                    CorrectedScheme[scheme]="UNKNOWN"
             FalseFiles.append(scheme)
 
     if len(FalseFiles)>0:
         print "\nThe following schemes could not be added:"
-        print "\t%s\t\t%s"%("Scheme","Fills")
-        print "\t------\t\t------"
+        print "\t%40s\t%10s\t%40s"%("Scheme","Fills","Correct Scheme name?")
+        print "\t%40s\t%10s\t%40s"%("-"*40,"-"*10,"-"*40)
         for i in FalseFiles:
             if i in SchemesVsFills.keys():
-                print "\t%s\t\t%s"%(i,SchemesVsFills[i])
+                print "\t%40s\t%10s\t%40s"%(i,SchemesVsFills[i], CorrectedScheme[i])
             else:
-                print "\t%s\t\tUnknown Fills"%(i)
+                print "\t%40s\tUnknown Fills"%(i)
         print
         
     # Now get rid of trailing commas
