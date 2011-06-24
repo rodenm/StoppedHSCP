@@ -152,7 +152,7 @@ def CopyFiles(user="jbrooke",
     cmdThreads=[]
 
     for file in allfiles:
-        if (counter>1):           continue
+        #if (counter>1):           continue
         basename=os.path.basename(file)
         if basename.endswith("stoppedHSCP"):
             dictname=string.split(basename,"_")
