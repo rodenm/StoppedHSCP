@@ -37,6 +37,10 @@ class Histograms {
 
   Cuts* cuts_;
   TDirectory* base_;
+  //MLR
+  TH1D* hjeteta_halo_;
+  TH1D* hjeteta_N90_;
+  TH1D* hjeteta_N_;
 
   TH1D* hbx_;
   TH1D* horb_;
@@ -140,6 +144,10 @@ class Histograms {
   TH2D* hCTNM1EtaPhi_;
   TH2D* hCTNM1IEtaIPhi_;
   TH1D* hCTNM1LeadingIPhi_;
+
+  TH2D* hN90NM1EtaPhi_;
+  TH2D* hN90NM1IEtaIPhi_;
+  TH1D* hN90NM1LeadingIPhi_;
 
   TH2D* hNM2_;
   TH1D* hNM1Test_;

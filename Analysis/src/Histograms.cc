@@ -1,4 +1,3 @@
-
 #include "StoppedHSCP/Analysis/interface/Histograms.h"
 
 #include "TMath.h"
@@ -166,6 +165,10 @@ void Histograms::book() {
   hCTNM1EtaPhi_ = new TH2D("hCTNM1EtaPhi", "Eta vs phi CT(N-1)", 70, -1.5, 1.5, 72, -1 * TMath::Pi(),  TMath::Pi());
   hCTNM1IEtaIPhi_ = new TH2D("hCTNM1IEtaIPhi", "Eta vs phi CT(N-1)", 100, -50., 50., 75, 0., 75.);
   hCTNM1LeadingIPhi_ = new TH1D("hCTNM1LeadingIPhi", "Leading iPhi CT(N-1)", 75, -0.5, 74.5);
+
+  hN90NM1EtaPhi_ = new TH2D("hN90NM1EtaPhi", "Eta vs phi N90(N-1)", 70, -1.5, 1.5, 72, -1 * TMath::Pi(),  TMath::Pi());
+  hN90NM1IEtaIPhi_ = new TH2D("hN90NM1IEtaIPhi", "Eta vs phi N90(N-1)", 100, -50., 50., 75, 0., 75.);
+  hN90NM1LeadingIPhi_ = new TH1D("hN90NM1LeadingIPhi", "Leading iPhi N90(N-1)", 75, -0.5, 74.5);
 
   hNM2_ = new TH2D("hNM2", "N-2 counts", cuts_->nCuts(), 0, cuts_->nCuts(), cuts_->nCuts(), 0, cuts_->nCuts());
   hNM1Test_ = new TH1D("hNM1Test", "", 10, 0., 0.);
@@ -380,6 +383,12 @@ void Histograms::fill(StoppedHSCPEvent& event) {
     hCTNM1LeadingIPhi_->Fill(event.nTowerLeadingIPhi);
   }
 
+  if (cuts_->cutNMinusOne(10)) {
+    hN90NM1EtaPhi_->Fill(event.jetEta[0], event.jetPhi[0]);
+    hN90NM1IEtaIPhi_->Fill(event.towerIEta[0], event.towerIPhi[0]);
+    hN90NM1LeadingIPhi_->Fill(event.nTowerLeadingIPhi);
+  }
+
   for (unsigned c1=0; c1<cuts_->nCuts(); ++c1) {
     for (unsigned c2=0; c2<cuts_->nCuts(); ++c2) {
       std::vector<unsigned> nm2;
@@ -529,6 +538,10 @@ void Histograms::save() {
   hCTNM1EtaPhi_->Write("",TObject::kOverwrite);
   hCTNM1IEtaIPhi_->Write("",TObject::kOverwrite);
   hCTNM1LeadingIPhi_->Write("",TObject::kOverwrite);
+  
+  hN90NM1EtaPhi_->Write("",TObject::kOverwrite);
+  hN90NM1IEtaIPhi_->Write("",TObject::kOverwrite);
+  hN90NM1LeadingIPhi_->Write("",TObject::kOverwrite);
 
   hNM2_->Write("",TObject::kOverwrite);
 
