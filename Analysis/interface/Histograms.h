@@ -91,6 +91,7 @@ class Histograms {
   TH1D* hncutind_;
   TH1D* hncutcum_;
   TH1D* hnminus1cut_;
+
   TH1D* hncutsystlo_;
   TH1D* hncutsysthi_;
   TH1D* hncutsystg_;
@@ -99,31 +100,42 @@ class Histograms {
   TH1D* hhcalcutind_;
   TH1D* hhcalcutcum_;
   
+  // N-1 variable distributions
   TH1D* hnmu_nmo_;
   TH1D* hjete_nmo_;
   TH1D* hjetn60_nmo_;
   TH1D* hjetn90_nmo_;
   TH1D* hntowiphi_nmo_;
+  TH1D* hiphifrac_nmo_;
   TH1D* hr1_nmo_;
   TH1D* hr2_nmo_;
   TH1D* hrpk_nmo_;
   TH1D* hrout_nmo_;
   TH1D* hjetemf_nmo_;
+
+  // eta/phi/time distributions after N-1 cuts
+  std::vector<TH1D*> hbx_nm1_;
+  std::vector<TH1D*> hrelbx_nm1_;
+  std::vector<TH1D*> hjete_nm1_;
+  std::vector<TH1D*> hjeteta_nm1_;
+  std::vector<TH1D*> hjetphi_nm1_;
+  std::vector<TH2D*> hjetetaphi_nm1_;
+
   
   // histograms after each cut
-  std::vector<TH1D*> hjete_cuts_;
-  std::vector<TH1D*> hjetn60_cuts_;
-  std::vector<TH1D*> hjetn90_cuts_;
-  std::vector<TH1D*> hnmu_cuts_;
-  std::vector<TH1D*> hr1_cuts_;
-  std::vector<TH1D*> hr2_cuts_;
-  std::vector<TH1D*> hrpk_cuts_;
-  std::vector<TH1D*> hrout_cuts_;
-  std::vector<TH2D*> hjetetaphi_cuts_;
-  std::vector<TH2D*> hmuetaphi_cuts_;
-  std::vector<TH1D*> hbx_cuts_;
-  std::vector<TH1D*> hjetemf_cuts_;
-  std::vector<TH1D*> hlifetime_cuts_;
+/*   std::vector<TH1D*> hjete_cuts_; */
+/*   std::vector<TH1D*> hjetn60_cuts_; */
+/*   std::vector<TH1D*> hjetn90_cuts_; */
+/*   std::vector<TH1D*> hnmu_cuts_; */
+/*   std::vector<TH1D*> hr1_cuts_; */
+/*   std::vector<TH1D*> hr2_cuts_; */
+/*   std::vector<TH1D*> hrpk_cuts_; */
+/*   std::vector<TH1D*> hrout_cuts_; */
+/*   std::vector<TH2D*> hjetetaphi_cuts_; */
+/*   std::vector<TH2D*> hmuetaphi_cuts_; */
+/*   std::vector<TH1D*> hbx_cuts_; */
+/*   std::vector<TH1D*> hjetemf_cuts_; */
+/*   std::vector<TH1D*> hlifetime_cuts_; */
 
   TH2D* hCTNM1EtaPhi_;
   TH2D* hCTNM1IEtaIPhi_;

@@ -125,6 +125,7 @@ void Histograms::book() {
   hjetn60_nmo_ = new TH1D("hjetn60_nmo", "Leading jet N60 (N-1)", 25, 0., 25.);
   hjetn90_nmo_ = new TH1D("hjetn90_nmo", "Leading jet N90 (N-1)", 25, 0., 25.);
   hntowiphi_nmo_ = new TH1D("hntowsameiphi_nmo", "N leading towers at same iphi (N-1)", 20, -0.5, 19.5);
+  hiphifrac_nmo_ = new TH1D("hiphifrac_nmo", "iphi E fraction", 50, 0., 1.);
   hr1_nmo_ = new TH1D("hr1_nmo", "R_{1} (N-1)", 50, 0., 1.);
   hr2_nmo_ = new TH1D("hr2_nmo", "R_{2} (N-1)", 50, 0., 1.);
   hrpk_nmo_ = new TH1D("hrpk_nmo", "R_{peak} (N-1)", 50, 0., 1.);
@@ -133,24 +134,34 @@ void Histograms::book() {
   
 
   // histograms per cut
-  for (unsigned i=0; i<cuts_->nCuts(); ++i) {
-    std::stringstream istr;
-    istr << i;
-    std::string cstr=cuts_->cutName(i);
-    hjete_cuts_.push_back(new TH1D((std::string("hjete")+istr.str()).c_str(), (std::string("Jet E after ")+cstr).c_str(), 50, 0., 200.));
-    hjetn60_cuts_.push_back(new TH1D((std::string("hjetn60")+istr.str()).c_str(), (std::string("Jet n60 after ")+cstr).c_str(), 25, 0., 25.));
-    hjetn90_cuts_.push_back(new TH1D((std::string("hjetn90")+istr.str()).c_str(), (std::string("Jet n90 after ")+cstr).c_str(), 25, 0., 25.));
-    hnmu_cuts_.push_back(new TH1D((std::string("hjetnmu")+istr.str()).c_str(), (std::string("N mu after ")+cstr).c_str(), 4, -0.5, 3.5));
-    hr1_cuts_.push_back(new TH1D((std::string("hr1")+istr.str()).c_str(), (std::string("R1 after ")+cstr).c_str(), 50, 0., 1.));
-    hr2_cuts_.push_back(new TH1D((std::string("hr2")+istr.str()).c_str(), (std::string("R2 after ")+cstr).c_str(), 50, 0., 1.));
-    hrpk_cuts_.push_back(new TH1D((std::string("hrpk")+istr.str()).c_str(), (std::string("R_{peak} after ")+cstr).c_str(), 50, 0., 1.));
-    hrout_cuts_.push_back(new TH1D((std::string("hrout")+istr.str()).c_str(), (std::string("R_{outer} after ")+cstr).c_str(), 50, 0., 1.));
-    hjetetaphi_cuts_.push_back(new TH2D((std::string("hjetetaphi")+istr.str()).c_str(), (std::string("Jet pos after ")+cstr).c_str(), 70, -3.5, 3.5, 72, -1 * TMath::Pi(),  TMath::Pi()));
-    hmuetaphi_cuts_.push_back(new TH2D((std::string("hmuetaphi")+istr.str()).c_str(), (std::string("#mu pos after ")+cstr).c_str(), 70, -3.5, 3.5, 72, -1 * TMath::Pi(),  TMath::Pi()));
-    hbx_cuts_.push_back(new TH1D((std::string("hbx")+istr.str()).c_str(), (std::string("BX after ")+cstr).c_str(), 3564, 0., 3564.));
-    hjetemf_cuts_.push_back(new TH1D((std::string("hjetemf")+istr.str()).c_str(), (std::string("Jet EMF after ")+cstr).c_str(), 100, 0., 1.));
-    //    hlifetime_cuts.push_back(new TH1D((std:;string("hlifetime")+istr.str()).c_str(), (std::string("Lifetime after ")+cstr).c_str(), 100, 0., 1.e-3);
-  }
+   for (unsigned i=0; i<cuts_->nCuts(); ++i) {
+     std::stringstream istr;
+     istr << i;
+     std::string cstr=cuts_->cutName(i);
+
+     hbx_nm1_.push_back( new TH1D((std::string("hnm1bx_")+istr.str()).c_str(), "BX number", 3564, 0., 3564.) );
+     hrelbx_nm1_.push_back( new TH1D((std::string("hnm1relbx_")+istr.str()).c_str(), "BX wrt collision", 200, -200.5, +199.5) );
+     hjete_nm1_.push_back( new TH1D((std::string("hnm1jete_")+istr.str()).c_str(), "Jet E", 50, 0., 100.) );
+     hjeteta_nm1_.push_back( new TH1D((std::string("hnm1jeteta_")+istr.str()).c_str(), "Leading jet #eta", 70, -3.5, 3.5) );
+     hjetphi_nm1_.push_back( new TH1D((std::string("hnm1jetphi_")+istr.str()).c_str(), "Leading jet #phi", 72, -1 * TMath::Pi(),  TMath::Pi()) );
+     hjetetaphi_nm1_.push_back( new TH2D((std::string("hnm1jetetaphi_")+istr.str()).c_str(), "Leading jet pos", 70, -3.5, 3.5, 72, -1 * TMath::Pi(),  TMath::Pi()) );
+   }
+
+
+//     hjete_cuts_.push_back(new TH1D((std::string("hjete")+istr.str()).c_str(), (std::string("Jet E after ")+cstr).c_str(), 50, 0., 200.));
+//     hjetn60_cuts_.push_back(new TH1D((std::string("hjetn60")+istr.str()).c_str(), (std::string("Jet n60 after ")+cstr).c_str(), 25, 0., 25.));
+//     hjetn90_cuts_.push_back(new TH1D((std::string("hjetn90")+istr.str()).c_str(), (std::string("Jet n90 after ")+cstr).c_str(), 25, 0., 25.));
+//     hnmu_cuts_.push_back(new TH1D((std::string("hjetnmu")+istr.str()).c_str(), (std::string("N mu after ")+cstr).c_str(), 4, -0.5, 3.5));
+//     hr1_cuts_.push_back(new TH1D((std::string("hr1")+istr.str()).c_str(), (std::string("R1 after ")+cstr).c_str(), 50, 0., 1.));
+//     hr2_cuts_.push_back(new TH1D((std::string("hr2")+istr.str()).c_str(), (std::string("R2 after ")+cstr).c_str(), 50, 0., 1.));
+//     hrpk_cuts_.push_back(new TH1D((std::string("hrpk")+istr.str()).c_str(), (std::string("R_{peak} after ")+cstr).c_str(), 50, 0., 1.));
+//     hrout_cuts_.push_back(new TH1D((std::string("hrout")+istr.str()).c_str(), (std::string("R_{outer} after ")+cstr).c_str(), 50, 0., 1.));
+//     hjetetaphi_cuts_.push_back(new TH2D((std::string("hjetetaphi")+istr.str()).c_str(), (std::string("Jet pos after ")+cstr).c_str(), 70, -3.5, 3.5, 72, -1 * TMath::Pi(),  TMath::Pi()));
+//     hmuetaphi_cuts_.push_back(new TH2D((std::string("hmuetaphi")+istr.str()).c_str(), (std::string("#mu pos after ")+cstr).c_str(), 70, -3.5, 3.5, 72, -1 * TMath::Pi(),  TMath::Pi()));
+//     hbx_cuts_.push_back(new TH1D((std::string("hbx")+istr.str()).c_str(), (std::string("BX after ")+cstr).c_str(), 3564, 0., 3564.));
+//     hjetemf_cuts_.push_back(new TH1D((std::string("hjetemf")+istr.str()).c_str(), (std::string("Jet EMF after ")+cstr).c_str(), 100, 0., 1.));
+//     //    hlifetime_cuts.push_back(new TH1D((std:;string("hlifetime")+istr.str()).c_str(), (std::string("Lifetime after ")+cstr).c_str(), 100, 0., 1.e-3);
+//   }
 
   hCTNM1EtaPhi_ = new TH2D("hCTNM1EtaPhi", "Eta vs phi CT(N-1)", 70, -1.5, 1.5, 72, -1 * TMath::Pi(),  TMath::Pi());
   hCTNM1IEtaIPhi_ = new TH2D("hCTNM1IEtaIPhi", "Eta vs phi CT(N-1)", 100, -50., 50., 75, 0., 75.);
@@ -258,32 +269,68 @@ void Histograms::fill(StoppedHSCPEvent& event) {
     
   }
 
+  // N-1 cut variable distributions
+  if (cuts_->cutNMinusOne(5)) hnmu_nmo_->Fill(event.mu_N);
+  if (event.jet_N > 0) {
+    if (cuts_->cutNMinusOne(8)) hjete_nmo_->Fill(event.jetE.at(0));
+    if (cuts_->cutNMinusOne(9)) hjetn60_nmo_->Fill(event.jetN60.at(0));
+    if (cuts_->cutNMinusOne(10)) hjetn90_nmo_->Fill(event.jetN90.at(0));
+    //    if (cuts_->cut()) hjetemf_nmo_->Fill(event.jetEEm.at(0)/event.jetE.at(0));
+  }
+  if (cuts_->cutNMinusOne(11)) hntowiphi_nmo_->Fill(event.nTowerSameiPhi);
+  if (cuts_->cutNMinusOne(12)) hiphifrac_nmo_->Fill(event.leadingIPhiFraction());
+  if (cuts_->cutNMinusOne(13)) hr1_nmo_->Fill(event.top5DigiR1);
+  if (cuts_->cutNMinusOne(14)) hr2_nmo_->Fill(event.top5DigiR2);
+  if (cuts_->cutNMinusOne(15)) hrpk_nmo_->Fill(event.top5DigiRPeak);
+  if (cuts_->cutNMinusOne(16)) hrout_nmo_->Fill(event.top5DigiROuter);
+
+
   // loop over cuts
   bool fail=false;
   for (unsigned c=0; c<cuts_->nCuts(); c++) {
-    if (cuts_->cutNMinusOne(c)) hnminus1cut_->Fill(c);
-    if (cuts_->cutN(c)) hncutind_->Fill(c);
+
+    // N-1
+    if (cuts_->cutNMinusOne(c)) {
+      hnminus1cut_->Fill(c);
+      hbx_nm1_.at(c)->Fill(event.bx);
+      hrelbx_nm1_.at(c)->Fill(event.bxWrtCollision);
+      if (event.jet_N > 0) {
+	hjete_nm1_.at(c)->Fill(event.jetE[0]);
+	hjeteta_nm1_.at(c)->Fill(event.jetEta[0]);
+	hjetphi_nm1_.at(c)->Fill(event.jetPhi[0]);
+	hjetetaphi_nm1_.at(c)->Fill(event.jetEta[0], event.jetPhi[0]);
+      }
+    }
+    
+    // passes all cuts
+    if (cuts_->cutN(c)) {
+      hncutind_->Fill(c);
+    }
+
     else fail |= true;
     if (!fail) {
       hncutcum_->Fill(c);
-      if (event.jet_N>0) {
-	hjete_cuts_.at(c)->Fill(event.jetE.at(0));
-	hjetn60_cuts_.at(c)->Fill(event.jetN60.at(0));
-	hjetn90_cuts_.at(c)->Fill(event.jetN90.at(0));
-	hnmu_cuts_.at(c)->Fill(event.mu_N);
-	hr1_cuts_.at(c)->Fill(event.top5DigiR1);
-	hr2_cuts_.at(c)->Fill(event.top5DigiR2);
-	hrpk_cuts_.at(c)->Fill(event.top5DigiRPeak);
-	hrout_cuts_.at(c)->Fill(event.top5DigiROuter);
-	hjetetaphi_cuts_.at(c)->Fill(event.jetEta.at(0), event.jetPhi.at(0));
-	hjetemf_cuts_.at(c)->Fill(event.jetEEm.at(0)/event.jetE.at(0));
-      }
-      if (event.mu_N>0) {
-	hmuetaphi_cuts_.at(c)->Fill(event.muEta.at(0), event.muPhi.at(0));
-      }
-      hbx_cuts_.at(c)->Fill(event.bx);
+
     }
   }
+
+
+//       if (event.jet_N>0) {
+// 	hjete_cuts_.at(c)->Fill(event.jetE.at(0));
+// 	hjetn60_cuts_.at(c)->Fill(event.jetN60.at(0));
+// 	hjetn90_cuts_.at(c)->Fill(event.jetN90.at(0));
+// 	hnmu_cuts_.at(c)->Fill(event.mu_N);
+// 	hr1_cuts_.at(c)->Fill(event.top5DigiR1);
+// 	hr2_cuts_.at(c)->Fill(event.top5DigiR2);
+// 	hrpk_cuts_.at(c)->Fill(event.top5DigiRPeak);
+// 	hrout_cuts_.at(c)->Fill(event.top5DigiROuter);
+// 	hjetetaphi_cuts_.at(c)->Fill(event.jetEta.at(0), event.jetPhi.at(0));
+// 	hjetemf_cuts_.at(c)->Fill(event.jetEEm.at(0)/event.jetE.at(0));
+//       }
+//       if (event.mu_N>0) {
+// 	hmuetaphi_cuts_.at(c)->Fill(event.muEta.at(0), event.muPhi.at(0));
+//       }
+//       hbx_cuts_.at(c)->Fill(event.bx);
 
   // systematics
   fail=false;
@@ -324,18 +371,8 @@ void Histograms::fill(StoppedHSCPEvent& event) {
 //     if (!hcalfail) hhcalcutcum_->Fill(c);  
 //   }
 
-  if (cuts_->cutNMinusOne(10)) hntowiphi_nmo_->Fill(event.nTowerSameiPhi);
-  if (cuts_->cutNMinusOne(5)) hnmu_nmo_->Fill(event.mu_N);
-  if (cuts_->cutNMinusOne(13)) hr1_nmo_->Fill(event.top5DigiR1);
-  if (cuts_->cutNMinusOne(14)) hr2_nmo_->Fill(event.top5DigiR2);
-  if (cuts_->cutNMinusOne(15)) hrpk_nmo_->Fill(event.top5DigiRPeak);
-  if (cuts_->cutNMinusOne(16)) hrout_nmo_->Fill(event.top5DigiROuter);
-  if (event.jet_N > 0) {
-    if (cuts_->cutNMinusOne(8)) hjete_nmo_->Fill(event.jetE.at(0));
-    if (cuts_->cutNMinusOne(9)) hjetn60_nmo_->Fill(event.jetN60.at(0));
-    if (cuts_->cutNMinusOne(10)) hjetn90_nmo_->Fill(event.jetN90.at(0));
-    if (cuts_->cut()) hjetemf_nmo_->Fill(event.jetEEm.at(0)/event.jetE.at(0));
-  }
+
+
 
   if (cuts_->cutNMinusOne(11)) {
     hCTNM1EtaPhi_->Fill(event.jetEta[0], event.jetPhi[0]);
@@ -385,7 +422,10 @@ void Histograms::fill(StoppedHSCPEvent& event) {
   if (cuts_->cutNMinusSome(noise)) hNM1Test2_->Fill("Wide noise", 1.);
   if (cuts_->cutNMinusOne(10)) hNM1Test2_->Fill("n90", 1);
   if (cuts_->cutNMinusSome(timing)) hNM1Test2_->Fill("Timing", 1.);
-
+  std::vector<unsigned> halon90;
+  halon90.push_back(4);
+  halon90.push_back(10);
+  if (cuts_->cutNMinusSome(halon90)) hNM1Test2_->Fill("Halo/n90", 1.);
 
 }
 
@@ -464,20 +504,27 @@ void Histograms::save() {
   hrout_nmo_->Write("",TObject::kOverwrite);
   hjetemf_nmo_->Write("",TObject::kOverwrite);
   
-  for (unsigned i=0; i< cuts_->nCuts(); ++i) {
-    hjete_cuts_.at(i)->Write("",TObject::kOverwrite);
-    hjetn60_cuts_.at(i)->Write("",TObject::kOverwrite);
-    hjetn90_cuts_.at(i)->Write("",TObject::kOverwrite);
-    hnmu_cuts_.at(i)->Write("",TObject::kOverwrite);
-    hr1_cuts_.at(i)->Write("",TObject::kOverwrite);
-    hr2_cuts_.at(i)->Write("",TObject::kOverwrite);
-    hrpk_cuts_.at(i)->Write("",TObject::kOverwrite);
-    hrout_cuts_.at(i)->Write("",TObject::kOverwrite);
-    hjetetaphi_cuts_.at(i)->Write("",TObject::kOverwrite);
-    hmuetaphi_cuts_.at(i)->Write("",TObject::kOverwrite);
-    hbx_cuts_.at(i)->Write("",TObject::kOverwrite);
-    hjetemf_cuts_.at(i)->Write("",TObject::kOverwrite);
+  for (unsigned c=0; c< cuts_->nCuts(); ++c) {
+    hbx_nm1_.at(c)->Write("",TObject::kOverwrite);
+    hrelbx_nm1_.at(c)->Write("",TObject::kOverwrite);
+    hjete_nm1_.at(c)->Write("",TObject::kOverwrite);
+    hjeteta_nm1_.at(c)->Write("",TObject::kOverwrite);
+    hjetphi_nm1_.at(c)->Write("",TObject::kOverwrite);
+    hjetetaphi_nm1_.at(c)->Write("",TObject::kOverwrite);
   }
+  
+//     hjete_cuts_.at(i)->Write("",TObject::kOverwrite);
+//     hjetn60_cuts_.at(i)->Write("",TObject::kOverwrite);
+//     hjetn90_cuts_.at(i)->Write("",TObject::kOverwrite);
+//     hnmu_cuts_.at(i)->Write("",TObject::kOverwrite);
+//     hr1_cuts_.at(i)->Write("",TObject::kOverwrite);
+//     hr2_cuts_.at(i)->Write("",TObject::kOverwrite);
+//     hrpk_cuts_.at(i)->Write("",TObject::kOverwrite);
+//     hrout_cuts_.at(i)->Write("",TObject::kOverwrite);
+//     hjetetaphi_cuts_.at(i)->Write("",TObject::kOverwrite);
+//     hmuetaphi_cuts_.at(i)->Write("",TObject::kOverwrite);
+//     hbx_cuts_.at(i)->Write("",TObject::kOverwrite);
+//     hjetemf_cuts_.at(i)->Write("",TObject::kOverwrite);
   
   hCTNM1EtaPhi_->Write("",TObject::kOverwrite);
   hCTNM1IEtaIPhi_->Write("",TObject::kOverwrite);
