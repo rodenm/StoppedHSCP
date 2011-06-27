@@ -18,7 +18,7 @@
 class LimitPlots {
 	public:
 
-  		LimitPlots(double tpLumi);
+  LimitPlots(double tpLumi);
   		~LimitPlots();
 
   		void readToyFile(std::string filename);

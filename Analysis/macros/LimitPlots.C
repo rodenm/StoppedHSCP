@@ -255,8 +255,10 @@ void LimitPlots::calculateCrossSections(unsigned gluinoIndex, unsigned stopIndex
   	}
 
 	std::cout << "Using toy MC lifetime point " << toyLifetime[toyIndex] << std::endl;
-	std::cout << "Using time profile lifetime point " << tpLifetime[tpIndex] << std::endl;
-		
+	if (tpLifetime.size()>tpIndex)
+	  std::cout << "Using time profile lifetime point " << tpLifetime[tpIndex] << std::endl;
+	else
+	  std::cout <<" Time Profile size is < "<<tpIndex<<".  Is time profile txt file provided?"<<std::endl;
 	for (unsigned i=0; i<gluinoMass.size(); ++i) {
 		
 		if (gluinoEffStopCM[i] * gluinoEffReco[i] > 0.) {
@@ -264,7 +266,9 @@ void LimitPlots::calculateCrossSections(unsigned gluinoIndex, unsigned stopIndex
 
 			//observed
 			xsProdMassGluino.push_back( toyObsLimit[toyIndex] / (toyEffLumi[toyIndex] * gluinoEffStopCM[i] * gluinoEffReco[i]) );
-			xsProdMassTPGluino.push_back( tpObsLimit[tpIndex] / (tpLumi_ * gluinoEffStopCM[i] * gluinoEffReco[i]) );
+			if (tpLifetime.size()>tpIndex)
+			  
+			  xsProdMassTPGluino.push_back( tpObsLimit[tpIndex] / (tpLumi_ * gluinoEffStopCM[i] * gluinoEffReco[i]) );
 
 			//expected gluino
 			xsProdExpMassGluino.push_back( toyExpLimit[toyIndex] / (toyEffLumi[toyIndex] * gluinoEffStopCM[i] * gluinoEffReco[i]) );
@@ -288,7 +292,9 @@ void LimitPlots::calculateCrossSections(unsigned gluinoIndex, unsigned stopIndex
 
 			// observed stop
 			xsProdMassStop.push_back( toyObsLimit[toyIndex] / (toyEffLumi[toyIndex] * stopEffStopCM[i] * stopEffReco[i]) );
-			xsProdMassTPStop.push_back( tpObsLimit[tpIndex] / (tpLumi_ * stopEffStopCM[i] * stopEffReco[i]) );
+			if (tpLifetime.size()>tpIndex)
+			  
+			  xsProdMassTPStop.push_back( tpObsLimit[tpIndex] / (tpLumi_ * stopEffStopCM[i] * stopEffReco[i]) );
 		
 			// expected stop
 			xsProdExpMassStop.push_back( toyExpLimit[toyIndex] / (toyEffLumi[toyIndex] * stopEffStopCM[i] * stopEffReco[i]) );

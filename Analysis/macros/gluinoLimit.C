@@ -27,9 +27,14 @@
 
 #include "LimitPlots.h"
 
-void gluinoLimit() {
+void gluinoLimit(double lumi=-1., double maxInstLumi=-1.) {
 
-	LimitPlots plots(LUMI);
+
+  if (lumi<0)
+    lumi=LUMI;
+  if (maxInstLumi<0)
+    maxInstLumi=MAXINSTLUMI;
+  LimitPlots plots(lumi);
 
 	plots.calculateCrossSections(4,3,39,9);
 	
@@ -58,10 +63,10 @@ void gluinoLimit() {
 	blurb = new TPaveText(2e-7, 9e0, 4e-3, 1.5e2);
 	blurb->AddText("CMS Preliminary 2011");
   	std::stringstream label;
-  	label<<"#int L dt = "<<LUMI<<" pb^{-1}";
+  	label<<"#int L dt = "<<lumi<<" pb^{-1}";
   	blurb->AddText(label.str().c_str());
   	label.str("");
-  	double peakInstLumi=MAXINSTLUMI;
+  	double peakInstLumi=maxInstLumi;
   	int exponent=30;
   	while (peakInstLumi>10) {
       peakInstLumi/=10;

@@ -28,9 +28,13 @@
 
 #include "LimitPlots.h"
 
-void modelIndLimit() {
-
-	LimitPlots plots(LUMI);
+void modelIndLimit(double lumi=-1.,double maxInstLumi=-1.) 
+{
+  if (lumi<0)
+    lumi=LUMI;
+  if (maxInstLumi<0)
+    maxInstLumi=MAXINSTLUMI;
+	LimitPlots plots(lumi);
 	
 	plots.calculateCrossSections(4,3,39,9);
 
@@ -53,16 +57,16 @@ void modelIndLimit() {
 	blurb->AddText("CMS Preliminary 2011");
 
   	std::stringstream label;
-  	label<<"#int L dt = "<<LUMI<<" pb^{-1}";
+  	label<<"#int L dt = "<<lumi<<" pb^{-1}";
   	blurb->AddText(label.str().c_str());
 
   	label.str("");
-  	double peakInstLumi=MAXINSTLUMI;
+  	double peakInstLumi=maxInstLumi;
   	int exponent=30;
   	while (peakInstLumi>10) {
-      peakInstLumi/=10;
-      ++exponent;
-    }
+	  peakInstLumi/=10;
+	  ++exponent;
+	}
   	label<<"L^{max}_{inst} = "<<peakInstLumi<<" x 10^{"<<exponent<<"} cm^{-2}s^{-1}";
   	blurb->AddText(label.str().c_str());
 
@@ -79,6 +83,7 @@ void modelIndLimit() {
 	blurb->SetTextAlign(12);
 	blurb->SetTextSize(0.033);
 	blurb->Draw();
+
 
 //	TPaveText* cms = new TPaveText(1e-6, 1.5e1, 1e-2, 2e1);
 //	cms->AddText("CMS 2011");
