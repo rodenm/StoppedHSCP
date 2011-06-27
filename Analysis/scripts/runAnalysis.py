@@ -22,7 +22,9 @@ def GenericCommand(cmd):
     os.system(cmd)
     return
     
-def RunAnalysis(outdir, indir, version=0,steps=[],makeHistsOptions={}):
+def RunAnalysis(outdir, indir, version=0,steps=[],makeHistsOptions={},
+                lumi=-1,
+                maxInstLumi=-1):
     if len(steps)==0:
         steps=range(10)
 
@@ -84,7 +86,7 @@ def RunAnalysis(outdir, indir, version=0,steps=[],makeHistsOptions={}):
 
     if 8 in steps:
         # Step 8:   make limit plots
-        cmd="makeFinalPlots.sh %s"%outdir
+        cmd="makeFinalPlots.sh %s %f %f"%(outdir,lumi,maxInstLumi)
         GenericCommand(cmd)
 
     if 9 in steps:
@@ -163,6 +165,20 @@ if __name__=="__main__":
                              default=-1,
                              help="Specify number of events.")
     parser.add_option_group(makeHistGroup)
+    makeFinalGroup = OptionGroup(parser,
+                                 "Options for 'makeFinalPlots'",
+                                "Optional arguments below are used in Step 8 (makeFinalPlots)."
+                                 )
+    makeFinalGroup.add_option("-l","--lumi",
+                              dest="lumi",
+                              type="float",
+                              default=-1.,
+                              help="Specify integrated luminosity.  Default is -1.")
+    makeFinalGroup.add_option("-x","--maxInstLumi",
+                              dest="maxInstLumi",
+                              type="float",
+                              default=-1.,
+                              help="Specify maximum integrated luminosity.  Default is -1.")
     
 
     options,args=parser.parse_args()
@@ -232,5 +248,7 @@ if __name__=="__main__":
                 options.inputdir,
                 options.version,
                 steps,
-                makeHistsOptions=makehistopt
+                makeHistsOptions=makehistopt,
+                lumi=options.lumi,
+                maxInstLumi=options.maxInstLumi
                 )
