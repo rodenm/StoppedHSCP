@@ -5,7 +5,7 @@
 // *********************************
 // The following parameters (LUMI, MAXLUMI) need to be set by hand:
 // LUMI is a double
-#define LUMI 417.
+#define LUMI 622.
 // MAXINSTLUMI is a double
 // Get MAXINSTLUMI directly from https://cmswbm.web.cern.ch/cmswbm/cmsdb/servlet/FillReport  
 // (PeakInstLumi). 
@@ -25,8 +25,7 @@
 #include "TLatex.h"
 #include "TPaveText.h"
 
-//#include "LimitPlots.h"
-#include "$CMSSW_BASE/src/StoppedHSCP/Analysis/macros/LimitPlots.h"
+#include "LimitPlots.h"
 
 void gluinoLimit() {
 

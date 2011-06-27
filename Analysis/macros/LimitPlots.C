@@ -3,12 +3,14 @@
 #include "LimitPlots.h"
 
 
-LimitPlots::LimitPlots(double tpLumi) :
+LimitPlots::LimitPlots(double tpLumi,
+		       std::string toyfile,
+		       std::string tpfile) :
   tpLumi_(tpLumi)
 {
 
-	readToyFile(std::string("toymc.txt"));
-	readTimeProfileFile(std::string("time_profile.txt"));
+	readToyFile(toyfile);
+	readTimeProfileFile(tpfile);
 
 	readGluinoData(std::string("mcGluino.txt"));
   	readStopData(std::string("mcStop.txt"));
