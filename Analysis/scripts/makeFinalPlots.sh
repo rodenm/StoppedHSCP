@@ -3,18 +3,18 @@
 
 dataset=$1
 # lumi and maxInstLumi are optional arguments.
-# if not provided, the "LUMI" and "MAXLUMI" values provided in each script are used.
 lumi=$2
 maxInstLumi=$3
 
+# Set defaults in case lumi, maxLumi not provided
 if [ $# -lt 2 ]
 then
-    lumi=-1.
+    lumi=622.  # Units of pb^-1
 fi
 
 if [ $# -lt 3 ]
 then 
-    maxInstLumi=-1.
+    maxInstLumi=1300.  # Units of 10^30 cm^-2 s^-1
 fi
 
 pwd=$PWD
@@ -33,6 +33,27 @@ cp $CMSSW_BASE/src/StoppedHSCP/Analysis/data/mcStop.txt $dataset/.
 cp $dataset/toymc/summary.txt $dataset/toymc.txt
 
 cd $dataset
+
+# Replace MAXINSTLUMI in various files
+sed s/=MAXINSTLUMI/=$maxInstLumi/ <stopLimit.C > stopLimitTEMP.C
+sed s/=MAXINSTLUMI/=$maxInstLumi/ <gluinoLimit.C > gluinoLimitTEMP.C
+sed s/=MAXINSTLUMI/=$maxInstLumi/ <modelIndLimit.C > modelIndLimitTEMP.C
+sed s/=MAXINSTLUMI/=$maxInstLumi/ <massPlot.C > massPlotTEMP.C
+mv stopLimitTEMP.C stopLimit.C
+mv gluinoLimitTEMP.C gluinoLimit.C
+mv modelIndLimitTEMP.C modelIndLimit.C
+mv massPlotTEMP.C massPlot.C
+
+# Replace LUMI in various files
+sed s/=LUMI/=$lumi/ <stopLimit.C > stopLimitTEMP.C
+sed s/=LUMI/=$lumi/ <gluinoLimit.C > gluinoLimitTEMP.C
+sed s/=LUMI/=$lumi/ <modelIndLimit.C > modelIndLimitTEMP.C
+sed s/=LUMI/=$lumi/ <massPlot.C > massPlotTEMP.C
+mv stopLimitTEMP.C stopLimit.C
+mv gluinoLimitTEMP.C gluinoLimit.C
+mv modelIndLimitTEMP.C modelIndLimit.C
+mv massPlotTEMP.C massPlot.C
+
 
 echo "lumi = "$lumi
 echo "maxInstLumi = "$maxInstLumi
