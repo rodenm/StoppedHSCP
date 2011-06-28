@@ -37,6 +37,10 @@ class Histograms {
 
   Cuts* cuts_;
   TDirectory* base_;
+
+  std::vector<unsigned> nMinusJetN90_;
+
+
   //MLR
   TH1D* hjeteta_halo_;
   TH1D* hjeteta_N90_;

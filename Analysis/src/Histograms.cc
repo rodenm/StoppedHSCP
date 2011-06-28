@@ -18,6 +18,9 @@ Histograms::Histograms(TFile* file, Cuts* cuts) :
 
   book();
 
+  nMinusJetN90_.push_back(8);
+  nMinusJetN90_.push_back(10);
+
 }
 
 Histograms::~Histograms() {
@@ -252,12 +255,12 @@ void Histograms::fill(StoppedHSCPEvent& event) {
   // plots after jet and mu cuts
   if (cuts_->allCutN(12)) {
     hpksample_->Fill(event.top5DigiPeakSample);
-    hr1_->Fill(event.top5DigiR1);
-    hr2_->Fill(event.top5DigiR2);
-    hrpk_->Fill(event.top5DigiRPeak);
-    hrout_->Fill(event.top5DigiROuter);
-    hr1r2_->Fill(event.top5DigiR1, event.top5DigiR2);
-    hpkout_->Fill(event.top5DigiRPeak, event.top5DigiROuter);
+    hr1_->Fill(event.topHPD5R1);
+    hr2_->Fill(event.topHPD5R2);
+    hrpk_->Fill(event.topHPD5RPeak);
+    hrout_->Fill(event.topHPD5ROuter);
+    hr1r2_->Fill(event.topHPD5R1, event.topHPD5R2);
+    hpkout_->Fill(event.topHPD5RPeak, event.topHPD5ROuter);
 
     // energy fraction at same iphi
     std::vector<double> tmp(75, 0);
@@ -282,10 +285,10 @@ void Histograms::fill(StoppedHSCPEvent& event) {
   }
   if (cuts_->cutNMinusOne(11)) hntowiphi_nmo_->Fill(event.nTowerSameiPhi);
   if (cuts_->cutNMinusOne(12)) hiphifrac_nmo_->Fill(event.leadingIPhiFraction());
-  if (cuts_->cutNMinusOne(13)) hr1_nmo_->Fill(event.top5DigiR1);
-  if (cuts_->cutNMinusOne(14)) hr2_nmo_->Fill(event.top5DigiR2);
-  if (cuts_->cutNMinusOne(15)) hrpk_nmo_->Fill(event.top5DigiRPeak);
-  if (cuts_->cutNMinusOne(16)) hrout_nmo_->Fill(event.top5DigiROuter);
+  if (cuts_->cutNMinusOne(13)) hr1_nmo_->Fill(event.topHPD5R1);
+  if (cuts_->cutNMinusOne(14)) hr2_nmo_->Fill(event.topHPD5R2);
+  if (cuts_->cutNMinusOne(15)) hrpk_nmo_->Fill(event.topHPD5RPeak);
+  if (cuts_->cutNMinusOne(16)) hrout_nmo_->Fill(event.topHPD5ROuter);
 
 
   // loop over cuts
@@ -383,7 +386,7 @@ void Histograms::fill(StoppedHSCPEvent& event) {
     hCTNM1LeadingIPhi_->Fill(event.nTowerLeadingIPhi);
   }
 
-  if (cuts_->cutNMinusOne(10)) {
+  if (cuts_->cutNMinusSome(nMinusJetN90_)) {
     hN90NM1EtaPhi_->Fill(event.jetEta[0], event.jetPhi[0]);
     hN90NM1IEtaIPhi_->Fill(event.towerIEta[0], event.towerIPhi[0]);
     hN90NM1LeadingIPhi_->Fill(event.nTowerLeadingIPhi);
@@ -507,6 +510,7 @@ void Histograms::save() {
   hjetn60_nmo_->Write("",TObject::kOverwrite);
   hjetn90_nmo_->Write("",TObject::kOverwrite);
   hntowiphi_nmo_->Write("",TObject::kOverwrite);
+  hiphifrac_nmo_->Write("",TObject::kOverwrite);
   hr1_nmo_->Write("",TObject::kOverwrite);
   hr2_nmo_->Write("",TObject::kOverwrite);
   hrpk_nmo_->Write("",TObject::kOverwrite);

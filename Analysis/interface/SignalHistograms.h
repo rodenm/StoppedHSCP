@@ -36,6 +36,10 @@ class SignalHistograms {
 
   TH1D* hbx_;
   TH1D* hrelbx_;
+  TH1D* hjete_;
+  TH1D* hjeteta_;
+  TH1D* hjetphi_;
+  TH2D* hjetetaphi_;
 
 };
 

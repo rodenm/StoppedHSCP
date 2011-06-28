@@ -97,7 +97,7 @@ class PlotStyle:
         self.lstyles = [0, 0, 0, 0]
         
         # style dictionary
-        styles={0:self.style0,
+        styles={0:self.style1,
                 1:self.style1,
                 2:self.style2,
                 3:self.style3}
@@ -130,8 +130,21 @@ class PlotStyle:
         self.opt     = "COLZ"
 
 # superimpose multiple histograms
-def multiPlot(hists, labels, ofile, ymin=0., ymax=0., title="histogram", xtitle="", ytitle="", ztitle="", style=0, xmin=0., xmax=0.) :
+def multiPlot(hists,
+              labels,
+              ofile,
+              ymin=0.,
+              ymax=0.,
+              title="histogram",
+              xtitle="",
+              ytitle="",
+              ztitle="",
+              style=0,
+              xmin=0.,
+              xmax=0.) :
 
+
+#    print xtitle, title
     s = PlotStyle(style)
 
     canvas=TCanvas("canvas")
@@ -145,7 +158,7 @@ def multiPlot(hists, labels, ofile, ymin=0., ymax=0., title="histogram", xtitle=
     # get y axis maximum
     if (ymax==0.):
         for h in hists:
-            if s.norm:
+            if s.norm and h.Integral()>0.:
                 max = 1.1*h.GetMaximum()/h.Integral()
             else:
                 max = 1.1*(h.GetMaximum()+h.GetBinError(h.GetMaximumBin()))

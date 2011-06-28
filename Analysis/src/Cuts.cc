@@ -79,7 +79,7 @@ bool Cuts::triggerCut() const {      // require event passed main trigger
 
   //1) in Run2010A, require hltJetNoBptx only
   if (event_->fill<1711)
-    trigger = event_->hltJetNoBptx && abs(event_->bxWrtBunch) > 1;
+    trigger = event_->hltJetNoBptx;// && abs(event_->bxWrtBunch) > 1;
 
   //2) in Run2011A, before tech stop (fills 1711-1749) require hltJetNoBptx3BXNoHalo only
   else if (event_->fill<1750)
@@ -141,13 +141,12 @@ bool Cuts::looseJetCut() const {     // low Et threshold
 
 bool Cuts::jetEnergyCut() const {    // require jet above Et threshold
   // raise jet energy cut to 70, since we're using a 50-GeV trigger?
-  return event_->jet_N>0 && event_->jetE[0]>70. && fabs(event_->jetEta[0])<1.3;
+  return event_->jet_N>0 && event_->jetE[0]>70. && fabs(event_->jetEta[0])<1.;
 }
 
 bool Cuts::jetN60Cut() const {       // jet n60
   return event_->jet_N>0 && event_->jetN60[0]<6;
 }
-
 bool Cuts::jetN90Cut() const {       // jet n90
   return event_->jet_N>0 && event_->jetN90[0]>3;
 }
