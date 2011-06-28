@@ -20,6 +20,14 @@ except:
     print "ERROR:  Unable to import buildToyMCSummary.py"
     sys.exit()
 
+
+sys.path.append(os.path.join(os.environ['CMSSW_BASE'],"src","StoppedHSCP","Analysis","python"))
+try:
+    import printSummary
+except:
+    print "ERROR:  Unable to import printSummary.py"
+    sys.exit()
+
 from optparse import OptionParser, OptionGroup
 
 
@@ -72,6 +80,15 @@ def RunAnalysis(outdir, indir, version=0,steps=[],makeHistsOptions={},
         # Step 5:  print summary -- what is $bgdir supposed to be?
         cmd="python %s/src/StoppedHSCP/Analysis/python/printSummary.py %s > %s"%(os.environ["CMSSW_BASE"],outdir, os.path.join(outdir,"summary.txt"))
         GenericCommand(cmd)
+        summary=os.path.join(outdir,"summary.txt")
+        if not os.path.isfile(summary):
+            print "File '%s' from printSummary.py not produced!  DISCONTINUING ANY REMAINING STEPS!"%summary
+            return
+        out=open(summary).read()
+        if out.find("<printSummary.py> ERROR FOUND!")>-1:
+            print "ERROR IN printSummary.py! \nDISCONTINUING ANY REMAINING STEPS! \nCheck output in %s"%summary
+            return 
+        
 
     if 6 in steps:
         # Step 6:  Make Toy MC jobs
