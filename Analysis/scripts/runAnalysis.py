@@ -10,8 +10,15 @@ except:
     print "Have you remembered to check out StoppedHSCP/ToyMC from CVS?"
     sys.exit()
 
+
+# Add path with BuildToyMCSummary
 # Get BuildToyMCSummary code
-import BuildToyMCSummary
+sys.path.append(os.path.join(os.environ['CMSSW_BASE'],"src","StoppedHSCP","Analysis","scripts"))
+try:
+    import BuildToyMCSummary
+except:
+    print "ERROR:  Unable to import buildToyMCSummary.py"
+    sys.exit()
 
 from optparse import OptionParser, OptionGroup
 
