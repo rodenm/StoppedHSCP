@@ -16,7 +16,9 @@ def histPlot(hist, file, ofilename, scale=0, log=False, title="histogram", xtitl
     canvas=TCanvas("canvas")
 
     h = file.Get(hist)
-
+    if h==None:  # Could not identify histogram
+        print "Could not get histogram '%s'"%hist
+        return
     if (scale>0.) :
         h.Scale(scale)
     elif (scale<0.):
@@ -52,7 +54,9 @@ def hist2DPlot(hist, file, ofilename, scale=0., log=False, title="histogram", xt
     canvas=TCanvas("canvas")
 
     h = file.Get(hist)
-
+    if h==None:  # Could not identify histogram
+        print "Could not get histogram '%s'"%hist
+        return
     if (scale>0.) :
         h.Scale(scale)
     elif (scale<0.):
