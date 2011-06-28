@@ -37,7 +37,7 @@ def GenericCommand(cmd):
     os.system(cmd)
     return
     
-def RunAnalysis(outdir, indir, version=0,steps=[],makeHistsOptions={},
+def RunAnalysis(outdir, indir, steps=[],makeHistsOptions={},
                 lumi=-1,
                 maxInstLumi=-1):
     if len(steps)==0:
@@ -47,7 +47,7 @@ def RunAnalysis(outdir, indir, version=0,steps=[],makeHistsOptions={},
 
     if 0 in steps:
         # Step 0:  Make Histograms
-        cmd="makeHistograms -c %s"%version
+        cmd="makeHistograms"
         keys=makeHistsOptions.keys()
         keys.sort()
         for k in keys:# add individual options
@@ -153,10 +153,6 @@ if __name__=="__main__":
                       default=None,
                       dest="outputdir",
                       help="Output directory")
-    parser.add_option("-v","--version",
-                      dest="version",
-                      default="0",
-                      help="Version (default is '0')")
     for i in range(0,10):
         parser.add_option("-%i"%i,"--step%i"%i,
                           dest="step%i"%i,
@@ -178,16 +174,21 @@ if __name__=="__main__":
                              action="store_true",
                              default=False,
                              help="Run on search triggers only.")
-    makeHistGroup.add_option("-p","--dump",
-                             dest="dump",
-                             action="store_true",
-                             default=False,
-                             help="Dump specified events.")
     makeHistGroup.add_option("-n","--num",
                              dest="num",
                              type="int",
                              default=-1,
                              help="Specify number of events.")
+    makeHistGroup.add_option("-m","--isMC",
+                             dest="isMC",
+                             action="store_true",
+                             default=False,
+                             help="Use MC settings, rather than default data setttings.")
+    makeHistGroup.add_option("-c","--cuts",
+                             dest="version",
+                             default=0,
+                             type="int",
+                             help="Specify cut version.  Default is 0")
     parser.add_option_group(makeHistGroup)
     makeFinalGroup = OptionGroup(parser,
                                  "Options for 'makeFinalPlots'",
@@ -219,7 +220,7 @@ if __name__=="__main__":
         elif i==1:
             options.inputdir.append(args[i])
         elif i==2:
-            options.version=args[i]
+            options.version=string.atoi(args[i])
 
     # Output directory always necessary
     if options.outputdir==None:
@@ -233,15 +234,15 @@ if __name__=="__main__":
 
     #Get special options for makeHistograms
     makehistopt={}
+    makehistopt["-c"]=options.version
     if options.doControl==True:
         makehistopt["--doControl"]=""
     if options.doSearch==True:
         makehistopt["--doSearch"]=""
-    if options.dump==True:
-        makehistopt["--dump"]=""
     if options.num>-1:
         makehistopt["--num"]=options.num
-        
+    if options.isMC==True:
+        makehistopt["--isMC"]=""
 
     if 0 in steps:  # first step (making a histogram) requires files from an input directory
 
@@ -270,7 +271,6 @@ if __name__=="__main__":
             
     RunAnalysis(options.outputdir,
                 options.inputdir,
-                options.version,
                 steps,
                 makeHistsOptions=makehistopt,
                 lumi=options.lumi,
