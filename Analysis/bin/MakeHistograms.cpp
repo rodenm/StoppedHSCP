@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
   
   // options
   ULong64_t nlimit=0;
-  bool dump=false;
+  //bool dump=false;
   bool isMC=false;
   bool doControl=false;
   bool doSearch=false;
@@ -82,8 +82,8 @@ int main(int argc, char* argv[]) {
     ("help,h", "Display this message")
     ("num,n",po::value<unsigned long long>()->default_value(0),
      "<integer> Number of events to process")
-    ("dump,p",
-     "Dump out information (default is false)")
+    //("dump,p",
+    // "Dump out information (default is false)")
     ("isMC,m",
      "Turn on MC running")
     ("doControl,b",
@@ -107,7 +107,8 @@ int main(int argc, char* argv[]) {
     doSearch=true;
   if (vm.count("cuts"))
     cutVer=vm["cuts"].as<unsigned>();
-      
+  //if (vm.count("dump")) dump=true;
+
 //   // convert run list to vector
 //   std::vector<unsigned> runs(0);
 
@@ -150,7 +151,7 @@ int main(int argc, char* argv[]) {
       if (vm.count("num")) 
 	{
 	  cout << "Number of Events  was set to " 
-	       << vm["num"].as<int>() <<endl;
+	       << vm["num"].as<unsigned long long>() <<endl;
 	}
       cout <<"Max # of events = "<<nlimit<<endl;
       cout <<"isMC = "<<isMC<<endl;
