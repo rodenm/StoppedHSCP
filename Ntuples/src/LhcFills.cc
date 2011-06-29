@@ -393,10 +393,11 @@ void LhcFills::print(std::ostream& o) {
 
 // this is a temporary measure
 // write file of same format as used previous to set masks
-void LhcFills::writeBunchMaskFile() {
-
+void LhcFills::writeBunchMaskFile(std::string outdir) {
+  
+  outdir+="/bx_mask.csv";
   std::ofstream ofile;
-  ofile.open("bx_mask.csv");
+  ofile.open(outdir.c_str());
 
   for (unsigned f=0; f<fills_.size(); ++f) {
 
