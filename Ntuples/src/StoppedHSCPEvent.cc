@@ -82,6 +82,19 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   jetN90(0),
   jetFHPD(0),
   jetN90Hits(0),
+  studyJet_N(0),
+  studyJetE(0),
+  studyJetEt(0),
+  studyJetEta(0),
+  studyJetPhi(0),
+  studyJetEHad(0),
+  studyJetEEm(0),
+  studyJetEMaxEcalTow(0),
+  studyJetEMaxHcalTow(0),
+  studyJetN60(0),
+  studyJetN90(0),
+  studyJetFHPD(0),
+  studyJetN90Hits(0),
   jetAK5_N(0),
   jetAK5E(0),
   jetAK5Et(0),
@@ -95,6 +108,19 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   jetAK5N90(0),
   jetAK5FHPD(0),
   jetAK5N90Hits(0),
+  studyJetAK5_N(0),
+  studyJetAK5E(0),
+  studyJetAK5Et(0),
+  studyJetAK5Eta(0),
+  studyJetAK5Phi(0),
+  studyJetAK5EHad(0),
+  studyJetAK5EEm(0),
+  studyJetAK5EMaxEcalTow(0),
+  studyJetAK5EMaxHcalTow(0),
+  studyJetAK5N60(0),
+  studyJetAK5N90(0),
+  studyJetAK5FHPD(0),
+  studyJetAK5N90Hits(0),
   mu_N(0),
   muType(0),
   muPt(0),
@@ -112,6 +138,7 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   beamHalo_HcalTight(false),
   beamHalo_HcalLoose(false),
   nTowerSameiPhi(0),
+  leadingIPhiFractionValue(0.),
   nTowerLeadingIPhi(0),
   eHadLeadingIPhi(0.),
   hfPlusTotalE(0.),
@@ -176,6 +203,18 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   towerEtHad(0),
   towerEEm(0),
   towerEtEm(0),
+  studyTower_N(0),
+  studyTowerE(0),
+  studyTowerEt(0),
+  studyTowerEta(0),
+  studyTowerPhi(0),
+  studyTowerIEta(0),
+  studyTowerIPhi(0),
+  studyTowerNJet(0),
+  studyTowerEHad(0),
+  studyTowerEtHad(0),
+  studyTowerEEm(0),
+  studyTowerEtEm(0),
   recHit_N(0),
   recHitE(0),
   recHitTime(0),
@@ -299,6 +338,23 @@ void StoppedHSCPEvent::addJet(Jet j) {
   }
 }
 
+void StoppedHSCPEvent::addStudyJet(Jet j) {
+  if (studyJet_N < MAX_N_JETS) {
+    studyJetE.push_back(j.e);
+    studyJetEt.push_back(j.et);
+    studyJetEta.push_back(j.eta);
+    studyJetPhi.push_back(j.phi);
+    studyJetEHad.push_back(j.eHad);
+    studyJetEEm.push_back(j.eEm);
+    studyJetEMaxEcalTow.push_back(j.eMaxEcalTow);
+    studyJetEMaxHcalTow.push_back(j.eMaxHcalTow);
+    studyJetN60.push_back(j.n60);
+    studyJetN90.push_back(j.n90);
+    studyJetFHPD.push_back(j.fHPD);
+    studyJetN90Hits.push_back(j.n90Hits);
+    ++studyJet_N;
+  }
+}
 
 void StoppedHSCPEvent::addAK5Jet(Jet j) {
   if (jetAK5_N < MAX_N_JETS) {
@@ -315,6 +371,24 @@ void StoppedHSCPEvent::addAK5Jet(Jet j) {
     jetAK5FHPD.push_back(j.fHPD);
     jetAK5N90Hits.push_back(j.n90Hits);
     ++jetAK5_N;
+  }
+}
+
+void StoppedHSCPEvent::addAK5StudyJet(Jet j) {
+  if (studyJetAK5_N < MAX_N_JETS) {
+    studyJetAK5E.push_back(j.e);
+    studyJetAK5Et.push_back(j.et);
+    studyJetAK5Eta.push_back(j.eta);
+    studyJetAK5Phi.push_back(j.phi);
+    studyJetAK5EHad.push_back(j.eHad);
+    studyJetAK5EEm.push_back(j.eEm);
+    studyJetAK5EMaxEcalTow.push_back(j.eMaxEcalTow);
+    studyJetAK5EMaxHcalTow.push_back(j.eMaxHcalTow);
+    studyJetAK5N60.push_back(j.n60);
+    studyJetAK5N90.push_back(j.n90);
+    studyJetAK5FHPD.push_back(j.fHPD);
+    studyJetAK5N90Hits.push_back(j.n90Hits);
+    ++studyJetAK5_N;
   }
 }
 
@@ -347,6 +421,22 @@ void StoppedHSCPEvent::addTower(Tower t) {
   }
 }
 
+void StoppedHSCPEvent::addStudyTower(Tower t) {
+  if (studyTower_N < MAX_N_TOWERS) {
+    studyTowerE.push_back(t.e);
+    studyTowerEt.push_back(t.et);
+    studyTowerEta.push_back(t.eta);
+    studyTowerPhi.push_back(t.phi);
+    studyTowerIEta.push_back(t.ieta);
+    studyTowerIPhi.push_back(t.iphi);
+    studyTowerNJet.push_back(t.nJet);
+    studyTowerEHad.push_back(t.eHad);
+    studyTowerEtHad.push_back(t.etHad);
+    studyTowerEEm.push_back(t.eEm);
+    studyTowerEtEm.push_back(t.etEm);
+    ++studyTower_N;
+  }
+}
 
 void StoppedHSCPEvent::addRecHit(RecHit r) {
   recHitE.push_back(r.e);

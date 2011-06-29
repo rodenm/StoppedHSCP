@@ -27,6 +27,13 @@ stoppedHSCPTree = cms.EDAnalyzer(
     jetAK5Tag = cms.untracked.InputTag("ak5CaloJets"),
     jetMinEnergy = cms.untracked.double(1.),
     jetMaxEta = cms.untracked.double(1.3),
+
+    # objects for study
+    studyJetMinEta = cms.untracked.double(1.3),
+    studyJetMaxEta = cms.untracked.double(3.0),
+    studyTowerMinEta = cms.untracked.double(1.3),
+    studyTowerMaxEta = cms.untracked.double(3.0),
+    
     
     # muons
     muonTag = cms.untracked.InputTag("muons"),
