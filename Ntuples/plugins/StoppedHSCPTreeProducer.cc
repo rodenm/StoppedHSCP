@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.76 2011/05/29 17:00:54 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.1 2011/06/12 13:52:28 jbrooke Exp $
 //
 //
 
@@ -316,6 +316,13 @@ private:
   double digiMinFc_;
   double rechitMinEnergy_;	
 
+  // extra "study" jet tower info
+  // (These objects are saved for study purposes, but are not used in the analysis)
+  double studyJetMinEta_;
+  double studyJetMaxEta_;
+  double studyTowerMinEta_;
+  double studyTowerMaxEta_;
+
   // Hcal Logical map (ieta-iphi->hardware) object
   HcalLogicalMap* logicalMap_;  
   
@@ -414,6 +421,10 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   jetMaxEta_(iConfig.getUntrackedParameter<double>("jetMaxEta", 3.)),
   digiMinFc_(iConfig.getUntrackedParameter<double>("digiMinFc", 30)),
   rechitMinEnergy_(iConfig.getUntrackedParameter<double>("rechitMinEnergy", 0.2)),
+  studyJetMinEta_(iConfig.getUntrackedParameter<double>("studyJetMinEta",1.3)),
+  studyJetMaxEta_(iConfig.getUntrackedParameter<double>("studyJetMinEta",3.0)),
+  studyTowerMinEta_(iConfig.getUntrackedParameter<double>("studyTowerMinEta",1.3)),
+  studyTowerMaxEta_(iConfig.getUntrackedParameter<double>("studyTowerMinEta",3.0)),
   badchannelstatus_(iConfig.getUntrackedParameter<int>("badchannelstatus",0)),
   currentFill_(0),
   currentFillL1_(0),
@@ -588,7 +599,6 @@ StoppedHSCPTreeProducer::beginRun(edm::Run const & iRun, edm::EventSetup const& 
 
   // end of HLT checks
 
-
   // HCAL geometry to calculate eta/phi for CaloRecHits
   edm::ESHandle<CaloGeometry> caloGeomRec;
   iSetup.get<CaloGeometryRecord>().get(caloGeomRec);
@@ -651,9 +661,11 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
   doJets(iEvent);
   doGlobalCalo(iEvent);
   doMuons(iEvent);
+
   doBeamHalo(iEvent);
   doVertices(iEvent);
   doTracks(iEvent);
+
 
   // HCAL noise summary info
   doHcalNoise(iEvent);
@@ -1037,11 +1049,9 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
 
    edm::Handle<CaloJetCollection> caloJets;
    iEvent.getByLabel(jetTag_, caloJets);
-   
    unsigned njet=0;
 
    if (caloJets.isValid()) {
-
      // sort jets by energy
      std::vector<CaloJet> jets;
      jets.insert(jets.end(), caloJets->begin(), caloJets->end());
@@ -1050,9 +1060,7 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
      for(CaloJetCollection::const_iterator it=jets.begin(); 
 	 it!=jets.end();
 	 ++it, ++njet) {
-       if (it->energy() > jetMinEnergy_ &&
-	   fabs(it->eta()) < jetMaxEta_) {
-	 
+       if (it->energy() > jetMinEnergy_) {
 	 // store jet in TTree
 	 shscp::Jet jet;
 	 jet.et = it->et();
@@ -1065,16 +1073,20 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
 	 jet.eMaxHcalTow = it->maxEInHadTowers();
 	 jet.n60 = it->n60();
 	 jet.n90 = it->n90();
-	 event_->addJet(jet);
 
-// 	 std::cout << "Jet " << std::endl;q
+	 // Add to default jet collection and/or to studyJet collection
+	 if ((fabs(it->eta()) < jetMaxEta_))
+	   event_->addJet(jet);
+	 if (fabs(it->eta())>=studyJetMinEta_ && 
+	     fabs(it->eta())<studyJetMaxEta_)
+	   event_->addStudyJet(jet);
+	   // 	 std::cout << "Jet " << std::endl;
 // 	 std::cout << "   E=" << it->energy() << " eta=" << it->eta() << " phi=" << it->phi() << std::endl;
 	 // get towers
 
 	 if (doCaloTowers_) {
 
 	   for (int i=0; i<it->nConstituents(); ++i) {
-	     
 	     CaloTowerPtr tower = it->getCaloConstituent(i);
 	     
 	     if (tower->energy() > towerMinEnergy_ &&
@@ -1093,8 +1105,13 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
 	       tow.etHad = tower->hadEt();
 	       tow.eEm = tower->emEnergy();
 	       tow.etEm = tower->emEt();
-	       event_->addTower(tow);
+	       // Add tower, if within appropriate eta bounds
 
+	       if (fabs(tower->eta()) < towerMaxEta_) 
+		 event_->addTower(tow);
+	       if (fabs(tower->eta())>=studyTowerMinEta_ && fabs(it->eta())<studyTowerMaxEta_)
+		 event_->addStudyTower(tow);
+	       
 	       // 	   std::cout << "  Calo tower" << std::endl;
 	       // 	   std::cout << "    eta=" << tower->eta() << " phi=" << tower->phi() << std::endl;
 	       // 	   std::cout << "    ECAL E=" << tower->emEnergy() << " HCAL E=" << tower->hadEnergy() << std::endl;
@@ -1126,9 +1143,7 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
      for(CaloJetCollection::const_iterator it=jets.begin(); 
 	 it!=jets.end();
 	 ++it) {
-       if (it->energy() > jetMinEnergy_ &&
-	   fabs(it->eta()) < jetMaxEta_) {
-	 
+       if (it->energy() > jetMinEnergy_) { 
 	 // store jet in TTree
 	 shscp::Jet jet;
 	 jet.et = it->et();
@@ -1141,8 +1156,11 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
 	 jet.eMaxHcalTow = it->maxEInHadTowers();
 	 jet.n60 = it->n60();
 	 jet.n90 = it->n90();
-	 event_->addAK5Jet(jet);
-
+	 if (fabs(it->eta()) < jetMaxEta_)
+	   event_->addAK5Jet(jet);
+	 if (fabs(it->eta())>=studyJetMinEta_ && 
+	     fabs(it->eta())<studyJetMaxEta_)
+	   event_->addAK5StudyJet(jet);
        }
      }
 
@@ -1278,6 +1296,7 @@ void StoppedHSCPTreeProducer::doBeamHalo(const edm::Event& iEvent)
 void StoppedHSCPTreeProducer::doGlobalCalo(const edm::Event& iEvent) {
 
   event_->nTowerSameiPhi=0;
+  event_->leadingIPhiFractionValue=0;
 
   // get calo towers
   edm::Handle<CaloTowerCollection> caloTowers;
@@ -1307,8 +1326,8 @@ void StoppedHSCPTreeProducer::doGlobalCalo(const edm::Event& iEvent) {
 	  keepgoing=false;
 	}
       }  
-    } 
-
+    } // loop on caloTowers
+    event_->leadingIPhiFractionValue=event_->leadingIPhiFraction();
   }
   else {
     if (!towersMissing_) edm::LogWarning("MissingProduct") << "CaloTowers not found.  Branches will not be filled" << std::endl;

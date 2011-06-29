@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.47 2011/05/25 14:59:26 heistera Exp $
+// $Id: StoppedHSCPEvent.h,v 1.1 2011/06/12 13:52:28 jbrooke Exp $
 //
 //
 
@@ -47,7 +47,7 @@ namespace shscp {
   };
   
   struct TrigJet {
-  TrigJet() : type(0), e(0.), et(0.), eta(0.), phi(0.) { }
+    TrigJet() : type(0), e(0.), et(0.), eta(0.), phi(0.) { }
     unsigned type;   // 0 - L1 jet, 1 - L1 tau, 2, HLT jet
     double e;
     double et;
@@ -57,7 +57,7 @@ namespace shscp {
 
   struct Jet {
     Jet() : e(0.),et(0.),eta(0.),phi(0.),eHad(0.),eEm(0.),eMaxEcalTow(0.),eMaxHcalTow(0.),n60(0),n90(0),n90Hits(0),fHPD(0.),
-      r1(0.),r2(0.),rp(0.),ro(0.),r1_top5(0.),r2_top5(0.),rp_top5(0.),ro_top5(0.) { }
+	    r1(0.),r2(0.),rp(0.),ro(0.),r1_top5(0.),r2_top5(0.),rp_top5(0.),ro_top5(0.) { }
     double e;
     double et;
     double eta;
@@ -105,7 +105,7 @@ namespace shscp {
   };
 
   struct Tower {
-  Tower() : e(0.),et(0.),eta(0.),phi(0.),ieta(0),iphi(0),nJet(0),eHad(0.),etHad(0.),eEm(0.),etEm(0.) { }
+    Tower() : e(0.),et(0.),eta(0.),phi(0.),ieta(0),iphi(0),nJet(0),eHad(0.),etHad(0.),eEm(0.),etEm(0.) { }
     double e;
     double et;
     double eta;
@@ -174,10 +174,13 @@ class StoppedHSCPEvent : public TObject {
   void addL1Jet(shscp::TrigJet j);
   void addHltJet(shscp::TrigJet j);
   void addJet(shscp::Jet j);
+  void addStudyJet(shscp::Jet j);
   void addAK5Jet(shscp::Jet j);
+  void addAK5StudyJet(shscp::Jet j);
   void addMuon(shscp::Muon m);
   void addHPD(shscp::HPD h);
   void addTower(shscp::Tower t);
+  void addStudyTower(shscp::Tower t);
   void addRecHit(shscp::RecHit r);
   void addHFRecHit(shscp::RecHit r);
   void addCscSegment(shscp::CscSegment s);
@@ -282,6 +285,22 @@ class StoppedHSCPEvent : public TObject {
   std::vector<Double_t> jetFHPD;
   std::vector<UInt_t> jetN90Hits;
 
+  // reco jets used for studies only
+  unsigned studyJet_N;
+  std::vector<Double_t> studyJetE;
+  std::vector<Double_t> studyJetEt;
+  std::vector<Double_t> studyJetEta;
+  std::vector<Double_t> studyJetPhi;
+  std::vector<Double_t> studyJetEHad;
+  std::vector<Double_t> studyJetEEm;
+  std::vector<Double_t> studyJetEMaxEcalTow;
+  std::vector<Double_t> studyJetEMaxHcalTow;
+  std::vector<UInt_t> studyJetN60;
+  std::vector<UInt_t> studyJetN90;
+  std::vector<Double_t> studyJetFHPD;
+  std::vector<UInt_t> studyJetN90Hits;
+
+
   // AK5 jets
   unsigned jetAK5_N;
   std::vector<Double_t> jetAK5E;
@@ -296,6 +315,22 @@ class StoppedHSCPEvent : public TObject {
   std::vector<UInt_t> jetAK5N90;
   std::vector<Double_t> jetAK5FHPD;
   std::vector<UInt_t> jetAK5N90Hits;
+
+ // AK5 jets used for studies only
+  unsigned studyJetAK5_N;
+  std::vector<Double_t> studyJetAK5E;
+  std::vector<Double_t> studyJetAK5Et;
+  std::vector<Double_t> studyJetAK5Eta;
+  std::vector<Double_t> studyJetAK5Phi;
+  std::vector<Double_t> studyJetAK5EHad;
+  std::vector<Double_t> studyJetAK5EEm;
+  std::vector<Double_t> studyJetAK5EMaxEcalTow;
+  std::vector<Double_t> studyJetAK5EMaxHcalTow;
+  std::vector<UInt_t> studyJetAK5N60;
+  std::vector<UInt_t> studyJetAK5N90;
+  std::vector<Double_t> studyJetAK5FHPD;
+  std::vector<UInt_t> studyJetAK5N90Hits;
+
 
   // reco muons
   unsigned mu_N;
@@ -324,6 +359,7 @@ class StoppedHSCPEvent : public TObject {
 
   // global calo quantities
   unsigned nTowerSameiPhi;
+  double leadingIPhiFractionValue;
   unsigned nTowerLeadingIPhi;
   double eHadLeadingIPhi;
   double hfPlusTotalE;
@@ -379,6 +415,20 @@ class StoppedHSCPEvent : public TObject {
   std::vector<Double_t> towerEtHad;
   std::vector<Double_t> towerEEm;
   std::vector<Double_t> towerEtEm;
+
+  // calo towers used only for study purposes
+  unsigned studyTower_N;
+  std::vector<Double_t> studyTowerE;
+  std::vector<Double_t> studyTowerEt;
+  std::vector<Double_t> studyTowerEta;
+  std::vector<Double_t> studyTowerPhi;
+  std::vector<Int_t> studyTowerIEta;
+  std::vector<Int_t> studyTowerIPhi;
+  std::vector<UInt_t> studyTowerNJet;
+  std::vector<Double_t> studyTowerEHad;
+  std::vector<Double_t> studyTowerEtHad;
+  std::vector<Double_t> studyTowerEEm;
+  std::vector<Double_t> studyTowerEtEm;
 
   // calo rechits
   unsigned recHit_N;
@@ -436,7 +486,7 @@ class StoppedHSCPEvent : public TObject {
   double top5DigiROuter;
 
 
-  ClassDef(StoppedHSCPEvent,16);
+  ClassDef(StoppedHSCPEvent,17); // version 17:  includes leadingIPhiFractionValue
 
 };
 

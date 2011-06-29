@@ -51,7 +51,7 @@ class LhcFills {
   void print(std::ostream& o);
 
   // write files etc
-  void writeBunchMaskFile();
+  void writeBunchMaskFile(std::string outdir="");
 
  private:
 
