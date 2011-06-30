@@ -312,37 +312,168 @@ void LimitPlots::calculateCrossSections(unsigned gluinoIndex, unsigned stopIndex
 
 }
 
-void LimitPlots::calculateIntercepts() {
-	// calculate intercept
-//  double mt = ( log10(theoryXS[theoryBin+1]-theoryBand[theoryBin+1]) - log10(theoryXS[theoryBin]-theoryBand[theoryBin]) ) / (theoryMass[theoryBin+1]-theoryMass[theoryBin]);
-//  double ct = log10(theoryXS[theoryBin+1]-theoryBand[theoryBin+1]) - (mt*theoryMass[theoryBin+1]);
+void LimitPlots::calculateIntercepts(){
+  
+  TGraph* g_theory       = getGluinoTheory();
+  TGraph* g_expected     = getExpMassLimitGluino();
+  TGraph* g_observed     = getMassLimitGluino();
+  TGraph* g_NB           = getLimitGluinoNB();
+  TGraph* g_EM           = getLimitGluinoEM();
+  TGraph* g_TP           = getLimitGluinoTP();
 
-  // expected limit
-//  double mexp = ( log10(excXS_exp[dataBin+1]) - log10(excXS_exp[dataBin]) ) / (m_g[dataBin+1]-m_g[dataBin]);
-//  double cexp = log10(excXS_exp[dataBin+1]) - (mexp*m_g[dataBin+1]);
+  std::cout <<"Calculating Gluino Mass Limits"<<std::endl;
+  std::cout <<"\tCalculating Expected Limit"<<std::endl; 
+  double g_massLimit_exp= calculateMassLimits(g_theory, g_expected); 
+  std::cout <<"\tCalculating Observed Limit"<<std::endl;
+  double g_massLimit_obs= calculateMassLimits(g_theory, g_observed);
+  std::cout <<"\tCalculating NB Limit"<<std::endl;
+  double g_massLimit_NB = calculateMassLimits(g_theory, g_NB);
+  std::cout <<"\tCalculating EM Limit"<<std::endl;
+  double g_massLimit_EM = calculateMassLimits(g_theory, g_EM);
+  std::cout <<"\tCalculating TP Limit"<<std::endl;
+  double g_massLimit_TP = calculateMassLimits(g_theory, g_TP);
+  std::cout <<"\n"<<std::endl;
 
-  // plateau limit
-//  double mobs = ( log10(excXS2[dataBin+1]) - log10(excXS2[dataBin]) ) / (m_g[dataBin+1]-m_g[dataBin]);
-//  double cobs = log10(excXS2[dataBin+1]) - (mobs*m_g[dataBin+1]);
+  TGraph* s_theory       = getStopTheory();
+  TGraph* s_expected     = getExpMassLimitStop();
+  TGraph* s_observed     = getMassLimitStop();
+  TGraph* s_NB           = getLimitStopNB();
+  TGraph* s_EM           = getLimitStopEM();
+  TGraph* s_TP           = getLimitStopTP();
 
-  // EM limit
-//  double mem = ( log10(excXS_em[dataBin+1]) - log10(excXS_em[dataBin]) ) / (m_g[dataBin+1]-m_g[dataBin]);
-//  double cem = log10(excXS_em[dataBin+1]) - (mem*m_g[dataBin+1]);
+  std::cout <<"Calculating Stop Mass Limits"<<std::endl;
+  std::cout <<"\tCalculating Expected Limit"<<std::endl; 
+  double s_massLimit_exp= calculateMassLimits(s_theory, s_expected); 
+  std::cout <<"\tCalculating Observed Limit"<<std::endl;
+  double s_massLimit_obs= calculateMassLimits(s_theory, s_observed);
+  std::cout <<"\tCalculating NB Limit"<<std::endl;
+  double s_massLimit_NB = calculateMassLimits(s_theory, s_NB);
+  std::cout <<"\tCalculating EM Limit"<<std::endl;
+  double s_massLimit_EM = calculateMassLimits(s_theory, s_EM);
+  std::cout <<"\tCalculating TP Limit"<<std::endl;
+  double s_massLimit_TP = calculateMassLimits(s_theory, s_TP);
+  std::cout <<"\n"<<std::endl;
 
-  // time profile limit
-//  double tpml = (log10(excXS_tp[dataBin+1])-log10(excXS_tp[dataBin])) / (m_g[dataBin+1]-m_g[dataBin]);
-//  double tpcl = log10(excXS_tp[dataBin+1]) - (tpml*m_g[dataBin+1]);
+  if (g_massLimit_exp>-1)
+    std::cout <<"Gluino mass limit - counting expt expected = " << g_massLimit_exp << endl;
+  else
+    std::cout <<"Gluino mass limit - counting expt expected:  Could not be determined!"<<std::endl;
+  if (g_massLimit_obs>-1)
+    std::cout <<"Gluino mass limit - counting expt observed = " << g_massLimit_obs << endl;
+  else
+    std::cout <<"Gluino mass limit - counting expt observed:  Could not be determined!"<<std::endl;
+  if (g_massLimit_NB>-1)
+    std::cout <<"Gluino mass limit - counting expt observed (NB) = " << g_massLimit_NB << endl;
+  else
+    std::cout <<"Gluino mass limit - counting expt observed (NB):  Could not be determined!"<<std::endl;
+  if (g_massLimit_EM>-1)
+    std::cout <<"Gluino mass limit - counting expt observed (EM)= " << g_massLimit_EM << endl;
+  else
+    std::cout <<"Gluino mass limit - counting expt observed (EM):  Could not be determined!"<<std::endl;
+  if (g_massLimit_TP>-1)
+    std::cout <<"Gluino mass limit - counting expt observed (TP)= " << g_massLimit_TP << endl;
+  else
+    std::cout <<"Gluino mass limit - counting expt observed (TP):  Could not be determined!"<<std::endl;
+  std::cout <<"\n"<<std::endl;
 
-//  double massLimit_exp = (cexp - ct) / (mt - mexp);
-//  double massLimit_obs = (cobs - ct) / (mt - mobs);
-//  double massLimit_EM = (cem - ct) / (mt - mem);
-//  double massLimit_TP = (tpcl - ct) / (mt - tpml);
+  // Now dump out stop limits
+  if (s_massLimit_exp>-1)
+    std::cout <<"Stop mass limit - counting expt expected = " << s_massLimit_exp << endl;
+  else
+    std::cout <<"Stop mass limit - counting expt expected:  Could not be determined!"<<std::endl;
+  if (s_massLimit_obs>-1)
+    std::cout <<"Stop mass limit - counting expt observed = " << s_massLimit_obs << endl;
+  else
+    std::cout <<"Stop mass limit - counting expt observed:  Could not be determined!"<<std::endl;
+  if (s_massLimit_NB>-1)
+    std::cout <<"Stop mass limit - counting expt observed (NB) = " << s_massLimit_NB << endl;
+  else
+    std::cout <<"Stop mass limit - counting expt observed (NB):  Could not be determined!"<<std::endl;
+  if (s_massLimit_EM>-1)
+    std::cout <<"Stop mass limit - counting expt observed (EM)= " << s_massLimit_EM << endl;
+  else
+    std::cout <<"Stop mass limit - counting expt observed (EM):  Could not be determined!"<<std::endl;
+  if (s_massLimit_TP>-1)
+    std::cout <<"Stop mass limit - counting expt observed (TP)= " << s_massLimit_TP << endl;
+  else
+    std::cout <<"Stop mass limit - counting expt observed (TP):  Could not be determined!"<<std::endl;
+  std::cout <<"\n"<<std::endl;
 
-//  cout << "Mass limit - counting expt expected = " << massLimit_exp << endl;
-//  cout << "Mass limit - counting expt observed = " << massLimit_obs << endl;
-//  cout << "Mass limit - counting expt obs (EM) = " << massLimit_EM << endl;
-//  cout << "Mass limit - time profile           = " << massLimit_TP << endl;	
-	
+
+
+} // void LimitPlots::calculateMassLimits()
+
+
+
+double LimitPlots::calculateMassLimits(TGraph* gTheory, TGraph* gData) {
+  /* Takes two TGraphs (a theory cross section "gTheory",
+     and a measured/expected cross section "gData"), and 
+     finds the point at which they meet.
+     Intersection is found by looking at consecutive points in each TGraph,
+     where (x1a, y1a) and (x2a, y2a) are consectuive points for data,
+     and (x1b, y1b) and (x2b, y2b) are consecutive theory points.
+     To find the intersect, the following must be true:
+        y1a <= y1b   (theory starts above data value)
+        y2a >= y2b    (theory ends below data value)
+        x1b > x2a    (so that data range and theory range overlap)
+    If no intersection if found, a value of '-1' is returned.  Otherwise, the 
+    mass limit (x coordinate of intersection) is returned.  The intersection is 
+    found by a linear fit to the log of the cross sections:
+    (log y1) = m1*x1+b1
+    (log y2) = m2*x2+b2
+    Intersection at (log y1 = logy2) and (x1=x2==x):
+       x = (b1-b2)/(m2-m1)
+  */
+  
+  // TO DO:  Allow theory uncertainty?  Find intercept for +1/-1sigma variations in data?
+
+  double massLimit = -1;
+
+  // Look for crossing point between the expected and theory curve
+
+  bool massRangeFound=false;
+  Double_t x1a, y1a, x2a, y2a = 0;
+  Double_t x1b, y1b, x2b, y2b = 0;
+
+  for(int a_i = 0; a_i < gData->GetN()-1; ++a_i)
+   {
+     gData->GetPoint(a_i, x1a, y1a);
+     gData->GetPoint(a_i+1, x2a, y2a);
+     //std::cout <<"a = ("<<x1a<<", "<<y1a<<")"<<std::endl;
+     // Loop over all points in the other TGraph
+     for(int b_i = 0; b_i < gTheory->GetN()-1; ++b_i)
+       {
+	 gTheory->GetPoint(b_i, x1b, y1b);
+	 gTheory->GetPoint(b_i+1, x2b, y2b);
+	 //std::cout <<"b = ("<<x1b<<", "<<y1b<<")"<<std::endl;
+	 if (x2a<=x1b) continue;  // need to overlap in x
+	 if ((y2b<=y2a && y1b>=y1a) ||(y2b>=y2a && y1b<=y1a))  // cross point found!
+	   {
+	     // TO DO:  Add in special handling if y2b==y2a and y1b==y1a?
+	     std::cout <<"FOUND CROSSING POINT!  EXP= ("<<x1a<<", "<<y1a<<") -> ("<<x2a<<", "<<y2a<<")"<<std::endl;
+	     std::cout <<"FOUND CROSSING POINT!  THEORY= ("<<x1b<<", "<<y1b<<") -> ("<<x2b<<", "<<y2b<<")"<<std::endl;
+	     massRangeFound=true;
+	     break;
+	   }
+	 if (massRangeFound==true) break;
+       } // loop over theory points
+     if (massRangeFound==true) break;
+   } // loop over expected points
+      
+  // overlap between theory, expected found; interpolate crossing point
+  // assuming that each drops exponentially with mass
+  if (massRangeFound==false)
+    return massLimit;
+
+  // get slope and intercept; (log y) = mx+b;
+  double m_theory = (log10(y2b)-log10(y1b))/(x2b-x1b);
+  double b_theory =log10(y2b)-m_theory*x2b;
+  
+  double m_exp = (log10(y2a)-log10(y1a))/(x2a-x1a);
+  double b_exp = log10(y1a)-m_exp*x1a;
+  
+  massLimit=(b_theory-b_exp)/(m_exp-m_theory);
+  return massLimit;
 }
 
 

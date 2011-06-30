@@ -33,8 +33,7 @@ class LimitPlots {
 									unsigned tpIndex);
 
 		void calculateIntercepts();
-
-
+                double calculateMassLimits(TGraph* gTheory, TGraph* gData);
   		TGraph* getLimitGluinoBasic();
   		TGraph* getLimitGluino();
   		TGraph* getLimitGluinoNB();
