@@ -34,6 +34,8 @@ class LimitPlots {
 
 		void calculateIntercepts();
                 double calculateMassLimits(TGraph* gTheory, TGraph* gData);
+		std::vector<double> calculateMassLimitsWithErrors(TGraph* gTheory, TGraphAsymmErrors* gData);
+
   		TGraph* getLimitGluinoBasic();
   		TGraph* getLimitGluino();
   		TGraph* getLimitGluinoNB();

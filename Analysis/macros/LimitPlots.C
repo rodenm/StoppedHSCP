@@ -316,6 +316,7 @@ void LimitPlots::calculateIntercepts(){
   
   TGraph* g_theory       = getGluinoTheory();
   TGraph* g_expected     = getExpMassLimitGluino();
+  TGraphAsymmErrors* g_expected_asym= getExpMassLimitGluino1Sig();
   TGraph* g_observed     = getMassLimitGluino();
   TGraph* g_NB           = getLimitGluinoNB();
   TGraph* g_EM           = getLimitGluinoEM();
@@ -323,7 +324,9 @@ void LimitPlots::calculateIntercepts(){
 
   std::cout <<"Calculating Gluino Mass Limits"<<std::endl;
   std::cout <<"\tCalculating Expected Limit"<<std::endl; 
-  double g_massLimit_exp= calculateMassLimits(g_theory, g_expected); 
+  //double g_massLimit_exp= calculateMassLimits(g_theory, g_expected); 
+  std::vector<double> g_MASS=calculateMassLimitsWithErrors(g_theory, g_expected_asym);
+  double g_massLimit_exp=g_MASS[0];
   std::cout <<"\tCalculating Observed Limit"<<std::endl;
   double g_massLimit_obs= calculateMassLimits(g_theory, g_observed);
   std::cout <<"\tCalculating NB Limit"<<std::endl;
@@ -336,6 +339,7 @@ void LimitPlots::calculateIntercepts(){
 
   TGraph* s_theory       = getStopTheory();
   TGraph* s_expected     = getExpMassLimitStop();
+  TGraphAsymmErrors* s_expected_asym= getExpMassLimitStop1Sig();
   TGraph* s_observed     = getMassLimitStop();
   TGraph* s_NB           = getLimitStopNB();
   TGraph* s_EM           = getLimitStopEM();
@@ -343,7 +347,9 @@ void LimitPlots::calculateIntercepts(){
 
   std::cout <<"Calculating Stop Mass Limits"<<std::endl;
   std::cout <<"\tCalculating Expected Limit"<<std::endl; 
-  double s_massLimit_exp= calculateMassLimits(s_theory, s_expected); 
+  //double s_massLimit_exp= calculateMassLimits(s_theory, s_expected); 
+  std::vector<double> s_MASS=calculateMassLimitsWithErrors(s_theory, s_expected_asym);
+  double s_massLimit_exp=s_MASS[0];
   std::cout <<"\tCalculating Observed Limit"<<std::endl;
   double s_massLimit_obs= calculateMassLimits(s_theory, s_observed);
   std::cout <<"\tCalculating NB Limit"<<std::endl;
@@ -354,8 +360,14 @@ void LimitPlots::calculateIntercepts(){
   double s_massLimit_TP = calculateMassLimits(s_theory, s_TP);
   std::cout <<"\n"<<std::endl;
 
-  if (g_massLimit_exp>-1)
-    std::cout <<"Gluino mass limit - counting expt expected = " << g_massLimit_exp << endl;
+  if (g_massLimit_exp>-1){
+    std::cout <<"Gluino mass limit - counting expt expected = " << g_massLimit_exp; 
+    if (g_MASS[1]>0) std::cout<<"  "<<g_MASS[1]-g_massLimit_exp;
+    else std::cout <<"  - N/A";
+    if (g_MASS[2]>0) std::cout<<"  +"<<g_MASS[2]-g_massLimit_exp;
+    else std::cout <<"  + N/A";
+    std::cout <<std::endl;
+  }
   else
     std::cout <<"Gluino mass limit - counting expt expected:  Could not be determined!"<<std::endl;
   if (g_massLimit_obs>-1)
@@ -378,7 +390,14 @@ void LimitPlots::calculateIntercepts(){
 
   // Now dump out stop limits
   if (s_massLimit_exp>-1)
-    std::cout <<"Stop mass limit - counting expt expected = " << s_massLimit_exp << endl;
+    {
+    std::cout <<"Stop mass limit - counting expt expected = " << s_massLimit_exp; 
+    if (s_MASS[1]>0) std::cout<<"  "<<s_MASS[1]-s_massLimit_exp;
+    else std::cout <<"  - N/A";
+    if (s_MASS[2]>0) std::cout<<"  +"<<s_MASS[2]-s_massLimit_exp;
+    else std::cout <<"  + N/A";
+    std::cout <<std::endl;
+  }
   else
     std::cout <<"Stop mass limit - counting expt expected:  Could not be determined!"<<std::endl;
   if (s_massLimit_obs>-1)
@@ -450,8 +469,9 @@ double LimitPlots::calculateMassLimits(TGraph* gTheory, TGraph* gData) {
 	 if ((y2b<=y2a && y1b>=y1a) ||(y2b>=y2a && y1b<=y1a))  // cross point found!
 	   {
 	     // TO DO:  Add in special handling if y2b==y2a and y1b==y1a?
-	     std::cout <<"FOUND CROSSING POINT!  EXP= ("<<x1a<<", "<<y1a<<") -> ("<<x2a<<", "<<y2a<<")"<<std::endl;
-	     std::cout <<"FOUND CROSSING POINT!  THEORY= ("<<x1b<<", "<<y1b<<") -> ("<<x2b<<", "<<y2b<<")"<<std::endl;
+	     // These cout statements can be removed later, once we have confidence in the output of the intercept finding
+	     std::cout <<"\t\tFOUND CROSSING POINT!  EXP= ("<<x1a<<", "<<y1a<<") -> ("<<x2a<<", "<<y2a<<")"<<std::endl;
+	     std::cout <<"\t\tFOUND CROSSING POINT!  THEORY= ("<<x1b<<", "<<y1b<<") -> ("<<x2b<<", "<<y2b<<")"<<std::endl;
 	     massRangeFound=true;
 	     break;
 	   }
@@ -475,6 +495,155 @@ double LimitPlots::calculateMassLimits(TGraph* gTheory, TGraph* gData) {
   massLimit=(b_theory-b_exp)/(m_exp-m_theory);
   return massLimit;
 }
+
+
+std::vector<double> LimitPlots::calculateMassLimitsWithErrors(TGraph* gTheory, TGraphAsymmErrors* gData) {
+  /* 
+     Works like above "calculateMassLimits" function, but runs algorithm three times, returning the vector
+     <mass limit for nominal, mass limit for +1 sigma, mass limit for -1 sigma>
+  */
+  
+  // TO DO:  Allow theory uncertainty?  Find intercept for +1/-1sigma variations in data?
+
+  std::vector <double> results;
+  double massLimit = -1;
+
+  // Look for crossing point between the expected and theory curve
+
+  bool massRangeFound=false;
+  Double_t x1a, y1a, x2a, y2a = 0;
+  Double_t x1b, y1b, x2b, y2b = 0;
+
+  for(int a_i = 0; a_i < gData->GetN()-1; ++a_i)
+   {
+     gData->GetPoint(a_i, x1a, y1a);
+     gData->GetPoint(a_i+1, x2a, y2a);
+     //std::cout <<"a = ("<<x1a<<", "<<y1a<<")"<<std::endl;
+     // Loop over all points in the other TGraph
+     for(int b_i = 0; b_i < gTheory->GetN()-1; ++b_i)
+       {
+	 gTheory->GetPoint(b_i, x1b, y1b);
+	 gTheory->GetPoint(b_i+1, x2b, y2b);
+	 //std::cout <<"b = ("<<x1b<<", "<<y1b<<")"<<std::endl;
+	 if (x2a<=x1b) continue;  // need to overlap in x
+	 if ((y2b<=y2a && y1b>=y1a) ||(y2b>=y2a && y1b<=y1a))  // cross point found!
+	   {
+	     // TO DO:  Add in special handling if y2b==y2a and y1b==y1a?
+	     std::cout <<"\t\tFOUND CROSSING POINT!  EXP= ("<<x1a<<", "<<y1a<<") -> ("<<x2a<<", "<<y2a<<")"<<std::endl;
+	     std::cout <<"\t\tFOUND CROSSING POINT!  THEORY= ("<<x1b<<", "<<y1b<<") -> ("<<x2b<<", "<<y2b<<")"<<std::endl;
+	     massRangeFound=true;
+	     break;
+	   }
+	 if (massRangeFound==true) break;
+       } // loop over theory points
+     if (massRangeFound==true) break;
+   } // loop over expected points
+      
+  // overlap between theory, expected found; interpolate crossing point
+  // assuming that each drops exponentially with mass
+  if (massRangeFound==true)
+    {
+      // get slope and intercept; (log y) = mx+b;
+      double m_theory = (log10(y2b)-log10(y1b))/(x2b-x1b);
+      double b_theory =log10(y2b)-m_theory*x2b;
+      
+      double m_exp = (log10(y2a)-log10(y1a))/(x2a-x1a);
+      double b_exp = log10(y1a)-m_exp*x1a;
+      
+      massLimit=(b_theory-b_exp)/(m_exp-m_theory);
+    } 
+  results.push_back(massLimit);
+
+  // Now repeat for +1 sigma data point
+  massLimit = -1;
+  massRangeFound=false;
+  for(int a_i = 0; a_i < gData->GetN()-1; ++a_i)
+    {
+     gData->GetPoint(a_i, x1a, y1a);
+     gData->GetPoint(a_i+1, x2a, y2a);
+     y1a+=gData->GetErrorYhigh(a_i);
+     y2a+=gData->GetErrorYhigh(a_i+1);
+     // Loop over all points in the other TGraph
+     for(int b_i = 0; b_i < gTheory->GetN()-1; ++b_i)
+       {
+	 gTheory->GetPoint(b_i, x1b, y1b);
+	 gTheory->GetPoint(b_i+1, x2b, y2b);
+	 if (x2a<=x1b) continue;  // need to overlap in x
+	 if ((y2b<=y2a && y1b>=y1a) ||(y2b>=y2a && y1b<=y1a))  // cross point found!
+	   {
+	     // TO DO:  Add in special handling if y2b==y2a and y1b==y1a?
+	     std::cout <<"FOUND CROSSING POINT!  EXP= ("<<x1a<<", "<<y1a<<") -> ("<<x2a<<", "<<y2a<<")"<<std::endl;
+	     std::cout <<"FOUND CROSSING POINT!  THEORY= ("<<x1b<<", "<<y1b<<") -> ("<<x2b<<", "<<y2b<<")"<<std::endl;
+	     massRangeFound=true;
+	     break;
+	   }
+	 if (massRangeFound==true) break;
+       } // loop over theory points
+     if (massRangeFound==true) break;
+   } // loop over expected points
+      
+  // overlap between theory, expected found; interpolate crossing point
+  // assuming that each drops exponentially with mass
+  if (massRangeFound==true)
+    {
+      // get slope and intercept; (log y) = mx+b;
+      double m_theory = (log10(y2b)-log10(y1b))/(x2b-x1b);
+      double b_theory =log10(y2b)-m_theory*x2b;
+      
+      double m_exp = (log10(y2a)-log10(y1a))/(x2a-x1a);
+      double b_exp = log10(y1a)-m_exp*x1a;
+      
+      massLimit=(b_theory-b_exp)/(m_exp-m_theory);
+    } 
+  results.push_back(massLimit);
+
+  // finally, repeat for negative error
+  massLimit = -1;
+  massRangeFound=false;
+  for(int a_i = 0; a_i < gData->GetN()-1; ++a_i)
+    {
+     gData->GetPoint(a_i, x1a, y1a);
+     gData->GetPoint(a_i+1, x2a, y2a);
+     std::cout <<"ERROR LOW = "<<gData->GetErrorYlow(a_i)<<std::endl;
+     y1a-=gData->GetErrorYlow(a_i);
+     y2a-=gData->GetErrorYlow(a_i+1);
+     // Loop over all points in the other TGraph
+     for(int b_i = 0; b_i < gTheory->GetN()-1; ++b_i)
+       {
+	 gTheory->GetPoint(b_i, x1b, y1b);
+	 gTheory->GetPoint(b_i+1, x2b, y2b);
+	 if (x2a<=x1b) continue;  // need to overlap in x
+	 if ((y2b<=y2a && y1b>=y1a) ||(y2b>=y2a && y1b<=y1a))  // cross point found!
+	   {
+	     // TO DO:  Add in special handling if y2b==y2a and y1b==y1a?
+	     std::cout <<"FOUND CROSSING POINT!  EXP= ("<<x1a<<", "<<y1a<<") -> ("<<x2a<<", "<<y2a<<")"<<std::endl;
+	     std::cout <<"FOUND CROSSING POINT!  THEORY= ("<<x1b<<", "<<y1b<<") -> ("<<x2b<<", "<<y2b<<")"<<std::endl;
+	     massRangeFound=true;
+	     break;
+	   }
+	 if (massRangeFound==true) break;
+       } // loop over theory points
+     if (massRangeFound==true) break;
+   } // loop over expected points
+      
+  // overlap between theory, expected found; interpolate crossing point
+  // assuming that each drops exponentially with mass
+  if (massRangeFound==true)
+    {
+      // get slope and intercept; (log y) = mx+b;
+      double m_theory = (log10(y2b)-log10(y1b))/(x2b-x1b);
+      double b_theory =log10(y2b)-m_theory*x2b;
+      
+      double m_exp = (log10(y2a)-log10(y1a))/(x2a-x1a);
+      double b_exp = log10(y1a)-m_exp*x1a;
+      
+      massLimit=(b_theory-b_exp)/(m_exp-m_theory);
+    } 
+  results.push_back(massLimit);
+
+  return results;
+} //calculateMassLimitsWithErrors
+
 
 
 TGraph* LimitPlots::getLimitGluinoBasic() {
