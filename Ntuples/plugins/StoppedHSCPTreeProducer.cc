@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.2 2011/06/29 23:33:11 temple Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.3 2011/06/30 16:41:20 temple Exp $
 //
 //
 
@@ -1073,8 +1073,6 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
 	 jet.eMaxHcalTow = it->maxEInHadTowers();
 	 jet.n60 = it->n60();
 	 jet.n90 = it->n90();
-	 
-	 std::cout <<"JET ETA = "<<it->eta()<<" M/X = "<<studyJetMinEta_<<" "<<studyJetMaxEta_<<std::endl;
 
 	 // Add to default jet collection and/or to studyJet collection
 	 if ((fabs(it->eta()) < jetMaxEta_))
