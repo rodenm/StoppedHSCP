@@ -74,7 +74,7 @@ Analyser::Analyser(std::vector<std::string> ifiles,
 //   std::cout << std::endl;
 
   // for backwards compatibility with old versions of the analysis
-  fills_.writeBunchMaskFile();
+  fills_.writeBunchMaskFile(outdir);
 
 }
 
@@ -239,7 +239,7 @@ void Analyser::loop(ULong64_t maxEvents) {
 
   reset();
  
-  unsigned long currentRun=0;
+  //unsigned long currentRun=0; // not used any more? -- Jeff, 28 June 2011
 
   // run loop
 
