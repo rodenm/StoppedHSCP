@@ -28,7 +28,11 @@ def ReadSummaryFiles(summarylist):
     '''
     summary_out={}
     for i in summarylist:
-        firstline=open(i,'r').readlines()[0]  # read first line only  -- any need to worry about multiple lines?
+        firstline=open(i,'r').readlines()
+        if len(firstline)==0:
+            print "Unable to read file '%s'"%i
+            continue
+        firstline=firstline[0]  # read first line only  -- any need to worry about multiple lines?
         temp=string.split(firstline)  
         try:  # Get lifetime
             lifetime=string.atof(temp[0])
