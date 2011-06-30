@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.1 2011/06/12 13:52:28 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.2 2011/06/29 23:33:11 temple Exp $
 //
 //
 
@@ -422,9 +422,9 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   digiMinFc_(iConfig.getUntrackedParameter<double>("digiMinFc", 30)),
   rechitMinEnergy_(iConfig.getUntrackedParameter<double>("rechitMinEnergy", 0.2)),
   studyJetMinEta_(iConfig.getUntrackedParameter<double>("studyJetMinEta",1.3)),
-  studyJetMaxEta_(iConfig.getUntrackedParameter<double>("studyJetMinEta",3.0)),
+  studyJetMaxEta_(iConfig.getUntrackedParameter<double>("studyJetMaxEta",3.0)),
   studyTowerMinEta_(iConfig.getUntrackedParameter<double>("studyTowerMinEta",1.3)),
-  studyTowerMaxEta_(iConfig.getUntrackedParameter<double>("studyTowerMinEta",3.0)),
+  studyTowerMaxEta_(iConfig.getUntrackedParameter<double>("studyTowerMaxEta",3.0)),
   badchannelstatus_(iConfig.getUntrackedParameter<int>("badchannelstatus",0)),
   currentFill_(0),
   currentFillL1_(0),
@@ -1073,6 +1073,8 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
 	 jet.eMaxHcalTow = it->maxEInHadTowers();
 	 jet.n60 = it->n60();
 	 jet.n90 = it->n90();
+	 
+	 std::cout <<"JET ETA = "<<it->eta()<<" M/X = "<<studyJetMinEta_<<" "<<studyJetMaxEta_<<std::endl;
 
 	 // Add to default jet collection and/or to studyJet collection
 	 if ((fabs(it->eta()) < jetMaxEta_))
