@@ -37,7 +37,7 @@ def GenericCommand(cmd):
     os.system(cmd)
     return
     
-def RunAnalysis(outdir, indir, steps=[],makeHistsOptions={},
+def RunAnalysis(outdir, indirs, steps=[],makeHistsOptions={},
                 lumi=-1,
                 maxInstLumi=-1):
     if len(steps)==0:
@@ -52,10 +52,12 @@ def RunAnalysis(outdir, indir, steps=[],makeHistsOptions={},
         keys.sort()
         for k in keys:# add individual options
             cmd = cmd +" %s %s"%(k,makeHistsOptions[k])
-        cmd =cmd +" %s %s/*root > %s"%(outdir, indir, os.path.join(outdir,"histogrammer.log"))
-        #print cmd
+        cmd =cmd +" %s"%outdir
+        for dir in indirs:
+            cmd=cmd+ " %s/*root"%dir
+        cmd=cmd+" > %s"%os.path.join(outdir,"histogrammer.log")
         GenericCommand(cmd)
-
+        
     if 1 in steps:
         # Step 1:  make basic plots
         cmd="python %s/src/StoppedHSCP/Analysis/python/basicPlots.py %s > %s"%(os.environ["CMSSW_BASE"],outdir, os.path.join(outdir,"plots.log"))
@@ -145,8 +147,8 @@ def help():
 if __name__=="__main__":
     parser=OptionParser()
     parser.add_option("-i","--inputdir",
-                      default=None,
-                      #action="append",
+                      default=[],
+                      action="append",
                       dest="inputdir",
                       help="Input directory where root tuples exist")
     parser.add_option("-o","--outputdir",
@@ -246,14 +248,18 @@ if __name__=="__main__":
 
     if 0 in steps:  # first step (making a histogram) requires files from an input directory
 
-        if options.inputdir==None:
+        if len(options.inputdir)==0:
             print "Error!  Input directory has not been specified!"
             parser.print_help()
             print
             help()
             sys.exit()
-        if not os.path.isdir(options.inputdir):
-            print "Error!  Input directory '%s' does not exist!"%options.inputdir
+        for dir in options.inputdir:
+            if not os.path.isdir(dir):
+                print "Error!  Input directory '%s' does not exist!"%dir
+                options.inputdir.remove(dir)
+        if len(options.inputdir)==0:
+            print "No valid input directories remain"
             sys.exit()
             
     if not os.path.isdir(options.outputdir):
