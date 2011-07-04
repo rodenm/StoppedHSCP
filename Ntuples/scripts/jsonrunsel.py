@@ -49,8 +49,11 @@ jsonfiltered={}
 jsonfile=file(JSON,'r')
 jsondict = json.load(jsonfile)
 
-for run in jsondict.keys():
-    print "Reading run: "+run
+mykeys=jsondict.keys()
+mykeys.sort()
+for run in mykeys:
+    print "Reading run: %i"%(int(run))
+
     if int(run)>=RUNMIN and int(run)<=RUNMAX:
         jsonfiltered[run]=jsondict[run]
         print "-----------> accepted"

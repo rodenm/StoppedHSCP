@@ -36,6 +36,11 @@ class UserHistograms {
   TDirectory* base_;
   // User histograms added here
   TH1D* Nevents_;
+
+  TH1D* OldiPhiFrac_;
+  TH1D* NewiPhiFrac_;
+  TH1D* iPhiFracDiff_;
+  TH2D* NewVsOldiPhiFrac_;
 };
 
 #endif
