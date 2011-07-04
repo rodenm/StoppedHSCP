@@ -70,6 +70,7 @@ def ParseAndCleanFillFile(fillfile):
                 runtext=runtext+"%s,"%run
             while runtext.endswith(","): # remove trailing comma
                 runtext=runtext[:-1]
+            #print "RUNS = '%s'"%runs[0]
             newline=string.split(thefile[i],runs[0])[0]
             newline=newline+"%s"%runtext
             # now parse original line, and keep trailing \n, \t, space
@@ -89,6 +90,8 @@ def ParseAndCleanFillFile(fillfile):
             thefile[i]=newline
         except ValueError: # can't read fill number
             print "Could not parse line '%s'"%line
+        except IndexError:
+            print "Could not get run in line '%s'"%line
 
     # Write fixed version of file
     fixedfile=open(fillfile,'w')
