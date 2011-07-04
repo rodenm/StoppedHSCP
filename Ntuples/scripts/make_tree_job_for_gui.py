@@ -36,7 +36,8 @@ def makeTreeJob(era,
                 trigger='2011',
                 datatype='RECO',
                 whitelist='heplnx206.pp.rl.ac.uk,heplnx207.pp.rl.ac.uk',
-                hltL3Tag="Default"):
+                hltL3Tag="Default",
+                outtable=None):
 
 
     # create CRAB variables
@@ -150,6 +151,10 @@ def makeTreeJob(era,
    
     print
     print cmdtext
+    if (outtable<>None):
+        outfile=open(outtable,'w')
+        outfile.write("\n%s\n\n"%cmdtext)
+        outfile.close()
     print
     print "Successfully created file '%s'"%cfgname
 

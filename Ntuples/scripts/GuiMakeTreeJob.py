@@ -45,7 +45,7 @@ class TreeJobGui:
         self.Comments.grid(row=0,column=0,sticky=EW)
 
         # Set up defaults for copy locations
-        self.checkStorage()
+        self.SetStorage()
         return
 
     def FillTreeFrame(self,parent):
@@ -267,23 +267,29 @@ class TreeJobGui:
         self.INjsonfile=options.json
         self.INruns=options.runs
         self.INstorage=options.storage
+        self.outputloc=["T2_UK_SGrid_RALPP", "T2_CH_CAF",
+                        "T2_US_Purdue", "T3_US_UMD"]
+        if self.INstorage not in self.outputloc:
+            self.outputloc.append(self.INstorage)
+        else:
+            self.outputloc.append("None")
         
         for a in args:
-            print a
+            #print a
             if self.INera==None:
                 self.INera=a
-                print "era = ",a
+                #print "era = ",a
             elif self.INlabel==None:
                 self.INlabel=a
-                print "label = ",a
+                #print "label = ",a
             elif self.INdataset==None:
                 self.INdataset=a
-                print "dataset=",a
+                #print "dataset=",a
             elif self.INgtag==None:
                 self.INgtag=a
             elif self.INuseJSON==True and self.INjsonfile==None:
                 self.INjsonfile=a
-                print "jsonfile = ",a
+                #print "jsonfile = ",a
             elif self.INuseJSON==False and self.INruns==None:
                 self.INruns=a
 
@@ -293,14 +299,14 @@ class TreeJobGui:
             self.INjsonfile=self.INruns
         if self.INruns==None:
             self.INruns=self.INjsonfile
-        
+                
         return
     
 
     def GridInFrame(self):
         self.InFrame.columnconfigure(1,weight=1)
 
-        myvars=["era","label","dataset","gtag","jsonfile","runs","whitelist","storage"]
+        myvars=["era","label","dataset","gtag","jsonfile","runs","whitelist"] # remove "storage", as it's now an option menu
 
         row=0
         for v in myvars:
@@ -344,25 +350,35 @@ class TreeJobGui:
             self.runsE.configure(state=NORMAL)
         return
 
-    def checkStorage(self):
+    def SetStorage(self):
         if self.scheduler.get()=="caf":
             self.storage.set("T2_CH_CAF")
-            self.defaultgridroot="srm://srm-cms.cern.ch:8443/srm/managerv2?SFN="
-            self.defaultgridloc="/castor/cern.ch/cms/store/caf/user/"
         else:
-            self.defaultgridroot="srm://heplnx204.pp.rl.ac.uk:8443/srm/managerv2?SFN="
-            self.defaultgridloc="/pnfs/pp.rl.ac.uk/data/cms/store/user/"
-
+            # reset self.storage to input value
             if self.INstorage<>None:
                 self.storage.set(self.INstorage)
-            else:
-                self.storage.set("T2_UK_SGrid_RALPP")
+        #Set grid location based on storage elements
+        self.SetGridLoc()
         return
 
     def GridCrabFrame(self):
         self.CrabFrame.columnconfigure(1,weight=1)
 
         row=0
+        self.storage=StringVar()
+        self.storage.set(self.INstorage)
+        self.storageMenu=OptionMenu(self.CrabFrame,self.storage,
+                                    self.outputloc[0],
+                                    self.outputloc[1],
+                                    self.outputloc[2],
+                                    self.outputloc[3],
+                                    command = lambda y=self.storage.get():self.SetGridLoc(y))
+        self.storageMenu["width"]=15
+        self.storageL=Label(self.CrabFrame,text="storage:")
+        self.storageL.grid(row=row,column=0)
+        self.storageMenu.grid(row=row,column=1,sticky=EW)
+        row=row+1
+        
         self.scheduler=StringVar()
         self.schedulerchoices=["glite","caf","condor"]
         if self.INscheduler not in self.schedulerchoices:
@@ -379,7 +395,7 @@ class TreeJobGui:
         self.schedulerMenu=OptionMenu(self.CrabFrame,self.scheduler,
                                       "glite","caf","condor",self.schedulerchoices[3],
 
-                                      command=lambda y=self.scheduler.get(): self.checkStorage())
+                                      command=lambda y=self.scheduler.get(): self.SetStorage())
         self.schedulerMenu["width"]=15
 
         self.schedulerL=Label(self.CrabFrame,text="scheduler:")
@@ -455,14 +471,32 @@ class TreeJobGui:
         self.hltL3TagMenu.grid(row=row,column=1)
         row=row+1
 
-
-
-
         self.MakeTreeButton=Button(self.CrabFrame,text="Make\nTree\nJob",
                                    command=lambda x=self:x.MakeTreeJob(),
                                    height=row,width=20,bg="blue",fg="white")
         self.MakeTreeButton.grid(row=0,column=2,rowspan=row)
 
+        return
+
+
+    def SetGridLoc(self,storage=None):
+        key=""
+        if self.storage.get()=="T2_UK_SGrid_RALPP":
+            key="RAL"
+        elif self.storage.get()=="T2_CH_CAF":
+            key="CAF"
+        elif self.storage.get()=="T2_US_Purdue":
+            key="PUR"
+        elif self.storage.get()=="T3_US_UMD":
+            key="UMD"
+
+        if key not in copySites.keys():
+            self.gridroot.set("")
+            self.gridloc.set("")
+        else:
+            self.gridroot.set(copySites[key][0])
+            self.gridloc.set(copySites[key][1])
+        # Add other grid sites as necessary
         return
 
     def MakeTreeJob(self):
@@ -487,13 +521,13 @@ class TreeJobGui:
             self.Print("Must explicitly specify RUN file \n(Toggle useJSON variable to activate)")
             return
         
-        outputloc=["T3_US_UMD", "T2_UK_SGrid_RALPP"]
+
 
         if self.scheduler.get()=="caf" and self.storage.get()<>"T2_CH_CAF":
             self.Print( "Warning!  CAF should only be run using storage at T2_CH_CAF\nProceed with caution!")
         
-        elif self.scheduler.get()<>"caf" and self.storage.get() not in outputloc:
-            self.Print( "Warning!  Storage output location '%s' differs from expected choices: %s \nProceed with caution! "%(self.storage.get(),outputloc))
+        elif self.scheduler.get()<>"caf" and self.storage.get() not in self.outputloc:
+            self.Print( "Warning!  Storage output location '%s' differs from expected choices: %s \nProceed with caution! "%(self.storage.get(),self.outputloc))
 
 
 
@@ -505,7 +539,12 @@ class TreeJobGui:
         if not os.path.isfile(myfile):
             self.Print ("ERROR!  Runs/Json File '%s' does not exist!"%myfile)
             return
-        
+
+        # print table
+
+        print "Writing info for elog to 'table_info.txt'"
+
+        outtable="table_info.txt"
         x=makeTreeJob(era=self.era.get(),
                       label=self.label.get(),
                       dataset=self.dataset.get(),
@@ -518,7 +557,38 @@ class TreeJobGui:
                       trigger=self.trigger.get(),
                       datatype=self.datatype.get(),
                       whitelist=self.whitelist.get(),
-                      hltL3Tag=self.hltL3Tag.get())
+                      hltL3Tag=self.hltL3Tag.get(),
+                      outtable=outtable)
+
+        if os.path.exists(outtable):
+            outfile=open("table_info.txt",'a')
+        else:
+            outfile=open("table_info.txt",'w')
+        outfile.write( '\n[TABLE border="1"]\n')
+        thename="%s_%s"%(self.era.get(),self.label.get())
+        outfile.write( "Name | %s |-\n"%thename)
+        try:
+            temp=string.split(self.label.get(),"_")
+            outfile.write( "Fills | %s-%s |-\n"%(temp[0],temp[1]))
+        except IndexError:
+            outfile.write( "Fills | %s |-\n"%self.label.get())
+        outfile.write( "Runs    |      |-\n")
+        outfile.write( "Ntuples | %s%s/stoppedHSCP_tree_%s |-\n"%(self.gridroot.get(),os.path.join(self.gridloc.get(),self.user.get()),thename))
+        outfile.write( "Lumi    |      |-\n")
+        outfile.write( "Dataset  | %s |-\n"%self.dataset.get())
+        outfile.write( "Global Tag | %s |-\n"%self.gtag.get())
+        try:
+            outfile.write( "CMSSW Version | %s |-\n"%os.environ["CMSSW_VERSION"])
+        except KeyError:
+            outfile.write( "CMSSW Version | NOT SPECIFIED! |-\n")
+        outfile.write( "CVS tag  |      |-\n")
+        if (self.useJSON.get()==True):
+            outfile.write( "JSON file | %s |-\n"%myfile)
+        else:
+            outfile.write( "JSON file | NOT SPECIFIED! |-\n")
+        outfile.write( "[/TABLE]\n\n")
+        outfile.close()
+        
         if (x==True):
             self.Print("cfg files successfully produced!")
         return
@@ -537,6 +607,8 @@ class TreeJobGui:
         self.listfiles=BooleanVar()
 
         self.user.set("jbrooke")
+        if os.environ["USER"].find("temple")>-1:
+            self.user.set("temple")  # Set to Jeff's grid user name, if user ID'd as Jeff (either temple or jtemple)
         self.gridroot.set("srm://heplnx204.pp.rl.ac.uk:8443/srm/managerv2?SFN=")
         self.gridloc.set("/pnfs/pp.rl.ac.uk/data/cms/store/user/")
         self.copydataset.set("")
@@ -646,10 +718,10 @@ class TreeJobGui:
     def CopyFiles(self):
 
         if self.gridroot.get()=="":
-            self.Print("ERROR:  No grid root value specified!  Default is:\n"%self.defaultgridroot)
+            self.Print("ERROR:  No grid root value specified!")
             return
         if self.gridloc.get()=="":
-            self.Print("ERROR:  No grid loc value specified!  Default is:\n"%self.defaultgridloc)
+            self.Print("ERROR:  No grid loc value specified!")
             return
         if (self.listfiles.get()==False):
             if self.copydataset.get()=="":
