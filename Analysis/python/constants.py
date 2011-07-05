@@ -45,3 +45,7 @@ N_ctrl_stat     = 1/sqrt(N_ctrl)
 N_n90_ctrl_stat = 1/sqrt(N_n90_ctrl)
 N_ct_ctrl_stat  = 1/sqrt(N_ct_ctrl)
 
+# rates from control sample
+R_ctrl          = 1.72E-5
+R_ctrl_stat     = 0.70E-5
+
