@@ -5,7 +5,7 @@ cutName = ["trigger", "BPTX veto", "BX veto", "Vertex veto", "Halo veto", "Cosmi
 dontUse = [0,1,2,7]
 
 # bin boundaries
-edges0 = [ 0, 11, 18, 23, 28, 34, 41, 45, 50, 55 ] # this is for Run2010A 1117-1309
+edges0 = [ 0, 11, 18, 23, 28, 33, 38, 42, 45, 48, 55 ] # this is for Run2010A 1117-1309
 edges1 = [ 0, 4, 13, 26 ] # this is for Run2010B 1364-1459
 edges2 = [ 0, 9, 14, 26, 44 ] # this is for Run2011A 1711 - 1851
 
