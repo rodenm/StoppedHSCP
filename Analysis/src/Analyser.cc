@@ -28,7 +28,6 @@ Analyser::Analyser(std::vector<std::string> ifiles,
   cosmicsHistos_(&ofile_, &cuts_),
   noiseHistos_(&ofile_, &cuts_),
   signalHistos_(&ofile_, &cuts_),
-  userHistos_(&ofile_,&cuts_),
   runHistos_(&ofile_, &cuts_, &fills_),
   fillHistos_(&ofile_, &cuts_, &fills_),
   fills_(),
@@ -67,14 +66,6 @@ Analyser::Analyser(std::vector<std::string> ifiles,
   for (uint zz=0;zz<ifiles.size();++zz)
     std::cout <<"\t\t"<<ifiles[zz] << std::endl;
   std::cout << "Output file       : " << outdir+std::string("/histograms.root") << std::endl;
-//   std::cout << "Run list          : ";
-//   for (unsigned i=0; i<runs.size(); ++i) {
-//     std::cout << runs.at(i) << ",";
-//   }
-//   std::cout << std::endl;
-
-  // for backwards compatibility with old versions of the analysis
-  fills_.writeBunchMaskFile(outdir);
 
 }
 
@@ -270,8 +261,6 @@ void Analyser::loop(ULong64_t maxEvents) {
     cosmicsHistos_.fill(*event_);
     noiseHistos_.fill(*event_);
     signalHistos_.fill(*event_);
-    // Fill user-specific histograms without affecting other histograms
-    userHistos_.fill(*event_);
 
     // check if this is an event we're watching for and do something if so
     if (isWatchedEvent()) {
@@ -306,7 +295,6 @@ void Analyser::loop(ULong64_t maxEvents) {
   cosmicsHistos_.save();
   noiseHistos_.save();
   signalHistos_.save();
-  userHistos_.save();
 
   haloHistos_.summarise();
   beamGasHistos_.summarise();
@@ -314,5 +302,4 @@ void Analyser::loop(ULong64_t maxEvents) {
   cosmicsHistos_.summarise();
   noiseHistos_.summarise();
   signalHistos_.summarise();
-  userHistos_.summarise();
 }
