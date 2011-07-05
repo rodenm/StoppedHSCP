@@ -22,11 +22,11 @@ except:
 
 
 sys.path.append(os.path.join(os.environ['CMSSW_BASE'],"src","StoppedHSCP","Analysis","python"))
-try:
-    import printSummary
-except:
-    print "ERROR:  Unable to import printSummary.py"
-    sys.exit()
+#try:
+#    import printSummary
+#except SyntaxError:
+#    print "ERROR:  Unable to import printSummary.py"
+#    sys.exit()
 
 from optparse import OptionParser, OptionGroup
 
