@@ -156,26 +156,26 @@ N       = hcutcum.GetBinContent(iAllCuts+1)
 
 # selected counts
 print "Selected counts from this sample"
-print "  N90(N-1)  : ", N_n90
-print "  CT(N-1)   : ", N_ct
+## print "  N90(N-1)  : ", N_n90
+## print "  CT(N-1)   : ", N_ct
 print "  Final     : ", int(N)
 print
 
 # Rate coefficients
 Rn90 = N/N_n90
 Rct  = N/N_ct
-print "Rate coefficients from this sample"
-print "  N90 : ", Rn90
-print "  CT  : ", Rct
-print
+## print "Rate coefficients from this sample"
+## print "  N90 : ", Rn90
+## print "  CT  : ", Rct
+## print
 
 # Rate coefficients from control
 Rn90_ctrl = float(N_ctrl)/N_n90_ctrl
 Rct_ctrl  = float(N_ctrl)/N_ct_ctrl
-print "Rate coefficients from control sample"
-print "  N90 : ", Rn90_ctrl
-print "  CT  : ", Rct_ctrl
-print
+## print "Rate coefficients from control sample"
+## print "  N90 : ", Rn90_ctrl
+## print "  CT  : ", Rct_ctrl
+## print
 
 # calculate expected final counts
 # using n90 only
@@ -215,7 +215,7 @@ print 'Expected BG counts : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (Nexp, Nexp*
 print 'Expected N90-only BG counts : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (Nexp_n90, Nexp_n90*Nexp_n90_stat, Nexp_n90*Nexp_n90_syst)
 print 'Expected CT-only BG counts : %.2e +/- %.2e (stat) +/- %.2e (syst)' % (Nexp_ct, Nexp_ct*Nexp_ct_stat, Nexp_ct*Nexp_ct_syst)
 print 'Expected 2010B rate counts : %.2e +/- %.2e (stat)' % (R_ctrl*time, R_ctrl_stat*time)
-
+print
 
 print "Background rates"
 if (N_n90>0):
@@ -236,9 +236,13 @@ print
 n90Rate_exp     = Nexp_n90/time
 n90Rate_exp_err = (Nexp_n90/time)*sqrt( pow(Nexp_n90_stat, 2) + pow(Nexp_n90_syst, 2) )
 
-bgRate_exp     = Nexp/time
-bgRate_exp_err = (Nexp/time)*sqrt( pow(Nexp_stat, 2) +
-                                   pow(Nexp_syst, 2) )
+comb_exp        = Nexp/time
+comb_exp_err    = (Nexp/time)*sqrt( pow(Nexp_stat, 2) +
+                                    pow(Nexp_syst, 2) )
+
+bgRate_exp     = R_ctrl
+bgRate_exp_err = R_ctrl_stat
+
 print "Expected rate for simulation :  %.3e +/- %.3e" % (bgRate_exp, bgRate_exp_err)
 print
 
@@ -293,9 +297,9 @@ ofile.write("lifetime\t\t1\n")
 ofile.write("signalEff\t\t0.033652\n")
 ofile.write("signalEff_e\t\t0.0\n")
 ofile.write("bgRate\t\t\t")
-ofile.write(str(R_ctrl)+"\n")
+ofile.write(str(bgRate_exp)+"\n")
 ofile.write("bgRate_e\t\t")
-ofile.write(str(R_ctrl_stat)+"\n")
+ofile.write(str(bgRate_exp_err)+"\n")
 ofile.write("scaleUncert\t\t")
 ofile.write(str(scaleUncert) +"\n")
 ofile.write("optimizeTimeCut\t\t1\n")
