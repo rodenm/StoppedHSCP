@@ -89,7 +89,7 @@ bool Cuts::triggerCut() const {      // require event passed main trigger
   else if (event_->fill>=1795)
     trigger = event_->hltJetE50NoBptx3BXNoHalo;
 
-  return isMC_ || trigger;
+  return trigger;
 
 }
 
