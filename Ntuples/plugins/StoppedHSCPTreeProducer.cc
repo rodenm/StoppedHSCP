@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.3 2011/06/30 16:41:20 temple Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.4 2011/06/30 16:46:46 temple Exp $
 //
 //
 
@@ -48,6 +48,7 @@
 #include "DataFormats/L1Trigger/interface/L1JetParticle.h"
 
 #include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
+#include "L1Trigger/GlobalTriggerAnalyzer/interface/L1GtUtils.h"
 
 // HLT
 #include "DataFormats/HLTReco/interface/TriggerEvent.h"
@@ -271,6 +272,7 @@ private:
   edm::InputTag l1BitsTag_;
   std::string l1JetNoBptxName_;
   std::string l1JetNoBptxNoHaloName_;
+  std::string l1Jet32NoBptxNoHaloName_;
   std::string l1BptxName_;
   std::string l1MuBeamHaloName_;
   edm::InputTag hltResultsTag_;
@@ -386,7 +388,9 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   l1JetsTag_(iConfig.getUntrackedParameter<std::string>("l1JetsTag",std::string("l1extraParticles"))),
   l1BitsTag_(iConfig.getUntrackedParameter<edm::InputTag>("l1BitsTag",edm::InputTag("gtDigis"))),
   l1JetNoBptxName_(iConfig.getUntrackedParameter<std::string>("l1JetNoBptxName",std::string("L1_SingleJet20_NotBptxOR"))),  
-  l1JetNoBptxNoHaloName_(iConfig.getUntrackedParameter<std::string>("l1JetNoBptxNoHaloName",std::string("L1_SingleJet20_NotBptxOR_NotMuBeamHalo"))),  
+  l1JetNoBptxNoHaloName_(iConfig.getUntrackedParameter<std::string>("l1JetNoBptxNoHaloName",std::string("L1_SingleJet20_NotBptxOR_NotMuBeamHalo"))),
+  l1Jet32NoBptxNoHaloName_(iConfig.getUntrackedParameter<std::string>("l1Jet32NoBptxNoHaloName",std::string("L1_SingleJet32_NotBptxOR_NotMuBeamHalo"))),
+  
   //  l1BptxPlusName_(iConfig.getUntrackedParameter<std::string>("l1BptxPlusName",std::string(""))),  
   //  l1BptxMinusName_(iConfig.getUntrackedParameter<std::string>("l1BptxMinusName",std::string(""))),  
   l1BptxName_(iConfig.getUntrackedParameter<std::string>("l1BptxName",std::string("L1Tech_BPTX_plus_AND_minus"))),  
@@ -902,11 +906,48 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
       gtTechWord |= (1LL<<i);
     } 
   }
-  
+
+  // Get prescale information
+  L1GtUtils* l1gtutils = new L1GtUtils();
+  l1gtutils->retrieveL1EventSetup(iSetup);
+
+  int errorAlgo=0;
+  int errorTech=0;
+
+  //Are Algo and Trigger prescale indices supposed to be the same?  Save them separately, for now
+  event_->algoTriggerPrescaleIndex =l1gtutils->prescaleFactorSetIndex(iEvent,L1GtUtils::AlgorithmTrigger,errorAlgo);
+  event_->techTriggerPrescaleIndex =l1gtutils->prescaleFactorSetIndex(iEvent,L1GtUtils::TechnicalTrigger,errorTech);
+  if (errorAlgo!=0)
+    event_->algoTriggerPrescaleIndex=-999;
+  if (errorTech!=0)
+    event_->algoTriggerPrescaleIndex=-999;
+
   event_->gtAlgoWord0 = gtAlgoWord0;
   event_->gtAlgoWord1 = gtAlgoWord1;
   event_->gtTechWord = gtTechWord;
   
+  // Get prescales for individual L1 triggers
+  
+  int errorCode=0;
+  event_->l1JetNoBptxPrescale = l1gtutils->prescaleFactor(iEvent,
+							  l1JetNoBptxName_,
+							  errorCode);
+  if (errorCode!=0) event_->l1JetNoBptxPrescale=-999;
+  event_->l1JetNoBptxNoHaloPrescale = l1gtutils->prescaleFactor(iEvent,
+								l1JetNoBptxNoHaloName_,
+								errorCode);
+  if (errorCode!=0) event_->l1JetNoBptxNoHaloPrescale=-999;
+
+  event_->l1Jet32NoBptxNoHaloPrescale = l1gtutils->prescaleFactor(iEvent,
+								  l1Jet32NoBptxNoHaloName_,
+								  errorCode);
+  if (errorCode!=0) event_->l1Jet32NoBptxNoHaloPrescale=-999;
+
+  
+  // Test output; need to check error code
+  std::cout <<"PRESCALE 32 = "<< event_->l1Jet32NoBptxNoHaloPrescale <<"  errorCode = "<<errorCode<<std::endl;
+
+
   // L1 trigger bits for -2..+2 BX
   int start = -2;
   int end = 3;
@@ -921,13 +962,16 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
 
     bool l1JetNoBptx       = menu->gtAlgorithmResult(l1JetNoBptxName_,       decisionWord);
     bool l1JetNoBptxNoHalo = menu->gtAlgorithmResult(l1JetNoBptxNoHaloName_, decisionWord);
+    bool l1Jet32NoBptxNoHalo = menu->gtAlgorithmResult(l1Jet32NoBptxNoHaloName_, decisionWord);
     bool l1Bptx            = technicalWord.at(1);
     bool l1MuBeamHalo      = menu->gtAlgorithmResult(l1MuBeamHaloName_,      decisionWord);
 
     event_->l1JetNoBptx.at(bx+2)       = (l1JetNoBptx ? 1 : 0);
     event_->l1JetNoBptxNoHalo.at(bx+2) = (l1JetNoBptxNoHalo ? 1 : 0);
-//     event_->l1BptxPlus.at(bx+2)        = l1BptxPlus;
-//     event_->l1BptxMinus.at(bx+2)       = l1BptxMinus;
+    event_->l1Jet32NoBptxNoHalo.at(bx+2) = (l1Jet32NoBptxNoHalo ? 1 : 0);
+
+    //     event_->l1BptxPlus.at(bx+2)        = l1BptxPlus;
+    //     event_->l1BptxMinus.at(bx+2)       = l1BptxMinus;
     event_->l1Bptx.at(bx+2)            = (l1Bptx ? 1 : 0);
     event_->l1MuBeamHalo.at(bx+2)      = (l1MuBeamHalo ? 1 : 0);
     
@@ -964,6 +1008,14 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
   event_->hltJetNoBptxNoHalo = hltBitJetNoBptxNoHalo;
   event_->hltJetNoBptx3BXNoHalo = hltBitJetNoBptx3BXNoHalo;
   event_->hltJetE50NoBptx3BXNoHalo = hltBitJetE50NoBptx3BXNoHalo;
+  
+  // Store HLT prescale info
+  event_->hltPrescaleIndex=hltConfig_.prescaleSet(iEvent, iSetup);
+  event_->hltJetNoBptxPrescale=hltConfig_.prescaleValue(iEvent, iSetup, hltPathJetNoBptx_);
+  event_->hltJetNoBptxNoHaloPrescale=hltConfig_.prescaleValue(iEvent, iSetup, hltPathJetNoBptxNoHalo_);
+  event_->hltJetNoBptx3BXNoHaloPrescale=hltConfig_.prescaleValue(iEvent, iSetup, hltPathJetNoBptx3BXNoHalo_);
+  event_->hltJetE50NoBptx3BXNoHaloPrescale=hltConfig_.prescaleValue(iEvent, iSetup, hltPathJetE50NoBptx3BXNoHalo_);
+  
 
   // L1 jets
   edm::Handle<l1extra::L1JetParticleCollection> l1CenJets;

@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.1 2011/06/12 13:52:28 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.2 2011/06/29 23:32:49 temple Exp $
 //
 //
 
@@ -248,12 +248,29 @@ class StoppedHSCPEvent : public TObject {
   ULong64_t gtTechWord;
   std::vector<UInt_t> l1JetNoBptx;
   std::vector<UInt_t> l1JetNoBptxNoHalo;
+  std::vector<UInt_t> l1Jet32NoBptxNoHalo;
+
   std::vector<UInt_t> l1Bptx;
   std::vector<UInt_t> l1MuBeamHalo;
+
   bool hltJetNoBptx;
   bool hltJetNoBptxNoHalo;
   bool hltJetNoBptx3BXNoHalo;
   bool hltJetE50NoBptx3BXNoHalo;
+
+  // Add prescales
+  Int_t algoTriggerPrescaleIndex;
+  Int_t techTriggerPrescaleIndex;
+  Int_t hltPrescaleIndex;
+
+  Int_t l1JetNoBptxPrescale;
+  Int_t l1JetNoBptxNoHaloPrescale;
+  Int_t l1Jet32NoBptxNoHaloPrescale;
+
+  Int_t hltJetNoBptxPrescale;
+  Int_t hltJetNoBptxNoHaloPrescale;
+  Int_t hltJetNoBptx3BXNoHaloPrescale;
+  Int_t hltJetE50NoBptx3BXNoHaloPrescale;
 
   // trigger jets
   unsigned l1Jet_N;
