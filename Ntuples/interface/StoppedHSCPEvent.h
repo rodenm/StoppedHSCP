@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.2 2011/06/29 23:32:49 temple Exp $
+// $Id: StoppedHSCPEvent.h,v 1.3 2011/07/08 20:21:08 temple Exp $
 //
 //
 
@@ -503,7 +503,7 @@ class StoppedHSCPEvent : public TObject {
   double top5DigiROuter;
 
 
-  ClassDef(StoppedHSCPEvent,17); // version 17:  includes leadingIPhiFractionValue
+  ClassDef(StoppedHSCPEvent,18); // version 18: includes prescale info
 
 };
 
