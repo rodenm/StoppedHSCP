@@ -188,6 +188,9 @@ void LhcFills::setupBunches() {
 
     }
 
+    // mask "L1 gap"
+    for (int bx=3529; bx<=3563; ++bx) f->mask.at(bx)=true;
+
   }
   
 }
@@ -354,6 +357,92 @@ unsigned long LhcFills::getIndexFromRun(unsigned long run) {
     std::cerr << "ERROR : non existent run, #" << run << std::endl;
     return 0;
   }
+}
+
+
+// get relative BX wrt bunch for a given BX in orbit
+const int long LhcFills::getBxWrtBunch(unsigned long fill, unsigned long bxInOrbit) {
+
+  std::vector<unsigned long> bunches = getBunches(fill);
+
+  int bxLast=-1;
+  int bxNext=-1;
+  int bxAfter = 9999;
+  int bxBefore = -9999;
+
+  if (bunches.size() > 0) {
+    
+    // special case if event is before first collision
+    if (bxInOrbit < bunches.at(0)) {
+      bxLast   = bunches.at(bunches.size() - 1);
+      bxNext   = bunches.at(0);
+      bxAfter  = (bxInOrbit + NBX_PER_ORBIT) - bxLast;
+      bxBefore = bxInOrbit - bxNext;
+    }
+    // special case if event is after last collision
+    else if (bxInOrbit > bunches.at(bunches.size() - 1)) {
+      bxLast   = bunches.at(bunches.size()-1);
+      bxNext   = bunches.at(0);
+      bxAfter  = bxInOrbit - bxLast;
+      bxBefore = (bxInOrbit - NBX_PER_ORBIT) - bxNext;
+    }
+    // general case
+    else {      
+      for (unsigned c=0; c<(bunches.size()-1) && bunches.at(c)<bxInOrbit; ++c) {
+	bxLast = bunches.at(c);
+	bxNext = bunches.at(c+1);
+	bxAfter = bxInOrbit - bxLast;
+	bxBefore = bxInOrbit - bxNext;
+      }
+    }
+
+  }
+  
+  return ( abs(bxAfter) <= abs(bxBefore) ? bxAfter : bxBefore );
+
+}
+
+
+// get relative BX wrt bunch for a given BX in orbit
+const int long LhcFills::getBxWrtCollision(unsigned long fill, unsigned long bxInOrbit) {
+
+  std::vector<unsigned long> colls = getCollisions(fill);
+
+  int bxLast=-1;
+  int bxNext=-1;
+  int bxAfter = 9999;
+  int bxBefore = -9999;
+
+  if (colls.size() > 0) {
+    
+    // special case if event is before first collision
+    if (bxInOrbit < colls.at(0)) {
+      bxLast   = colls.at(colls.size() - 1);
+      bxNext   = colls.at(0);
+      bxAfter  = (bxInOrbit + NBX_PER_ORBIT) - bxLast;
+      bxBefore = bxInOrbit - bxNext;
+    }
+    // special case if event is after last collision
+    else if (bxInOrbit > colls.at(colls.size() - 1)) {
+      bxLast   = colls.at(colls.size()-1);
+      bxNext   = colls.at(0);
+      bxAfter  = bxInOrbit - bxLast;
+      bxBefore = (bxInOrbit - NBX_PER_ORBIT) - bxNext;
+    }
+    // general case
+    else {      
+      for (unsigned c=0; c<(colls.size()-1) && colls.at(c)<bxInOrbit; ++c) {
+	bxLast = colls.at(c);
+	bxNext = colls.at(c+1);
+	bxAfter = bxInOrbit - bxLast;
+	bxBefore = bxInOrbit - bxNext;
+      }
+    }
+
+  }
+  
+  return ( abs(bxAfter) <= abs(bxBefore) ? bxAfter : bxBefore );
+
 }
 
 
