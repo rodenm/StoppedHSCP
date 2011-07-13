@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.4 2011/06/30 16:46:46 temple Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.5 2011/07/08 20:21:08 temple Exp $
 //
 //
 
@@ -945,7 +945,7 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
 
   
   // Test output; need to check error code
-  std::cout <<"PRESCALE 32 = "<< event_->l1Jet32NoBptxNoHaloPrescale <<"  errorCode = "<<errorCode<<std::endl;
+  //std::cout <<"PRESCALE 32 = "<< event_->l1Jet32NoBptxNoHaloPrescale <<"  errorCode = "<<errorCode<<std::endl;
 
 
   // L1 trigger bits for -2..+2 BX
@@ -1050,6 +1050,8 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
 
   // get HLT jets
   edm::Handle<trigger::TriggerEvent> trgEvent;
+
+  std::cout <<"hltEventTag = "<<hltEventTag_<<std::endl;
   iEvent.getByLabel(hltEventTag_, trgEvent);
 
   // for Stopped HSCP L3 filter  
