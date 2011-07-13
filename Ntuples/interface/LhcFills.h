@@ -60,6 +60,8 @@ class LhcFills {
   // get indices
   unsigned long getIndexFromFill(unsigned long fill);
   unsigned long getIndexFromRun(unsigned long run);
+  const int long getBxWrtBunch(unsigned long fill, unsigned long bxInOrbit);
+  const int long getBxWrtCollision(unsigned long fill, unsigned long bxInOrbit);
 
  private:
 
