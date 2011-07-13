@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.5 2011/07/08 20:21:08 temple Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.6 2011/07/13 20:04:45 temple Exp $
 //
 //
 
@@ -1051,7 +1051,7 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
   // get HLT jets
   edm::Handle<trigger::TriggerEvent> trgEvent;
 
-  std::cout <<"hltEventTag = "<<hltEventTag_<<std::endl;
+  //std::cout <<"hltEventTag = "<<hltEventTag_<<std::endl;
   iEvent.getByLabel(hltEventTag_, trgEvent);
 
   // for Stopped HSCP L3 filter  
