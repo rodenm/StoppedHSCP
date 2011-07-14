@@ -22,7 +22,11 @@ Simulator::Simulator() :
   lumi_(),
   events_(),
   //  lifetimeMasks_(NBXS_PER_ORBIT, false),
-  tree_("events", "Event time structure")
+  tree_("events", "Event time structure"),
+  effLumi_(0.),
+  nObs_(0),
+  nExp_(0.),
+  nExp_e_(0.)
 {
   tree_.Branch("ls", &ls_, "ls/I");
   tree_.Branch("orbit", &orbit_, "orbit/I");
@@ -57,8 +61,8 @@ void Simulator::setupLumi() {
   }	
 
   // build lumi from runs
-  //lumi_.buildFromFile(runs, false, expt_->jsonFile, expt_->lumiFirstRun, expt_->lumiLastRun);
-  lumi_.buildFromFile(runs, true, expt_->histFile, expt_->lumiFirstRun, expt_->lumiLastRun);
+  lumi_.buildFromFile(runs, false, expt_->jsonFile, expt_->lumiFirstRun, expt_->lumiLastRun);
+  //lumi_.buildFromFile(runs, true, expt_->histFile, expt_->lumiFirstRun, expt_->lumiLastRun);
 
 }
 
@@ -194,6 +198,8 @@ void Simulator::simulateSignal(unsigned firstFill, unsigned lastFill) {
   std::cout << "Expected signal : " << expt_->expSignal << std::endl;
   std::cout << "Total N decays  : " << expt_->nDecays_MC << std::endl;
 
+  effLumi_ = effLumi;
+
 }
 
 
@@ -296,6 +302,9 @@ void Simulator::calculateExpectedBG(unsigned firstFill, unsigned lastFill) {
   std::cout << "Fraction of BX masked  : " << 1. - (livetime/totalTime) << std::endl;
   std::cout << "Expected background    : " << livetime * expt_->bgRate << " +/- " << livetime * expt_->bgRate_e << std::endl;
 
+  nExp_   = livetime * expt_->bgRate;
+  nExp_e_ = livetime * expt_->bgRate_e;
+
 }
 
 
@@ -329,6 +338,8 @@ void Simulator::calculateObservedEvents(unsigned firstFill, unsigned lastFill) {
   expt_->nObserved += nEvents;
 
   std::cout << "N obs : " << nEvents << std::endl;
+
+  nObs_ = nEvents;
 
 }
 

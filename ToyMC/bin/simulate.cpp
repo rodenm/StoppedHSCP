@@ -33,6 +33,10 @@ int main(int argc, char* argv[]) {
   TTree *tree = new TTree("T", "Experiments from the Stopped Particle MC");
   tree->Branch("Experiment", "Experiment", &e);
 
+  // fills file
+  std::ofstream fillsfile;
+  fillsfile.open("fills.txt");
+
   // setup simulation
   Simulator sim;
 
@@ -59,6 +63,8 @@ int main(int argc, char* argv[]) {
 
     std::cout << "With filling scheme " << sim.getLhcFills().getFillingScheme(fill) << std::endl;
 
+    sim.reset();
+
     //sim.printMaskInfo(fill);
 
     // expected background
@@ -70,7 +76,11 @@ int main(int argc, char* argv[]) {
     // run MC
     sim.simulateSignal(fill, fill);
 
+    // write fills file
+    fillsfile << fill << "\t" << sim.getEffLumi() << "\t" << sim.getNObs() << "\t" << sim.getNExp() << "\t" << sim.getNExpErr() << std::endl;
+
     std::cout << std::endl;
+
   }
 
   // calculate limit
@@ -80,21 +90,17 @@ int main(int argc, char* argv[]) {
 
   // write results summary
   std::ofstream summaryfile;
-  summaryfile.open("../summary.txt", std::ios::app);
+  summaryfile.open("summary.txt", std::ios::app);
   e->summary(summaryfile);
   summaryfile.close();
-
-  // Write to individual files
-  std::ofstream jobsummaryfile;
-  jobsummaryfile.open("summary.txt",std::ios::out);
-  e->summary(jobsummaryfile);
-  jobsummaryfile.close();
 
   std::cout << *e << std::endl;
 
   tree->Fill();
   f.cd();
   tree->Write();
+
+  fillsfile.close();
 
   return 0;
 }

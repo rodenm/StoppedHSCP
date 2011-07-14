@@ -58,6 +58,18 @@ class Simulator {
 
   LhcFills& getLhcFills() { return fills_; }
 
+  void reset() {
+    effLumi_ = 0.;
+    nObs_    = 0;
+    nExp_    = 0.;
+    nExp_e_  = 0.;
+  }
+
+  double getEffLumi() { return effLumi_; }
+  unsigned getNObs() { return nObs_; }
+  double getNExp() { return nExp_; }
+  unsigned getNExpErr() { return nExp_e_; }
+
  private:
 
   // random numbers
@@ -83,6 +95,11 @@ class Simulator {
 /*   unsigned nLifetimeMasks_; */
 /*   std::vector<bool> lifetimeMasks_;          // bool for each BX, true if masked for lifetime */
   
+  double effLumi_;
+  unsigned nObs_;
+  double nExp_;
+  double nExp_e_;
+
   // output stuff
   TTree tree_;
   int event_[3];

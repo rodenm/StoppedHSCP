@@ -10,22 +10,25 @@ import getopt
 
 # command line arguments
 def usage():
-    print "makeToyJobs.py [-h] <dataset> <parameter file>"
+    print "makeToyJobs.py [-h] [-j n processes] <dataset>"
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "h")
+    opts, args = getopt.getopt(sys.argv[1:], "hj")
 except getopt.GetoptError:
     usage()
     sys.exit(2)
 
+njobs=1
 for opt, arg in opts:
     if opt=='-h':
         usage()
         sys.exit()
+    if opt=='-j':
+        njobs=arg
 
 if len(args)<1:
     usage()
-    sys.exit()
+    sys.exit(2)
     
 dataset = args[0]
 ddir = os.environ['PWD']+'/'+dataset
@@ -101,6 +104,16 @@ for lifetime in lifetimes:
 
 # combine output of all jobs
 master.write('hadd -f '+odir+'/results.root '+outfiles+'\n')
+
+master.write('if [ -e '+ddir+'/toymc.txt ]; then')
+master.write('    rm '+ddir+'/toymc.txt')
+master.write('fi')
+
+count=1
+for lifetime in lifetimes:
+    master.write('cat '+odir+'/job'+str(count)+'/summary.txt >> '+ddir+'/toymc.txt\n')
+    count = count+1
+
 
 os.chmod(odir+'/runAll.sh', 0755)
 
