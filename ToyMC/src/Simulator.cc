@@ -61,8 +61,8 @@ void Simulator::setupLumi() {
   }	
 
   // build lumi from runs
-  lumi_.buildFromFile(runs, false, expt_->jsonFile, expt_->lumiFirstRun, expt_->lumiLastRun);
-  //lumi_.buildFromFile(runs, true, expt_->histFile, expt_->lumiFirstRun, expt_->lumiLastRun);
+  //lumi_.buildFromFile(runs, false, expt_->jsonFile, expt_->lumiFirstRun, expt_->lumiLastRun);
+  lumi_.buildFromFile(runs, true, expt_->histFile, expt_->lumiFirstRun, expt_->lumiLastRun);
 
 }
 
