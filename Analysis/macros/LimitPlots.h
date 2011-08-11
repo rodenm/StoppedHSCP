@@ -19,8 +19,8 @@ class LimitPlots {
 	public:
 
   LimitPlots(double tpLumi);
-  		~LimitPlots();
-
+  ~LimitPlots();
+  
   		void readToyFile(std::string filename);
   		void readTimeProfileFile(std::string filename);
   		void readGluinoData(std::string filename);

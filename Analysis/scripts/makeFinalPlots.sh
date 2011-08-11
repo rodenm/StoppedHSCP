@@ -9,7 +9,7 @@ maxInstLumi=$3
 # Set defaults in case lumi, maxLumi not provided
 if [ $# -lt 2 ]
 then
-    lumi=622.  # Units of pb^-1
+    lumi=877.  # Units of pb^-1
 fi
 
 if [ $# -lt 3 ]

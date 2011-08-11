@@ -5,7 +5,7 @@
 // *********************************
 // The following parameters (LUMI, MAXLUMI) need to be set by hand:
 // LUMI is a double
-#define LUMI 622.
+#define LUMI 877.
 // MAXINSTLUMI is a double
 // Get MAXINSTLUMI directly from https://cmswbm.web.cern.ch/cmswbm/cmsdb/servlet/FillReport  
 // (PeakInstLumi). 
