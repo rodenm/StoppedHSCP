@@ -59,10 +59,12 @@ class FillHistograms {
   std::vector<unsigned long> nm1Test6_;
 
   std::vector<TH1D*> hbx_;
+  std::vector<TH1D*> hrelbx_;
   std::vector<TH1D*> hbxB_;
   std::vector<TH1D*> hnm1_;
   std::vector<TH1D*> hcolls_;
   std::vector<TH1D*> hbunches_;
+  std::vector<TH1D*> hnormrelbx_;
 
 
 };

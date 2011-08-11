@@ -17,9 +17,12 @@ FillHistograms::FillHistograms(TFile* file, Cuts* cuts, LhcFills* fills) :
   nm1_(),
   nFin_(0),
   hbx_(0),
+  hrelbx_(0),
+  hbxB_(0),
   hnm1_(0),
   hcolls_(0),
-  hbunches_(0)
+  hbunches_(0),
+  hnormrelbx_(0)
 {
  
   // create directory structure
@@ -48,16 +51,20 @@ FillHistograms::~FillHistograms() {
   std::vector<TH1D*>::iterator itr;
 
   for (itr=hbx_.begin(); itr!=hbx_.end(); ++itr) delete (*itr);
+  for (itr=hrelbx_.begin(); itr!=hrelbx_.end(); ++itr) delete (*itr);
   for (itr=hbxB_.begin(); itr!=hbxB_.end(); ++itr) delete (*itr);
   for (itr=hnm1_.begin(); itr!=hnm1_.end(); ++itr) delete (*itr);
   for (itr=hcolls_.begin(); itr!=hcolls_.end(); ++itr) delete (*itr);
   for (itr=hbunches_.begin(); itr!=hbunches_.end(); ++itr) delete (*itr);
+  for (itr=hnormrelbx_.begin(); itr!=hnormrelbx_.end(); ++itr) delete (*itr);
 
   hbx_.clear();
   hbxB_.clear();
+  hrelbx_.clear();
   hnm1_.clear();
   hcolls_.clear();
   hbunches_.clear();
+  hnormrelbx_.clear();
 
 }
 
@@ -91,20 +98,24 @@ void FillHistograms::book(unsigned long fill) {
   if (nm1Test6_.size() < fill+1) nm1Test6_.resize(fill+1, 0);
 
   if (hbx_.size() < fill+1) hbx_.resize(fill+1, 0);
+  if (hrelbx_.size() < fill+1) hrelbx_.resize(fill+1, 0);
   if (hbxB_.size() < fill+1) hbxB_.resize(fill+1, 0);
   if (hnm1_.size() < fill+1) hnm1_.resize(fill+1, 0);
   if (hcolls_.size() < fill+1) hcolls_.resize(fill+1, 0);
   if (hbunches_.size() < fill+1) hbunches_.resize(fill+1, 0);
+  if (hnormrelbx_.size() < fill+1) hnormrelbx_.resize(fill+1, 0);
 
   // and book histograms
   hbx_.at(fill) = new TH1D((std::string("hbx")+fillstr.str()).c_str(), "BX number", 3564, 0., 3564.);
+  hrelbx_.at(fill) = new TH1D((std::string("hrelbx")+fillstr.str()).c_str(), "BX wrt bunch", 2000, -1000., 1000.);
   hbxB_.at(fill) = new TH1D((std::string("hbxB")+fillstr.str()).c_str(), "BX number", 3564, 0., 3564.);
   //hnm1_.at(fill) = new TH1D((std::string("hnm1")+fillstr.str()).c_str(), "N-1 counts", 20, 0., 20.);
 
 
   // book and fill filling scheme histos
-  hcolls_.at(fill) = new TH1D((std::string("hcolls")+fillstr.str()).c_str(), "BX number", 3564, 0., 3564.);
-  hbunches_.at(fill) = new TH1D((std::string("hbunches")+fillstr.str()).c_str(), "BX number", 3564, 0., 3564.);
+  hcolls_.at(fill) = new TH1D((std::string("hcolls")+fillstr.str()).c_str(), "Collisions", 3564, 0., 3564.);
+  hbunches_.at(fill) = new TH1D((std::string("hbunches")+fillstr.str()).c_str(), "Bunches", 3564, 0., 3564.);
+  hnormrelbx_.at(fill) =  new TH1D((std::string("hnormrelbx")+fillstr.str()).c_str(), "N rel BX slots", 2000, -1000., 1000.);
 
   std::vector<unsigned long> colls = lhcFills_->getCollisions(fill);
   std::vector<unsigned long> bunches = lhcFills_->getBunches(fill);
@@ -114,6 +125,11 @@ void FillHistograms::book(unsigned long fill) {
   }
   for (unsigned i=0; i<bunches.size(); ++i) {
     hbunches_.at(fill)->Fill(bunches.at(i));
+  }
+
+  // relative BX normalisation histogram
+  for (unsigned i=0; i<3564; ++i) {
+    hnormrelbx_.at(fill)->Fill( lhcFills_->getBxWrtBunch(fill, i) );
   }
 
   // record the fact we booked this fill already
@@ -166,7 +182,7 @@ void FillHistograms::fill(StoppedHSCPEvent& event) {
  
   // fill histos
   hbx_.at(fill)->Fill(event.bx);
-
+  hrelbx_.at(fill)->Fill(event.bxWrtBunch);
 
   if (cuts_->allCutN(8)) {
     hbxB_.at(fill)->Fill(event.bx);
@@ -188,11 +204,13 @@ void FillHistograms::save() {
 
     // save histograms
     hbx_.at(*itr)->Write("",TObject::kOverwrite);
+    hrelbx_.at(*itr)->Write("",TObject::kOverwrite);
     hbxB_.at(*itr)->Write("",TObject::kOverwrite);
     //    hnm1_.at(*itr)->Write("",TObject::kOverwrite);
 
     hcolls_.at(*itr)->Write("",TObject::kOverwrite);
     hbunches_.at(*itr)->Write("",TObject::kOverwrite);
+    hnormrelbx_.at(*itr)->Write("",TObject::kOverwrite);
 
   }
 

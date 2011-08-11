@@ -72,7 +72,7 @@ void Histograms::book() {
   hjetfhpd_ = new TH1D("hjetfhpd", "Leading jet fHPD", 50, 0., 1.);
   
   // towers in jets
-  htowiphifrac_ = new TH1D("htowiphifrac", "iphi E fraction", 50, 0., 1.);
+  htowiphifrac_ = new TH1D("htowiphifrac", "iphi E fraction", 50, 0., 5.);
 
   // muons
   hnmu_ = new TH1D("hnmu", "N muons", 4, -0.5, 3.5);
@@ -240,6 +240,7 @@ void Histograms::fill(StoppedHSCPEvent& event) {
       hjetn90_->Fill(event.jetN90.at(0));
       hjetn90hits_->Fill(0.);
       hjetfhpd_->Fill(0.);
+      htowiphifrac_->Fill(event.leadingIPhiFraction());
     }
     hnmu_->Fill(event.mu_N);
     if (event.mu_N>0) {
@@ -270,7 +271,7 @@ void Histograms::fill(StoppedHSCPEvent& event) {
     std::vector<double>::iterator max=max_element(tmp.begin(), tmp.end());
 
     if (event.jet_N>0) {
-      htowiphifrac_->Fill((*max)/event.jetE.at(0));
+      //      htowiphifrac_->Fill((*max)/event.jetE.at(0));
     }
     
   }
