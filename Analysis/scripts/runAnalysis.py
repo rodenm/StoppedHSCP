@@ -206,7 +206,7 @@ if __name__=="__main__":
                               type="float",
                               default=-1.,
                               help="Specify maximum integrated luminosity.  Default is -1.")
-    
+    parser.add_option_group(makeFinalGroup)
 
     options,args=parser.parse_args()
     steps=[]
