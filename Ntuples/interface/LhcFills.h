@@ -32,6 +32,10 @@ class LhcFills {
   const std::vector<bool>& getLifetimeMask(unsigned long fill);
   double getLiveFraction(unsigned long fill);
 
+  const int long getBxWrtBunch(unsigned long fill, unsigned long bxInOrbit);
+  const int long getBxWrtCollision(unsigned long fill, unsigned long bxInOrbit);
+
+
   // get info about a particular run
   unsigned long getFillFromRun(unsigned long run);
   std::string getFillingSchemeFromRun(unsigned long run);
@@ -44,7 +48,7 @@ class LhcFills {
 
   // get info about a particular filling scheme
   //   std::vector<unsigned> getCollisionsFromScheme(std::string scheme);
-  //   std::vector<unsigned> getBunchesFromScheme(std::string scheme);  
+  //   std::vector<unsigned> getBunchesFromScheme(std::string scheme);
 
   // print info
   void printSummary(std::ostream& o);
@@ -60,8 +64,6 @@ class LhcFills {
   // get indices
   unsigned long getIndexFromFill(unsigned long fill);
   unsigned long getIndexFromRun(unsigned long run);
-  const int long getBxWrtBunch(unsigned long fill, unsigned long bxInOrbit);
-  const int long getBxWrtCollision(unsigned long fill, unsigned long bxInOrbit);
 
  private:
 
