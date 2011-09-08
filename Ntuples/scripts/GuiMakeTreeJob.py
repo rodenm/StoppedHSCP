@@ -5,9 +5,9 @@ import sys, os, string
 from optparse import OptionParser
 sys.path.append(os.path.join(os.environ["CMSSW_BASE"],
                              "src/StoppedHSCP/Ntuples/scripts"))
-#sys.path.append(os.path.join(os.environ["CMSSW_BASE"],
-#                             "src/StoppedHSCP/Analysis/scripts"))
-from make_tree_job_for_gui import makeTreeJob
+
+#from make_tree_job_for_gui import makeTreeJob
+from makeTreeJob import *
 from copyFiles import CopyFiles, copySites
 
 class TreeJobGui:
@@ -557,13 +557,26 @@ class TreeJobGui:
                       trigger=self.trigger.get(),
                       datatype=self.datatype.get(),
                       whitelist=self.whitelist.get(),
-                      hltL3Tag=self.hltL3Tag.get(),
-                      outtable=outtable)
+                      HLTL3Tag=self.hltL3Tag.get(),
+                      )
 
         if os.path.exists(outtable):
-            outfile=open("table_info.txt",'a')
+            outfile=open(outtable,'a')
         else:
-            outfile=open("table_info.txt",'w')
+            outfile=open(outtable,'w')
+        cmd="makeTreeJob.py "
+        if (self.scheduler.get()=="caf"):
+            cmd=cmd+" -c"
+        if (self.useJSON.get()==True):
+            cmd=cmd+" -j"
+        cmd=cmd+" --%s --%s %s %s %s %s %s"%(self.datatype.get(),
+                                             self.trigger.get(),
+                                             self.era.get(),
+                                             self.label.get(),
+                                             self.dataset.get(),
+                                             self.gtag.get(),
+                                             myfile)
+        outfile.write("%s\n\n"%cmd)
         outfile.write( '\n[TABLE border="1"]\n')
         thename="%s_%s"%(self.era.get(),self.label.get())
         outfile.write( "Name | %s |-\n"%thename)
