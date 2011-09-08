@@ -70,5 +70,6 @@ stoppedHSCPTree = cms.EDAnalyzer(
     #bit 5:  dead;
     #bit 6:  hot;
     #bit 18:  exclude from calotower
-    badchannelstatus=cms.untracked.int32(1<<0 | 1<<1 | 1<<5 | 1<<6 | 1<<18) 
+    badchannelstatus=cms.untracked.int32(1<<0 | 1<<1 | 1<<5 | 1<<6 | 1<<18),
+    makeReducedNtuples=cms.untracked.bool(False)
     )

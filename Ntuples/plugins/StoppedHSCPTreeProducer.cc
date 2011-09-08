@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.6 2011/07/13 20:04:45 temple Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.7 2011/07/13 20:07:20 temple Exp $
 //
 //
 
@@ -333,6 +333,9 @@ private:
   int badchannelstatus_;
   std::set<HcalDetId> badChannels_;
 
+  // boolean for making reduced ntuples
+  bool makeReducedNtuples_;
+
   // LHC Fill structure (temporary until this is available through CMSSW)
   LhcFills fills_;
   unsigned currentFill_;
@@ -364,7 +367,6 @@ private:
   std::vector<unsigned> hcalDetJets_;
 
   std::vector<HBHERecHit> recHits_;
-
 };
 
 
@@ -430,6 +432,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   studyTowerMinEta_(iConfig.getUntrackedParameter<double>("studyTowerMinEta",1.3)),
   studyTowerMaxEta_(iConfig.getUntrackedParameter<double>("studyTowerMaxEta",3.0)),
   badchannelstatus_(iConfig.getUntrackedParameter<int>("badchannelstatus",0)),
+  makeReducedNtuples_(iConfig.getUntrackedParameter<bool>("makeReducedNtuples",false)),
   currentFill_(0),
   currentFillL1_(0),
   currentColls_(0),
@@ -450,6 +453,15 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   hcalDetJets_(0)
 {
   
+  // if Reduced Ntuples being made, don't include rechits or caloTowers
+  if (makeReducedNtuples_==true)
+    {
+      doCaloTowers_=false;
+      doRecHits_=false;
+      doHFRecHits_=false;
+    }
+
+
   // set up output
   tree_=fs_->make<TTree>("StoppedHSCPTree", "");
   tree_->Branch("events", "StoppedHSCPEvent", &event_, 64000, 1);
@@ -686,6 +698,29 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
     doTimingFromDigis(iEvent, iSetup);
   }
  
+
+  if (makeReducedNtuples_==true)
+    {
+      // reject cosmics
+      if (event_->mu_N>0)
+	return;
+
+      // loose jet cuts
+      if ( event_->jet_N==0) 
+	return;
+      bool passloosejetcut=false;
+      for (uint z=0;z<event_->jet_N;++z)
+	{
+	  if (event_->jetE[z]>=50 && fabs(event_->jetEta[z])<1.3)
+	    {
+	      passloosejetcut=true;
+	      break;
+	    }
+	}
+      if (passloosejetcut==false)
+	return;
+    } // if (makeReducedNtuples_==true)
+
   // fill TTree
   tree_->Fill();
   
