@@ -152,7 +152,7 @@ class TreeJobGui:
         parser.add_option("-L","--label",
                           dest="label",
                           default=None,
-                          help="Specify Label (e.g. the fill range:  1711_1731")
+                          help="Specify Label (e.g. the fill range:  1711_1731_V18")
         parser.add_option("-D","--dataset",
                           dest="dataset",
                           default=None,
@@ -164,7 +164,7 @@ class TreeJobGui:
         parser.add_option("--json",
                           dest="json",
                           default=None,
-                          help="Specify json file")
+                          help="Specify json file ")
         parser.add_option("--runs",
                           dest="runs",
                           default=None,
@@ -325,13 +325,13 @@ class TreeJobGui:
 
         # Set defaults
         if (self.era.get()=="None"):
-            self.era.set("Run2011A_414_v2")
+            self.era.set("Run2011A_423p5_V180100")
         if (self.label.get()=="None"):
-            self.label.set("1711_1716")
+            self.label.set("1711_1716_v1")
         if (self.dataset.get()=="None"):
-            self.dataset.set("/MinimumBias/Run2011A-PromptReco-v2/RECO")
+            self.dataset.set("/MinimumBias/Run2011A-HSCPSD-PromptSkim-v6/RECO")
         if (self.gtag.get()=="None"):
-            self.gtag.set("GR_P_V17::All")
+            self.gtag.set("GR_P_V22::All")
         return
 
     def enableEntry(self,event,entry):
@@ -576,6 +576,10 @@ class TreeJobGui:
                                              self.dataset.get(),
                                              self.gtag.get(),
                                              myfile)
+        if self.hltL3Tag.get()=="hltStoppedHSCPCaloJetEnergy50":
+            cmd=cmd +" --newhlttag"
+        elif self.hltL3Tag.get()=="hltStoppedHSCPTight1CaloJetEnergy30":
+            cmd=cmd+" --oldhlttag"
         outfile.write("%s\n\n"%cmd)
         outfile.write( '\n[TABLE border="1"]\n')
         thename="%s_%s"%(self.era.get(),self.label.get())
