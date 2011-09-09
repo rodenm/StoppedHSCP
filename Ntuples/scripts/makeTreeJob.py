@@ -93,7 +93,7 @@ readFiles.extend( [\n\
     if (HLTL3Tag<>"Default"):
         cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.hltL3Tag= cms.untracked.InputTag("%s","","HLT")\n\n'%HLTL3Tag
     if (makeReduced==True):
-        cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.doCalotowers=False'
+        cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.doCaloTowers=False'
         cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.doRecHits=False'
         cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.doHFRecHits=False'
         cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.makeReducedNtuples=True'
