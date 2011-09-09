@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.7 2011/07/13 20:07:20 temple Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.8 2011/09/08 16:11:00 temple Exp $
 //
 //
 
@@ -452,16 +452,6 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   hcalDetIds_(0),
   hcalDetJets_(0)
 {
-  
-  // if Reduced Ntuples being made, don't include rechits or caloTowers
-  if (makeReducedNtuples_==true)
-    {
-      doCaloTowers_=false;
-      doRecHits_=false;
-      doHFRecHits_=false;
-    }
-
-
   // set up output
   tree_=fs_->make<TTree>("StoppedHSCPTree", "");
   tree_->Branch("events", "StoppedHSCPEvent", &event_, 64000, 1);
@@ -698,7 +688,8 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
     doTimingFromDigis(iEvent, iSetup);
   }
  
-
+  // if making reduced ntuples, return without writing event
+  // unless basic selection criteria met
   if (makeReducedNtuples_==true)
     {
       // reject cosmics
