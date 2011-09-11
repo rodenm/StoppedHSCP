@@ -32,6 +32,7 @@ def WriteCrabFile(scheduler, dataset,storage,
                   cfgname,
                   jobStr,
                   dirStr,
+                  whitelist,
                   output="stoppedHSCPTree.root" 
                   ):
     server_type="#use_server = 1\n"
@@ -63,9 +64,10 @@ proxy_server = myproxy.cern.ch"
         crabstring += "\n#se_black_list = \n\
 #se_white_list = \n\
 #ce_black_list = \n\
-ce_white_list = heplnx206.pp.rl.ac.uk,heplnx207.pp.rl.ac.uk\n\
-#ce_white_list = ceprod02.hep.ph.ic.ac.uk\n\
-#ce_white_list = lcgce03.phy.bris.ac.uk, lcgce02.phy.bris.ac.uk, lcgce01.phy.bris.ac.uk\n"
+#ce_white_list = heplnx206.pp.rl.ac.uk,heplnx207.pp.rl.ac.uk\n\
+        "
+        if not whitelist.startswith("#"):
+            crabstring=crabstring+"\nce_white_list = %s\n"%whitelist
         
     # create CRAB file
     crab = open(cfgname, 'w')
@@ -93,7 +95,8 @@ readFiles.extend( [\n\
     if (HLTL3Tag<>"Default"):
         cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.hltL3Tag= cms.untracked.InputTag("%s","","HLT")\n\n'%HLTL3Tag
     if (makeReduced==True):
-        cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.doCaloTowers=False'
+        # need to keep calotowers, because they are used to compute iphi fraction
+        #cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.doCaloTowers=False'
         cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.doRecHits=False'
         cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.doHFRecHits=False'
         cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.makeReducedNtuples=True'
@@ -165,6 +168,7 @@ events_per_job=100000\n"
                   cfgname,
                   jobStr,
                   dirStr,
+                  whitelist,
                   "stoppedHSCPTree.root") 
 
     WriteCrabFile(scheduler, dataset, storage,
@@ -173,6 +177,7 @@ events_per_job=100000\n"
                   reducedcfgname,
                   reducedjobStr,
                   reduceddirStr,
+                  whitelist,
                   "stoppedHSCPTree_reduced.root") 
 
     WritePyCfgFile(datatype,trigger,gtag,
@@ -231,7 +236,7 @@ if __name__=="__main__":
             HLTL3Tag="hltStoppedHSCPCaloJetEnergy50"
         if opt=="--oldhlttag":
             HLTL3Tag="hltStoppedHSCPTight1CaloJetEnergy30"
-
+            
     # arguments
     if (len(args)!=5):
         print "Wrong number of arguments!"
