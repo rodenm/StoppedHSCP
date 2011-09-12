@@ -13,6 +13,7 @@ from copyFiles import CopyFiles, copySites
 class TreeJobGui:
 
     def __init__(self, parent=None):
+        # delete old table_info.txt file when starting?
 
         self.ReadInputs()
 
@@ -36,6 +37,23 @@ class TreeJobGui:
         self.FillTreeFrame(self.TreeFrame)
         self.FillCopyFrame(self.CopyFrame)
 
+        # Create crab frame
+        row=row+1
+        self.CrabFrame=Frame(self.main)
+        self.CrabFrame.grid(row=row,column=0,columnspan=2)
+        self.CrabFrame.columnconfigure(0,weight=1)
+        self.SubmitCrabButton=Button(self.CrabFrame,
+                                 text="Submit to CRAB",
+                                 command=lambda x=self:x.SubmitToCrab())
+        self.CheckCrabButton=Button(self.CrabFrame,
+                                    text="Check CRAB status",
+                                    command=lambda x=self:x.CheckCrabStatus())
+        self.GetCrabOutputButton=Button(self.CrabFrame,
+                                        text="Get CRAB output",
+                                        command=lambda x=self:x.GetCrabOutput())
+        self.SubmitCrabButton.grid(row=0,column=0)
+        self.CheckCrabButton.grid(row=0,column=1)
+        self.GetCrabOutputButton.grid(row=0,column=2)
         # Create MessageFrame
         row=row+1
         self.MessageFrame=Frame(self.main)
@@ -46,6 +64,60 @@ class TreeJobGui:
 
         # Set up defaults for copy locations
         self.SetStorage()
+        return
+
+    def SubmitToCrab(self):
+        cmd="crab -create -submit -cfg crab_tree_%s_%s.cfg"%(self.era.get(),
+                                                             self.label.get())
+        #print "SUBMITTING NTUPLES TO CRAB...\n\n"
+        print cmd
+        #os.system(cmd)
+        cmd="crab -create -submit -cfg crab_tree_%s_%s_reduced.cfg"%(self.era.get(),
+                                                                     self.label.get())
+        #print "SUBMITTING REDUCED NTUPLES TO CRAB...\n\n"
+        print cmd
+        #os.system(cmd)
+        return
+
+    def CheckCrabStatus(self):
+        cmd = "crab -status -c stoppedHSCP_tree_%s_%s"%(self.era.get(),
+                                                           self.label.get())
+        #print "CHECKING NTUPLE STATUS IN CRAB...\n\n"
+        print cmd
+        #os.system(cmd)
+        cmd =  "crab -status -c stoppedHSCP_tree_%s_%s_reduced"%(self.era.get(),
+                                                                 self.label.get())
+        #print "CHECKING REDUCED NTUPLE STATUS IN CRAB...\n\n"
+        print cmd
+        #os.system(cmd)
+        return
+
+    def GetCrabOutput(self):
+        crabdir="stoppedHSCP_Tree_%s_%s"%(self.era.get(),self.label.get())
+        #print "GETTING OUTPUT FROM CRAB FOR DEFAULT NTUPLES...\n\n"
+        cmd="crab -get all -c %s"%crabdir
+        print cmd
+        #os.system(cmd)
+        cmd = "crab -report -c %s"%crabdir
+        print cmd
+        #os.system(cmd)
+        cmd="lumiCalc.py -c frontier://LumiProd/CMS_LUMI_PROD -i %s/res/lumiSummary.json overview > jsonoutput.txt"%crabdir
+        print cmd
+        #os.system(cmd)
+        print "\n\n"
+        print "***Copy %s/res/lumiSummary.json to Analysis/data directory!"
+        print "\n\n"
+        #print "GETTING OUTPUT FROM REDUCED NTUPLES...\n\n"
+        crabdir="%s_reduced"%crabdir
+        cmd="crab -get all -c %s"%crabdir
+        print cmd
+        #os.system(cmd)
+        cmd = "crab -report -c %s"%crabdir
+        print cmd
+        #os.system(cmd)
+        cmd="lumiCalc.py -c frontier://LumiProd/CMS_LUMI_PROD -i %s/res/lumiSummary.json overview > jsonoutput_reduced.txt"%crabdir
+        print cmd
+        #os.system(cmd)
         return
 
     def FillTreeFrame(self,parent):
@@ -148,19 +220,19 @@ class TreeJobGui:
         parser.add_option("-E","--era",
                           dest="era", 
                           default=None,
-                          help="Specify Era (e.g. Run2011A_414_v2)")
+                          help="Specify Era (e.g. Run2011A_423p5_V180101)")
         parser.add_option("-L","--label",
                           dest="label",
                           default=None,
-                          help="Specify Label (e.g. the fill range:  1711_1731_V18")
+                          help="Specify Label (e.g. the fill range:  2006_2040_v1")
         parser.add_option("-D","--dataset",
                           dest="dataset",
                           default=None,
-                          help="Specify dataset")
+                          help="Specify dataset (ex.  /MinimumBias/Run2011A-HSCPSD-PromptSkim-v6/RECO)")
         parser.add_option("-G","--globaltag",
                           dest="globaltag",
                           default=None,
-                          help="Specify globaltag")
+                          help="Specify globaltag (ex. GR_P_V22::All)")
         parser.add_option("--json",
                           dest="json",
                           default=None,
