@@ -200,7 +200,6 @@ void Histograms::fill(StoppedHSCPEvent& event) {
   hhltbits_->Fill("HLT_JetE_NoBptx_NoHalo", event.hltJetNoBptxNoHalo);
   hhltbits_->Fill("HLT_JetE_NoBptx3BX_NoHalo", event.hltJetNoBptx3BXNoHalo);
 
-
   for (unsigned bx=0; bx<5; ++bx) {
     if (event.l1JetNoBptx.at(bx)>0) hbptx_->Fill(bx-2);
   }
@@ -242,6 +241,7 @@ void Histograms::fill(StoppedHSCPEvent& event) {
       hjetfhpd_->Fill(0.);
       htowiphifrac_->Fill(event.leadingIPhiFraction());
     }
+
     hnmu_->Fill(event.mu_N);
     if (event.mu_N>0) {
       hmuetaphi_->Fill(event.muEta.at(0), event.muPhi.at(0));
@@ -291,7 +291,6 @@ void Histograms::fill(StoppedHSCPEvent& event) {
   if (cuts_->cutNMinusOne(15)) hrpk_nmo_->Fill(event.topHPD5RPeak);
   if (cuts_->cutNMinusOne(16)) hrout_nmo_->Fill(event.topHPD5ROuter);
 
-
   // loop over cuts
   bool fail=false;
   for (unsigned c=0; c<cuts_->nCuts(); c++) {
@@ -308,7 +307,6 @@ void Histograms::fill(StoppedHSCPEvent& event) {
 	hjetetaphi_nm1_.at(c)->Fill(event.jetEta[0], event.jetPhi[0]);
       }
     }
-    
     // passes all cuts
     if (cuts_->cutN(c)) {
       hncutind_->Fill(c);
@@ -320,7 +318,6 @@ void Histograms::fill(StoppedHSCPEvent& event) {
 
     }
   }
-
 
 //       if (event.jet_N>0) {
 // 	hjete_cuts_.at(c)->Fill(event.jetE.at(0));
@@ -379,17 +376,19 @@ void Histograms::fill(StoppedHSCPEvent& event) {
 //   }
 
 
-
-
   if (cuts_->cutNMinusOne(11)) {
     hCTNM1EtaPhi_->Fill(event.jetEta[0], event.jetPhi[0]);
-    hCTNM1IEtaIPhi_->Fill(event.towerIEta[0], event.towerIPhi[0]);
+    // only fill if calotower info is present
+    if (event.towerIEta.size()>0 && event.towerIPhi.size()>0)
+      hCTNM1IEtaIPhi_->Fill(event.towerIEta[0], event.towerIPhi[0]);
     hCTNM1LeadingIPhi_->Fill(event.nTowerLeadingIPhi);
   }
 
   if (cuts_->cutNMinusSome(nMinusJetN90_)) {
     hN90NM1EtaPhi_->Fill(event.jetEta[0], event.jetPhi[0]);
-    hN90NM1IEtaIPhi_->Fill(event.towerIEta[0], event.towerIPhi[0]);
+    // only fill if calotower info is present
+    if (event.towerIEta.size()>0 && event.towerIPhi.size()>0)
+      hN90NM1IEtaIPhi_->Fill(event.towerIEta[0], event.towerIPhi[0]);
     hN90NM1LeadingIPhi_->Fill(event.nTowerLeadingIPhi);
   }
 
@@ -419,11 +418,10 @@ void Histograms::fill(StoppedHSCPEvent& event) {
   if (cuts_->cutNMinusOne(2)) hNM1Test_->Fill("BX veto", 1.);
   if (cuts_->cutNMinusOne(3)) hNM1Test_->Fill("Vertex veto", 1.);
   if (cuts_->cutNMinusOne(4)) hNM1Test_->Fill("Halo veto", 1.);
-  if (cuts_->cutNMinusOne(2)) hNM1Test_->Fill("Cosmic veto", 1.);
+  if (cuts_->cutNMinusOne(5)) hNM1Test_->Fill("Cosmic veto", 1.);
   if (cuts_->cutNMinusSome(noise)) hNM1Test_->Fill("Wide noise", 1.);
   if (cuts_->cutNMinusOne(10)) hNM1Test_->Fill("n90", 1);
   if (cuts_->cutNMinusSome(timing)) hNM1Test_->Fill("Timing", 1.);
-
 
   // test N-1 with overlapping cuts combined
   std::vector<unsigned> beam;
@@ -431,7 +429,7 @@ void Histograms::fill(StoppedHSCPEvent& event) {
   beam.push_back(3);
   beam.push_back(4);
   if (cuts_->cutNMinusSome(beam)) hNM1Test2_->Fill("Beam", 1.);
-  if (cuts_->cutNMinusOne(2)) hNM1Test2_->Fill("Cosmic veto", 1.);
+  if (cuts_->cutNMinusOne(5)) hNM1Test2_->Fill("Cosmic veto", 1.);
   if (cuts_->cutNMinusSome(noise)) hNM1Test2_->Fill("Wide noise", 1.);
   if (cuts_->cutNMinusOne(10)) hNM1Test2_->Fill("n90", 1);
   if (cuts_->cutNMinusSome(timing)) hNM1Test2_->Fill("Timing", 1.);
