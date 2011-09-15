@@ -38,6 +38,38 @@ def readFillNames(inputfile="/afs/cern.ch/user/l/lpc/w0/2011/measurements/stable
             dict[fill]=scheme
     return dict
 
+def CheckFillFile(fillfile):
+    myfile=open(fillfile,'r').readlines()
+    valid=True
+    for r in myfile[1:]:
+        temp=string.split(r)
+        if len(temp)<3:
+            valid=False
+            print "Bad line '%s' in fillfile '%s':  not enough arguments"%(r,fillfile)
+            return valid
+        try:
+            fill=string.atoi(temp[0])
+        except:
+            print "Bad line '%s' in fillfile '%s':  can't read fill # as an integer"%(r,fillfile)
+            valid=False
+            return valid
+        try:
+            runs=string.strip(temp[2])
+            runs=string.split(runs,",")
+            for run in runs:
+                try:
+                    string.atoi(run)
+                except:
+                    valid=False
+                    print "Bad line '%s' in fillfile '%s':  can't parse runs"%(r,fillfile)
+                    return valid
+        except:
+            print "Bad line '%s' in fillfile '%s':  can't ID runs"%(r,fillfile)
+            valid=False
+            return valid
+    print "<CheckFillFile>  fill file '%s' appears to be formatted correctly!"%fillfile
+    return valid
+
 def ParseAndCleanFillFile(fillfile):
     '''
     This gets all filling schemes from a "fills.txt"-style file.
@@ -339,6 +371,10 @@ if __name__=="__main__":
             print "Sorry,  fills file '%s' does not exist!"%options.input
         else:
             newschemes=ParseAndCleanFillFile(options.input)
+            goodfillfile=CheckFillFile(options.input)
+            if goodfillfile==False:
+                print "ERROR!  Fill file '%s' has problems"%options.input
+                sys.exit()
             if options.clean==True:
                 print "Input file %s has been cleaned"%options.input
                 sys.exit()

@@ -3,10 +3,25 @@
 # create CRAB config file for an ntuple job
 
 
-import sys
+import sys, os, string
 import getopt
 import string
 
+# Get pyGetFillScheme from StoppedHSCP/Ntuples
+temp=os.path.join(os.environ['CMSSW_BASE'],"src","StoppedHSCP","Ntuples","scripts")
+if not os.path.isdir(temp):
+    print "ERROR!  Cannot find directory '%s'"%temp
+    sys.exit()
+sys.path.append(temp)
+
+try:
+    import pyGetFillScheme
+except:
+    print "ERROR:  Unable to import pyGetFillScheme.py"
+    print "Have you remembered to check out StoppedHSCP/Ntuples from CVS?"
+    sys.exit()
+
+    
 
 def usage():
     print "makeTreeJob.py [-hjlc] [--raw|--reco|--mc] [--2010|--2011] [--newhlttag] [--oldhlttag] <era> <label> <dataset> <global tag> <runlist|JSON file>"
@@ -125,6 +140,18 @@ def makeTreeJob(era,
                 storage = "T2_UK_SGrid_RALPP",
                 useCAFsettings=False
                 ):
+
+    # Always check that fills.txt can be properly parsed
+    fillfile=os.path.join(os.environ['CMSSW_BASE'],"src","StoppedHSCP","Ntuples","data","fills.txt")
+    fillresult=pyGetFillScheme.CheckFillFile(fillfile)
+    if fillresult==False:
+        print "*********************************************"
+        print "****   WARNING!!!!   ************************"
+        print "****   Fill file '%s' ***********************"%fillfile
+        print "****   appears to have bad syntax! **********"
+        print "****   Results may be corrupted!  ***********"
+        print "*********************************************"
+        return False
 
     name = era + "_" + label
     cfgname = "crab_tree_"+name+".cfg"

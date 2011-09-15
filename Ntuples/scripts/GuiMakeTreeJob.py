@@ -10,6 +10,9 @@ sys.path.append(os.path.join(os.environ["CMSSW_BASE"],
 from makeTreeJob import *
 from copyFiles import CopyFiles, copySites
 
+import tkMessageBox
+
+
 class TreeJobGui:
 
     def __init__(self, parent=None):
@@ -67,15 +70,21 @@ class TreeJobGui:
         return
 
     def SubmitToCrab(self):
-        cmd="crab -create -submit -cfg crab_tree_%s_%s.cfg"%(self.era.get(),
-                                                             self.label.get())
+        era="%s_%s"%(self.era.get(),self.ntuplevar.get())
+        label="%s_%s"%(self.label.get(),self.versionvar.get())
+        cmd="crab -create  -cfg crab_tree_%s_%s.cfg"%(era,label)
         #print "SUBMITTING NTUPLES TO CRAB...\n\n"
         print cmd
+        cmd="crab -submit -c stoppedHSCP_tree_%s_%s"%(era,label)
+        print cmd
+        
         #os.system(cmd)
-        cmd="crab -create -submit -cfg crab_tree_%s_%s_reduced.cfg"%(self.era.get(),
-                                                                     self.label.get())
+        cmd="crab -create  -cfg crab_tree_%s_%s_reduced.cfg"%(era,label)
         #print "SUBMITTING REDUCED NTUPLES TO CRAB...\n\n"
         print cmd
+        cmd="crab -submit -c stoppedHSCP_tree_%s_%s_reduced"%(era,label)
+        print cmd
+        
         #os.system(cmd)
         return
 
@@ -193,17 +202,17 @@ class TreeJobGui:
                           dest="myreco",
                           default="RECO",
                           help="Specify reco type (default=RECO)")
-        parser.add_option("--raw",
+        parser.add_option("--raw","--RAW",
                           dest="rawtype",
                           default=False,
                           action="store_true",
                           help="Set reco type to RAW+RECO")
-        parser.add_option("--reco",
+        parser.add_option("--reco","--RECO",
                           dest="recotype",
                           default=False,
                           action="store_true",
                           help="Set reco type to RECO")
-        parser.add_option("--mc",
+        parser.add_option("--mc","--MC",
                           dest="mctype",
                           default=False,
                           action="store_true",
@@ -269,8 +278,18 @@ class TreeJobGui:
                           default=False,
                           action="store_true",
                           help="Use srmcp to copy files.  Default is false (lcg is used by default.)")
-
+        parser.add_option("-v",
+                          "--version",
+                          #default="v1",
+                          dest="version",
+                          help="Specify ntuple version/iteration, such as 'v1'")
+        parser.add_option("-n",
+                          "--ntuple",
+                          #default="V180101",
+                          dest="ntuple",
+                          help="specify Ntuple tag, such as 'V180101'")
         (options, args) = parser.parse_args()
+
 
         if options.newhlttag==True and options.oldhlttag==True:
                 print "Cannot specify both old and new hlttags as true!  Pick one!"
@@ -345,6 +364,9 @@ class TreeJobGui:
             self.outputloc.append(self.INstorage)
         else:
             self.outputloc.append("None")
+
+        self.INntuple=options.ntuple
+        self.INversion=options.version
         
         for a in args:
             #print a
@@ -371,7 +393,27 @@ class TreeJobGui:
             self.INjsonfile=self.INruns
         if self.INruns==None:
             self.INruns=self.INjsonfile
-                
+
+        # Split label, era up to separate versions
+        if self.INlabel<>None:
+            if self.INlabel.find("_v")>-1:
+                temp=string.split(self.INlabel,"_v")
+                self.INlabel=temp[0]
+                self.INversion="v%s"%temp[1]
+            if self.INlabel.find("_V")>-1:
+                temp=string.split(self.INlabel,"_V")
+                self.INlabel=temp[0]
+                self.INversion="v%s"%string.lower(temp[1])
+        if self.INera<>None:
+            if self.INera.find("_V")>-1:
+                temp=string.split(self.INera,"_V")
+                self.INera=temp[0]
+                self.INntuple="V%s"%temp[1]
+            if self.INera.find("_v")>-1:
+                temp=string.split(self.INera,"_v")
+                self.INera=temp[0]
+                self.INntuple="V%s"%string.upper(temp[1])
+                  
         return
     
 
@@ -395,11 +437,35 @@ class TreeJobGui:
             exec("self.%sE.grid(row=%i,column=1,sticky=EW)"%(v,row))
             row=row+1
 
+        self.ntuplevar=StringVar()
+        self.NtupleLabel=Label(self.InFrame,text="Ntuple Label:")
+        self.NtupleEntry=Entry(self.InFrame,textvariable=self.ntuplevar,width=10)
+        self.NtupleLabel.grid(row=0,column=2)
+        self.NtupleEntry.grid(row=0,column=3)
+        if self.INntuple==None:
+            self.NtupleEntry.configure(state=DISABLED)
+        else:
+            self.ntuplevar.set(self.INntuple)
+        self.NtupleEntry.bind('<Double-Button-1>',lambda e,t=self:t.enableEntry(e,t.NtupleEntry))
+
+        self.versionvar=StringVar()
+        self.VersionLabel=Label(self.InFrame,text="Version Label:")
+        self.VersionEntry=Entry(self.InFrame,textvariable=self.versionvar,width=10)
+        self.VersionLabel.grid(row=1,column=2)
+        self.VersionEntry.grid(row=1,column=3)
+        if self.INversion==None:
+            self.VersionEntry.configure(state=DISABLED)
+        else:
+            self.versionvar.set(self.INversion)
+            
+        self.VersionEntry.bind('<Double-Button-1>',lambda e,t=self:t.enableEntry(e,t.VersionEntry))
         # Set defaults
         if (self.era.get()=="None"):
-            self.era.set("Run2011A_423p5_V180100")
+            self.era.set("Run2011A_423p5")
+            self.ntuplevar.set("V180101")
         if (self.label.get()=="None"):
-            self.label.set("1711_1716_v1")
+            self.label.set("2006_2040")
+            self.versionvar.set("v1")
         if (self.dataset.get()=="None"):
             self.dataset.set("/MinimumBias/Run2011A-HSCPSD-PromptSkim-v6/RECO")
         if (self.gtag.get()=="None"):
@@ -593,8 +659,14 @@ class TreeJobGui:
             self.Print("Must explicitly specify RUN file \n(Toggle useJSON variable to activate)")
             return
         
+        if self.NtupleEntry.cget("state")=="disabled":
+            self.Print("Must explicitly state Ntuple label! \n(Double-click entry box to activate)")
+            return
 
-
+        if self.VersionEntry.cget("state")=="disabled":
+            self.Print("Must explicitly state Ntuple label! \n(Double-click entry box to activate)")
+            return
+        
         if self.scheduler.get()=="caf" and self.storage.get()<>"T2_CH_CAF":
             self.Print( "Warning!  CAF should only be run using storage at T2_CH_CAF\nProceed with caution!")
         
@@ -612,13 +684,46 @@ class TreeJobGui:
             self.Print ("ERROR!  Runs/Json File '%s' does not exist!"%myfile)
             return
 
+
+        # Now check fill rangs, compare to HLT Tag.
+        # Eventually, add more protections for various data consistency checks
+        labels=string.split(self.label.get(),"_")
+        try:
+            startfill=string.atoi(labels[0])
+            endfill=string.atoi(labels[1])
+            HLTL3Tag=self.hltL3Tag.get()
+
+            # fills 1711-1795
+            if (startfill<1795 and startfill>=1711 and
+                endfill>=1711 and endfill<1795
+                and HLTL3Tag<>"hltStoppedHSCPTight1CaloJetEnergy30"):
+                if (tkMessageBox.askokcancel(title="Bad HLT L3 Tag?",
+                                          message="HLT L3 Tag is not set to hltStoppedHSCPTight1CaloJetEnergy30, even though runs are in range [1711-1795).\nContinue?") == False):
+                    return
+            # fills > 1795
+            elif (startfill>=1795 and
+                  endfill>=1795
+                  and HLTL3Tag<>"hltStoppedHSCPCaloJetEnergy50"):
+                if (tkMessageBox.askokcancel(title="Bad HLT L3 Tag?",
+                                          message="HLT L3 Tag is not set to hltStoppedHSCPCaloJetEnergy50, even though runs are in range [1795-...]. \n Continue?") == False ):
+                    return
+            # fills < 1711
+            elif (startfill<1711 and endfill<1795 and
+                  (HLTL3Tag=="hltStoppedHSCPTight1CaloJetEnergy30" or
+                   HLTL3Tag=="hltStoppedHSCPCaloJetEnerg50")):
+                if (tkMessageBox.askokcancel(title="Bad HLT L3 Tag?",
+                                          message="HLT L3 Tag is set to '%s', even though runs are in range [0-1711). \n Continue?"%HLTL3Tag)==False):
+                    return 
+        except:  # format of labels not recognized
+            pass
+
         # print table
 
         print "Writing info for elog to 'table_info.txt'"
 
         outtable="table_info.txt"
-        x=makeTreeJob(era=self.era.get(),
-                      label=self.label.get(),
+        x=makeTreeJob(era="%s_%s"%(self.era.get(),self.ntuplevar.get()),
+                      label="%s_%s"%(self.label.get(),self.versionvar.get()),
                       dataset=self.dataset.get(),
                       gtag=self.gtag.get(),
                       runjsonfile= myfile,
@@ -636,15 +741,17 @@ class TreeJobGui:
             outfile=open(outtable,'a')
         else:
             outfile=open(outtable,'w')
-        cmd="makeTreeJob.py "
+        cmd="python makeTreeJob.py "
         if (self.scheduler.get()=="caf"):
             cmd=cmd+" -c"
         if (self.useJSON.get()==True):
             cmd=cmd+" -j"
         cmd=cmd+" --%s --%s %s %s %s %s %s"%(self.datatype.get(),
                                              self.trigger.get(),
-                                             self.era.get(),
-                                             self.label.get(),
+                                             "%s_%s"%(self.era.get(),
+                                                      self.ntuplevar.get()),
+                                             "%s_%s"%(self.label.get(),
+                                                      self.versionvar.get()),
                                              self.dataset.get(),
                                              self.gtag.get(),
                                              myfile)
