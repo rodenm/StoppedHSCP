@@ -746,6 +746,10 @@ class TreeJobGui:
             cmd=cmd+" -c"
         if (self.useJSON.get()==True):
             cmd=cmd+" -j"
+        if self.hltL3Tag.get()=="hltStoppedHSCPCaloJetEnergy50":
+            cmd=cmd +" --newhlttag"
+        elif self.hltL3Tag.get()=="hltStoppedHSCPTight1CaloJetEnergy30":
+            cmd=cmd+" --oldhlttag"
         cmd=cmd+" --%s --%s %s %s %s %s %s"%(self.datatype.get(),
                                              self.trigger.get(),
                                              "%s_%s"%(self.era.get(),
@@ -755,10 +759,7 @@ class TreeJobGui:
                                              self.dataset.get(),
                                              self.gtag.get(),
                                              myfile)
-        if self.hltL3Tag.get()=="hltStoppedHSCPCaloJetEnergy50":
-            cmd=cmd +" --newhlttag"
-        elif self.hltL3Tag.get()=="hltStoppedHSCPTight1CaloJetEnergy30":
-            cmd=cmd+" --oldhlttag"
+
         outfile.write("%s\n\n"%cmd)
         outfile.write( '\n[TABLE border="1"]\n')
         thename="%s_%s"%(self.era.get(),self.label.get())
