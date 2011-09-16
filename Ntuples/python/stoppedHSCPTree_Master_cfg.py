@@ -61,6 +61,9 @@ process.load('Configuration/StandardSequences/L1Extra_cff')
 # Ntuple producer
 process.load('StoppedHSCP/Ntuples/stoppedHSCPTree_cfi')
 
+# histogram producer
+process.load('StoppedHSCP/Ntuples/stoppedHSCPHistograms_cfi')
+
 # path
 process.ntuple = cms.Path(
 
@@ -81,6 +84,8 @@ process.ntuple = cms.Path(
 
 # generate TTree    
     +process.stoppedHSCPTree
+
+    +process.stoppedHSCPHistograms
 )
 
 

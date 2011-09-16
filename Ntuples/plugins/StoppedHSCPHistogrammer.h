@@ -33,7 +33,7 @@ class StoppedHSCPHistogrammer : public edm::EDAnalyzer {
 
  public:
 
-  StoppedHSCPHistogrammer();
+  explicit StoppedHSCPHistogrammer(const edm::ParameterSet& iPSet);
   ~StoppedHSCPHistogrammer();
 
   virtual void beginJob() ;
