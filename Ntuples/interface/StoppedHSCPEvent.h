@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.3 2011/07/08 20:21:08 temple Exp $
+// $Id: StoppedHSCPEvent.h,v 1.4 2011/07/08 20:34:41 temple Exp $
 //
 //
 
@@ -180,6 +180,7 @@ class StoppedHSCPEvent : public TObject {
   void addMuon(shscp::Muon m);
   void addHPD(shscp::HPD h);
   void addTower(shscp::Tower t);
+  void removeTowers();
   void addStudyTower(shscp::Tower t);
   void addRecHit(shscp::RecHit r);
   void addHFRecHit(shscp::RecHit r);

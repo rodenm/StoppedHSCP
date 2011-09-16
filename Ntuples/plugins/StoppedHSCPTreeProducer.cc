@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.8 2011/09/08 16:11:00 temple Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.9 2011/09/09 18:58:14 temple Exp $
 //
 //
 
@@ -665,7 +665,7 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
 
   // general RECO info
   doJets(iEvent);
-  doGlobalCalo(iEvent);
+  doGlobalCalo(iEvent); // uses ntuple calotower info for leadingIphiFractionValue
   doMuons(iEvent);
 
   doBeamHalo(iEvent);
@@ -711,6 +711,10 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
       if (passloosejetcut==false)
 	return;
     } // if (makeReducedNtuples_==true)
+
+  // remove calotowers
+  if (!doCaloTowers_)
+    event_->removeTowers(); // caloTowers don't need to be saved, unless specified in cfg
 
   // fill TTree
   tree_->Fill();
@@ -1163,48 +1167,49 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
 	   // 	 std::cout << "Jet " << std::endl;
 // 	 std::cout << "   E=" << it->energy() << " eta=" << it->eta() << " phi=" << it->phi() << std::endl;
 	 // get towers
-
-	 if (doCaloTowers_) {
-
-	   for (int i=0; i<it->nConstituents(); ++i) {
-	     CaloTowerPtr tower = it->getCaloConstituent(i);
+	 
+	 for (int i=0; i<it->nConstituents(); ++i) {
+	   CaloTowerPtr tower = it->getCaloConstituent(i);
+	   
+	   if (tower->energy() > towerMinEnergy_ &&
+	       fabs(tower->eta()) < towerMaxEta_) {
 	     
-	     if (tower->energy() > towerMinEnergy_ &&
-		 fabs(tower->eta()) < towerMaxEta_) {
-	       
-	       // write tower
-	       shscp::Tower tow;
-	       tow.e = tower->energy();
-	       tow.et = tower->et();
-	       tow.eta = tower->eta();
-	       tow.phi = tower->phi();
-	       tow.ieta = tower->ieta();
-	       tow.iphi = tower->iphi();
-	       tow.nJet = njet;
-	       tow.eHad = tower->hadEnergy();
-	       tow.etHad = tower->hadEt();
-	       tow.eEm = tower->emEnergy();
-	       tow.etEm = tower->emEt();
-	       // Add tower, if within appropriate eta bounds
+	     // write tower
+	     shscp::Tower tow;
+	     tow.e = tower->energy();
+	     tow.et = tower->et();
+	     tow.eta = tower->eta();
+	     tow.phi = tower->phi();
+	     tow.ieta = tower->ieta();
+	     tow.iphi = tower->iphi();
+	     tow.nJet = njet;
+	     tow.eHad = tower->hadEnergy();
+	     tow.etHad = tower->hadEt();
+	     tow.eEm = tower->emEnergy();
+	     tow.etEm = tower->emEt();
 
-	       if (fabs(tower->eta()) < towerMaxEta_) 
-		 event_->addTower(tow);
-	       if (fabs(tower->eta())>=studyTowerMinEta_ && fabs(it->eta())<studyTowerMaxEta_)
-		 event_->addStudyTower(tow);
-	       
-	       // 	   std::cout << "  Calo tower" << std::endl;
-	       // 	   std::cout << "    eta=" << tower->eta() << " phi=" << tower->phi() << std::endl;
-	       // 	   std::cout << "    ECAL E=" << tower->emEnergy() << " HCAL E=" << tower->hadEnergy() << std::endl;
-	       // 	   std::cout << "    ECAL time : " << tower->ecalTime() << std::endl;
-	       // 	   std::cout << "    HCAL time : " << tower->hcalTime() << std::endl;
-	       
-	     }
+	     // Always add tower, if within appropriate eta bounds
+	     // (if doCaloTowers_==false, tower will be removed
+	     //  via removeTowers after leadingIPhiFractionValue computed)
+	     if (fabs(tower->eta()) < towerMaxEta_) 
+	       event_->addTower(tow);
+
+	     // only add "studyTower" if doCaloTowers_==true
+	     if (doCaloTowers_ && 
+		 fabs(tower->eta())>=studyTowerMinEta_ && 
+		 fabs(it->eta())<studyTowerMaxEta_)
+	       event_->addStudyTower(tow);
+	     // 	   std::cout << "  Calo tower" << std::endl;
+	     // 	   std::cout << "    eta=" << tower->eta() << " phi=" << tower->phi() << std::endl;
+	     // 	   std::cout << "    ECAL E=" << tower->emEnergy() << " HCAL E=" << tower->hadEnergy() << std::endl;
+	     // 	   std::cout << "    ECAL time : " << tower->ecalTime() << std::endl;
+	     // 	   std::cout << "    HCAL time : " << tower->hcalTime() << std::endl;
+	     
 	   }
-	 } // if (doCaloTowers_)
-
-       }
-     }
-   }
+	 } // loop over nconstituents
+       } // if (it->energy>jetMinEnergy_)
+     } // loop over jets
+   } // if (caloJets.isValid())
    else {
      if (!jetsMissing_) edm::LogWarning("MissingProduct") << "CaloJets not found.  Branch will not be filled" << std::endl;
      jetsMissing_ = true;

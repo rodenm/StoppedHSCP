@@ -111,7 +111,7 @@ readFiles.extend( [\n\
         cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.hltL3Tag= cms.untracked.InputTag("%s","","HLT")\n\n'%HLTL3Tag
     if (makeReduced==True):
         # need to keep calotowers, because they are used to compute iphi fraction
-        #cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.doCaloTowers=False'
+        cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.doCaloTowers=False'
         cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.doRecHits=False'
         cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.doHFRecHits=False'
         cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.makeReducedNtuples=True'
@@ -263,7 +263,7 @@ if __name__=="__main__":
             HLTL3Tag="hltStoppedHSCPCaloJetEnergy50"
         if opt=="--oldhlttag":
             HLTL3Tag="hltStoppedHSCPTight1CaloJetEnergy30"
-            
+
     # arguments
     if (len(args)!=5):
         print "Wrong number of arguments!"

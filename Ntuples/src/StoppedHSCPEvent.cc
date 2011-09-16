@@ -432,6 +432,24 @@ void StoppedHSCPEvent::addTower(Tower t) {
   }
 }
 
+void StoppedHSCPEvent::removeTowers() {
+  // remove towers (used for reduced ntuples,
+  // and when doCaloTowers is false
+  towerE.clear();
+  towerEt.clear();   
+  towerEta.clear();  
+  towerPhi.clear();  
+  towerIEta.clear(); 
+  towerIPhi.clear(); 
+  towerNJet.clear(); 
+  towerEHad.clear(); 
+  towerEtHad.clear();
+  towerEEm.clear();  
+  towerEtEm.clear(); 
+  tower_N=0;
+} // void StoppedHSCPEvent::removeTowers()
+
+
 void StoppedHSCPEvent::addStudyTower(Tower t) {
   if (studyTower_N < MAX_N_TOWERS) {
     studyTowerE.push_back(t.e);
