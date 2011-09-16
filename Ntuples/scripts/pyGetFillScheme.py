@@ -22,6 +22,16 @@ import time
 from optparse import OptionParser
 
 
+def GetUserNameFromCrab():
+    crab=os.popen("klist").readlines()
+    user=None
+    for c in crab:
+        if c.find('Default principal: ')>-1:
+            user=string.split(c,"Default principal: ")[1]
+            user=string.split(user,"@")[0]
+            break
+    return user
+
 def readFillNames(inputfile="/afs/cern.ch/user/l/lpc/w0/2011/measurements/stablebeams2011"):
     dict={}
     if not os.path.isfile(inputfile):
@@ -337,20 +347,49 @@ if __name__=="__main__":
                       default=False,
                       action="store_true",
                       help="Turn on verbose debugging")
+
+    parser.add_option("-n","--noCompare",
+                      action="store_true",
+                      default=False,
+                      help="If specified, scheme names will not be compared to the 'compareFile' value.  Default is False (i.e., names will be compared).") 
     parser.add_option("-F","--compareFile",
                       dest="compareFile",
-                      default=None,
+                      default="/afs/cern.ch/user/l/lpc/w0/2011/measurements/stablebeams2011",
                       help="Specify file that contains 'official' scheme name.   Default is /afs/cern.ch/user/l/lpc/w0/2011/measurements/stablebeams2011.   This command is used for extra checking -- if file not present, extra check will not be done.")
+    parser.add_option("-u","--username",
+                      dest="user",
+                      default=None,
+                      help="Specify your CERN user name, so that files can be copied from lxplus.  (Default is 'None'.)")
     
     (options,args)=parser.parse_args()
 
+
+    # Get user name (need to do a possible scp from lxplus)
+    if options.user==None:
+        options.user=GetUserNameFromCrab()
+        if options.user==None:
+            print "Unable to get CERN user name from 'klist'!"
+            print "Setting default user name to 'temple'"
+            print "(You can specify a username with -u option on command line)"
+            options.user="temple"
+
     # Get list of official scheme names to act as a cross-check against those entered into fills.txt input file
     compareDict={}
-    # If no compareFile specified, but the default /afs/... file exists, use the default for comparisons.
-    if options.compareFile==None and os.path.isfile("/afs/cern.ch/user/l/lpc/w0/2011/measurements/stablebeams2011"):
-        options.compareFile="/afs/cern.ch/user/l/lpc/w0/2011/measurements/stablebeams2011"
-    if options.compareFile<>None:
-        compareDict=readFillNames(options.compareFile)
+
+    if options.noCompare==False:
+        localCompareFile=None
+        if os.path.isfile(options.compareFile):
+            localCompareFile=options.compareFile
+        else:
+            print "Cannot find local comparison file '%s'.  Trying to copy from lxplus."%options.compareFile
+            cmd="scp %s@lxplus.cern.ch:%s ."%(options.user,options.compareFile)
+            output=os.system(cmd)
+            if output>0:
+                print "ERROR!  Could not copy file '%s' for user '%s' from lxplus to local area!"%(options.compareFile, options.user)
+            else:
+                localCompareFile=os.path.basename(options.compareFile)
+        if localCompareFile<>None:
+            compareDict=readFillNames(localCompareFile)
     
 
 

@@ -73,6 +73,22 @@ class FillInfo:
             self.valid=True  # all info read from line
         return
 
+####################################################
+
+def GetUserNameFromCrab():
+    crab=os.popen("klist").readlines()
+    user=None
+    for c in crab:
+        if c.find('Default principal: ')>-1:
+            user=string.split(c,"Default principal: ")[1]
+            user=string.split(user,"@")[0]
+            break
+    return user
+
+
+####################################################
+
+
 # Step 1:  Does not yet exist
 
 # Step 2:
@@ -93,7 +109,7 @@ def SearchDBS(dataset="/MinimumBias/Run2011A-HSCPSD-PromptSkim-v6/RECO",
     runs.sort()
     print "RUNS FOUND = ",runs
     if len(runs)>0:
-        print "Run range = %i - %i"%(runs[0],runs[-1])
+        print "\nRun range = %i - %i"%(runs[0],runs[-1])
     return runs
 
 # Step 3:
@@ -238,7 +254,7 @@ if __name__=="__main__":
                       help="Show debugging information")
     parser.add_option("-d","--dataset",
                       dest="dataset",
-                      default="",
+                      default="/MinimumBias/Run2011A-HSCPSD-PromptSkim-v6/RECO",
                       help="Specify dataset.  Default is '/MinimumBias/Run2011A-HSCPSD-PromptSkim-v6/RECO'")
     parser.add_option("-j","--json",
                       dest="json",
@@ -251,10 +267,11 @@ if __name__=="__main__":
                       help="If specified, input json will be considered a local file, instead of being copied from lxplus.  Default is False.")
     parser.add_option("-u","--username",
                       dest="user",
-                      default="temple",
-                      help="Specify your CERN user name, so that files can be copied from lxplus.  (Default is 'temple'.")
+                      default=None,
+                      help="Specify your CERN user name, so that files can be copied from lxplus.  (Default is 'None'.)")
     opts,args=parser.parse_args()
 
+    # Check format of input json
     if opts.json<>None:
         if opts.json.startswith("https://cms-service-dqm.web.cern.ch/cms-service-dqm/"):
 
@@ -266,6 +283,18 @@ if __name__=="__main__":
         if opts.localjson==False and not opts.json.startswith("/"):
             opts.json=os.path.join("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt",opts.json)
 
+
+    # Get user name (need to do a possible scp from lxplus)
+    if opts.user==None:
+        opts.user=GetUserNameFromCrab()
+        if opts.user==None:
+            print "Unable to get CERN user name from 'klist'!"
+            print "Setting default user name to 'temple'"
+            print "(You can specify a username with -u option on command line)"
+            opts.user="temple"
+
+
+
     runs=SearchDBS(debug=opts.debug,
                    dataset=opts.dataset)
     # new 2011B dataset:/MinimumBias/Run2011B-HSCPSD-PromptSkim-v1/RECO
@@ -273,7 +302,11 @@ if __name__=="__main__":
     ReadFills(runs=runs,
               debug=opts.debug)
     #runs=[0,999999999]
-    MakeJsonFile(json=opts.json,
-                 cernuser=opts.user,
-                 scpjson=not opts.localjson,
-                 runs=runs)
+    if opts.json<>None:
+        MakeJsonFile(json=opts.json,
+                     cernuser=opts.user,
+                     scpjson=not opts.localjson,
+                     runs=runs)
+    else:
+        print "No starting input Json file provided."
+        print "Cannot produce a revised json for the listed runs."
