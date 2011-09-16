@@ -27,6 +27,7 @@ except:
     try:
         import simplejson as JSON
     except:
+        print "Unable to import json or simplejson"
         print "Please use lxplus or set an environment (for example crab) with json lib available"
         sys.exit(1)
 
@@ -228,7 +229,7 @@ def MakeJsonFile(json=None,
 #######
 
 if __name__=="__main__":
-    parser=OptionParser(usage="hi there!",
+    parser=OptionParser(usage="python GetRunFillInfo [options]",
                         version="%s"%version)
     parser.add_option("-v","--verbose",
                       dest="debug",

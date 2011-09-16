@@ -428,5 +428,6 @@ if __name__=="__main__":
             outfile.write(i)
         outfile.close()
         print "Completed writing of schemes to '%s'"%options.fillschemetext
+        CheckFillFile(options.input)
     else:
         print "Hmm... output file '%s' doesn't exist"%options.fillschemetext
