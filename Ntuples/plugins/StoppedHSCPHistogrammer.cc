@@ -39,7 +39,7 @@ void StoppedHSCPHistogrammer::analyze(const edm::Event& iEvent, const edm::Event
 }
 
 void StoppedHSCPHistogrammer::endJob() {
-
+  return;
   // loop over fills
   std::vector<unsigned long>::const_iterator itr;
   for (itr=fillList_.begin(); itr!=fillList_.end(); ++itr) {
