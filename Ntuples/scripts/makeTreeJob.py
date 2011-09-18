@@ -251,11 +251,11 @@ if __name__=="__main__":
             trigger = '2010'
         if opt=='--2011':
             trigger = '2011'
-        if opt=='--raw':
+        if opt=='--raw' or opt=='RAW':
             datatype = 'RAWRECO'
-        if opt=='--reco':
+        if opt=='--reco' or opt=='--RECO':
             datatype = 'RECO'
-        if opt=='--mc':
+        if opt=='--mc' or opt=='MC':
             datatype = 'MC'
         if opt=='-m':
             datatype = 'MC'
