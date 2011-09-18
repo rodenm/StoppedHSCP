@@ -673,7 +673,7 @@ class TreeJobGui:
         elif self.scheduler.get()<>"caf" and self.storage.get() not in self.outputloc:
             self.Print( "Warning!  Storage output location '%s' differs from expected choices: %s \nProceed with caution! "%(self.storage.get(),self.outputloc))
 
-
+            
 
         if (self.useJSON.get()==True):
             myfile=self.jsonfile.get()
@@ -684,8 +684,12 @@ class TreeJobGui:
             self.Print ("ERROR!  Runs/Json File '%s' does not exist!"%myfile)
             return
 
-
-        # Now check fill rangs, compare to HLT Tag.
+        # check that global tag is reasonable
+        if not (self.gtagE.get()).endswith("::All"):
+            if tkMessageBox.askokcancel(title="Warning:  Bad Global Tag Name",
+                                        message="Global tag does not end with '::All'.\nContinue?")==False:
+                return
+        # Now check fill range, compare to HLT Tag.
         # Eventually, add more protections for various data consistency checks
         labels=string.split(self.label.get(),"_")
         try:
