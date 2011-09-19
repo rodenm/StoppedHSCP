@@ -39,18 +39,18 @@ void StoppedHSCPHistogrammer::analyze(const edm::Event& iEvent, const edm::Event
 }
 
 void StoppedHSCPHistogrammer::endJob() {
-  return;
+
+  TFileDirectory dir = fs_->mkdir("fills");
+  dir.cd();
+
   // loop over fills
   std::vector<unsigned long>::const_iterator itr;
   for (itr=fillList_.begin(); itr!=fillList_.end(); ++itr) {
 
-    // cd to directory
-    std::stringstream fillstr;
-    fillstr << (*itr);
-    //    fillsDir_->cd();
+    std::cout << "Writing histograms for fill " << *itr << std::endl;
 
     // save histograms
-    bxNormHistos_.at(*itr)->Write("",TObject::kOverwrite);
+    bxNormHistos_.at(*itr)->Write();
 
   }
 
