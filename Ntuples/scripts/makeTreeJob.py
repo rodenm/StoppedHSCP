@@ -223,7 +223,7 @@ if __name__=="__main__":
     # Move to OptionParser?
     
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hjlcm", ['2010','2011','raw','reco','mc','oldhlttag','newhlttag'])
+        opts, args = getopt.getopt(sys.argv[1:], "hjlcm", ['2010','2011','raw','reco','RECO','mc','oldhlttag','newhlttag'])
     except getopt.GetoptError:
         print "Error getting options"
         usage()
