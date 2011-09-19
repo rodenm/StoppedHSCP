@@ -754,7 +754,7 @@ class TreeJobGui:
             cmd=cmd +" --newhlttag"
         elif self.hltL3Tag.get()=="hltStoppedHSCPTight1CaloJetEnergy30":
             cmd=cmd+" --oldhlttag"
-        cmd=cmd+" --%s --%s %s %s %s %s %s"%(self.datatype.get(),
+        cmd=cmd+" --%s --%s %s %s %s %s %s"%(string.lower(self.datatype.get()),
                                              self.trigger.get(),
                                              "%s_%s"%(self.era.get(),
                                                       self.ntuplevar.get()),
