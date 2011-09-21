@@ -156,7 +156,8 @@ bool Cuts::towersIPhiCut() const {   // cut on N leading towers at same iphi
 }
 
 bool Cuts::iPhiFractionCut() const { // Et fraction at leading iphi
-  return event_->leadingIPhiFraction()<0.95;
+  //return event_->leadingIPhiFraction()<0.95;
+  return event_->leadingIPhiFractionValue<0.95;
 }
 
 bool Cuts::hpdR1Cut() const {        // timing R1 cut from HPD
