@@ -19,3 +19,4 @@ process.stoppedHSCPTree.hltPathJetNoBptx = hltPathJetNoBptx
 process.stoppedHSCPTree.hltPathJetNoBptxNoHalo = hltPathJetNoBptxNoHalo
 process.stoppedHSCPTree.hltPathJetNoBptx3BXNoHalo = hltPathJetNoBptx3BXNoHalo
 process.stoppedHSCPTree.hltL3Tag = hltL3Tag
+process.stoppedHSCPTree.doDigis=False 
