@@ -15,7 +15,8 @@ BasicAnalyser::BasicAnalyser(std::vector<std::string> ifiles,
   iEvent_(0),
   ofile_(ofile.c_str(), "RECREATE"),
   event_(0),
-  cuts_(0, isMC, 0, 0)
+  cuts_(0, isMC, 0, 0),
+  lhcFills_()
 {
 
   std::cout << "Stopped Gluino Analysis" << std::endl;

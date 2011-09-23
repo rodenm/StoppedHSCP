@@ -52,7 +52,7 @@ class BasicAnalyser {
   // loop over events
   virtual void loop(ULong64_t maxEvents_=0);
 
- private:
+ protected:
 
   // are we running on MC or not?
   bool isMC_;
@@ -72,6 +72,9 @@ class BasicAnalyser {
 
   // the cuts
   Cuts cuts_;
+
+  // the fill structure (temporarily useful)
+  LhcFills lhcFills_;
 
 };
 
