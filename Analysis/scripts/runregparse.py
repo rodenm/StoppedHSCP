@@ -156,7 +156,13 @@ def ene_in_run(run_data):
 #            fill=group.split(',')[1]
 #            print run,energy,fill
             mindiff=999999.
-            if energy.isdigit():
+            energy_is_float=True
+            try:
+                energy=string.atof(energy)  # "isdigit" fails if a decimal is included
+            except ValueError:
+                print "WARNING:  Cannot parse energy '%s' as a float in run '%s'"%(energy,run)
+                energy_is_float=False
+            if energy_is_float==True:  # energy was successfully read; compare to expected beam energy
                 for be in BEAM_ENE_ALL:
                     if abs(float(energy)-be)<mindiff:
                         mindiff=abs(float(energy)-be)
