@@ -18,7 +18,7 @@
 #include "G4Step.hh"
 
 #include "FWCore/ServiceRegistry/interface/Service.h"
-#include "PhysicsTools/UtilAlgos/interface/TFileService.h"
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "TTree.h"
 #include "TH1D.h"
 #include "TH2.h"
