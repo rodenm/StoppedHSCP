@@ -7,3 +7,7 @@
 
 <bin name="makeHistograms" file="MakeHistograms.cpp"/>
 
+<bin name="example" file="Example.cpp"/>
+
+<bin name="bxDistributions" file="BXDistributions.cpp"/>
+

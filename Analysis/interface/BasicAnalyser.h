@@ -19,9 +19,7 @@ class BasicAnalyser {
  
  public:
 
-  BasicAnalyser(std::vector<std::string> indir,
-		std::string ofile,
-		bool isMC);
+  BasicAnalyser(int argc, char* argv[]);
 
   ~BasicAnalyser();
 
@@ -50,7 +48,7 @@ class BasicAnalyser {
   const Cuts& cuts() { return cuts_; }
 
   // loop over events
-  virtual void loop(ULong64_t maxEvents_=0);
+  virtual void loop();
 
  protected:
 
@@ -62,10 +60,12 @@ class BasicAnalyser {
   TChain* chain_;
 
   unsigned long nEvents_;
+  unsigned long maxEvents_;
   unsigned long iEvent_;
 
   // output file
-  TFile ofile_;
+  std::string ofilename_;
+  TFile* ofile_;
 
   // the event
   StoppedHSCPEvent* event_;

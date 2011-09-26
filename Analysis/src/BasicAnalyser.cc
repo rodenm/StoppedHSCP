@@ -2,33 +2,104 @@
 
 #include "StoppedHSCP/Ntuples/interface/Constants.h"
 
+#include <string>
+#include <vector>
 #include <iostream>
+#include <fstream>
+#include <sys/stat.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <dirent.h>
+#include <errno.h>
+#include <boost/program_options.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
-BasicAnalyser::BasicAnalyser(std::vector<std::string> ifiles, 
-		   std::string ofile, 
-		   bool isMC) :
-  isMC_(isMC),
-  ifiles_(ifiles),
+namespace po = boost::program_options;
+
+
+
+BasicAnalyser::BasicAnalyser(int argc, char* argv[]) :
+  isMC_(false),
+  ifiles_(0),
   nEvents_(0),
+  maxEvents_(0),
   iEvent_(0),
-  ofile_(ofile.c_str(), "RECREATE"),
+  ofile_(),
   event_(0),
-  cuts_(0, isMC, 0, 0),
+  cuts_(0, false, 0, 0),
   lhcFills_()
 {
 
+  // get options
+  po::options_description desc("Allowed options");
+  po::positional_options_description poptd;
+
+  desc.add_options()
+    ("help,h", "Display this message")
+    ("outdir,o", po::value<std::string>(), "Output directory")
+    ("indir,i", po::value<std::string>(), "Input directory")
+    ("num,n", po::value<unsigned long long>()->default_value(0), "Number of events to process")
+    ("mc,m", "Run on MC");
+
+  po::variables_map vm;
+  po::store(po::parse_command_line(argc, argv,desc), vm);
+  po::notify(vm);
+
+  // help
+  if (vm.count("help")) {
+    std::cout << desc << std::endl;
+    std::exit(1);
+  }
+  
+  // set output directory
+  if (vm.count("outdir")) {
+    std::string outdir = vm["outdir"].as<std::string>();
+    ofile_ = new TFile((outdir+"/"+ofilename_).c_str(), "RECREATE");
+  }
+  
+  // set input directory
+  std::string indir("");
+  if (vm.count("indir"))
+    indir=vm["indir"].as<std::string>();
+
+  // set number of events
+  if (vm.count("num") && vm["num"].as<unsigned long long>()>0)
+    maxEvents_=ULong64_t(vm["num"].as<unsigned long long>());
+
+  /// set if is this MC
+  if (vm.count("mc")) {
+    isMC_=true;
+    cuts_.setMC(true);
+  }
+  
+  // get list of input files
+  DIR *dp;
+  struct dirent *dirp;
+  if((dp  = opendir(indir.c_str())) == NULL) {
+    std::cout << "Error(" << errno << ") opening " << indir << std::endl;
+    std::exit(errno);
+  }
+  
+  while ((dirp = readdir(dp)) != NULL) {
+    std::string filename(dirp->d_name);
+    if (filename.find(std::string(".root")) != std::string::npos) {
+      ifiles_.push_back(indir+std::string("/")+filename);
+    }
+  }
+  closedir(dp);
+  
+  // print some info
   std::cout << "Stopped Gluino Analysis" << std::endl;
 
   // no input files
-  if (ifiles.size()==0) {
+  if (ifiles_.size()==0) {
     std::cout <<"BasicAnalyser Error : no input files specified!"<<std::endl;
     std::exit(-1);
   }
 
   // no output files
-  if (ofile =="") {
+  if (std::string(ofile_->GetName()) == std::string("")) {
     std::cout <<"BasicAnalyser Error : no output directory specified!"<<std::endl;
     std::exit(-1);
   }
@@ -39,11 +110,16 @@ BasicAnalyser::BasicAnalyser(std::vector<std::string> ifiles,
     std::cout << (*file) << std::endl;
 
   // print output file
-  std::cout << "Output file       : " << ofile << std::endl;
+  std::cout << "Output file       : " << ofile_->GetName() << std::endl;
 
 }
 
 BasicAnalyser::~BasicAnalyser() {
+
+  ofile_->Close();
+  delete ofile_;
+
+  std::cout << "End of analysis" << std::endl;
 
 }
 
@@ -52,14 +128,19 @@ void BasicAnalyser::setup() {
 
   // set up the TChain
   chain_=new TChain("stoppedHSCPTree/StoppedHSCPTree");
-
   for (unsigned i=0;i<ifiles_.size();++i)
     chain_->Add(ifiles_[i].c_str());
   
+  // setup event pointer
   chain_->SetBranchAddress("events",&event_);
+
+  // set number of entries
   Int_t nentries = Int_t(chain_->GetEntries());
   if (nentries>-1) nEvents_=nentries;
   iEvent_ = 0;
+
+  // if no maximum has been set, set it equal to number of events
+  if (maxEvents_==0) maxEvents_=nEvents_;
 
   // setup the cuts
   cuts_.setEvent(event_);
@@ -130,19 +211,16 @@ void BasicAnalyser::printCutValues(ostream& o) {
 }
 
 
-void BasicAnalyser::loop(ULong64_t maxEvents) {
+void BasicAnalyser::loop() {
 
   reset();
- 
-  if (maxEvents==0) maxEvents=nEvents_;
-
   nextEvent();
 
-  for (unsigned long i=0; i<maxEvents; ++i, nextEvent()) {
+  for (unsigned long i=0; i<maxEvents_; ++i, nextEvent()) {
 
     // occasional print out
     if (i%100000==0) {
-      std::cout << "Processing " << i << "th event of " <<maxEvents<< std::endl;
+      std::cout << "Processing " << i << "th event of " <<maxEvents_<< std::endl;
     }
 
     // YOUR CODE HERE
