@@ -1,4 +1,4 @@
-#<use name=IOMC/EventVertexGenerators>
+<use name=GeneratorInterface/Pythia6Interface>
 <use name=SimG4Core/Application>
 <use name=SimG4Core/Watcher>
 <use name=SimG4Core/Notification>
@@ -10,5 +10,6 @@
 <use name=boost>
 <use name=root>
 <library file="*.cc" name=StoppedHSCPSimulation>
+      <use name=heppdt>
       <flags EDM_PLUGIN=1>
 </library>
