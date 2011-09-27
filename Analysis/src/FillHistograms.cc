@@ -18,6 +18,12 @@ FillHistograms::FillHistograms(TFile* file, Cuts* cuts, LhcFills* fills) :
   nFin_(0),
   hbx_(0),
   hrelbx_(0),
+  hrelbxvtx_(0),
+  hrelbxhalo_(0),
+  hrelbxbg_(0),
+  hrelbxcos_(0),
+  hrelbxnoise_(0),
+  hrelbxnoid_(0),
   hbxB_(0),
   hnm1_(0),
   hcolls_(0),
@@ -52,6 +58,12 @@ FillHistograms::~FillHistograms() {
 
   for (itr=hbx_.begin(); itr!=hbx_.end(); ++itr) delete (*itr);
   for (itr=hrelbx_.begin(); itr!=hrelbx_.end(); ++itr) delete (*itr);
+  for (itr=hrelbxvtx_.begin(); itr!=hrelbxvtx_.end(); ++itr) delete (*itr);
+  for (itr=hrelbxhalo_.begin(); itr!=hrelbxhalo_.end(); ++itr) delete (*itr);
+  for (itr=hrelbxbg_.begin(); itr!=hrelbxbg_.end(); ++itr) delete (*itr);
+  for (itr=hrelbxcos_.begin(); itr!=hrelbxcos_.end(); ++itr) delete (*itr);
+  for (itr=hrelbxnoise_.begin(); itr!=hrelbxnoise_.end(); ++itr) delete (*itr);
+  for (itr=hrelbxnoid_.begin(); itr!=hrelbxnoid_.end(); ++itr) delete (*itr);
   for (itr=hbxB_.begin(); itr!=hbxB_.end(); ++itr) delete (*itr);
   for (itr=hnm1_.begin(); itr!=hnm1_.end(); ++itr) delete (*itr);
   for (itr=hcolls_.begin(); itr!=hcolls_.end(); ++itr) delete (*itr);
@@ -61,6 +73,12 @@ FillHistograms::~FillHistograms() {
   hbx_.clear();
   hbxB_.clear();
   hrelbx_.clear();
+  hrelbxvtx_.clear();
+  hrelbxhalo_.clear();
+  hrelbxbg_.clear();
+  hrelbxcos_.clear();
+  hrelbxnoise_.clear();
+  hrelbxnoid_.clear();
   hnm1_.clear();
   hcolls_.clear();
   hbunches_.clear();
@@ -99,6 +117,12 @@ void FillHistograms::book(unsigned long fill) {
 
   if (hbx_.size() < fill+1) hbx_.resize(fill+1, 0);
   if (hrelbx_.size() < fill+1) hrelbx_.resize(fill+1, 0);
+  if (hrelbxvtx_.size() < fill+1) hrelbxvtx_.resize(fill+1, 0);
+  if (hrelbxhalo_.size() < fill+1) hrelbxhalo_.resize(fill+1, 0);
+  if (hrelbxbg_.size() < fill+1) hrelbxbg_.resize(fill+1, 0);
+  if (hrelbxcos_.size() < fill+1) hrelbxcos_.resize(fill+1, 0);
+  if (hrelbxnoise_.size() < fill+1) hrelbxnoise_.resize(fill+1, 0);
+  if (hrelbxnoid_.size() < fill+1) hrelbxnoid_.resize(fill+1, 0);
   if (hbxB_.size() < fill+1) hbxB_.resize(fill+1, 0);
   if (hnm1_.size() < fill+1) hnm1_.resize(fill+1, 0);
   if (hcolls_.size() < fill+1) hcolls_.resize(fill+1, 0);
@@ -110,7 +134,12 @@ void FillHistograms::book(unsigned long fill) {
   hrelbx_.at(fill) = new TH1D((std::string("hrelbx")+fillstr.str()).c_str(), "BX wrt bunch", 2000, -1000., 1000.);
   hbxB_.at(fill) = new TH1D((std::string("hbxB")+fillstr.str()).c_str(), "BX number", 3564, 0., 3564.);
   //hnm1_.at(fill) = new TH1D((std::string("hnm1")+fillstr.str()).c_str(), "N-1 counts", 20, 0., 20.);
-
+  hrelbxhalo_.at(fill) = new TH1D((std::string("hrelbxhalo")+fillstr.str()).c_str(), "RelBX - halo", 2000, -1000., 1000.);
+  hrelbxvtx_.at(fill) = new TH1D((std::string("hrelbxvtx")+fillstr.str()).c_str(), "Rel BX - collisions", 2000, -1000., 1000.);
+  hrelbxbg_.at(fill) = new TH1D((std::string("hrelbxbg")+fillstr.str()).c_str(), "Rel BX - beam-gas", 2000, -1000., 1000.);
+  hrelbxcos_.at(fill) = new TH1D((std::string("hrelbxcos")+fillstr.str()).c_str(), "Rel BX - cosmics", 2000, -1000., 1000.);
+  hrelbxnoise_.at(fill) = new TH1D((std::string("hrelbxnoise")+fillstr.str()).c_str(), "Rel BX - noise", 2000, -1000., 1000.);
+  hrelbxnoid_.at(fill) = new TH1D((std::string("hrelbxnoid")+fillstr.str()).c_str(), "Rel BX - no ID", 2000, -1000., 1000.);
 
   // book and fill filling scheme histos
   hcolls_.at(fill) = new TH1D((std::string("hcolls")+fillstr.str()).c_str(), "Collisions", 3564, 0., 3564.);
@@ -188,6 +217,16 @@ void FillHistograms::fill(StoppedHSCPEvent& event) {
     hbxB_.at(fill)->Fill(event.bx);
   }
 
+  if (event.jet_N>0 && event.jetE[0]>30. && event.jetEta[0]<1.3) {
+    if (event.vtx_N>0) hrelbxvtx_.at(fill)->Fill(event.bxWrtBunch);
+    if (event.vtx_N==0 && event.track_N>1) hrelbxbg_.at(fill)->Fill(event.bxWrtBunch);
+    if (event.vtx_N==0 && event.track_N<2 && event.beamHalo_CSCLoose) hrelbxhalo_.at(fill)->Fill(event.bxWrtBunch);
+    if (event.vtx_N==0 && event.track_N<2 && !event.beamHalo_CSCLoose && event.mu_N>0) hrelbxcos_.at(fill)->Fill(event.bxWrtBunch);
+    if (event.vtx_N==0 && event.track_N<2 && !event.beamHalo_CSCLoose && event.mu_N==0 && !event.noiseFilterResult) hrelbxnoise_.at(fill)->Fill(event.bxWrtBunch);
+    
+    if (event.vtx_N==0 && event.track_N<2 && !event.beamHalo_CSCLoose && event.mu_N==0 && event.noiseFilterResult) hrelbxnoid_.at(fill)->Fill(event.bxWrtBunch);
+  }
+
 }
 
 
@@ -205,6 +244,12 @@ void FillHistograms::save() {
     // save histograms
     hbx_.at(*itr)->Write("",TObject::kOverwrite);
     hrelbx_.at(*itr)->Write("",TObject::kOverwrite);
+    hrelbxvtx_.at(*itr)->Write("",TObject::kOverwrite);
+    hrelbxhalo_.at(*itr)->Write("",TObject::kOverwrite);
+    hrelbxbg_.at(*itr)->Write("",TObject::kOverwrite);
+    hrelbxcos_.at(*itr)->Write("",TObject::kOverwrite);
+    hrelbxnoise_.at(*itr)->Write("",TObject::kOverwrite);
+    hrelbxnoid_.at(*itr)->Write("",TObject::kOverwrite);
     hbxB_.at(*itr)->Write("",TObject::kOverwrite);
     //    hnm1_.at(*itr)->Write("",TObject::kOverwrite);
 

@@ -60,6 +60,12 @@ class FillHistograms {
 
   std::vector<TH1D*> hbx_;
   std::vector<TH1D*> hrelbx_;
+  std::vector<TH1D*> hrelbxvtx_;
+  std::vector<TH1D*> hrelbxhalo_;
+  std::vector<TH1D*> hrelbxbg_;
+  std::vector<TH1D*> hrelbxcos_;
+  std::vector<TH1D*> hrelbxnoise_;
+  std::vector<TH1D*> hrelbxnoid_;
   std::vector<TH1D*> hbxB_;
   std::vector<TH1D*> hnm1_;
   std::vector<TH1D*> hcolls_;
