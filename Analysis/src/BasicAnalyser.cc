@@ -25,7 +25,9 @@ BasicAnalyser::BasicAnalyser(int argc, char* argv[]) :
   nEvents_(0),
   maxEvents_(0),
   iEvent_(0),
-  ofile_(),
+  outdir_(""),
+  ofilename_(""),
+  ofile_(0),
   event_(0),
   cuts_(0, false, 0, 0),
   lhcFills_()
@@ -54,8 +56,7 @@ BasicAnalyser::BasicAnalyser(int argc, char* argv[]) :
   
   // set output directory
   if (vm.count("outdir")) {
-    std::string outdir = vm["outdir"].as<std::string>();
-    ofile_ = new TFile((outdir+"/"+ofilename_).c_str(), "RECREATE");
+    outdir_ = vm["outdir"].as<std::string>();
   }
   
   // set input directory
@@ -99,7 +100,7 @@ BasicAnalyser::BasicAnalyser(int argc, char* argv[]) :
   }
 
   // no output files
-  if (std::string(ofile_->GetName()) == std::string("")) {
+  if (outdir_ == std::string("")) {
     std::cout <<"BasicAnalyser Error : no output directory specified!"<<std::endl;
     std::exit(-1);
   }
@@ -108,9 +109,6 @@ BasicAnalyser::BasicAnalyser(int argc, char* argv[]) :
   std::cout << "Ntuple files       : " <<std::endl;
   for (std::vector<std::string>::iterator file=ifiles_.begin(); file!=ifiles_.end(); ++file) 
     std::cout << (*file) << std::endl;
-
-  // print output file
-  std::cout << "Output file       : " << ofile_->GetName() << std::endl;
 
 }
 
@@ -144,6 +142,14 @@ void BasicAnalyser::setup() {
 
   // setup the cuts
   cuts_.setEvent(event_);
+
+  // set up the output file
+  ofile_ = new TFile((outdir_+std::string("/")+ofilename_).c_str(), "RECREATE");
+  std::cout << "Output file        : " << ofile_->GetName() << std::endl;
+
+  if (ofile_->IsZombie()) {
+    std::exit(2);
+  }
 
 }
 

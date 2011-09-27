@@ -64,6 +64,7 @@ class BasicAnalyser {
   unsigned long iEvent_;
 
   // output file
+  std::string outdir_;
   std::string ofilename_;
   TFile* ofile_;
 
