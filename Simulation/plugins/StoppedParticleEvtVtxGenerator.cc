@@ -19,8 +19,8 @@
 
 StoppedParticleEvtVtxGenerator::StoppedParticleEvtVtxGenerator(const edm::ParameterSet & pset) 
   : BaseEvtVtxGenerator(pset),
-    mSourceLabel(pset.getParameter<edm::InputTag>("src")),
     mVerbose (pset.getUntrackedParameter<bool> ("verbose", false)),
+    mSourceLabel(pset.getParameter<edm::InputTag>("src")),
     mReadFromFile(pset.getUntrackedParameter<bool>("readFromFile", true)),
     mFileName (pset.getParameter<std::string>("stoppedData")),
     mStopPointProducer(pset.getUntrackedParameter<std::string>("stopPointInputTag", "g4SimHits")),
