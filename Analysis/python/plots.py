@@ -104,7 +104,8 @@ class PlotStyle:
         styles={0:self.style1,
                 1:self.style1,
                 2:self.style2,
-                3:self.style3}
+                3:self.style3,
+                4:self.style4}
         
         styles[style]()
 
@@ -133,6 +134,17 @@ class PlotStyle:
     def style3(self):
         self.opt     = "COLZ"
 
+    # different color histograms, log scale
+    def style4(self):
+        self.leg     = True
+        self.log     = True
+        self.colours = [1, 2, 4, 6, 1, 2, 4, 6]
+        self.markers = [0, 0, 0, 0, 0, 0, 0, 0]
+        self.fills   = [0, 0, 0, 0, 0, 0, 0, 0]
+        self.lstyles = [1, 1, 1, 1, 2, 2, 2, 2]
+        self.opt     = "HIST"
+
+
 # superimpose multiple histograms
 def multiPlot(hists,
               labels,
@@ -156,6 +168,10 @@ def multiPlot(hists,
     # set log scale, or not
     if (s.log) :
         canvas.SetLogy(1)
+        if (ymax==0.):
+            ymax=1.
+        if (ymin==0.):
+            ymin=0.1
     else :
         canvas.SetLogy(0)
 
