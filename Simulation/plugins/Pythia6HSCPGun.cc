@@ -8,6 +8,9 @@
 
 #include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/EventSetup.h"
+#include "FWCore/Framework/interface/Event.h"
+
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 #include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
 
@@ -233,8 +236,15 @@ namespace {
 }// unnamed namespace
 
 Pythia6HSCPGun::Pythia6HSCPGun( const ParameterSet& pset ) :
-   Pythia6ParticleGun(pset)
+  Pythia6ParticleGun(pset),
+  mReadFromFile(pset.getUntrackedParameter<bool>("readFromFile", true)),
+  mStopPointProducer(pset.getUntrackedParameter<std::string>("stopPointInputTag", "g4SimHits")),
+  mPID(0),
+  mVx(0.),
+  mVy(0.),
+  mVz(0.)
 {
+
   ParameterSet pgun_params = pset.getParameter<ParameterSet>("PGunParameters");
 
   std::string decayTable = (pgun_params.getParameter<std::string>( "decayTable"));
@@ -243,18 +253,27 @@ Pythia6HSCPGun::Pythia6HSCPGun( const ParameterSet& pset ) :
   double neutralinoMass = (pgun_params.getParameter<double>( "neutralinoMass"));
   bool diJetGluino = (pgun_params.getParameter<bool>( "diJetGluino"));
   mFile = new std::ifstream (mFileName.c_str());
-  makeParticleTable (decayTable,sparticleMass, neutralinoMass);  
+  makeParticleTable (decayTable,sparticleMass, neutralinoMass);
+ 
 }
 
 Pythia6HSCPGun::~Pythia6HSCPGun()
 {
 }
 
-void Pythia6HSCPGun::generateEvent()
-{
-   
-   Pythia6Service::InstanceWrapper guard(fPy6Service);	// grab Py6 instance
 
+// copied from Pythia6Gun::produce
+void Pythia6HSCPGun::produce(edm::Event& evt, const edm::EventSetup& iSetup) {
+
+  std::string name("none");
+  mPID=0;
+  mVx=0.;
+  mVy=0.;
+  mVz=0.;
+
+  // get stopping point info
+  if (mReadFromFile) {   // read stopping info from file
+    
     char buf [1024];
     mFile->getline (buf, 1023);
     if (!mFile->good() || buf[0]=='\n') { // end file: rewind
@@ -262,62 +281,127 @@ void Pythia6HSCPGun::generateEvent()
       mFile = new std::ifstream (mFileName.c_str());
       mFile->getline (buf, 1023);
       if (!mFile->good() || buf[0]=='\n') { // something wrong
-        std::cerr << "Pythia6HSCPGun::generateEvent-> ERROR: failed to get data from file" << std::endl;
+	edm::LogError("FileError") << "Pythia6HSCPGun::generateEvent-> ERROR: failed to get data from file" << std::endl;
       }
     }
-    char name[32];
-    float vx;
-    float vy;
-    float vz;
-    sscanf (buf, "%s %f %f %f", name, &vx, &vy, &vz);
-    int pid = getSpecialId (std::string (name));
+    char nn[32];
+    sscanf (buf, "%s %f %f %f", nn, &mVx, &mVy, &mVz);
+    name = std::string(nn);
+    mPID = getSpecialId(name);
+  }
+  else {  // or from the event
 
-    std::cout << "Pythia6HSCPGun::generateEvent-> name/pid vertex: "
-	      << name << '/' << pid << '/' << ' '
-	      << vx << '/' << vy << '/' << vz 
-	      << std::endl; 
-
-   // 1st, primary vertex
-   //
-   HepMC::GenVertex* Vtx = new HepMC::GenVertex( HepMC::FourVector(vx, vy, vz));
-
-   // here re-create fEvt (memory)
-   //
-   fEvt = new HepMC::GenEvent() ;
+    edm::Handle<std::vector<std::string> > names;
+    evt.getByLabel (mStopPointProducer, "StoppedParticlesName", names);
+    edm::Handle<std::vector<float> > xs;
+    evt.getByLabel (mStopPointProducer, "StoppedParticlesX", xs);
+    edm::Handle<std::vector<float> > ys;
+    evt.getByLabel (mStopPointProducer, "StoppedParticlesY", ys);
+    edm::Handle<std::vector<float> > zs;
+    evt.getByLabel (mStopPointProducer, "StoppedParticlesZ", zs);
     
-   int ip=1;
- 
-   int particleID = pid;
-   int py6PID = HepPID::translatePDTtoPythia( particleID );
-   double mass = pymass_(particleID);
-	 
-   // fill p(ip,5) (in PYJETS) with mass value right now,
-   // because the (hardcoded) mstu(10)=1 will make py1ent
-   // pick the mass from there
-   pyjets.p[4][ip-1]=mass; 	 
-   
-   double phi = 0.;
-   double ee   = mass;
-   double eta  = 0;
-   double the  = 2.*atan(exp(-eta));
-	 
-   py1ent_(ip, py6PID, ee, the, phi);
-	 
-   double px     = pyjets.p[0][ip-1]; // pt*cos(phi) ;
-   double py     = pyjets.p[1][ip-1]; // pt*sin(phi) ;
-   double pz     = pyjets.p[2][ip-1]; // mom*cos(the) ;
-   
-   HepMC::FourVector p(px,py,pz,ee) ;
-   HepMC::GenParticle* Part = new HepMC::GenParticle(p,particleID,1);
-   Part->suggest_barcode( ip ) ;
-   Vtx->add_particle_out(Part);
-   
-   fEvt->add_vertex(Vtx);
-     
-   // run pythia
-   pyexec_();
-   
-   return;
+    if (names->size() != xs->size() || xs->size() != ys->size() || ys->size() != zs->size()) {
+      edm::LogError ("Pythia6HSCPGun") << "mismatch array sizes name/x/y/z:"
+				       << names->size() << '/' << xs->size() << '/' << ys->size() << '/' << zs->size()
+				       << std::endl;
+    }
+     else {
+
+       // TODO - what about when we have two stopped particles?!?
+       // currently take the first one, not sure there is anything we can do about this.
+       if (names->size() > 0) {
+	 name = names->at(0);
+	 mPID = getSpecialId(names->at(0));
+	 mVx  = xs->at(0);
+	 mVy  = ys->at(0);
+	 mVz  = zs->at(0);
+       }
+
+     }
+
+    edm::LogInfo("Pythia6HSCPGun") << "Pythia6HSCPGun::generateEvent-> name/pid vertex: "
+				   << name << '/' << mPID << '/' << ' '
+				   << mVx << '/' << mVy << '/' << mVz 
+				   << std::endl; 
+
+  }
+  
+  generateEvent() ;
+  
+  fEvt->set_beam_particles(0,0);
+  fEvt->set_event_number(evt.id().event()) ;
+  fEvt->set_signal_process_id(pypars.msti[0]) ;  
+  
+  attachPy6DecaysToGenEvent();
+  
+  int evtN = evt.id().event();
+  if ( evtN <= fMaxEventsToPrint )
+    {
+      if ( fPylistVerbosity )
+	{
+	  call_pylist(fPylistVerbosity);
+	}
+      if ( fHepMCVerbosity )
+	{
+	  if ( fEvt ) fEvt->print();
+	}
+    }
+  
+  loadEvent( evt );
+}
+
+void Pythia6HSCPGun::generateEvent()
+{
+
+  // check the case where no stopped particle found
+  // need to check this doesn't break stuff
+  if (mPID==0) {
+    return;
+  }
+
+  Pythia6Service::InstanceWrapper guard(fPy6Service);	// grab Py6 instance
+  
+  // 1st, primary vertex
+   //
+  HepMC::GenVertex* Vtx = new HepMC::GenVertex( HepMC::FourVector(mVx, mVy, mVz));
+  
+  // here re-create fEvt (memory)
+  //
+  fEvt = new HepMC::GenEvent() ;
+  
+  int ip=1;
+  
+  int particleID = mPID;
+  int py6PID = HepPID::translatePDTtoPythia( particleID );
+  double mass = pymass_(particleID);
+  
+  // fill p(ip,5) (in PYJETS) with mass value right now,
+  // because the (hardcoded) mstu(10)=1 will make py1ent
+  // pick the mass from there
+  pyjets.p[4][ip-1]=mass; 	 
+  
+  double phi = 0.;
+  double ee   = mass;
+  double eta  = 0;
+  double the  = 2.*atan(exp(-eta));
+  
+  py1ent_(ip, py6PID, ee, the, phi);
+  
+  double px     = pyjets.p[0][ip-1]; // pt*cos(phi) ;
+  double py     = pyjets.p[1][ip-1]; // pt*sin(phi) ;
+  double pz     = pyjets.p[2][ip-1]; // mom*cos(the) ;
+  
+  HepMC::FourVector p(px,py,pz,ee) ;
+  HepMC::GenParticle* Part = new HepMC::GenParticle(p,particleID,1);
+  Part->suggest_barcode( ip ) ;
+  Vtx->add_particle_out(Part);
+  
+  fEvt->add_vertex(Vtx);
+  
+  // run pythia
+  pyexec_();
+  
+  return;
 }
 
 DEFINE_FWK_MODULE(Pythia6HSCPGun);
