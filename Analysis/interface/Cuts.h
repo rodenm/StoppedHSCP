@@ -58,6 +58,9 @@ class Cuts {
   // set current event
   void setEvent(StoppedHSCPEvent* event) { event_ = event; }
 
+  // set if MC or not
+  void setMC(bool isMC) { isMC_ = isMC; }
+
   // get number of cuts
   unsigned nCuts() const { return cuts_.size(); }
 
