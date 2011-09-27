@@ -2,10 +2,7 @@
 STOPPED_POINTS_FILE='stoppedPoint_gluino500.txt'
 SPARTICLE_MASS=500
 NEUTRALINO_MASS=100
-FLAVOR = 'gluino'
-IS_GLUINO = True
-IS_STOP = False
-OUTPUTFILE='Stopped_HSCP_stage2_sim_' + FLAVOR + str(SPARTICLE_MASS)+'_'+str(NEUTRALINO_MASS)+'.root'
+OUTPUTFILE='stoppedHSCP_stage2_GEN-HLT_gluino' + str(SPARTICLE_MASS)+'_'+str(NEUTRALINO_MASS)+'.root'
 
 import FWCore.ParameterSet.Config as cms
 
@@ -59,47 +56,20 @@ process.RAWSIMoutput = cms.OutputModule("PoolOutputModule",
 # Other statements
 process.GlobalTag.globaltag = 'MC_42_V12::All'
 
-process.generator = cms.EDProducer("Pythia6HSCPGun",
-    PGunParameters = cms.PSet(
-        MinPhi = cms.double(-3.14159265359),
-        ParticleID = cms.vint32(11),
-        stoppedData = cms.string(STOPPED_POINTS_FILE),
-        neutralinoMass = cms.double(NEUTRALINO_MASS),
-        MinEta = cms.double(-10),
-        sparticleMass = cms.double(SPARTICLE_MASS),
-        MaxEta = cms.double(10),
-        MaxPhi = cms.double(3.14159265359),
-        diJetGluino = cms.bool(False),
-	decayTable = cms.string('src/stage2ParticlesTable.txt')
-    ),
-    pythiaPylistVerbosity = cms.untracked.int32(2),
-    gluinoHadrons = cms.bool(IS_GLUINO),
-    stopHadrons = cms.bool(IS_STOP),
-    pythiaHepMCVerbosity = cms.untracked.bool(False),
-    maxEventsToPrint = cms.untracked.int32(1),
-    PythiaParameters = cms.PSet(
-        processParameters = cms.vstring('IMSS(1)=11          ! User defined processes', 
-            'IMSS(21) = 33       ! LUN number for SLHA File (must be 33) ', 
-            'IMSS(22) = 33       ! Read-in SLHA decay table '),
-        parameterSets = cms.vstring('processParameters', 
-            'SLHAParameters'),
-        SLHAParameters = cms.vstring('SLHAFILE=stage2ParticlesTable.txt')
-    )
-)
-
-
 process.genParticles = cms.EDProducer("GenParticleProducer",
     saveBarCodes = cms.untracked.bool(True),
     src = cms.InputTag("generator"),
     abortOnUnknownPDGCode = cms.untracked.bool(False)
 )
 
-
 process.ProductionFilterSequence = cms.Sequence(process.generator)
 
+# Set parameters for the sparticle generation
+process.load('StoppedHSCP/Simulation/gluinoHSCPGun_cfi')
+process.rHadronGenerator.readFromFile = cms.bool(False)
+
 # FR Extra stuff
-process.load('StoppedHSCP/Simulation/RHDecay_cfi')
-process.VtxSmeared.stoppedData = STOPPED_POINTS_FILE
+process.load('StoppedHSCP/Simulation/StoppedParticleEvtVtxGenerator_cfi')
 process.VtxSmeared.verbose = True
 
 #Unknown particles is OK

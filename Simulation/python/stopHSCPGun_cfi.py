@@ -1,7 +1,8 @@
 
 import FWCore.ParameterSet.Config as cms
 
-process.generator = cms.EDProducer("Pythia6HSCPGun",
+rHadronGenerator = cms.EDProducer("Pythia6HSCPGun",
+    readFromFile = cms.bool(False),
     stoppedData = cms.string(''),
     PGunParameters = cms.PSet(
         MinPhi = cms.double(-3.14159265359),
