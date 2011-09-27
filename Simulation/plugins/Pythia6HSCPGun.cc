@@ -239,20 +239,21 @@ Pythia6HSCPGun::Pythia6HSCPGun( const ParameterSet& pset ) :
   Pythia6ParticleGun(pset),
   mReadFromFile(pset.getUntrackedParameter<bool>("readFromFile", true)),
   mStopPointProducer(pset.getUntrackedParameter<std::string>("stopPointInputTag", "g4SimHits")),
+  mFileName(pset.getParameter<std::string>("stoppedData")),
   mPID(0),
   mVx(0.),
   mVy(0.),
   mVz(0.)
 {
-
+  if (mReadFromFile) {
+    mFile = new std::ifstream (mFileName.c_str());
+  }
+  
   ParameterSet pgun_params = pset.getParameter<ParameterSet>("PGunParameters");
-
   std::string decayTable = (pgun_params.getParameter<std::string>( "decayTable"));
-  mFileName = (pgun_params.getParameter<std::string>( "stoppedData"));
   double sparticleMass = (pgun_params.getParameter<double>( "sparticleMass"));
   double neutralinoMass = (pgun_params.getParameter<double>( "neutralinoMass"));
-  bool diJetGluino = (pgun_params.getParameter<bool>( "diJetGluino"));
-  mFile = new std::ifstream (mFileName.c_str());
+  bool diJetGluino = (pgun_params.getParameter<bool>( "diJetGluino"));  
   makeParticleTable (decayTable,sparticleMass, neutralinoMass);
  
 }
