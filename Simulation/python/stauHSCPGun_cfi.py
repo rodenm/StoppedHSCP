@@ -1,8 +1,8 @@
 
 import FWCore.ParameterSet.Config as cms
 
-rHadronGenerator = cms.EDProducer("Pythia6HSCPGun",
-    readFromFile = cms.bool(False),
+generator = cms.EDProducer("Pythia6HSCPGun",
+    readFromFile = cms.untracked.bool(False),
     stoppedData = cms.string(''),
     PGunParameters = cms.PSet(
         MinPhi = cms.double(-3.14159265359),
@@ -13,7 +13,7 @@ rHadronGenerator = cms.EDProducer("Pythia6HSCPGun",
         MaxEta = cms.double(10),
         MaxPhi = cms.double(3.14159265359),
         diJetGluino = cms.bool(False),
-	decayTable = cms.string('src/stage2ParticlesTable.txt')
+	decayTable = cms.string('stage2ParticlesTable.txt')
     ),
     pythiaPylistVerbosity = cms.untracked.int32(2),
     gluinoHadrons = cms.bool(False),

@@ -33,8 +33,11 @@ process.maxEvents = cms.untracked.PSet(
 )
 
 # Input source
-process.source = cms.Source("EmptySource")
-process.options = cms.untracked.PSet()
+process.source = cms.Source ("PoolSource",
+			     fileNames=cms.untracked.vstring(
+	'file:/home/rodenm/CMSSW_4_2_3_patch3/src/HSCPgluino_M-300_7TeV-pythia6_Summer11-START311_V2-v1_GEN-SIM_88B05CB6-3290-E011-93B2-00266CF2EB18.root',
+	)
+)
 
 # Output definition
 process.RAWSIMoutput = cms.OutputModule("PoolOutputModule",
@@ -56,6 +59,10 @@ process.RAWSIMoutput = cms.OutputModule("PoolOutputModule",
 # Other statements
 process.GlobalTag.globaltag = 'MC_42_V12::All'
 
+# Set parameters for the sparticle generation
+process.load('StoppedHSCP/Simulation/gluinoHSCPGun_cfi')
+process.generator.readFromFile = cms.untracked.bool(False)
+
 process.genParticles = cms.EDProducer("GenParticleProducer",
     saveBarCodes = cms.untracked.bool(True),
     src = cms.InputTag("generator"),
@@ -63,10 +70,6 @@ process.genParticles = cms.EDProducer("GenParticleProducer",
 )
 
 process.ProductionFilterSequence = cms.Sequence(process.generator)
-
-# Set parameters for the sparticle generation
-process.load('StoppedHSCP/Simulation/gluinoHSCPGun_cfi')
-process.rHadronGenerator.readFromFile = cms.bool(False)
 
 # FR Extra stuff
 process.load('StoppedHSCP/Simulation/StoppedParticleEvtVtxGenerator_cfi')
