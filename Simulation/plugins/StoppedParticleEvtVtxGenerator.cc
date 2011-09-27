@@ -31,7 +31,7 @@ StoppedParticleEvtVtxGenerator::StoppedParticleEvtVtxGenerator(const edm::Parame
     mVy(0.),
     mVz(0.)
 {
-  if (!mReadFromFile) {
+  if (mReadFromFile) {
     mFile = new std::ifstream (mFileName.c_str());
   }
 }
