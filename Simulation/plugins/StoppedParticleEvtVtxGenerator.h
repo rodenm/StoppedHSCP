@@ -46,5 +46,5 @@ private:
   float mVy;
   float mVz;
   float mVt;
-
+  bool isStoppedEvent;
 };

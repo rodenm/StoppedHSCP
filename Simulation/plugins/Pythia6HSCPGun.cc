@@ -226,8 +226,8 @@ namespace {
 			  double fSparticleMass, double fNeutralinoMass) {
     std::ofstream file (fName.c_str());
     writeCommon (file);
-    //writeRHadron (file);
-    writeStopHadron (file);
+    writeRHadron (file);
+    //writeStopHadron (file);
     writeStau (file);
     setAllMasses (file, fSparticleMass, fNeutralinoMass);
     std::cout << "***** " << fName.c_str() << std::endl;
@@ -265,7 +265,7 @@ Pythia6HSCPGun::~Pythia6HSCPGun()
 
 // copied from Pythia6Gun::produce
 void Pythia6HSCPGun::produce(edm::Event& evt, const edm::EventSetup& iSetup) {
-
+  bool isStoppedEvent = false;
   std::string name("none");
   mPID=0;
   mVx=0.;
@@ -289,6 +289,7 @@ void Pythia6HSCPGun::produce(edm::Event& evt, const edm::EventSetup& iSetup) {
     sscanf (buf, "%s %f %f %f", nn, &mVx, &mVy, &mVz);
     name = std::string(nn);
     mPID = getSpecialId(name);
+    isStoppedEvent = true;
   }
   else {  // or from the event
 
@@ -316,6 +317,7 @@ void Pythia6HSCPGun::produce(edm::Event& evt, const edm::EventSetup& iSetup) {
 	 mVx  = xs->at(0);
 	 mVy  = ys->at(0);
 	 mVz  = zs->at(0);
+	 isStoppedEvent = true;
        }
 
      }
@@ -327,28 +329,26 @@ void Pythia6HSCPGun::produce(edm::Event& evt, const edm::EventSetup& iSetup) {
 
   }
   
-  generateEvent() ;
-  
-  fEvt->set_beam_particles(0,0);
-  fEvt->set_event_number(evt.id().event()) ;
-  fEvt->set_signal_process_id(pypars.msti[0]) ;  
-  
-  attachPy6DecaysToGenEvent();
-  
-  int evtN = evt.id().event();
-  if ( evtN <= fMaxEventsToPrint )
-    {
-      if ( fPylistVerbosity )
-	{
-	  call_pylist(fPylistVerbosity);
+  if (isStoppedEvent) {
+    generateEvent() ;
+    
+    fEvt->set_beam_particles(0,0);
+    fEvt->set_event_number(evt.id().event()) ;
+    fEvt->set_signal_process_id(pypars.msti[0]) ;  
+    
+    attachPy6DecaysToGenEvent();
+    
+    int evtN = evt.id().event();
+    if ( evtN <= fMaxEventsToPrint ) {
+	if ( fPylistVerbosity ) {
+	    call_pylist(fPylistVerbosity);
 	}
-      if ( fHepMCVerbosity )
-	{
+	if ( fHepMCVerbosity ) {
 	  if ( fEvt ) fEvt->print();
 	}
     }
-  
-  loadEvent( evt );
+    loadEvent( evt );
+  }
 }
 
 void Pythia6HSCPGun::generateEvent()

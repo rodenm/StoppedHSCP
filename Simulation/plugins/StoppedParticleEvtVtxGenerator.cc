@@ -43,29 +43,30 @@ void StoppedParticleEvtVtxGenerator::produce(edm::Event& evt, const edm::EventSe
 
   getStoppingPoint(evt);
 
-  Handle<HepMCProduct> HepMCEvt ;
-  
-  evt.getByLabel( mSourceLabel, HepMCEvt ) ;
-  
-  // generate new vertex & apply the shift 
-  //
-  HepMCEvt->applyVtxGen( newVertex() ) ;
-  
-  //HepMCEvt->LorentzBoost( 0., 142.e-6 );
-  HepMCEvt->boostToLab( GetInvLorentzBoost(), "vertex" );
-  HepMCEvt->boostToLab( GetInvLorentzBoost(), "momentum" );
-  
-  // OK, create a (pseudo)product and put in into edm::Event
-  //
-  auto_ptr<bool> NewProduct(new bool(true)) ;      
-  evt.put( NewProduct ) ;
-  
+  if (isStoppedEvent) {
+    Handle<HepMCProduct> HepMCEvt ;
+    
+    evt.getByLabel( mSourceLabel, HepMCEvt ) ;
+    
+    // generate new vertex & apply the shift 
+    //
+    HepMCEvt->applyVtxGen( newVertex() ) ;
+    
+    //HepMCEvt->LorentzBoost( 0., 142.e-6 );
+    HepMCEvt->boostToLab( GetInvLorentzBoost(), "vertex" );
+    HepMCEvt->boostToLab( GetInvLorentzBoost(), "momentum" );
+    
+    // OK, create a (pseudo)product and put in into edm::Event
+    //
+    auto_ptr<bool> NewProduct(new bool(true)) ;      
+    evt.put( NewProduct ) ;
+  }
   return ;
   
 }
 
 void StoppedParticleEvtVtxGenerator::getStoppingPoint(edm::Event& iEvent) {
-
+  isStoppedEvent = false;
   std::string name;
   mVx=0.;
   mVy=0.;
@@ -88,6 +89,7 @@ void StoppedParticleEvtVtxGenerator::getStoppingPoint(edm::Event& iEvent) {
     char nn[32];
     sscanf (buf, "%s %f %f %f", nn, &mVx, &mVy, &mVz);
     name = std::string(nn);
+    isStoppedEvent = true;
    }
   else {  // or from the event
 
@@ -114,6 +116,7 @@ void StoppedParticleEvtVtxGenerator::getStoppingPoint(edm::Event& iEvent) {
 	 mVx  = xs->at(0);
 	 mVy  = ys->at(0);
 	 mVz  = zs->at(0);
+	 isStoppedEvent = true;
        }
 
      }
