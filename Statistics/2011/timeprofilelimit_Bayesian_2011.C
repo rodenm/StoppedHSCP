@@ -26,6 +26,7 @@
 #include "RooStats/ProfileLikelihoodCalculator.h"
 #include "RooStats/LikelihoodIntervalPlot.h"
 #include "RooStats/HypoTestResult.h"
+#include "TSystem.h"
 #include "TRandom2.h"
 #include "TH2D.h"
 #include "TPaveText.h"
@@ -33,197 +34,109 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <map>
 
-#include "RooHCSPInOrbitPdf.h"
+#include "StoppedHSCP/Analysis/interface/Constants.h"
+#include "StoppedHSCP/Analysis/interface/LhcFill.h" 
+#include "StoppedHSCP/Analysis/interface/LhcFills.h" 
+#include "StoppedHSCP/Statistics/interface/RooHSCPInOrbitPdf.h" 
 
 namespace {
-  void makeBeams (const string& fFile, vector<double>* fBeam1, vector<double>* fBeam2) {
-    ifstream input (fFile.c_str());
-    *fBeam1 = vector<double> (3564, 0);
-    *fBeam2 = vector<double> (3564, 0);
-    double sum1 = 0;
-    double sum2 = 0;
-    while (input) {
-      string line;
-      if (getline (input, line)) {
-	if (line[0] == '#') continue;
-	int i1, i2, rfBucket, bunchSpace, bunchesInTrain, spaceSPS, psTrains;
-	string ringName;
-	double population;
-	istringstream inLine (line);
-	inLine >> i1 >> i2 >> ringName >> rfBucket >> bunchSpace >> bunchesInTrain >> spaceSPS >> psTrains >> population;
-	bool beam1 =  ringName.find ("_1") != string::npos;
-	vector<double>* beam = beam1 ? fBeam1 : fBeam2;
-	int ibx0 = (rfBucket / 10) + 1;
-	int trainOffset = spaceSPS / 25;
-	int step = bunchSpace / 25;
-	for (int train = 0; train < psTrains; ++train) {
-	  int ibx = ibx0 + trainOffset * train;
-	  for (int i = 0; i < bunchesInTrain; ++i) {
-	    (*beam)[ibx] = population;
-	    if (beam1) sum1 += population;
-	    else sum2 += population;
-	    ibx += step;
-	  }
-	}
-      }
-    }
-    if (sum1) for (size_t i = 1; i < fBeam1->size(); ++i) (*fBeam1)[i] /= sum1;
-    if (sum2) for (size_t i = 1; i < fBeam2->size(); ++i) (*fBeam2)[i] /= sum2;
-  }
-
-  void fillBunchStructure (RooHCSPInOrbitPdf& signal, const vector<double>& beam1, const vector<double>& beam2, double integratedLumi = 1.) {
-    std::vector<double> collisionBunches (beam1.size(), 0);
-    double sumAll = 0;
-    std::vector<int> parasiticBunches;
-    for (unsigned i = 0; i < beam1.size(); ++i) {
-      double lumi = beam1[i] * beam2[i];
-      collisionBunches [i] = lumi;
-      sumAll += lumi;
-      if ((lumi <= 0) && ((beam1[i]+beam2[i]) > 0)) parasiticBunches.push_back (i); 
-    }
-    for (unsigned i = 0; i < parasiticBunches.size(); ++i) {
-      signal.setInsensitive(parasiticBunches[i]-2);
-      signal.setInsensitive(parasiticBunches[i]-1);
-      signal.setInsensitive(parasiticBunches[i]);
-      signal.setInsensitive(parasiticBunches[i]+1);
-      signal.setInsensitive(parasiticBunches[i]+2);
-    }
-    for (unsigned i = 0; i < collisionBunches.size(); ++i) {
-      if (collisionBunches[i] > 0) {
-	signal.setInsensitive(i-2);
-	signal.setInsensitive(i-1);
-	signal.setInstantLumi(i, collisionBunches[i] / sumAll * integratedLumi);
-	signal.setInsensitive(i+1);
-	signal.setInsensitive(i+2);
-      }
-    }
-  }
+#include "MyLikelyhood.cc"
 }
-  class MyLikelihood {
-  public:
-    MyLikelihood (const RooHCSPInOrbitPdf* fSignal, const RooHCSPBkgInOrbitPdf* fBkg, RooRealVar* fBX, double fLumi) 
-      : mSignal (fSignal),
-	mBackground (fBkg),
-	mBX (fBX),
-	mSignalNorm (0.),
-	mBkgNorm (0.),
-	mLumi(fLumi)
-    {}
-
-    bool setData (double fData) {
-      if (mSignal->getSensitive (int (floor (fData+0.5)))) {
-	mData.push_back (fData);
-	return true;
-      }
-      return false;
-    }
-
-    int eventsNumber () const {return int(mData.size());}
-
-    double getLikelyhood (double fSignal, double fBackground) {
-      cout << "getLikelyhood-> " << fSignal << '/' << fBackground << endl;
-      if (fSignal < 0 || fBackground < 0 || fSignal+fBackground <= 0) return 0;
-      double result = 1.;
-      if (mSignalNorm <= 0) mSignalNorm = mSignal->analyticalIntegral(1, 0);
-      if (mBkgNorm <= 0) mBkgNorm = mBackground->analyticalIntegral(1, 0);
-      cout << "getLikelyhood-> Normalization " << mSignalNorm << '/' << mBkgNorm << endl;
-      double signalFraction = fSignal / (fSignal+fBackground);
-      double backgroundFraction = 1. - signalFraction;
-      for (int iData = 0; iData < int(mData.size()); ++iData) {
-	*mBX = mData[iData];
-	double pdf = signalFraction * mSignal->evaluate() / mSignalNorm 
-	  + backgroundFraction * mBackground->evaluate() / mBkgNorm;
-	cout << iData << "-> " << mSignal->evaluate() << '/' << mBackground->evaluate() << "->"  << pdf << '/' << result << endl;
-	result *= pdf;
-      }
-      cout << "getLikelyhood-> result 1 " << result << endl;
-      result *= ROOT::Math::poisson_pdf (mData.size(), fSignal+fBackground);
-      return result;
-    }
-
-    double getLogLikelyhood (double fSignal, double fBackground) {
-      if (fSignal < 0 || fBackground < 0 || fSignal+fBackground <= 0) return 0;
-      double result = 0;
-      if (mSignalNorm <= 0) mSignalNorm = mSignal->analyticalIntegral(1, 0);
-      if (mBkgNorm <= 0) mBkgNorm = mBackground->analyticalIntegral(1, 0);
-      double signalFraction = fSignal / (fSignal+fBackground);
-      double backgroundFraction = 1. - signalFraction;
-      for (int iData = 0; iData < int(mData.size()); ++iData) {
-	*mBX = mData[iData];
-	double pdf = signalFraction * mSignal->evaluate() / mSignalNorm 
-	  + backgroundFraction * mBackground->evaluate() / mBkgNorm;
-	result += log(pdf);
-      }
-      result += log (ROOT::Math::poisson_pdf (mData.size(), fSignal+fBackground));
-      return result;
-    }
-
-    const RooHCSPInOrbitPdf* signalPdf () {return mSignal;}
-
-    const RooHCSPBkgInOrbitPdf* backgroundPdf () {return mBackground;}
-
-    double getLumi () {return mLumi;}
-    const RooRealVar& bxVar () const {return *mBX;}
-    const std::vector <double>& data () const {return mData;}
-
-  private:
-    const RooHCSPInOrbitPdf* mSignal;
-    const RooHCSPBkgInOrbitPdf* mBackground;
-    RooRealVar* mBX;
-    std::vector <double> mData;
-    double mSignalNorm;
-    double mBkgNorm;
-    double mLumi;
-  }; 
 
 std::vector<double> makeSignalPdf (const std::vector<double>& fSignalScan, 
 				   const std::vector<double>& fBackgroundScan,
 				   MyLikelihood& fLikelihood,
 				   double fRelativeScaleUncertainty);
 
-MyLikelihood* makeFillStructure (const string& scheme, double lumi, RooRealVar& bx, RooRealVar& logtau);
-
-void plotFill (MyLikelihood& fLH);
+void plotFill (MyLikelihood& fLH, const string& fName, const string& fDataset, double scale = 1.);
 
 using namespace std;
 using namespace RooFit;
 
-double get95BayesianLimit (const std::string& stats, double fLifetime) {
+double get95BayesianLimit (double fLifetime, bool fPlot = false) {
+  string dataset = "1711-1895";
+  string eventsFile;
+  map <string, double> fillsUsed;
+  map <string, double> plotScale;
+  fillsUsed["50ns_228b+1small_214_12_180_36bpi8inj"] = 5.022290545;
+  fillsUsed["50ns_336b+1small_322_12_288_36bpi11inj"] = 8.040648971;
+  fillsUsed["50ns_336b+1small_322_14_288_72bpi7inj"] = 9.626760776;
+  fillsUsed["50ns_480b+1small_424_12_468_36bpi15inj"] = 48.660758755;
+  fillsUsed["50ns_480b+1small_424_14_468_72bpi11inj"] = 38.176998736;
+  fillsUsed["50ns_624b+1small_598_16_576_72bpi11inj_b"] = 17.184344221;
+  fillsUsed["50ns_768b+1small_700_16_756_72bpi15inj_b"] = 17.57424307;
+  fillsUsed["50ns_768b+1small_700_18_756_108bpi11inj"] = 19.02279022;
+  fillsUsed["50ns_912b+1small_874_20_864_108bpi11inj"] = 92.026679661;
+  fillsUsed["50ns_912b+1small_874_9_876_108bpi11inj"] = 38.851934101;
+  fillsUsed["50ns_1092b+1small_1042_35_1008_108bpi13inj"] = 199.082192572;
+
+  
+  if (dataset == "1711-1864") { // 622/pb
+    eventsFile = "events_1711_1864.txt";
+    fillsUsed["50ns_1092b+1small_1042_35_1008_144bpi13inj"] = 71.226997869;
+    fillsUsed["50ns_1104b+1small_1042_35_1008_108bpi_ob"] = 68.448983672;
+  }
+  else if (dataset == "1711-1895") { // 886/pb
+    eventsFile = "events_1711_1895.txt";
+    fillsUsed["50ns_1092b+1small_1042_35_1008_144bpi13inj"] = 281.715130005;
+    fillsUsed["50ns_1104b+1small_1042_35_1008_108bpi_ob"] = 68.448983672;
+    fillsUsed["50ns_1236b+1small_1180_37_1152_144bpi13inj"] = 42.442729595;
+  }
+  else {
+    cout << "Unknown dataset: " << dataset << endl;
+    return 0;
+  }
+
+  plotScale["50ns_228b+1small_214_12_180_36bpi8inj"] = 214;
+  plotScale["50ns_336b+1small_322_12_288_36bpi11inj"] = 322;
+  plotScale["50ns_336b+1small_322_14_288_72bpi7inj"] = 336;
+  plotScale["50ns_480b+1small_424_12_468_36bpi15inj"] = 350;
+  plotScale["50ns_480b+1small_424_14_468_72bpi11inj"] = 350;
+  plotScale["50ns_624b+1small_598_16_576_72bpi11inj_b"] = 598;
+  plotScale["50ns_768b+1small_700_16_756_72bpi15inj_b"] = 500;
+  plotScale["50ns_768b+1small_700_18_756_108bpi11inj"] = 500;
+  plotScale["50ns_912b+1small_874_20_864_108bpi11inj"] = 874;
+  plotScale["50ns_912b+1small_874_9_876_108bpi11inj"] = 874;
+  plotScale["50ns_1092b+1small_1042_35_1008_108bpi13inj"] = 450;
+  plotScale["50ns_1092b+1small_1042_35_1008_144bpi13inj"] = 450;
+  plotScale["50ns_1104b+1small_1042_35_1008_108bpi_ob"] = 450;
+  plotScale["50ns_1236b+1small_1180_37_1152_144bpi13inj"] = 450;
+
+
+  vector<DataEvent> allEvents = eventsFromLog (eventsFile.c_str());
   RooRealVar bx ("bx", "bx", -0.5, double(BX_IN_ORBIT)-0.5,"bxs");
   RooRealVar logtau ("logtau","log(lifetime)",log (fLifetime) ,log(1.e-10),log (1.e10));
   std::cout << "tau: " << fLifetime << ", logtau: " << logtau.getVal() << std::endl;
 
   std::vector <MyLikelihood*> fills;
-  MyLikelihood* mlh = 0;
+  for (map <string, double>::const_iterator fill = fillsUsed.begin(); fill != fillsUsed.end(); ++fill) {
+    const string& fillName = fill->first;
+    double lumi = fill->second;
+    MyLikelihood* mlh = makeFillStructure (fillName, lumi, allEvents, bx, logtau);
+    fills.push_back (mlh);
+    if (fPlot && mlh->eventsNumber()) plotFill (*mlh, fillName, dataset, plotScale[fillName]);
+  }
 
-  mlh = makeFillStructure ("50ns_228b+1small_214_12_180_36bpi8inj.beam", 4.60, bx, logtau); 
-  mlh->setData(903);
-  mlh->setData(2431);
-  fills.push_back (mlh);
+// collect statistics
+  double allLumi = 0;
+  double allLumiEff = 0;
+  int totalEvents = 0;
+  for (size_t iFill = 0; iFill < fills.size(); ++iFill) {
+    MyLikelihood* mylh = fills[iFill];
+    allLumi += mylh->getLumi();
+    allLumiEff += mylh->getLumi()* mylh->signalPdf()->offLumiFraction ();
+    totalEvents += mylh->eventsNumber();
+  } 
+  int nMax = 1;
+  while (ROOT::Math::poisson_cdf (totalEvents, nMax) > 1e-4) nMax *=2;
   
-  mlh = makeFillStructure ("50ns_336b+1small_322_12_288_36bpi11inj.beam", 17.67, bx, logtau); 
-  fills.push_back (mlh);
-  
-  mlh = makeFillStructure ("50ns_480b+1small_424_12_468_36bpi15inj.beam", 85.63, bx, logtau); 
-  mlh->setData(3453);
-  mlh->setData(2951);
-  mlh->setData(3423);
-  mlh->setData(2658);
-  mlh->setData(1508);
-  // mlh->setData();
-  fills.push_back (mlh);
-  plotFill (*mlh);
-  
-  
-  mlh = makeFillStructure ("50ns_624b+1small_598_16_576_72bpi11inj_b.beam", 7.82, bx, logtau); 
-  fills.push_back (mlh);
-  
-  double maxXsec = 20;
+  double maxXsec = nMax / allLumiEff;
   int xSecBins = 500;
   std::vector<double> xSecGrid;
   for (int i = 0; i < xSecBins; ++i) xSecGrid.push_back ((i+0.5)*maxXsec/xSecBins);
-
+  
   std::vector<double> combinedPdf (xSecBins, 1.);
   double sumLumi = 0;
   
@@ -233,12 +146,24 @@ double get95BayesianLimit (const std::string& stats, double fLifetime) {
     double timeEfficiency =  fills[iFill]->signalPdf()->offLumiFraction ();
     std::vector<double> bkgGrid;
     double maxBkg = nEvents;
-    while (ROOT::Math::poisson_cdf (nEvents, maxBkg) > 1e-4) maxBkg += 1.;
+    while (ROOT::Math::poisson_cdf (nEvents, maxBkg) > 1e-3) maxBkg += 1.;
+    // cout << "maxBkg-> " << maxBkg << " events " << nEvents << endl;
     int bkgBins = 500;
-    for (int i = 0; i < bkgBins; ++i) bkgGrid.push_back ((i+0.5)*maxBkg/bkgBins);
+    bool flatPrior = false;
+    if (flatPrior) {
+      for (int i = 0; i < bkgBins; ++i) bkgGrid.push_back ((i+0.5)*maxBkg/bkgBins);
+    }
+    else { 
+      for (int i = 0; i < bkgBins; ++i) bkgGrid.push_back (exp(i)/exp(bkgBins)*maxBkg);
+      // for (int i = 0; i < bkgBins; ++i) bkgGrid.push_back (0.001);
+    }
+//     else { 
+//       for (int i = 0; i < bkgBins; ++i) bkgGrid.push_back ((exp(i)/exp(bkgBins))*(exp(i)/exp(bkgBins))*maxBkg);
+//       // for (int i = 0; i < bkgBins; ++i) bkgGrid.push_back (0.001);
+//     }
     std::vector<double> signalGrid;
     for (int i = 0; i < xSecBins; ++i) signalGrid.push_back (xSecGrid[i]*lumi*timeEfficiency);
-    std::vector<double> componentPdf = makeSignalPdf (signalGrid, bkgGrid, *fills[iFill], 0.086);
+    std::vector<double> componentPdf = makeSignalPdf (signalGrid, bkgGrid, *fills[iFill], 0.0806);
     for (int i = 0; i < xSecBins; ++i) combinedPdf[i] *= componentPdf[i];
     sumLumi += lumi;
   }
@@ -253,13 +178,26 @@ double get95BayesianLimit (const std::string& stats, double fLifetime) {
     sumWith = sumBefore + combinedPdf[i] / integral;
     double cl = 0.95;
     if (sumWith >= cl) {
+      if (i < xSecBins/20 || i > xSecBins/2) {
+	cout << "WORNING: 95CL precision lost: " << xSecBins/20 << '<' << i << '<' << xSecBins/2 << endl;
+      }
       xSec95limit = xSecGrid[i] - (xSecGrid[i]-xSecGrid[i-1])*(sumWith - cl)/(sumWith-sumBefore);
       break;
     }
     sumBefore = sumWith;
   }
   // normalize to effective number of events
-  return xSec95limit * sumLumi;
+  double result = xSec95limit * sumLumi;
+  cout << "get95BayesianLimit-> Lifetime: " << fLifetime << " Limit: " << result 
+       << ", scaled limit: " << result / allLumi * allLumiEff 
+       << ", efficiency scale: " << allLumiEff/allLumi
+       << ", xSec*stopping*reco limit: " <<  xSec95limit << " pb"
+       << endl; 
+  ofstream ("get95BayesianLimit.log", ios_base::app) << fLifetime << ' ' << result 
+						     << ' ' << result / allLumi * allLumiEff
+						     << ' ' << xSec95limit
+						     << endl;
+  return result;
 }
 
 
@@ -339,44 +277,18 @@ double get95BayesianLimit (const std::string& stats, double fLifetime) {
     return pdfSys;
   }
  
-MyLikelihood* makeFillStructure (const string& scheme, double lumi, RooRealVar& bx, RooRealVar& logtau) {
-  std::vector<double> beam1;
-  std::vector<double> beam2;
 
-  makeBeams (scheme, &beam1, &beam2);
-
-  // look for collision bunches
-  std::vector<int> collisionBX;
-  for (unsigned i = 0; i < beam1.size(); ++i) {
-    if (beam1[i]*beam2[i] > 0) 	collisionBX.push_back (i);
-  }
+void plotFill (MyLikelihood& fLH, const string& fName, const string& fDataset, double scale) {
+  char buffer[1024];
   
-  std::cout << scheme <<": Colliding bunches: " << collisionBX.size() << std::endl;
+  TCanvas* cdata = new TCanvas(fName.c_str(),
+			       fName.c_str(),1200,800) ;
+  cdata->SetTopMargin (0.1);
+  cdata->SetLeftMargin (0.05);
+  cdata->SetRightMargin (0.05);
 
-//   for (size_t i = 0; i < collisionBX.size(); ++i) {
-//     if (!(i % 20)) cout << endl;
-//     cout << collisionBX[i] << ' ';
-//   }
-//   cout << endl;
-
-  char name[1024];
-  char title[1024];
-  sprintf (name, "signal%s", scheme.c_str());
-  sprintf (title, "Signal PDF %s", scheme.c_str());
-  RooHCSPInOrbitPdf* signalPDF = new RooHCSPInOrbitPdf(name, title, bx, logtau);
-  fillBunchStructure (*signalPDF, beam1, beam2);
-  signalPDF->fillCache();
-  sprintf (name, "background%s", scheme.c_str());
-  sprintf (title, "Flat Background PDF %s", scheme.c_str());
-  RooHCSPBkgInOrbitPdf* backgroundPdf = new RooHCSPBkgInOrbitPdf(name, title, bx, signalPDF);
-  return new MyLikelihood (signalPDF, backgroundPdf, &bx, lumi);
-}
-
-void plotFill (MyLikelihood& fLH) {
-  TCanvas* cdata = new TCanvas("data_pdf",
-			       "Stopped Gluino fit",1200,800) ;
   RooPlot* frame = fLH.bxVar().frame(BX_IN_ORBIT);
-  fLH.signalPdf ()->plotOn(frame, LineColor (kBlue),LineWidth(2),Normalization(500),Name("signal"));
+  fLH.signalPdf ()->plotOn(frame, LineColor (kBlue),LineWidth(2),Normalization(scale),Name("signal"));
   frame->Draw();
   
   // data points
@@ -386,49 +298,66 @@ void plotFill (MyLikelihood& fLH) {
   double yData [MAX_DATA];
   for (int i = 0; i < nData && i < MAX_DATA; ++i) {
     xData[i] = fLH.data()[i];
-    yData[i] = 1;
+    yData[i] = 0.05;
   }
   
   TGraph* gData = new TGraph (nData, xData, yData);
-  gData->SetMarkerSize (2);
+  gData->SetMarkerSize (4);
   gData->SetMarkerStyle (30);
   gData->SetMarkerColor (kBlack);
   TGraph* gData2 = new TGraph (*gData);
-  gData2->SetMarkerSize (2);
+  gData2->SetMarkerSize (4);
   gData2->SetMarkerStyle (29);
-  gData2->SetMarkerColor (kWhite);
+  gData2->SetMarkerColor (kRed);
 
   gData2->Draw("P");
   gData->Draw("P");
  
-  TPaveText* blurb = new TPaveText(2000, 1.4, 3500, 1.49);
+  TPaveText* blurb = new TPaveText(0, 1.55, 3500, 1.58);
+  
   // blurb->AddText("CMS Preliminary 2010");
   // blurb->AddText("#int L dt = 12.9 pb^{-1}");
-  blurb->AddText("#sqrt{s} = 7 TeV");
+  sprintf (buffer, "%s      L_{int} = %3.0f pb^{-1}", fName.c_str(), fLH.getLumi());
+  blurb->AddText(buffer);
   blurb->SetTextFont(42);
   blurb->SetBorderSize(0);
   blurb->SetFillColor(0);
   blurb->SetShadowColor(0);
   blurb->SetTextAlign(12);
   blurb->SetTextSize(0.035);
-  // blurb->Draw();
+  blurb->Draw();
   
-  TLegend *leg = 	new TLegend(2000, 1.3, 3500, 1.49,"","");
+  TPaveText* label2 = new TPaveText(50, 1.3, 2000, 1.45);
+  sprintf (buffer, "CMS Preliminary 2011");
+  label2->AddText(buffer);
+  label2->SetTextFont(42);
+  label2->SetBorderSize(0);
+  label2->SetFillColor(0);
+  label2->SetShadowColor(0);
+  label2->SetTextAlign(12);
+  label2->SetTextSize(0.035);
+  label2->Draw();
+  
+  TLegend *leg = 	new TLegend(2000, 1.3, 3500, 1.45,"","");
   leg->SetTextSize(0.035);
   leg->SetBorderSize(0);
   leg->SetTextFont(42);
   leg->SetFillColor(0);
-  leg->AddEntry(gData, "CMS Data (2011)", "p");
+  //  sprintf (buffer, "CMS Data, fills %s", fDataset.c_str()); 
+  sprintf (buffer, "CMS Data"); 
+  leg->AddEntry(gData2, buffer, "p");
   leg->AddEntry(frame->findObject("signal"), 
 		"Signal PDF (#tau = 1 #mus)", "l");
   leg->Draw();
   
   frame->GetXaxis()->SetTitle ("BX");
-  frame->GetYaxis()->SetTitle ("Events");
+  frame->GetYaxis()->SetTitle ("");
+  frame->GetYaxis()->SetLabelSize (0);
   frame->SetTitle ("");
   frame->SetMaximum (1.5);
   frame->SetMinimum (0);
 
   cdata->Update();
-  cdata->Print ("plot.pdf");
+  cdata->Print (string(fName + string(".pdf")).c_str());
+  cdata->Print (string(fName + string(".png")).c_str());
 }
