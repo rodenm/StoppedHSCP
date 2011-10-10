@@ -131,17 +131,35 @@ def CopyFiles(user="jbrooke",
         endtime=time.time()
         print "A total of %i files found."%filecount
         print "Total time taken: %i min %.2f sec"%((endtime-starttime)/60, (endtime-starttime)%60)
-        errors=0
+
+        errorcount=0
         for x in filenames.keys():
             if len(filenames[x])>1:
                 print "*************************************************"
                 print "MAJOR ERROR!  Multiple files with same base name!"
-                errors=errors+1
+                errorcount=errorcount+1
                 for i in filenames[x]:
                     print "\t\t",i
-        if (errors>0):
-            print "There were a total of %i duplication errors!"%errors
-        return True
+            elif len(filenames[x])==1:
+                thisfile=os.path.join(odir,filenames[x][0])
+                try:
+                    thissize=os.path.getsize(thisfile)
+                    if (thissize==0):
+                        print "*************************************"
+                        print "MAJOR ERROR!  File '%s' has size = 0!"%thisfile
+                        print "It appears that the file was not copied correctly!"
+                        print "Removing file -- Suggest that you try running copy utility again!"
+                        os.system("rm -f %s"%thisfile)
+                        errorcount=errorcount+1
+                except OSError:
+                    print "**********************************"
+                    print "MAJOR ERROR!  Output file '%s' does not exist!"%thisfile
+                    errorcount=errorcount+1 
+        if (errorcount>0):
+            print "There were a total of %i errors!"%errorcount
+            return False
+        else:
+            return True
 
     print "A total of %i files will be copied."%filecount
     endtime=time.time()
@@ -154,7 +172,7 @@ def CopyFiles(user="jbrooke",
     for file in allfiles:
         #if (counter>1):           continue
         basename=os.path.basename(file)
-        if basename.endswith("stoppedHSCP"):
+        if basename.startswith("stoppedHSCP"):
             dictname=string.split(basename,"_")
             if len(dictname)>2:
                 key="%s_%s_%s"%(dictname[0],dictname[1],dictname[2])
@@ -216,14 +234,39 @@ def CopyFiles(user="jbrooke",
         
     endtime=time.time()
     print "Total time taken: %i min %.2f sec"%((endtime-starttime)/60, (endtime-starttime)%60)
+    errorcount=0
     for x in filenames.keys():
+        # If more than one file exists for the same root index, that indicates a problem
         if len(filenames[x])>1:
             print "*************************************************"
             print "MAJOR ERROR!  Multiple files with same base name!"
+            print "\t\tBasename = %s"%x
             for i in filenames[x]:
-                print "\t\t",i
-    return True
+                print "\t\tFiles = %s"%i
+            errorcount=errorcount+1
 
+        # If file has length 0, it probably was not copied correctly
+        elif len(filenames[x])==1:
+            
+            thisfile=os.path.join(odir,filenames[x][0])
+            try:
+                thissize=os.path.getsize(thisfile)
+                if (thissize==0):
+                    print "*************************************"
+                    print "MAJOR ERROR!  File '%s' has size = 0!"%thisfile
+                    print "It appears that the file was not copied correctly!"
+                    print "Removing file -- Suggest that you try running copy utility again!"
+                    os.system("rm -f %s"%thisfile)
+                    errorcount=errorcount+1
+            except OSError:
+                print "**********************************"
+                print "MAJOR ERROR!  Output file '%s' does not exist!"%thisfile
+                errorcount=errorcount+1
+        
+    if errorcount==0:
+        return True
+    else:
+        return False # Will this do anything?
 
 def PrintHelp(parser):
     parser.print_help()
@@ -280,7 +323,7 @@ if __name__=="__main__":
                       dest="listfiles",
                       default=False,
                       action="store_true",
-                      help="Only list the files in the initial location, rather than copying them")
+                      help="Only list the files in the initial location, rather than copying them. ")
     parser.add_option("-s","--site",
                       dest="site",
                       default=None,
@@ -355,12 +398,17 @@ if __name__=="__main__":
             print "Listing files in dataset '%s'"%d
         else:
             print "Copying files in dataset '%s'"%d
-        CopyFiles(user=options.user,
-                  gridroot=options.gridroot,
-                  gridloc=options.gridloc,
-                  dataset=d,
-                  odir=options.outputdir,
-                  verbose=options.verbose,
-                  overwrite=options.overwrite,
-                  listfiles=options.listfiles,
-                  srmcp=options.srmcp)
+        x=CopyFiles(user=options.user,
+                    gridroot=options.gridroot,
+                    gridloc=options.gridloc,
+                    dataset=d,
+                    odir=options.outputdir,
+                    verbose=options.verbose,
+                    overwrite=options.overwrite,
+                    listfiles=options.listfiles,
+                    srmcp=options.srmcp)
+        if (x==False):
+            print "\n\n*****************************************"
+            print "ERROR!  Copy script did not complete successfully!"
+            print "Check text window for more detailed description of problems!"
+            print "*********************************************\n\n"

@@ -896,7 +896,9 @@ class TreeJobGui:
         Label(self.CopyFrame2,text="Copy type:").grid(row=row,column=0)
         self.CopyType.grid(row=row,column=1,sticky=EW)
         row=row+1
-        self.CopyButton=Button(self.CopyFrame2,text="\nCopy\nFiles\n",command = lambda x=self:x.CopyFiles(),width=20,bg="blue",fg="white")
+        self.CopyButton=Button(self.CopyFrame2,text="\nCopy\nFiles\n",
+                               command = lambda x=self:x.CopyFiles(),
+                               width=20,bg="blue",fg="white")
         row=row+1
         self.CopyButton.grid(row=row,column=1)
         return
@@ -940,16 +942,23 @@ class TreeJobGui:
         srmcp=False
         if (self.copyTypeVar.get()=="srmcp"):
             srmcp=True
-        CopyFiles(user=string.strip(self.user.get()),
-                  gridroot=string.strip(self.gridroot.get()),
-                  gridloc=string.strip(self.gridloc.get()),
-                  dataset=string.strip(self.copydataset.get()),
-                  odir=string.strip(self.copyoutputdir.get()),
-                  verbose=self.verbose.get(),
-                  overwrite=self.overwrite.get(),
-                  listfiles=self.listfiles.get(),
-                  srmcp=srmcp)
-
+        result=CopyFiles(user=string.strip(self.user.get()),
+                         gridroot=string.strip(self.gridroot.get()),
+                         gridloc=string.strip(self.gridloc.get()),
+                         dataset=string.strip(self.copydataset.get()),
+                         odir=string.strip(self.copyoutputdir.get()),
+                         verbose=self.verbose.get(),
+                         overwrite=self.overwrite.get(),
+                         listfiles=self.listfiles.get(),
+                         srmcp=srmcp)
+        copystring="copied"
+        if self.listfiles.get()==True:
+            copystring="listed"
+        if result==False:
+            self.Print("ERROR!  Not all files %s successfully!"%copystring)
+        else:
+            self.Print("ALL FILES %s SUCCESSFULLY!"%string.upper(copystring))
+        return
     ###############################################################
 
 if __name__=="__main__":
