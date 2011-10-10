@@ -168,7 +168,7 @@ def ene_in_run(run_data):
                         mindiff=abs(float(energy)-be)
             if mindiff>500.0:
                 print "WARNING: Something wrong with energies in run "+run
-                print "WARNING: Getting: "+energy+" from RR.Using default value of:"+str(BEAM_ENE_DEF)
+                print "WARNING: Getting: %s from RR.Using default value of: %s"%(energy,str(BEAM_ENE_DEF))
                 energy=str(BEAM_ENE_DEF)
             ene_map[run]=float(energy)
 
