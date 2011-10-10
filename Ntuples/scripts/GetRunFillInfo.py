@@ -300,11 +300,13 @@ if __name__=="__main__":
         opts.datasets=["/MinimumBias/Run2011A-HSCPSD-PromptSkim-v6/RECO"]
 
     if opts.golden2011==True:
+        # Can't include re-reco, because those runs may have different JSON than prompt
         opts.datasets=["/MinimumBias/Run2011B-HSCPSD-PromptSkim-v1/RECO",
                        "/MinimumBias/Run2011A-HSCPSD-PromptSkim-v6/RECO",
-                       "/MinimumBias/Run2011A-HSCPSD-05Aug2011-v1/RECO",
+                       #"/MinimumBias/Run2011A-HSCPSD-05Aug2011-v1/RECO",
                        "/MinimumBias/Run2011A-HSCPSD-PromptSkim-v4/RECO",
-                       "/MinimumBias/Run2011A-HSCPSD-May10ReReco-v2/RECO"]
+                       # "/MinimumBias/Run2011A-HSCPSD-May10ReReco-v2/RECO"
+                       ]
                        
 
     # Check format of input json
