@@ -92,20 +92,28 @@ def GetUserNameFromCrab():
 # Step 1:  Does not yet exist
 
 # Step 2:
-def SearchDBS(dataset="/MinimumBias/Run2011A-HSCPSD-PromptSkim-v6/RECO",
+def SearchDBS(datasets=["/MinimumBias/Run2011A-HSCPSD-PromptSkim-v6/RECO"],
               debug=False):
     ''' Searches DBS for runs in a given dataset.'''
-    cmd="dbs --search --query='find run where dataset=%s'"%dataset
-    print "Searching DBS, using this command:"
-    print cmd
-    print
-    out=os.popen(cmd).readlines()
     runs=[]
-    for i in out:
-        try:
-            runs.append(string.atoi(string.strip(i)))
-        except:
-            continue
+    for d in datasets:
+        cmd="dbs --search --query='find run where dataset=%s'"%d
+        print "Searching DBS, using this command:"
+        print cmd
+        print
+        out=os.popen(cmd).readlines()
+        for i in out:
+            try:
+                run=string.atoi(string.strip(i))
+                if (run>=163581 and run<=163869):
+                    print "Run %i was prescaled; ignoring this run"%run
+                    continue
+                elif (run>=176709 and run<=176795):
+                    print "Run %i had bad HBHE window; ignoring this run"%run
+                    continue
+                runs.append(run)
+            except:
+                continue
     runs.sort()
     print "RUNS FOUND = ",runs
     if len(runs)>0:
@@ -133,6 +141,7 @@ def ReadFills(fills="%s/src/StoppedHSCP/Ntuples/data/fills.txt"%os.getenv("CMSSW
     keys=readfillsbyrun.keys()
     keys.sort()
     valid=True
+
     for r in runs:
         if r not in keys:
             # Need to edit this to check whether run is from stable beams at some point -- otherwise, error is expected.  Until we have auto-access to the run/scheme/fill info, list this as "ERROR" only if debugging turned on (used by MakeJsonFile function below)
@@ -211,8 +220,17 @@ def MakeJsonFile(json=None,
         return False
 
     print "\nChecking that all runs in json are also in fills.txt"
+    # Not sure that this check is necessary.  Do we care that json file contains runs not in fills.txt?  We should just care about the datasets, right (checked above)
     for k in keys:
-        intkeys.append(string.atoi(k))
+        run=string.atoi(k)
+        if (run>=163581 and run<=163869):
+            print "Run %i was prescaled; ignoring this run from json"%run
+            continue
+        elif (run>=176709 and run<=176795):
+            print "Run %i had bad HBHE window; ignoring this run from json"%run
+            continue
+        intkeys.append(run)
+
     runsgood=ReadFills(runs=intkeys,debug=True)  # for now, call 'ReadFills' from here to check whether runs in JSON files are also in fills.txt
     if runsgood==False:
         print "<MakeJsonFile>ERROR!  Not all runs in json file '%s' are in fills.txt!"%newjson
@@ -252,10 +270,11 @@ if __name__=="__main__":
                       action="store_true",
                       default=False,
                       help="Show debugging information")
-    parser.add_option("-d","--dataset",
-                      dest="dataset",
-                      default="/MinimumBias/Run2011A-HSCPSD-PromptSkim-v6/RECO",
-                      help="Specify dataset.  Default is '/MinimumBias/Run2011A-HSCPSD-PromptSkim-v6/RECO'")
+    parser.add_option("-d","--datasets",
+                      dest="datasets",
+                      action="append",
+                      default=[],
+                      help="Specify dataset(s).  Default is '/MinimumBias/Run2011A-HSCPSD-PromptSkim-v6/RECO'")
     parser.add_option("-j","--json",
                       dest="json",
                       default=None,
@@ -269,7 +288,24 @@ if __name__=="__main__":
                       dest="user",
                       default=None,
                       help="Specify your CERN user name, so that files can be copied from lxplus.  (Default is 'None'.)")
+    parser.add_option("-g","--2011",
+                      dest="golden2011",
+                      action="store_true",
+                      default=False,
+                      help="If specified, produces a single json from the 'golden' json file and all 2011 datasets.  Note that you need to update list of 2011 datasets by hand if datset names change.")
+    
     opts,args=parser.parse_args()
+
+    if len(opts.datasets)==0:
+        opts.datasets=["/MinimumBias/Run2011A-HSCPSD-PromptSkim-v6/RECO"]
+
+    if opts.golden2011==True:
+        opts.datasets=["/MinimumBias/Run2011B-HSCPSD-PromptSkim-v1/RECO",
+                       "/MinimumBias/Run2011A-HSCPSD-PromptSkim-v6/RECO",
+                       "/MinimumBias/Run2011A-HSCPSD-05Aug2011-v1/RECO",
+                       "/MinimumBias/Run2011A-HSCPSD-PromptSkim-v4/RECO",
+                       "/MinimumBias/Run2011A-HSCPSD-May10ReReco-v2/RECO"]
+                       
 
     # Check format of input json
     if opts.json<>None:
@@ -296,7 +332,7 @@ if __name__=="__main__":
 
 
     runs=SearchDBS(debug=opts.debug,
-                   dataset=opts.dataset)
+                   datasets=opts.datasets)
     # new 2011B dataset:/MinimumBias/Run2011B-HSCPSD-PromptSkim-v1/RECO
     #sys.exit()
     ReadFills(runs=runs,
