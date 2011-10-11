@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.9 2011/09/09 18:58:14 temple Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.10 2011/09/16 16:45:51 temple Exp $
 //
 //
 
@@ -59,12 +59,23 @@
 
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 
-// jets
+// Jets
 #include "DataFormats/JetReco/interface/CaloJetCollection.h"
 
-// muons
+// Muons
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
+#include "DataFormats/MuonReco/interface/MuonCosmicCompatibility.h"
+#include "DataFormats/TrajectorySeed/interface/PropagationDirection.h"
+#include "TrackingTools/MaterialEffects/interface/PropagatorWithMaterial.h"
+#include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
+#include "DataFormats/GeometrySurface/interface/BoundCylinder.h"
+#include "DataFormats/GeometrySurface/interface/SimpleCylinderBounds.h"
+
+// Track tools
+#include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
+#include "TrackingTools/TransientTrack/interface/TransientTrack.h"
+#include "TrackingTools/Records/interface/TransientTrackRecord.h"
 
 // Vertices
 #include "DataFormats/VertexReco/interface/Vertex.h"
@@ -165,7 +176,7 @@ private:
   // write basic RECO objects
   void doJets(const edm::Event&);
   void doGlobalCalo(const edm::Event&);
-  void doMuons(const edm::Event&);
+  void doMuons(const edm::Event&, const edm::EventSetup&);
   void doVertices(const edm::Event&);
   void doTracks(const edm::Event&);
   void doBeamHalo(const edm::Event&);
@@ -367,6 +378,14 @@ private:
   std::vector<unsigned> hcalDetJets_;
 
   std::vector<HBHERecHit> recHits_;
+
+  const TransientTrackBuilder    *theTTBuilder_;
+  edm::ESHandle<MagneticField>   theMF_;
+  TrajectoryStateOnSurface       stateAtHCAL_; 
+  mutable PropagatorWithMaterial *forwardPropagator_ ;
+  PropagationDirection           dir_;
+  BoundCylinder                  *theHCALbarrel_;
+
 };
 
 
@@ -466,6 +485,15 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
 
   HcalLogicalMapGenerator gen;
   logicalMap_=new HcalLogicalMap(gen.createMap());
+
+  const float epsilon = 0.001;
+  Surface::RotationType rot; // unit rotation matrix
+
+  // values taken from CMS NOTE 2005/016
+  const float barrelRadius = 287.65;
+  const float barrelHalfLength = 433.20;
+
+  theHCALbarrel_ = new BoundCylinder( Surface::PositionType(0,0,0), rot, SimpleCylinderBounds( -epsilon, barrelRadius+epsilon, -barrelHalfLength, barrelHalfLength));
 
   //  fills_.print(std::cout);
 
@@ -666,7 +694,7 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
   // general RECO info
   doJets(iEvent);
   doGlobalCalo(iEvent); // uses ntuple calotower info for leadingIphiFractionValue
-  doMuons(iEvent);
+  doMuons(iEvent, iSetup);
 
   doBeamHalo(iEvent);
   doVertices(iEvent);
@@ -1249,60 +1277,119 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
        }
      }
 
-   }
-
-  
+   }  
 }
 
+void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
+    // get over reco muons
+	edm::Handle<reco::MuonCollection> muons;
+	iEvent.getByLabel(muonTag_,muons);
 
-void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent) {
+    // get muon transient tracks to be able to propagate them to whatever surface
+	edm::ESHandle<TransientTrackBuilder> builder;
+	iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder",builder);
+	theTTBuilder_ = builder.product();
+	iSetup.get<IdealMagneticFieldRecord>().get(theMF_); 
 
-  // loop over reco muons
-  edm::Handle<reco::MuonCollection> muons;
-  iEvent.getByLabel(muonTag_,muons);
+    // get muon cosmic compatibility
+	edm::Handle<edm::ValueMap<reco::MuonCosmicCompatibility> > CosmicMap;
+	iEvent.getByLabel(muonTag_,CosmicMap);
 
-  if (muons.isValid()) {
-    for(reco::MuonCollection::const_iterator it =muons->begin();
-	it!=muons->end();
-	it++) {
-      shscp::Muon mu;
-      mu.pt = it->pt();
-      mu.eta = it->eta();
-      mu.phi = it->phi();
-      mu.hcalEta = 0.;  // TODO extrapolate GlobalMuon track to HCAL surface and store position!
-      mu.hcalPhi = 0.;
-      mu.type = (0xf & it->type());
-       event_->addMuon(mu);
-    }
-  }
-  else {
-    if (!muonsMissing_) edm::LogWarning("MissingProduct") << "Muons not found.  Branch will not be filled" << std::endl;
-    muonsMissing_ = true;
-  }
-  
-  // loop over cosmic muons
-  edm::Handle<reco::MuonCollection> cosmicMuons;
-  iEvent.getByLabel(cosmicMuonTag_,cosmicMuons);
- 
-  if (cosmicMuons.isValid()) {
-    for(reco::MuonCollection::const_iterator it =cosmicMuons->begin();
-	it!=cosmicMuons->end();
-	it++) {
-      shscp::Muon mu;
-      mu.pt = it->pt();
-      mu.eta = it->eta();
-      mu.phi = it->phi();
-      mu.hcalEta = 0.;  // TODO extrapolate GlobalMuon track to HCAL surface and store position!
-      mu.hcalPhi = 0.;
-      mu.type = (0xf & it->type())<<8;
-       event_->addMuon(mu);
-    }
-  }
-  else {
-    if (!muonsMissing_) edm::LogWarning("MissingProduct") << "Cosmic muons not found.  Branch will not be filled" << std::endl;
-    muonsMissing_ = true;
-  }
+	if (muons.isValid()) {
+		reco::MuonCollection::const_iterator it;
+		unsigned int muonIdx = 0;   
+		for(it=muons->begin(); it!=muons->end(); it++) {
+			shscp::Muon mu;
+			mu.pt = it->pt();
+			mu.eta = it->eta();
+			mu.phi = it->phi();
+
+			// propagate the muon track to the outer HCAL barrel
+			mu.hcalEta = 0.;
+			mu.hcalPhi = 0.;
+			edm::Ref<TrackCollection> muontrack = (&*it)->globalTrack();
+			if (muontrack.isNonnull()) {
+				TransientTrack theTransientTrack = theTTBuilder_->build(&*it->globalTrack());
+				const TrajectoryStateOnSurface myTSOS = theTransientTrack.innermostMeasurementState();
+				if ( myTSOS.isValid() ) { 
+					stateAtHCAL_= forwardPropagator_->propagate( myTSOS, *theHCALbarrel_ );
+					if (stateAtHCAL_.isValid()) {
+						mu.hcalEta = stateAtHCAL_.globalDirection().eta();
+						mu.hcalPhi = stateAtHCAL_.globalDirection().phi();
+					} 
+				}
+			}
+	        
+	        // get muon cosmic compatibility values
+			reco::MuonRef muonRef(muons, muonIdx);
+			reco::MuonCosmicCompatibility muonCosmicCompatibility = (*CosmicMap)[muonRef];
+			mu.cosmicCompatibility     = muonCosmicCompatibility.cosmicCompatibility;
+			mu.timeCompatibility       = muonCosmicCompatibility.timeCompatibility;
+			mu.backToBackCompatibility = muonCosmicCompatibility.backToBackCompatibility;
+			mu.overlapCompatibility    = muonCosmicCompatibility.overlapCompatibility;
+			mu.ipCompatibility         = muonCosmicCompatibility.ipCompatibility;
+			mu.vertexCompatibility     = muonCosmicCompatibility.vertexCompatibility;
+			++muonIdx;
+
+			mu.type = (0xf & it->type());
+
+			event_->addMuon(mu);
+		}
+	}
+	else {
+		if (!muonsMissing_) edm::LogWarning("MissingProduct") << "Muons not found.  Branch will not be filled" << std::endl;
+		muonsMissing_ = true;
+	}
+
+// loop over cosmic muons
+	edm::Handle<reco::MuonCollection> cosmicMuons;
+	iEvent.getByLabel(cosmicMuonTag_,cosmicMuons);
+
+	if (cosmicMuons.isValid()) {
+		reco::MuonCollection::const_iterator it;
+		unsigned int muonIdx = 0;
+		for(it =cosmicMuons->begin(); it!=cosmicMuons->end(); it++) {
+			shscp::Muon mu;
+			mu.pt = it->pt();
+			mu.eta = it->eta();
+			mu.phi = it->phi();
+			
+			// propagate the muon track to the outer HCAL barrel
+			mu.hcalEta = 0.;
+			mu.hcalPhi = 0.;
+			edm::Ref<TrackCollection> muontrack = (&*it)->globalTrack();
+			if (muontrack.isNonnull()) {
+				TransientTrack theTransientTrack = theTTBuilder_->build(&*it->globalTrack());
+				const TrajectoryStateOnSurface myTSOS = theTransientTrack.innermostMeasurementState();
+				if ( myTSOS.isValid() ) { 
+					stateAtHCAL_= forwardPropagator_->propagate( myTSOS, *theHCALbarrel_ );
+					if (stateAtHCAL_.isValid()) {
+						mu.hcalEta = stateAtHCAL_.globalDirection().eta();
+						mu.hcalPhi = stateAtHCAL_.globalDirection().phi();
+					} 
+				}
+			}
+	        
+	        // get muon cosmic compatibility values
+			reco::MuonRef muonRef(muons, muonIdx);
+			reco::MuonCosmicCompatibility muonCosmicCompatibility = (*CosmicMap)[muonRef];
+			mu.cosmicCompatibility     = muonCosmicCompatibility.cosmicCompatibility;
+			mu.timeCompatibility       = muonCosmicCompatibility.timeCompatibility;
+			mu.backToBackCompatibility = muonCosmicCompatibility.backToBackCompatibility;
+			mu.overlapCompatibility    = muonCosmicCompatibility.overlapCompatibility;
+			mu.ipCompatibility         = muonCosmicCompatibility.ipCompatibility;
+			mu.vertexCompatibility     = muonCosmicCompatibility.vertexCompatibility;
+			++muonIdx;
+			
+			mu.type = (0xf & it->type())<<8;
+			event_->addMuon(mu);
+		}
+	}
+	else {
+		if (!muonsMissing_) edm::LogWarning("MissingProduct") << "Cosmic muons not found.  Branch will not be filled" << std::endl;
+		muonsMissing_ = true;
+	}
 
 } // void StoppedHSCPTreeProducer::doMuons()
 
