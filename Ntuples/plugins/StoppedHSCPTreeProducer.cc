@@ -1334,12 +1334,14 @@ void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent, const edm::Event
 					if (muontrack.isNonnull()) { 
 						muontrackavailable = true; 
 					} 
+/*
 					else {
 						muontrack = (&*it)->outerTrack();
 						if (muontrack.isNonnull()) { 
 							muontrackavailable = true; 
-						}
+						}			
 					}
+*/
 				}
 			
 				if (muontrackavailable) {
@@ -1386,8 +1388,8 @@ void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent, const edm::Event
 			mu.pt = it->pt();
 			mu.eta = it->eta();
 			mu.phi = it->phi();
-			
-			// propagate the muon track to the outer HCAL barrel
+
+						// propagate the muon track to the outer HCAL barrel
 			{
 				bool muontrackavailable = false;
 				edm::Ref<TrackCollection> muontrack = (&*it)->globalTrack();
@@ -1399,14 +1401,16 @@ void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent, const edm::Event
 					if (muontrack.isNonnull()) { 
 						muontrackavailable = true; 
 					} 
+/*
 					else {
 						muontrack = (&*it)->outerTrack();
 						if (muontrack.isNonnull()) { 
 							muontrackavailable = true; 
 						}
 					}
+*/
 				}
-			
+
 				if (muontrackavailable) {
 					TransientTrack theTransientTrack = theTTBuilder_->build(&*it->globalTrack());
 					const TrajectoryStateOnSurface myTSOS = theTransientTrack.innermostMeasurementState();
