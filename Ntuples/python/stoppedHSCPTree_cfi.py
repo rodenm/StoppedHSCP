@@ -38,6 +38,8 @@ stoppedHSCPTree = cms.EDAnalyzer(
     # muons
     muonTag = cms.untracked.InputTag("muons"),
     cosmicMuonTag = cms.untracked.InputTag("muonsFromCosmics"),
+    cosmicsVetoTag = cms.untracked.InputTag("cosmicsVeto"),
+    cosmicsVetoTag2 = cms.untracked.InputTag("cosmicsVeto2"),
     
     # calo towers
     caloTowerTag = cms.untracked.InputTag("towerMaker"),

@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.10 2011/09/16 16:45:51 temple Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.11 2011/10/11 18:24:02 heistera Exp $
 //
 //
 
@@ -298,6 +298,8 @@ private:
   edm::InputTag jetAK5Tag_;
   edm::InputTag muonTag_;
   edm::InputTag cosmicMuonTag_;
+  edm::InputTag cosmicsVetoTag_;
+  edm::InputTag cosmicsVetoTag2_;
   edm::InputTag verticesTag_;
   edm::InputTag tracksTag_;
   edm::InputTag caloTowerTag_;
@@ -428,6 +430,8 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   jetAK5Tag_(iConfig.getUntrackedParameter<edm::InputTag>("jetAK5Tag",edm::InputTag("ak5CaloJets"))),
   muonTag_(iConfig.getUntrackedParameter<edm::InputTag>("muonTag",edm::InputTag("muons"))),
   cosmicMuonTag_(iConfig.getUntrackedParameter<edm::InputTag>("cosmicMuonTag",edm::InputTag("muonsFromCosmics"))),
+  cosmicsVetoTag_(iConfig.getUntrackedParameter<edm::InputTag>("cosmicsVetoTag",edm::InputTag("cosmicsVeto"))),
+  cosmicsVetoTag2_(iConfig.getUntrackedParameter<edm::InputTag>("cosmicsVetoTag2",edm::InputTag("cosmicsVeto2"))),
   verticesTag_(iConfig.getUntrackedParameter<edm::InputTag>("verticesTag", edm::InputTag("offlinePrimaryVertices"))),
   tracksTag_(iConfig.getUntrackedParameter<edm::InputTag>("tracksTag", edm::InputTag("generalTracks"))),
   caloTowerTag_(iConfig.getUntrackedParameter<edm::InputTag>("caloTowerTag",edm::InputTag("towerMaker"))),
@@ -505,6 +509,9 @@ StoppedHSCPTreeProducer::~StoppedHSCPTreeProducer() {
    // do anything here that needs to be done at desctruction time
    // (e.g. close files, deallocate resources etc.)
 
+	delete chanquality_;
+	delete theHCALbarrel_;
+	delete logicalMap_;
 }
 
 
@@ -1001,6 +1008,7 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
 								  errorCode);
   if (errorCode!=0) event_->l1Jet32NoBptxNoHaloPrescale=-999;
 
+  delete l1gtutils;
   
   // Test output; need to check error code
   //std::cout <<"PRESCALE 32 = "<< event_->l1Jet32NoBptxNoHaloPrescale <<"  errorCode = "<<errorCode<<std::endl;
@@ -1032,7 +1040,7 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
     //     event_->l1BptxMinus.at(bx+2)       = l1BptxMinus;
     event_->l1Bptx.at(bx+2)            = (l1Bptx ? 1 : 0);
     event_->l1MuBeamHalo.at(bx+2)      = (l1MuBeamHalo ? 1 : 0);
-    
+
   }
   
   // HLT config setup
@@ -1286,16 +1294,25 @@ void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent, const edm::Event
 	edm::Handle<reco::MuonCollection> muons;
 	iEvent.getByLabel(muonTag_,muons);
 
+    // loop over cosmic muons
+	edm::Handle<reco::MuonCollection> cosmicMuons;
+	iEvent.getByLabel(cosmicMuonTag_,cosmicMuons);
+
     // get muon transient tracks to be able to propagate them to whatever surface
 	edm::ESHandle<TransientTrackBuilder> builder;
 	iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder",builder);
 	theTTBuilder_ = builder.product();
 	iSetup.get<IdealMagneticFieldRecord>().get(theMF_); 
 
-    // get muon cosmic compatibility
+	// get muon cosmic compatibility for the normal muon colletion
 	edm::Handle<edm::ValueMap<reco::MuonCosmicCompatibility> > CosmicMap;
-	iEvent.getByLabel(muonTag_,CosmicMap);
+	iEvent.getByLabel(cosmicsVetoTag_,CosmicMap);
 
+	// get muon cosmic compatibility for the normal muon colletion
+	edm::Handle<edm::ValueMap<reco::MuonCosmicCompatibility> > CosmicMap2;
+	iEvent.getByLabel(cosmicsVetoTag2_,CosmicMap2);
+
+	// loop over muons
 	if (muons.isValid()) {
 		reco::MuonCollection::const_iterator it;
 		unsigned int muonIdx = 0;   
@@ -1306,30 +1323,49 @@ void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent, const edm::Event
 			mu.phi = it->phi();
 
 			// propagate the muon track to the outer HCAL barrel
-			mu.hcalEta = 0.;
-			mu.hcalPhi = 0.;
-			edm::Ref<TrackCollection> muontrack = (&*it)->globalTrack();
-			if (muontrack.isNonnull()) {
-				TransientTrack theTransientTrack = theTTBuilder_->build(&*it->globalTrack());
-				const TrajectoryStateOnSurface myTSOS = theTransientTrack.innermostMeasurementState();
-				if ( myTSOS.isValid() ) { 
-					stateAtHCAL_= forwardPropagator_->propagate( myTSOS, *theHCALbarrel_ );
-					if (stateAtHCAL_.isValid()) {
-						mu.hcalEta = stateAtHCAL_.globalDirection().eta();
-						mu.hcalPhi = stateAtHCAL_.globalDirection().phi();
+			{
+				bool muontrackavailable = false;
+				edm::Ref<TrackCollection> muontrack = (&*it)->globalTrack();
+				if (muontrack.isNonnull()) { 
+					muontrackavailable = true; 
+				} 
+				else {
+					muontrack = (&*it)->innerTrack();
+					if (muontrack.isNonnull()) { 
+						muontrackavailable = true; 
 					} 
+					else {
+						muontrack = (&*it)->outerTrack();
+						if (muontrack.isNonnull()) { 
+							muontrackavailable = true; 
+						}
+					}
 				}
+			
+				if (muontrackavailable) {
+					TransientTrack theTransientTrack = theTTBuilder_->build(&*it->globalTrack());
+					const TrajectoryStateOnSurface myTSOS = theTransientTrack.innermostMeasurementState();
+					if ( myTSOS.isValid() ) { 
+						stateAtHCAL_= forwardPropagator_->propagate( myTSOS, *theHCALbarrel_ );
+						if (stateAtHCAL_.isValid()) {
+							mu.hcalEta = stateAtHCAL_.globalDirection().eta();
+							mu.hcalPhi = stateAtHCAL_.globalDirection().phi();
+						} 
+					} 
+				} 
 			}
-	        
-	        // get muon cosmic compatibility values
+			
+			// get muon cosmic compatibility values
 			reco::MuonRef muonRef(muons, muonIdx);
-			reco::MuonCosmicCompatibility muonCosmicCompatibility = (*CosmicMap)[muonRef];
-			mu.cosmicCompatibility     = muonCosmicCompatibility.cosmicCompatibility;
-			mu.timeCompatibility       = muonCosmicCompatibility.timeCompatibility;
-			mu.backToBackCompatibility = muonCosmicCompatibility.backToBackCompatibility;
-			mu.overlapCompatibility    = muonCosmicCompatibility.overlapCompatibility;
-			mu.ipCompatibility         = muonCosmicCompatibility.ipCompatibility;
-			mu.vertexCompatibility     = muonCosmicCompatibility.vertexCompatibility;
+			if (muonRef.isNonnull()) {
+				reco::MuonCosmicCompatibility muonCosmicCompatibility = (*CosmicMap)[muonRef];
+				mu.cosmicCompatibility     = muonCosmicCompatibility.cosmicCompatibility;
+				mu.timeCompatibility       = muonCosmicCompatibility.timeCompatibility;
+				mu.backToBackCompatibility = muonCosmicCompatibility.backToBackCompatibility;
+				mu.overlapCompatibility    = muonCosmicCompatibility.overlapCompatibility;
+				mu.ipCompatibility         = muonCosmicCompatibility.ipCompatibility;
+				mu.vertexCompatibility     = muonCosmicCompatibility.vertexCompatibility;
+			}
 			++muonIdx;
 
 			mu.type = (0xf & it->type());
@@ -1342,10 +1378,6 @@ void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent, const edm::Event
 		muonsMissing_ = true;
 	}
 
-// loop over cosmic muons
-	edm::Handle<reco::MuonCollection> cosmicMuons;
-	iEvent.getByLabel(cosmicMuonTag_,cosmicMuons);
-
 	if (cosmicMuons.isValid()) {
 		reco::MuonCollection::const_iterator it;
 		unsigned int muonIdx = 0;
@@ -1356,30 +1388,51 @@ void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent, const edm::Event
 			mu.phi = it->phi();
 			
 			// propagate the muon track to the outer HCAL barrel
-			mu.hcalEta = 0.;
-			mu.hcalPhi = 0.;
-			edm::Ref<TrackCollection> muontrack = (&*it)->globalTrack();
-			if (muontrack.isNonnull()) {
-				TransientTrack theTransientTrack = theTTBuilder_->build(&*it->globalTrack());
-				const TrajectoryStateOnSurface myTSOS = theTransientTrack.innermostMeasurementState();
-				if ( myTSOS.isValid() ) { 
-					stateAtHCAL_= forwardPropagator_->propagate( myTSOS, *theHCALbarrel_ );
-					if (stateAtHCAL_.isValid()) {
-						mu.hcalEta = stateAtHCAL_.globalDirection().eta();
-						mu.hcalPhi = stateAtHCAL_.globalDirection().phi();
+			{
+				bool muontrackavailable = false;
+				edm::Ref<TrackCollection> muontrack = (&*it)->globalTrack();
+				if (muontrack.isNonnull()) { 
+					muontrackavailable = true; 
+				} 
+				else {
+					muontrack = (&*it)->innerTrack();
+					if (muontrack.isNonnull()) { 
+						muontrackavailable = true; 
 					} 
+					else {
+						muontrack = (&*it)->outerTrack();
+						if (muontrack.isNonnull()) { 
+							muontrackavailable = true; 
+						}
+					}
 				}
+			
+				if (muontrackavailable) {
+					TransientTrack theTransientTrack = theTTBuilder_->build(&*it->globalTrack());
+					const TrajectoryStateOnSurface myTSOS = theTransientTrack.innermostMeasurementState();
+					if ( myTSOS.isValid() ) { 
+						stateAtHCAL_= forwardPropagator_->propagate( myTSOS, *theHCALbarrel_ );
+						if (stateAtHCAL_.isValid()) {
+							mu.hcalEta = stateAtHCAL_.globalDirection().eta();
+							mu.hcalPhi = stateAtHCAL_.globalDirection().phi();
+						} 
+					} 
+				} 
 			}
 	        
 	        // get muon cosmic compatibility values
-			reco::MuonRef muonRef(muons, muonIdx);
-			reco::MuonCosmicCompatibility muonCosmicCompatibility = (*CosmicMap)[muonRef];
-			mu.cosmicCompatibility     = muonCosmicCompatibility.cosmicCompatibility;
-			mu.timeCompatibility       = muonCosmicCompatibility.timeCompatibility;
-			mu.backToBackCompatibility = muonCosmicCompatibility.backToBackCompatibility;
-			mu.overlapCompatibility    = muonCosmicCompatibility.overlapCompatibility;
-			mu.ipCompatibility         = muonCosmicCompatibility.ipCompatibility;
-			mu.vertexCompatibility     = muonCosmicCompatibility.vertexCompatibility;
+/*
+			reco::MuonRef muonRef(cosmicMuons, muonIdx);
+			if (muonRef.isNonnull()) {
+				reco::MuonCosmicCompatibility muonCosmicCompatibility = (*CosmicMap2)[muonRef];
+				mu.cosmicCompatibility     = muonCosmicCompatibility.cosmicCompatibility;
+				mu.timeCompatibility       = muonCosmicCompatibility.timeCompatibility;
+				mu.backToBackCompatibility = muonCosmicCompatibility.backToBackCompatibility;
+				mu.overlapCompatibility    = muonCosmicCompatibility.overlapCompatibility;
+				mu.ipCompatibility         = muonCosmicCompatibility.ipCompatibility;
+				mu.vertexCompatibility     = muonCosmicCompatibility.vertexCompatibility;
+			}
+*/
 			++muonIdx;
 			
 			mu.type = (0xf & it->type())<<8;
