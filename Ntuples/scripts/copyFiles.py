@@ -50,12 +50,12 @@ class CopyFileThread(threading.Thread):
         self.successfulCopy=False
         
     def run(self,maxretries=5):
+        retries=0
         time.sleep(2)  # small break between jobs
         print self.command
         cp = Popen(self.command, shell=True)  # execute command
         # wait to see if copying is complete
         cp.wait()  # is this necessary?
-        retries =0
         if (cp.returncode != 0 and retries<maxretries):
             retries=retries+1
             retry()
