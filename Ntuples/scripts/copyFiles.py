@@ -47,27 +47,24 @@ class CopyFileThread(threading.Thread):
         threading.Thread.__init__(self)
         self.command=command
         self.sleeptime=sleeptime
+        self.successfulCopy=False
         
-    def run(self):
+    def run(self,maxretries=5):
         time.sleep(2)  # small break between jobs
         print self.command
         cp = Popen(self.command, shell=True)  # execute command
         # wait to see if copying is complete
-        completed=False
-        totaltime=0
-
-        # This doesn't seem to work -- sometimes the "poll" command
-        # never returns True, even when the file is copied.
-        
-        #while (completed==False):
-        #    completed=cp.poll()
-        #    # Check every (sleeptime) seconds to see if file has finished copying
-        #    if (totaltime>300):  # print messages after 5 minutes
-        #        print "Checking on '%s':  Completed? %s"%(self.command,completed)
-        #    time.sleep(self.sleeptime)
-        #    totaltime=totaltime+self.sleeptime
         cp.wait()  # is this necessary?
-        print "Completed '%s'"%self.command
+        retries =0
+        if (cp.returncode != 0 and retries<maxretries):
+            retries=retries+1
+            retry()
+        if retries>=maxretries:
+            print "Could not complete '%s'!"%self.command
+            self.successfulCopy=False
+            return
+        print "Completed '%s' with %i retries"%(self.command, retries)
+        self.successfulCopy=True
         return
 
 def CopyFiles(user="jbrooke",
@@ -132,6 +129,7 @@ def CopyFiles(user="jbrooke",
         print "A total of %i files found."%filecount
         print "Total time taken: %i min %.2f sec"%((endtime-starttime)/60, (endtime-starttime)%60)
 
+        # Do we want to count errors here?  We need to count to remove bad files, but maybe we don't show the "MAJOR ERROR" warnings if the file doesn't exist?  After all, sometimes we want to list the files prior to copying them, and then they of course won't exist yet in the output directory.
         errorcount=0
         for x in filenames.keys():
             if len(filenames[x])>1:
@@ -152,9 +150,11 @@ def CopyFiles(user="jbrooke",
                         os.system("rm -f %s"%thisfile)
                         errorcount=errorcount+1
                 except OSError:
-                    print "**********************************"
-                    print "MAJOR ERROR!  Output file '%s' does not exist!"%thisfile
-                    errorcount=errorcount+1 
+                    # Do we want to enable this output message?
+                    #print "**********************************"
+                    #print "MAJOR ERROR!  Output file '%s' does not exist!"%thisfile
+                    #errorcount=errorcount+1 
+                    pass
         if (errorcount>0):
             print "There were a total of %i errors!"%errorcount
             return False
@@ -235,6 +235,10 @@ def CopyFiles(user="jbrooke",
     endtime=time.time()
     print "Total time taken: %i min %.2f sec"%((endtime-starttime)/60, (endtime-starttime)%60)
     errorcount=0
+    for i in cmdThreads:
+        if i.successfulCopy==False:
+            print "ERROR:  Command '%s' did not complete successfully!"%i.command
+            errorcount=errorcount+1
     for x in filenames.keys():
         # If more than one file exists for the same root index, that indicates a problem
         if len(filenames[x])>1:
@@ -246,6 +250,7 @@ def CopyFiles(user="jbrooke",
             errorcount=errorcount+1
 
         # If file has length 0, it probably was not copied correctly
+        # I think this just duplicates the checks of  the retry function
         elif len(filenames[x])==1:
             
             thisfile=os.path.join(odir,filenames[x][0])
