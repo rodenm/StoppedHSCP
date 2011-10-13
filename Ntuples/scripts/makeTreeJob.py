@@ -6,6 +6,7 @@
 import sys, os, string
 import getopt
 import string
+from optparse import OptionParser
 
 # Get pyGetFillScheme from StoppedHSCP/Ntuples
 temp=os.path.join(os.environ['CMSSW_BASE'],"src","StoppedHSCP","Ntuples","scripts")
@@ -21,24 +22,17 @@ except:
     print "Have you remembered to check out StoppedHSCP/Ntuples from CVS?"
     sys.exit()
 
-    
 
-def usage():
-    print "makeTreeJob.py [-hjlc] [--raw|--reco|--mc] [--2010|--2011] [--newhlttag] [--oldhlttag] <era> <label> <dataset> <global tag> <runlist|JSON file>"
-    print " Options   :"
-    print "   -h      : prints this message"
-    print "   -l      : use local DBS (http://cmsdbsprod.cern.ch/cms_dbs_ph_analysis_02/servlet/DBSServlet)"
-    print "   -j      : use JSON file to run on good LS"
-    print "   -c      : use CAF"
-    print "   --2010  : use 2010 trigger config"
-    print "   --2011  : use 2011 trigger config (default)"
-    print "   --raw   : use RAW+RECO config"
-    print "   --reco  : use RECO config (default)"
-    print "   --mc    : use MC config"
-    print "   --newhlttag  :  use HLTL3Tag hltStoppedHSCPCaloJetEnergy50 "
-    print "   --oldhlttag : use HLTL3Tag hltStoppedHSCPTight1CaloJetEnergy30"
-    print
-
+def OptParserUsage():
+    ''' Usage function as returned by OptionParser. '''
+    mytext= "[makeTreeJob.py usage]: \n\tmakeTreeJob.py  <era> <label> <dataset> <global tag> <runlist|JSON file>\n"
+    mytext=mytext+"\t\t* 'era' specifies dataset, CMSSW version, and Ntuple tag \n\t\t\t(e.g., 'Run2011B_423p5_V180400')\n"
+    mytext=mytext+"\t\t* 'label' specifies the fill range and version for these ntuples \n\t\t\t(e.g., '2006_2040_v1')\n"
+    mytext=mytext+"\t\t* 'dataset' specifies full dataset name \n\t\t\t(e.g., '/MinimumBias/Run2011B-HSCPSD-PromptSkim-v1/RECO')\n"
+    mytext=mytext+"\t\t* 'global tag' takes the form 'GR_P_V22::All'\n"
+    mytext=mytext+"\t\t* 'runlist/JSON file' specifies the runlist or json file for the data.\n"
+    mytext=mytext+"\n\nOptional parameters listed below:"
+    return mytext
 
 def WriteCrabFile(scheduler, dataset,storage,
                   runStr,dbsStr,evtStr,
@@ -50,6 +44,7 @@ def WriteCrabFile(scheduler, dataset,storage,
                   whitelist,
                   output="stoppedHSCPTree.root" 
                   ):
+    ''' Write crab .cfg file for ntuple generation.'''
     server_type="#use_server = 1\n"
     if (scheduler=="condor"):  # condor must have use_server=0
         server_type="use_server = 0\n"
@@ -81,9 +76,10 @@ proxy_server = myproxy.cern.ch"
 #ce_black_list = \n\
 #ce_white_list = heplnx206.pp.rl.ac.uk,heplnx207.pp.rl.ac.uk\n\
         "
-        if not whitelist.startswith("#"):
+        if whitelist <>None and not whitelist.startswith("#"):
             crabstring=crabstring+"\nce_white_list = %s\n"%whitelist
-        
+        else:
+            crabstring=crabstring+"\n"
     # create CRAB file
     crab = open(cfgname, 'w')
     print "Writing file '%s'"%cfgname
@@ -92,9 +88,13 @@ proxy_server = myproxy.cern.ch"
     return
 ###########################################
 
-def WritePyCfgFile(datatype,trigger,gtag,
+def WritePyCfgFile(datatype,
+                   trigger,gtag,
                    HLTL3Tag,
-                   jobStr,makeReduced=False):
+                   jobStr,
+                   makeReduced=False):
+    ''' Write python .py file that crab.cfg file uses for running the ntuple job.'''
+    
     # create CMSSW variables
     cmsswStr="import FWCore.ParameterSet.Config as cms\n\
 \n\
@@ -109,8 +109,8 @@ readFiles.extend( [\n\
 "
     if (HLTL3Tag<>"Default"):
         cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.hltL3Tag= cms.untracked.InputTag("%s","","HLT")\n\n'%HLTL3Tag
+
     if (makeReduced==True):
-        # need to keep calotowers, because they are used to compute iphi fraction
         cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.doCaloTowers=False'
         cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.doRecHits=False'
         cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.doHFRecHits=False'
@@ -135,11 +135,12 @@ def makeTreeJob(era,
                 trigger,
                 datatype,
                 HLTL3Tag,
-                whitelist='heplnx206.pp.rl.ac.uk,heplnx207.pp.rl.ac.uk',
+                whitelist=None,
                 scheduler = "glite",
                 storage = "T2_UK_SGrid_RALPP",
                 useCAFsettings=False
                 ):
+    ''' Make the .py and .cfg files necessary for generating ntuple trees.'''
 
     # Always check that fills.txt can be properly parsed
     fillfile=os.path.join(os.environ['CMSSW_BASE'],"src","StoppedHSCP","Ntuples","data","fills.txt")
@@ -153,11 +154,13 @@ def makeTreeJob(era,
         print "*********************************************"
         return False
 
+    # Set up names of tree .cfg and .py file
     name = era + "_" + label
     cfgname = "crab_tree_"+name+".cfg"
     jobStr = "stoppedHSCP_tree_"+name+".py"
     dirStr = "stoppedHSCP_tree_"+name
 
+    # Set up names of reduced ntuples files
     reducedcfgname="crab_tree_%s_reduced.cfg"%name
     reducedjobStr="stoppedHSCP_tree_%s_reduced.py"%name
     reduceddirStr="stoppedHSCP_tree_%s_reduced"%name
@@ -171,6 +174,7 @@ def makeTreeJob(era,
     if (runjsonfile!="0" and not useJSON):
         runStr = "runselection="+runs
 
+    # Specify number of lumis or number of events
     evtStr = ""
     if (useJSON):
         evtStr = "lumi_mask="+runjsonfile+"\n\
@@ -189,6 +193,8 @@ events_per_job=100000\n"
         useCAFsettings=True
         storage = "T2_CH_CAF"
 
+    # write main crab and python cfg files
+    print
     WriteCrabFile(scheduler, dataset,storage,
                   runStr,dbsStr,evtStr,
                   useCAFsettings,
@@ -197,7 +203,12 @@ events_per_job=100000\n"
                   dirStr,
                   whitelist,
                   "stoppedHSCPTree.root") 
+    WritePyCfgFile(datatype,trigger,gtag,
+                   HLTL3Tag,
+                   jobStr,makeReduced=False)
 
+    print
+    # Write reduced cfg files
     WriteCrabFile(scheduler, dataset, storage,
                   runStr,dbsStr,evtStr,
                   useCAFsettings,
@@ -209,61 +220,132 @@ events_per_job=100000\n"
 
     WritePyCfgFile(datatype,trigger,gtag,
                    HLTL3Tag,
-                   jobStr,makeReduced=False)
-    WritePyCfgFile(datatype,trigger,gtag,
-                   HLTL3Tag,
                    reducedjobStr,makeReduced=True)
+    print
     return True # True indicates that files written successfully
 
 #####################################################
 
 if __name__=="__main__":
 
-    # Get command line options
-    # Move to OptionParser?
-    
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "hjlcm", ['2010','2011','raw','reco','RECO','mc','oldhlttag','newhlttag'])
-    except getopt.GetoptError:
-        print "Error getting options"
-        usage()
-        sys.exit(2)
+    # Parser command line options
+    # (Use OptionParser for more control, and to allow for whitelist specification)
+    parser=OptionParser(usage=OptParserUsage())
+    parser.add_option("-l","--l",
+                      action="store_true",
+                      dest="useLocalDBS",
+                      default=False,
+                      help="Use local DBS (http://cmsdbsprod.cern.ch/cms_dbs_ph_analysis_02/servlet/DBSServlet)")
+    parser.add_option("-j","--json",
+                      dest="useJSON",
+                      action="store_true",
+                      default=False,
+                      help="use JSON file to run on good LS")
+    parser.add_option("-c","--CAF",
+                      dest="useCAFsettings",
+                      action="store_true",
+                      default=False,
+                      help="use CAF")
+    parser.add_option("--2010",
+                      dest="trigger2010",
+                      action="store_true",
+                      default=False,
+                      help="use 2010 trigger config")
+    parser.add_option("--2011",
+                      dest="trigger2011",
+                      action="store_true",
+                      default=True,
+                      help="use 2011 trigger config (default)")
+    parser.add_option("--raw","--RAW",
+                      dest="rawdata",
+                      action="store_true",
+                      default=False,
+                      help="use RAW+RECO config")
+    parser.add_option("--reco","--RECO",
+                      dest="recodata",
+                      action="store_true",
+                      default=True,
+                      help="use RECO config (default)")
+    parser.add_option("--mc","--MC",
+                      dest="mcdata",
+                      action="store_true",
+                      default=False,
+                      help="use MC config")
+    parser.add_option("--newhlttag",
+                      dest="newhlttag",
+                      action="store_true",
+                      default=False,
+                      help="use HLTL3Tag hltStoppedHSCPCaloJetEnergy50")
+    parser.add_option("--oldhlttag",
+                      dest="oldhlttag",
+                      default=False,
+                      action="store_true",
+                      help="use HLTL3Tag hltStoppedHSCPTight1CaloJetEnergy30")
+    parser.add_option("--defaultwhitelist",
+                      dest="defaultwhitelist",
+                      action="store_true",
+                      default=False,
+                      help="Use default white list values (heplnx206.pp.rl.ac.uk,heplnx207.pp.rl.ac.uk)")
+    parser.add_option("-w","--whitelist",
+                      dest="whitelist",
+                      default=None,
+                      help="Specify whitelist site(s)")
 
-    useLocalDBS = False
-    useJSON = False
-    useCAFsettings = False
-    trigger = '2011'
-    datatype = 'RECO'
-    HLTL3Tag = "Default"
+    (opts,args)=parser.parse_args()
 
-    for opt, arg in opts:
-        if opt=='-l':
-            useLocalDBS=True
-        if opt=='-j':
-            useJSON = True
-        if opt=='-c':
-            useCAFsettings = True
-        if opt=='-h':
-            print "Printing Help Message"
-            usage()
+
+    useLocalDBS = opts.useLocalDBS
+    useJSON = opts.useJSON
+    useCAFsettings = opts.useCAFsettings
+    if opts.trigger2010==True and opts.trigger2011==False:
+        trigger='2010'
+    elif opts.trigger2010==False and opts.trigger2011==True:
+        trigger = '2011'
+    elif opts.trigger2010==False and opts.trigger2011==False:
+        print "ERROR!  No trigger type (--2010 or --2011) has been specified!"
+        sys.exit()
+    elif opts.trigger2010==True and opts.trigger2011==True:
+        print "ERROR!  Trigger type can not be both --2010 and --2011!"
+        sys.exit()
+
+    if opts.rawdata==True:
+        if opts.recodata==False and opts.mcdata==False:
+            datatype = 'RAW'
+        else:
+            print "ERROR!  Cannot specify more than one data type (--raw, --reco, --mc)"
             sys.exit()
-        if opt=='--2010':
-            trigger = '2010'
-        if opt=='--2011':
-            trigger = '2011'
-        if opt=='--raw' or opt=='RAW':
-            datatype = 'RAWRECO'
-        if opt=='--reco' or opt=='--RECO':
+    elif opts.recodata==True:
+        if opts.rawdata==False and opts.mcdata==False:
             datatype = 'RECO'
-        if opt=='--mc' or opt=='MC':
+        else:
+            print "ERROR!  Cannot specify more than one data type (--raw, --reco, --mc)"
+            sys.exit()
+    elif opts.mcdata==True:
+        if opts.rawdata==False and opts.recodata==False:
             datatype = 'MC'
-        if opt=='-m':
-            datatype = 'MC'
-        if opt=="--newhlttag":
-            HLTL3Tag="hltStoppedHSCPCaloJetEnergy50"
-        if opt=="--oldhlttag":
-            HLTL3Tag="hltStoppedHSCPTight1CaloJetEnergy30"
+        else:
+            print "ERROR!  Cannot specify more than one data type (--raw, --reco, --mc)"
+            sys.exit()
+            
+    HLTL3Tag = "Default"
+    if opts.newhlttag==True and opts.oldhlttag==False:
+        HLTL3Tag="hltStoppedHSCPCaloJetEnergy50"
+    elif opts.newhlttag==False and opts.oldhlttag==True:
+        HLTL3Tag="hltStoppedHSCPTight1CaloJetEnergy30"
+    elif opts.newhlttag==True and opts.oldhlttag==True:
+        print "ERROR!  Cannot specify both --oldhlttag and --newhlttag"
+        sys.exit()
 
+    whitelist=None
+    if opts.defaultwhitelist==True:
+        if opts.whitelist==None:
+            whitelist="heplnx206.pp.rl.ac.uk,heplnx207.pp.rl.ac.uk"
+        else:
+            print "ERROR!  Cannot specify both --defaultwhitelist and your own whitelist (-w)!"
+            sys.exit()
+    elif opts.whitelist<>None:
+        whitelist=opts.whitelist
+        
     # arguments
     if (len(args)!=5):
         print "Wrong number of arguments!"
@@ -288,7 +370,7 @@ if __name__=="__main__":
                   trigger=trigger,
                   datatype=datatype,
                   HLTL3Tag=HLTL3Tag,
-                  whitelist='heplnx206.pp.rl.ac.uk,heplnx207.pp.rl.ac.uk',  # add whitelist option at some point?
+                  whitelist=whitelist,  # add whitelist option at some point?
                   scheduler = "glite",
                   storage = "T2_UK_SGrid_RALPP"
                   )
