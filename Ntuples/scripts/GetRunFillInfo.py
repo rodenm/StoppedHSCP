@@ -194,53 +194,66 @@ def MakeJsonFile(json=None,
         localjson=os.path.basename(json)
     else:
         localjson=json # json file already present; no need to copy
+        if not os.path.isfile(localjson):
+            if os.path.isfile(os.path.basename(localjson)):
+                print "<MakeJsonFile>  Cannot find file '%s'; using local file '%s'"%(localjson,os.path.basename(localjson))
+                localjson=os.path.basename(localjson)
+            else:
+                print "<MakeJsonFile> ERROR!  Cannot find local JSON file '%s'"%localjson
+                return False
     print
+
     # Make new json from input
     print "Making new json file for runs %i-%i from original json file %s"%(runs[0],runs[-1],localjson)
-    newjson="runs_SE_TEMP.json"
-    cmd="jsonrunsel.py %i %i %s %s"%(runs[0],runs[-1],
-                                     localjson,
-                                     newjson)
-    print cmd
-    print
-    os.system(cmd)
 
-    if not os.path.isfile(newjson):
-        print "<MakeJsonFile>ERROR!  No file '%s' has been produced!"%newjson
-        return False
-
-    # open new json, and get list of all included runs
-    temp=open(newjson,'r')
+    temp=open(localjson,'r')
     tempjson=JSON.load(temp)
     keys=tempjson.keys()
-    keys.sort()
+    keys.sort() # keys from original json file
     intkeys=[]
+    
     if len(keys)==0:
         print "<MakeJsonFile>ERROR!  No valid runs found in '%s'"%newjson
         return False
 
-    print "\nChecking that all runs in json are also in fills.txt"
-    # Not sure that this check is necessary.  Do we care that json file contains runs not in fills.txt?  We should just care about the datasets, right (checked above)
+    newjson="runs_SE_TEMP.json"
+    finaljson=open(newjson,'w')
+    finaljsondict={}
+    print "Looking for runs from JSON in allowed run range %i -%i"%(keys[0],keys[-1])
     for k in keys:
         run=string.atoi(k)
+        print "Reading run: %i"%run
+        if run<runs[0] or run>runs[-1]:
+            #print "\tRun outside allowed range [%i, %i]; ignoring this run"%(runs[0],runs[-1])
+            continue
         if (run>=163581 and run<=163869):
             print "Run %i was prescaled; ignoring this run from json"%run
             continue
         elif (run>=176709 and run<=176795):
             print "Run %i had bad HBHE window; ignoring this run from json"%run
             continue
+        print "\t-------> Run %i accepted!"%run
         intkeys.append(run)
+        finaljsondict["%u"%run]=tempjson[k]
 
+    # Not sure that this check is necessary.  Do we care that json file contains runs not in fills.txt?  We should just care about the datasets, right? (checked in previous steps above)
+    print "\nChecking that all runs in json are also in fills.txt"
     runsgood=ReadFills(runs=intkeys,debug=True)  # for now, call 'ReadFills' from here to check whether runs in JSON files are also in fills.txt
     if runsgood==False:
         print "<MakeJsonFile>ERROR!  Not all runs in json file '%s' are in fills.txt!"%newjson
         return False
-    
-    print "Json file contains runs %u-%u"%(string.atoi(keys[0]),
-                                           string.atoi(keys[-1])
+
+    JSON.dump(finaljsondict, finaljson,sort_keys=True)
+    finaljson.close() 
+
+    finalkeys=finaljsondict.keys()
+    finalkeys.sort()
+
+    print "Json file contains runs %u-%u"%(string.atoi(finalkeys[0]),
+                                           string.atoi(finalkeys[-1])
                                            )
-    newfile="runs_SE_%u_%u.json"%(string.atoi(keys[0]),
-                                  string.atoi(keys[-1])
+    newfile="runs_SE_%u_%u.json"%(string.atoi(finalkeys[0]),
+                                  string.atoi(finalkeys[-1])
                                   )
     print "Moving file '%s' to '%s'"%(newjson,newfile)
     cmd="mv %s %s"%(newjson, newfile)
@@ -331,15 +344,16 @@ if __name__=="__main__":
             print "(You can specify a username with -u option on command line)"
             opts.user="temple"
 
+    # Step 1:  WBM access:  Still to come
 
-
+    # STEP 2:  Search DBS
     runs=SearchDBS(debug=opts.debug,
                    datasets=opts.datasets)
-    # new 2011B dataset:/MinimumBias/Run2011B-HSCPSD-PromptSkim-v1/RECO
-    #sys.exit()
+
+    # STEP 3:  Read fills
     ReadFills(runs=runs,
               debug=opts.debug)
-    #runs=[0,999999999]
+
     if opts.json<>None:
         MakeJsonFile(json=opts.json,
                      cernuser=opts.user,
