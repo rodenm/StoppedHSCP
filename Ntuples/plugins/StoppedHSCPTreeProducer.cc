@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.11 2011/10/11 18:24:02 heistera Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.13 2011/10/12 15:54:32 heistera Exp $
 //
 //
 
@@ -1796,7 +1796,7 @@ StoppedHSCPTreeProducer::doHcalRecHits(const edm::Event& iEvent)
 	rh.depth = (*hit).id().depth();
 	rh.RBXindex = logicalMap_->getHcalFrontEndId(hit->detid()).rbxIndex();
 	rh.RMindex  = logicalMap_->getHcalFrontEndId(hit->detid()).rm();
-	event_->addHFRecHit(rh);
+	event_->addRecHit(rh);
 
 	count++;
 
