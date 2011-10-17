@@ -118,6 +118,8 @@ void RunHistograms::save() {
 
 void RunHistograms::summarise() {
 
+  std::sort(runs_.begin(), runs_.end());
+
   unsigned nruns = runs_.size();
 
   // book histograms
@@ -142,7 +144,7 @@ void RunHistograms::summarise() {
     // number LS
     unsigned long nlb=0;
     for (int i=0; i<hlb_.at(*itr)->GetNbinsX(); ++i) {
-      if (hlb_.at(*itr)->GetBinContent(i) > 0) ++nlb;
+      if (hlb_.at(*itr)->GetBinContent(i+1) > 0) ++nlb;
     }
     hnlb->Fill(runstr.c_str(), nlb);
 
