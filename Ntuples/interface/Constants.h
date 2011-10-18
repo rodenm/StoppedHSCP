@@ -1,4 +1,5 @@
-
+#ifndef GUARD_Constants_h
+#define GUARD_Constants_h
 
 //namespace shscp {
 
@@ -16,3 +17,5 @@ const int BX_VETO_PLUS = 2;
 
 
 //}
+
+#endif
