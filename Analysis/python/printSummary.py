@@ -62,8 +62,14 @@ def printSummary():
         # run info
         time=0
         if (not isMC):
-            htime=hfile.Get("runs/hruntime")
-            hnlb=hfile.Get("runs/hrunlb")
+            # Previously-used method for accessing time, # of lb -- doesn't work on reduced ntuples
+            ##htime=hfile.Get("runs/hruntime")
+            ##hnlb=hfile.Get("runs/hrunlb")
+
+            # Instead, use these histograms, which are filled correctly even for reduced ntuples
+            htime=hfile.Get("runsReduced/hruntime_REDUCED")
+            hnlb=hfile.Get("runsReduced/hrunlb_REDUCED")
+            
 
             print "Run\t# LS\tTime(s)\tLive frac"
             runlivetime={}
