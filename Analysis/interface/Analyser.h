@@ -7,6 +7,7 @@
 #include "StoppedHSCP/Analysis/interface/Histograms.h"
 #include "StoppedHSCP/Analysis/interface/ControlHistograms.h"
 #include "StoppedHSCP/Analysis/interface/RunHistograms.h"
+#include "StoppedHSCP/Analysis/interface/RunReducedHistograms.h"
 #include "StoppedHSCP/Analysis/interface/FillHistograms.h"
 #include "StoppedHSCP/Analysis/interface/HaloHistograms.h"
 #include "StoppedHSCP/Analysis/interface/BeamGasHistograms.h"
@@ -109,6 +110,9 @@ class Analyser {
   
   // "per-run" histograms
   RunHistograms runHistos_;
+  
+  // "per-run" summary histograms used to correctly normalized "reduced" ntuples
+  RunReducedHistograms* runReducedHistos_;
 
   // "per-fill" histograms
   FillHistograms fillHistos_;

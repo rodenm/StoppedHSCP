@@ -84,7 +84,7 @@ void Analyser::setup() {
 
   for (unsigned i=0;i<ifiles_.size();++i)
     chain_->Add(ifiles_[i].c_str());
-  
+
   chain_->SetBranchAddress("events",&event_);
   Int_t nentries = Int_t(chain_->GetEntries());
   if (nentries>-1) nEvents_=nentries;
@@ -93,6 +93,13 @@ void Analyser::setup() {
   // setup the cuts
   cuts_.setEvent(event_);
   cuts_.setFills(&fills_);
+
+
+  //Now that fills have been set up, fill the histograms used for determining rates of Reduced Ntuples
+  runReducedHistos_= new RunReducedHistograms(&ofile_,
+					      ifiles_,
+					      &fills_);
+
 
   // setup the watched event list
   readWatchedEvents();
@@ -287,6 +294,7 @@ void Analyser::loop(ULong64_t maxEvents) {
 
   histograms_.summarise();
   runHistos_.summarise();
+  runReducedHistos_->summarise();
   fillHistos_.summarise();
 
   haloHistos_.save();
