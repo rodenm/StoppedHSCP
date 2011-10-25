@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.5 2011/09/16 16:45:51 temple Exp $
+// $Id: StoppedHSCPEvent.h,v 1.6 2011/10/11 18:24:01 heistera Exp $
 //
 //
 
@@ -88,12 +88,14 @@ namespace shscp {
     double phi;
     double hcalEta;					// track intersection with HCAL front-face (?)
     double hcalPhi;
+    /*
  	float cosmicCompatibility;		// combined cosmic-likeness: 0 == not cosmic-like
 	float timeCompatibility;		// cosmic-likeness based on time: 0 == prompt-like
 	float backToBackCompatibility; 	// cosmic-likeness based on presence of a track in opp side: 0 == no matching opp tracks
 	float overlapCompatibility;     // cosmic-likeness based on overlap with traversing cosmic muon (only muon/STA hits are used)
 	float ipCompatibility;			// cosmic-likeness based on the 2D impact parameters (dxy, dz wrt to PV). 0 == cosmic-like
     float vertexCompatibility;	    // cosmic-likeness based on the event activity information: tracker track multiplicity and vertex quality. 0 == cosmic-like
+    */
   };  
 
   struct HPD {
@@ -364,12 +366,14 @@ class StoppedHSCPEvent : public TObject {
   std::vector<Double_t> muPhi;
   std::vector<Double_t> muHcalEta;     // track intersection with HCAL front-face (?)
   std::vector<Double_t> muHcalPhi;
+  /*
   std::vector<Float_t> muCosmicCompatibility;	
   std::vector<Float_t> muTimeCompatibility;	
   std::vector<Float_t> muBackToBackCompatibility; 	
   std::vector<Float_t> muOverlapCompatibility;     
   std::vector<Float_t> muIpCompatibility;			
   std::vector<Float_t> muVertexCompatibility;	    
+  */
 
   // vertices
   unsigned nVtx;
