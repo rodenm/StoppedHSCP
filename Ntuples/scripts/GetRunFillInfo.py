@@ -219,7 +219,7 @@ def MakeJsonFile(json=None,
     newjson="runs_SE_TEMP.json"
     finaljson=open(newjson,'w')
     finaljsondict={}
-    print "Looking for runs from JSON in allowed run range %i -%i"%(keys[0],keys[-1])
+    print "Looking for runs from JSON in allowed run range %i -%i"%(string.atoi(keys[0]),string.atoi(keys[-1]))
     for k in keys:
         run=string.atoi(k)
         print "Reading run: %i"%run
