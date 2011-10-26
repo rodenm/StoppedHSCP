@@ -104,11 +104,12 @@ def RunAnalysis(outdir, indirs, steps=[],makeHistsOptions={},
         #cmd="python %s/toymc/runAll.py >& %s/toymc/runAll.log &"%(outdir, outdir)
         #cmd="python %s/toymc/runAll.py"%outdir
         #GenericCommand(cmd)
+
         runAll.Main(workingdir="%s/toymc/"%outdir,
                     myfile="runAll.sh")  # does not yet support log file
         # Once job is written, overwrite summary file
         BuildToyMCSummary.Main(outdir,
-                               outputfile="summaryTEMP.txt")
+                               outputfile="summary.txt")
 
     if 8 in steps:
         # Step 8:   make limit plots
