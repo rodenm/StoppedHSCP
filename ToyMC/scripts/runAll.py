@@ -40,9 +40,9 @@ class MyThread(threading.Thread):
 
 
     def run(self):
-        # Wait a few seconds between submissions
+        # Wait a few seconds between submissions 
         time.sleep(self.sleeptime)
-        print self.mystring
+        print "PROCESS THREAD:",self.mystring
         # Start job
         os.system(self.mystring)
         return
@@ -50,7 +50,8 @@ class MyThread(threading.Thread):
 
 def Main(startingdir=os.getcwd(),
          workingdir=os.getcwd(),
-         myfile="runAll.sh"):
+         myfile="runAll.sh",
+         maxThreads=5):
     if not os.path.isdir(workingdir):
         print "runAll.py ERROR:  working directory '%s' does not exist"%workingdir
         return False
@@ -75,54 +76,80 @@ def Main(startingdir=os.getcwd(),
     print "file = ",myfile, " exists ? = ",os.path.isfile(myfile)
     if not os.path.isfile(myfile):
         print "Sorry, file '%s' does not exist!"%myfile
+        os.chdir(startingdir)
         return False
         
     myThreads=[]
     myfile=open(myfile,'r').readlines()
-    count=0
+
     for i in myfile:
         if not i.startswith("source"):  # only process lines starting with 'source'
             continue
         myThreads.append(MyThread(i))
-        myThreads[-1].start()  # begin thread
-        count+=1
-        
-    # Now wait for all threads to finish
-    alive=0
-    while 1:
-        alive=0
-        mysize=len(myThreads)
-        for i in myThreads:
-            if i.isAlive():
-                alive+=1
-        print "%i of %i total jobs are still running "%(alive,mysize)
-        sys.stdout.flush()
-        time.sleep(30) # Check every 30 seconds to see how many jobs still processing 
-        if (alive==0):
-            break
+        # Get rid of old version of summary.txt
+        if os.path.isfile(os.path.join(myThreads[-1].dir,"summary.txt")):
+            os.system("rm -f %s"%(os.path.join(myThreads[-1].dir,"summary.txt")))
+        #myThreads[-1].start()  # begin thread
 
-    print "ALIVE = ",alive
+    threadIndex=0
+    if (maxThreads<0):
+        maxThreads=len(myThreads)
+    for i in range(0,maxThreads):
+        myThreads[i].start()
+        threadIndex=threadIndex+1
+        time.sleep(1)
+    print "maxThreads=",maxThreads, threadIndex
+
+
+    mysize=len(myThreads)
+    alive=0
+    completedThreads=[]
+    while len(completedThreads)<mysize:
+        newthreads=[]
+        for i in range(0,mysize):
+            if (i>=threadIndex):
+                continue
+            if i in completedThreads:
+                continue
+            if myThreads[i].isAlive():
+                alive=alive+1
+            else: # job completed
+                print "COMPLETED JOB!",i
+                completedThreads.append(i)
+                if (threadIndex<mysize):
+                    myThreads[threadIndex].start()  # start new thread once an old thread has finished
+                    threadIndex=threadIndex+1 # increment to next thread
+        print "%i of %i total jobs are still running; max of %i run at any one time "%((mysize-len(completedThreads)),mysize,maxThreads)
+        sys.stdout.flush()
+        if (len(completedThreads)==mysize):
+            break
+        time.sleep(30)
+
     outputdir=os.getcwd()
     if len(myThreads)>0:
         outputdir=string.split(myThreads[0].dir,"/job")[0]
 
-    # Error -- summary.txt not produced
-    mysummary=os.path.join(outputdir,"summary.txt")
-    if not os.path.isfile(mysummary):
-        print "Something's wrong!  Unabled to find summary.txt file!"
-        return False
 
-    myfile=open(mysummary,'r').readlines()
-    goodfiles=[]  # ignore any empty lines
-    for i in myfile:
-        if string.strip(i)<>"":
-            goodfiles.append(i)
-    myfile=goodfiles
-    myfile.sort(sortsummary)
-    out=open(mysummary,'w')
-    for i in myfile:
-        out.write(i)
-    out.close()
+    # THIS IS NOW HANDLED BY BuildToyMCSummary.py
+    # Error -- summary.txt not produced
+   ##  mysummary=os.path.join(outputdir,"summary.txt")
+##     if not os.path.isfile(mysummary):
+##         print "Something's wrong!  Unable to find summary.txt file '%s'!"%mysummary
+##         os.chdir(startingdir)
+
+##         return False
+
+##     myfile=open(mysummary,'r').readlines()
+##     goodfiles=[]  # ignore any empty lines
+##     for i in myfile:
+##         if string.strip(i)<>"":
+##             goodfiles.append(i)
+##     myfile=goodfiles
+##     myfile.sort(sortsummary)
+##     out=open(mysummary,'w')
+##     for i in myfile:
+##         out.write(i)
+##     out.close()
                  
     # Now make root output
     outputroot=os.path.join(outputdir,"results.root")  # default output file
@@ -138,6 +165,7 @@ def Main(startingdir=os.getcwd(),
             hcount=hcount+1
     if (hcount<len(myThreads)):
         print "WARNING!  Only %i of %i jobs have recent valid root files!"%(hcount, mysize)
+        os.chdir(startingdir)
         return False
     
     print "Writing output to '%s'"%outputroot
