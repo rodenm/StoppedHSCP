@@ -86,7 +86,7 @@ def CreateOutputSummary(summaryoutput, outname):
 def Main(basedir,outputfile="summary.txt"):
     # Check to see that base directory exists
     if not os.path.isdir(basedir):
-        print "<BuildToyMCSummary.py::GetSummaryFiles::Error>  Specified directory '%s' does not exist"
+        print "<BuildToyMCSummary.py::GetSummaryFiles::Error>  Specified directory '%s' does not exist"%basedir
         return
     # Check that toymc subdirectory exists
     newbasedir=os.path.join(basedir,'toymc')
