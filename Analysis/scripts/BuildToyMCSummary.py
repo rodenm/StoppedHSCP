@@ -39,11 +39,12 @@ def ReadSummaryFiles(summarylist):
             # What to do if multiple lifetime values found?  Should all give the same result, right?
             if lifetime in summary_out.keys():
                 print "<BuildToyMCSummary.py::ReadSummaryFiles::WARNING>"
-                print "\t Lifetime '%s' was previously listed in summary as '%s'"%summary_out[lifetime]
+                print "\t Lifetime '%s' was previously listed in summary as '%s'"%(lifetime,summary_out[lifetime])
                 print "\t Replacing with '%s'"%firstline
             summary_out[lifetime]=firstline  # assign dictionary key
         except:
-            print "<BuildToyMCSummary.py::ReadSummaryFiles::Error>  Could not parse line '%s'"%temp
+            print "<BuildToyMCSummary.py::ReadSummaryFiles::Error>  Could not parse line '%s' in file '%s'"%(temp,i)
+            print temp
             continue
     return summary_out  # return dictionary
 
