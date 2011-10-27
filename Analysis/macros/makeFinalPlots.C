@@ -13,17 +13,15 @@ void makeFinalPlots(double lumi=886., double maxInstLumi=1300.)
   
   gROOT->ProcessLine(".L stopLimit.C+");
   stopLimit(lumi,maxInstLumi);
-  
+  /*  
   gROOT->ProcessLine(".L gluinoMass.C+");
   gluinoMass(lumi,maxInstLumi);
 
-  /*
-    // causes crash?
   gROOT->ProcessLine(".L stopMass.C+");
   stopMass(lumi,maxInstLumi);
-
+  */
   gROOT->ProcessLine(".L massPlot.C+");
   massPlot(lumi,maxInstLumi);
-  */
+
 }
 
