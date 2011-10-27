@@ -76,7 +76,7 @@ void stopLimit(double lumi=-1., double maxInstLumi=-1.) {
   	label<<"L^{max}_{inst} = "<<peakInstLumi<<" x 10^{"<<exponent<<"} cm^{-2}s^{-1}";
   	blurb->AddText(label.str().c_str());
 	blurb->AddText("#sqrt{s} = 7 TeV");
-	blurb->AddText("m_{#tilde{t}} - m_{#tilde{#chi}^{0}} = 100 GeV/c^{2}");
+	blurb->AddText("m_{#tilde{t}} - m_{#tilde{#chi}^{0}} = 200 GeV/c^{2}");
 	//blurb->AddText("m_{#tilde{g}} = 300 GeV/c^{2}");
 	//blurb->AddText("m_{#tilde{#chi}^{0}} = 200 GeV/c^{2}");
 	blurb->SetTextFont(42);
@@ -98,7 +98,7 @@ void stopLimit(double lumi=-1., double maxInstLumi=-1.) {
 	leg->AddEntry(g_obs, "Observed: Counting Exp.", "l");
 	//leg->AddEntry(g_obs_stop,"Obs.: Counting Exp. (#tilde{t})", "l");
 	//leg->AddEntry(g_obs_nb, "Obs.: Counting Exp. (Neutral R-Baryon)", "l");
-	leg->AddEntry(g_obs_em, "Observed: Counting Exp. (EM only)", "l");
+	//leg->AddEntry(g_obs_em, "Observed: Counting Exp. (EM only)", "l");
 	leg->AddEntry(g_obs_tp, "Observed: Timing Profile", "l");
 	leg->Draw();
 

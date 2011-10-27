@@ -53,7 +53,7 @@ void modelIndLimit(double lumi=-1.,double maxInstLumi=-1.)
 //	h->SetTitle("Beamgap Expt;#tau_{#tilde{g}} [s]; #sigma(pp #rightarrow #tilde{g}#tilde{g}) #times BR(#tilde{g} #rightarrow g#tilde{#chi}^{0}) #times #varepsilon^{#tilde{g}#tilde{g}}_{stop} [pb]");
 	h->SetTitle("Beamgap Expt;#tau_{HSCP} [s]; Model Independent Cross-section [pb]");
 
-	TPaveText* blurb = new TPaveText(1e-6, 1e0, 1e-2, 2e1);
+	TPaveText* blurb = new TPaveText(5e-7, 2e0, 1e-2, 2e1);
 	blurb->AddText("CMS Preliminary 2011");
 
   	std::stringstream label;
@@ -73,7 +73,7 @@ void modelIndLimit(double lumi=-1.,double maxInstLumi=-1.)
 //	blurb->AddText("LUMI pb^{-1}");
 //	blurb->AddText("L^{max}_{inst} = MAXLUMI 10^{33} cm^{-2}s^{-1}");
 	blurb->AddText("#sqrt{s} = 7 TeV");
-	blurb->AddText("m_{HSCP} - m_{#tilde{#chi}^{0}} = 100 GeV/c^{2}");
+	//blurb->AddText("m_{HSCP} - m_{#tilde{#chi}^{0}} = 100 GeV/c^{2}");
 	//blurb->AddText("m_{#tilde{g}} = 300 GeV/c^{2}");
 	//blurb->AddText("m_{#tilde{#chi}^{0}} = 200 GeV/c^{2}");
 	blurb->SetTextFont(42);
@@ -96,13 +96,13 @@ void modelIndLimit(double lumi=-1.,double maxInstLumi=-1.)
 //	cms->Draw();
 
 
-	TLegend* leg = new TLegend(1e-1, 3e0 /*4e-30*/, 1e2, 1e1,"95% C.L. Limits:","");
+	TLegend* leg = new TLegend(2e-2, 3e0 /*4e-30*/, 1e2, 1e1,"95% C.L. Limits:","");
 	leg->SetTextSize(0.030);
 	leg->SetBorderSize(0);
 	leg->SetTextFont(42);
 	leg->SetFillColor(0);
-	leg->AddEntry(g_gluino, "#tilde{g}, m_{#tilde{g}}=500 GeV/c^{2}", "l");
-	leg->AddEntry(g_stop, "#tilde{t}, m_{#tilde{t}}=300 GeV/c^{2}", "l");
+	leg->AddEntry(g_gluino, "Gluino : m_{#tilde{g}}=500 GeV/c^{2}, m_{#tilde{#chi^{0}}}=400 GeV/c^{2}", "l");
+	leg->AddEntry(g_stop, "Stop  : m_{#tilde{t}}=300 GeV/c^{2}, m_{#tilde{#chi^{0}}}=100 GeV/c^{2}", "l");
 	leg->Draw();
 
 	g_gluino->SetLineColor(2);

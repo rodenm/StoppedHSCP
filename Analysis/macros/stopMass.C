@@ -35,23 +35,27 @@
 // .L massPlot.C+
 // massPlot("limit_summary.txt", "time_profile_summary.txt");
 
-void massPlot(double lumi=-1., double maxInstLumi=-1.) {
+void stopMass(double lumi=-1., double maxInstLumi=-1.) {
 	
   if (lumi<0)
-    lumi=LUMI;
+    lumi=877.;
   if (maxInstLumi<0)
-    maxInstLumi=MAXINSTLUMI;
+    maxInstLumi=1300.;
   LimitPlots plots(lumi);
 
 	plots.calculateCrossSections(4,3,39,9);
-    
+  
+  	// expected limit (1 and 2 sigma bands)
+	TGraph* g_exp = plots.getExpMassLimitStop();
+  	TGraphAsymmErrors* g_exp1 = plots.getExpMassLimitStop1Sig();
+  	TGraphAsymmErrors* g_exp2 = plots.getExpMassLimitStop2Sig();
+  
   	// three points on counting expt curve
   	TGraph* g_gluino = plots.getMassLimitGluino();
   	TGraph* g_stop = plots.getMassLimitStop();
   
   	// one point from lifetime fit
-  	TGraph* g_tpg = plots.getMassLimitGluinoTP();
-  	TGraph* g_tps = plots.getMassLimitStopTP();
+  	TGraph* g_tp = plots.getMassLimitStopTP();
   
   	// theory prediction
   	TGraph* g_thGluino = plots.getGluinoTheory();
@@ -63,9 +67,9 @@ void massPlot(double lumi=-1., double maxInstLumi=-1.) {
   	canvas->SetLogy();
   
   	TH1 * h;
-  	h = canvas->DrawFrame(300., .1, 700., 5e2);
-  	h->SetTitle("Beamgap Expt;m_{HSCP} [GeV/c^{2}]; Stopped HSCP Cross Section #times BR [pb]");
-  	//h->SetTitle("Beamgap Expt;m_{#tilde{g}} [GeV/c^{2}]; #sigma(pp #rightarrow #tilde{g}#tilde{g}) #times BR(#tilde{g} #rightarrow g#tilde{#chi}^{0}) [pb]");
+  	h = canvas->DrawFrame(300., .1, 600., 5e2);
+  	//h->SetTitle("Beamgap Expt;m_{HSCP} [GeV/c^{2}]; Stopped HSCP Cross Section #times BR [pb]");
+  	h->SetTitle("Beamgap Expt;m_{#tilde{t}} [GeV/c^{2}]; #sigma(pp #rightarrow #tilde{t}#tilde{t}) #times BR(#tilde{t} #rightarrow t#tilde{#chi}^{0}) [pb]");
   
   	// not covered region
   	TBox* nc = new TBox(100., .1, 150., 5e2);
@@ -92,7 +96,7 @@ void massPlot(double lumi=-1., double maxInstLumi=-1.) {
   	label.str("");
 
   	blurb->AddText("#sqrt{s} = 7 TeV");
-  	blurb->AddText("m_{#tilde{g}} - m_{#tilde{#chi}^{0}} = 100 GeV/c^{2}");
+  	//blurb->AddText("m_{#tilde{g}} - m_{#tilde{#chi}^{0}} = 100 GeV/c^{2}");
     blurb->AddText("m_{#tilde{t}} - m_{#tilde{#chi}^{0}} = 200 GeV/c^{2}");	
   	blurb->SetTextFont(42);
   	blurb->SetBorderSize(0);
@@ -103,59 +107,76 @@ void massPlot(double lumi=-1., double maxInstLumi=-1.) {
 
   
   	// legend
-  	TBox *legbg = new TBox(440., 1.e1, 690., 4e2);
+  	TBox *legbg = new TBox(410., 1.e1, 590., 4e2);
   	legbg->Draw();
-  	TLegend *leg = new TLegend(440., 1.e1, 690., 4e2,"95% C.L. Limits","");
+  	TLegend *leg = new TLegend(410., 1.e1, 590., 4e2,"95% C.L. Limits","");
   	leg->SetTextSize(0.028);
   	leg->SetBorderSize(0);
   	leg->SetTextFont(42);
   	leg->SetFillColor(0);
-	leg->AddEntry(g_thGluino, "NLO+NLL #tilde{g}", "l");
-  	leg->AddEntry(g_gluino, "Obs.: 10 #mus - 1000 s Counting Exp. (#tilde{g})", "l");
-  	leg->AddEntry(g_tpg, "Obs.: 10 #mus Timing Profile (#tilde{g})", "l");
-	leg->AddEntry(g_thStop, "NLO+NLL #tilde{t}", "l");
-  	leg->AddEntry(g_stop, "Obs.: 10 #mus - 1000 s Counting Exp. (#tilde{t})", "l");
-  	leg->AddEntry(g_tps, "Obs.: 10 #mus Timing Profile (#tilde{t})", "l");
+  	leg->AddEntry(g_exp, "Expected: 10 #mus - 1000 s Counting Exp.", "l");
+  	leg->AddEntry(g_exp1, "Expected #pm1#sigma: 10 #mus - 1000 s Counting Exp.", "f");
+  	leg->AddEntry(g_exp2, "Expected #pm2#sigma: 10 #mus - 1000 s Counting Exp.", "f");
+//	  leg->AddEntry(graph3, "Obs.: 10^{6} s Counting Exp.", "l");
+  	leg->AddEntry(g_stop, "Obs.: 10 #mus - 1000 s Counting Exp.", "l");
+  	//leg->AddEntry(g_gluino, "Obs.: 10 #mus - 1000 s Counting Exp.", "l");
+  	leg->AddEntry(g_tp, "Obs.: 10 #mus Timing Profile", "l");
   	//leg->AddEntry(graph_em, "Obs.: 10 #mus - 1000 s Counting Exp. (EM only)", "l");
   	//  leg->AddEntry(graph1, "Obs.: 570 ns Counting Exp.", "l");
   	leg->Draw();
   
   
-    
+  
+  // 2 sigma expected band
+  g_exp2->SetLineColor(0);
+  g_exp2->SetLineStyle(0);
+  g_exp2->SetLineWidth(0);
+  g_exp2->SetFillColor(5);
+  g_exp2->SetFillStyle(1001);
+  g_exp2->Draw("3");
+  
+  // 1 sigma expected band
+  g_exp1->SetLineColor(0);
+  g_exp1->SetLineStyle(0);
+  g_exp1->SetLineWidth(0);
+  g_exp1->SetFillColor(3);
+  g_exp1->SetFillStyle(1001);
+  g_exp1->Draw("3");  
+  
+  // expected line
+  g_exp->SetLineStyle(2);
+  g_exp->SetLineWidth(1);
+  g_exp->Draw("l");
+  
  
-  // gluino curves
-  g_gluino->SetLineColor(kBlue);
-  g_gluino->SetLineStyle(2);
-  g_gluino->SetLineWidth(3);
-  g_gluino->Draw("l");
+  // plateau limit - 1 ms
+  g_gluino->SetLineColor(1);
+  g_gluino->SetLineStyle(1);
+  g_gluino->SetLineWidth(2);
+  //g_gluino->Draw("l");
+  
+   // stop curve
+  g_stop->SetLineColor(1);
+  g_stop->SetLineStyle(1);
+  g_stop->SetLineWidth(2);
+  g_stop->Draw("l");
+ 
 
-  g_tpg->SetLineColor(kBlue);
-  g_tpg->SetLineStyle(3);
-  g_tpg->SetLineWidth(3);
-  g_tpg->Draw("l");
-
+  // 1 mus lifetime fit limit
+  g_tp->SetLineColor(kRed);
+  g_tp->SetLineStyle(1);
+  g_tp->SetLineWidth(2);
+  g_tp->Draw("l");
+  
   // theory line
   g_thGluino->SetLineColor(kBlue);
   g_thGluino->SetLineStyle(1);
   g_thGluino->SetLineWidth(2);
   g_thGluino->SetFillStyle(3001);
   g_thGluino->SetFillColor(kBlue-4);
-  g_thGluino->Draw("l3");
-
-
+  //g_thGluino->Draw("l3");
   
-   // stop curves
-  g_stop->SetLineColor(kRed);
-  g_stop->SetLineStyle(2);
-  g_stop->SetLineWidth(2);
-  g_stop->Draw("l");
-
-  g_tps->SetLineColor(kRed);
-  g_tps->SetLineStyle(3);
-  g_tps->SetLineWidth(3);
-  g_tps->Draw("l");
-   
-  g_thStop->SetLineColor(kRed);
+  g_thStop->SetLineColor(kBlue);
   g_thStop->SetLineStyle(1);
   g_thStop->SetLineWidth(2);
   g_thStop->SetFillStyle(3001);
@@ -170,11 +191,11 @@ void massPlot(double lumi=-1., double maxInstLumi=-1.) {
   th->SetTextSize(0.035);
   //th->Draw();
 
-  TLatex* ths = new TLatex(330., 2., "NLO+NLL #tilde{t}");
-  ths->SetTextColor(kRed);
+  TLatex* ths = new TLatex(330., .2, "NLO+NLL #tilde{t}");
+  ths->SetTextColor(kBlue);
   ths->SetTextFont(42);
   ths->SetTextSize(0.035);
-  //ths->Draw();
+  ths->Draw();
 
   // not explored label
   TText* ne = new TText(125., .2, "Not Sensitive");
@@ -188,8 +209,8 @@ void massPlot(double lumi=-1., double maxInstLumi=-1.) {
 
   canvas->RedrawAxis();
 
-  canvas->Print("massLimit.pdf");
-  canvas->Print("massLimit.C");
+  canvas->Print("stopMassLimit.pdf");
+  canvas->Print("stopMassLimit.C");
 
 	plots.calculateIntercepts();
   
