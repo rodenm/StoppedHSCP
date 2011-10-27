@@ -27,6 +27,8 @@ cp $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/modelIndLimit.C $dataset/.
 cp $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/gluinoLimit.C $dataset/.
 cp $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/stopLimit.C $dataset/.
 cp $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/massPlot.C $dataset/.
+cp $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/gluinoMass.C $dataset/.
+cp $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/stopMass.C   $dataset/.
 cp $CMSSW_BASE/src/StoppedHSCP/Analysis/data/mcGluino.txt $dataset/.
 cp $CMSSW_BASE/src/StoppedHSCP/Analysis/data/mcStop.txt $dataset/.
 
@@ -39,21 +41,31 @@ sed s/=MAXINSTLUMI/=$maxInstLumi/ <stopLimit.C > stopLimitTEMP.C
 sed s/=MAXINSTLUMI/=$maxInstLumi/ <gluinoLimit.C > gluinoLimitTEMP.C
 sed s/=MAXINSTLUMI/=$maxInstLumi/ <modelIndLimit.C > modelIndLimitTEMP.C
 sed s/=MAXINSTLUMI/=$maxInstLumi/ <massPlot.C > massPlotTEMP.C
+sed s/=MAXINSTLUMI/=$maxInstLumi/ <gluinoMass.C > gluinoMassTEMP.C
+sed s/=MAXINSTLUMI/=$maxInstLumi/ <stopMass.C > stopMassTEMP.C
+
 mv stopLimitTEMP.C stopLimit.C
 mv gluinoLimitTEMP.C gluinoLimit.C
 mv modelIndLimitTEMP.C modelIndLimit.C
 mv massPlotTEMP.C massPlot.C
+mv gluinoMassTEMP.C gluinoMass.C
+mv stopMassTEMP.C stopMass.C
+
 
 # Replace LUMI in various files
 sed s/=LUMI/=$lumi/ <stopLimit.C > stopLimitTEMP.C
 sed s/=LUMI/=$lumi/ <gluinoLimit.C > gluinoLimitTEMP.C
 sed s/=LUMI/=$lumi/ <modelIndLimit.C > modelIndLimitTEMP.C
 sed s/=LUMI/=$lumi/ <massPlot.C > massPlotTEMP.C
+sed s/=LUMI/=$lumi/ <gluinoMass.C > gluinoMassTEMP.C
+sed s/=LUMI/=$lumi/ <stopMass.C > stopMassTEMP.C
+
 mv stopLimitTEMP.C stopLimit.C
 mv gluinoLimitTEMP.C gluinoLimit.C
 mv modelIndLimitTEMP.C modelIndLimit.C
 mv massPlotTEMP.C massPlot.C
-
+mv gluinoMassTEMP.C gluinoMass.C
+mv stopMassTEMP.C stopMass.C
 
 echo "lumi = "$lumi
 echo "maxInstLumi = "$maxInstLumi
