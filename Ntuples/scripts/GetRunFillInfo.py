@@ -117,7 +117,9 @@ def SearchDBS(datasets=["/MinimumBias/Run2011A-HSCPSD-PromptSkim-v6/RECO"],
     runs.sort()
     print "RUNS FOUND = ",runs
     if len(runs)>0:
-        print "\nRun range = %i - %i"%(runs[0],runs[-1])
+        print "\nRun range = %s - %s"%(runs[0],
+                                       runs[-1])
+
     return runs
 
 # Step 3:
@@ -219,7 +221,7 @@ def MakeJsonFile(json=None,
     newjson="runs_SE_TEMP.json"
     finaljson=open(newjson,'w')
     finaljsondict={}
-    print "Looking for runs from JSON in allowed run range %i -%i"%(string.atoi(keys[0]),string.atoi(keys[-1]))
+    print "Looking for runs from JSON in allowed run range %i -%i"%(keys[0],keys[-1])
     for k in keys:
         run=string.atoi(k)
         print "Reading run: %i"%run
