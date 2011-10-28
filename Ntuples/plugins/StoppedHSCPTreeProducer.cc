@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.10 2011/09/16 16:45:51 temple Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.10.2.1 2011/10/25 11:17:10 jbrooke Exp $
 //
 //
 
@@ -1665,7 +1665,7 @@ StoppedHSCPTreeProducer::doHcalRecHits(const edm::Event& iEvent)
 }
 
 
-/// fill rec hit 
+/// fill HF rec hit 
 void
 StoppedHSCPTreeProducer::doHFRecHits(const edm::Event& iEvent)
 {
