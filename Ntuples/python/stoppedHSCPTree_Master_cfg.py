@@ -54,9 +54,6 @@ process.HBHENoiseFilterResultProducer.useTS4TS5=False
 process.HBHENoiseFilterResultProducer.maxRatio=0.96
 process.HBHENoiseFilterResultProducer.minRatio=0.70
 
-# get muon ID
-from RecoMuon.MuonIdentification.cosmics_id import *
-
 # get RAW data
 process.load('Configuration/StandardSequences/RawToDigi_Data_cff')
 process.load('Configuration/StandardSequences/L1Extra_cff')
@@ -78,9 +75,6 @@ process.ntuple = cms.Path(
 
 # filter HCAL noise
     +process.HBHENoiseFilterResultProducer
-
-# get muon ID
-    +process.cosmicsMuonIdSequence
 
 # get hcal digis
     +process.gctDigis
