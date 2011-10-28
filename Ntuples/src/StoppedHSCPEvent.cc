@@ -139,14 +139,6 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   muPhi(0),
   muHcalEta(0),
   muHcalPhi(0),
-  /*
-  muCosmicCompatibility(0),	
-  muTimeCompatibility(0),	
-  muBackToBackCompatibility(0), 	
-  muOverlapCompatibility(0),     
-  muIpCompatibility(0),			
-  muVertexCompatibility(0),
-  */
   nVtx(0),
   vtx_N(0),
   vtxNDOF(0),
@@ -419,14 +411,6 @@ void StoppedHSCPEvent::addMuon(Muon m) {
   muPhi.push_back(m.phi);
   muHcalEta.push_back(m.hcalEta);
   muHcalPhi.push_back(m.hcalPhi);
-  /*
-  muCosmicCompatibility.push_back(m.cosmicCompatibility);	
-  muTimeCompatibility.push_back(m.timeCompatibility);
-  muBackToBackCompatibility.push_back(m.backToBackCompatibility);
-  muOverlapCompatibility.push_back(m.overlapCompatibility);    
-  muIpCompatibility.push_back(m.ipCompatibility);		
-  muVertexCompatibility.push_back(m.vertexCompatibility);
-  */
   ++mu_N;
 }
 

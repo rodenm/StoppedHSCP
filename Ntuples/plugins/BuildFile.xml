@@ -19,8 +19,6 @@
   <use name="DataFormats/RPCRecHit"/>
   <use name="DataFormats/TrackReco"/>
   <use name="DataFormats/Scalers"/>
-  <use name="DataFormats/GeometrySurface"/>
-  <use name="DataFormats/TrajectorySeed"/>
 
   <use name="FWCore/Framework"/>
   <use name="FWCore/MessageLogger"/>
@@ -40,8 +38,6 @@
 
   <use name="TrackingTools/TrajectoryState"/>
   <use name="TrackingTools/TrackAssociator"/>
-  <use name="TrackingTools/TransientTrack"/>
-  <use name="TrackingTools/Records"/>
   <use name="TrackPropagation/SteppingHelixPropagator"/>
 
   <use name="StoppedHSCP/Ntuples"/>
