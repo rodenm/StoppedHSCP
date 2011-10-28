@@ -8,6 +8,9 @@ import getopt
 import string
 from optparse import OptionParser
 
+
+
+
 # Get pyGetFillScheme from StoppedHSCP/Ntuples
 temp=os.path.join(os.environ['CMSSW_BASE'],"src","StoppedHSCP","Ntuples","scripts")
 if not os.path.isdir(temp):
@@ -21,6 +24,8 @@ except:
     print "ERROR:  Unable to import pyGetFillScheme.py"
     print "Have you remembered to check out StoppedHSCP/Ntuples from CVS?"
     sys.exit()
+
+import SetDatasetInfo
 
 
 def OptParserUsage():
@@ -92,7 +97,9 @@ def WritePyCfgFile(datatype,
                    trigger,gtag,
                    HLTL3Tag,
                    jobStr,
-                   makeReduced=False):
+                   makeReduced=False,
+                   datasetInfo=None
+                   ):
     ''' Write python .py file that crab.cfg file uses for running the ntuple job.'''
     
     # create CMSSW variables
@@ -107,8 +114,19 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )\n\
 readFiles.extend( [\n\
 ] )\n\
 "
+    if datasetInfo<>None:
+        keys=datasetInfo.InputTag.keys()
+        keys.sort()
+        for k in keys:
+            if datasetInfo.InputTag[k]==None:
+                continue
+            if k=="hltL3Tag":
+                cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.%s = cms.untracked.InputTag("%s","","HLT")'%(k,datasetInfo.InputTag[k])
+            else:
+                cmsswStr=cmsswStr+"\nprocess.stoppedHSCPTree.%s = cms.untracked.InputTag('%s')"%(k,datasetInfo.InputTag[k])
+    cmsswStr=cmsswStr+"\n"
     if (HLTL3Tag<>"Default"):
-        cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.hltL3Tag= cms.untracked.InputTag("%s","","HLT")\n\n'%HLTL3Tag
+        cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.hltL3Tag = cms.untracked.InputTag("%s","","HLT")\n\n'%HLTL3Tag
 
     if (makeReduced==True):
         cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.doCaloTowers=False'
@@ -134,11 +152,12 @@ def makeTreeJob(era,
                 useJSON,
                 trigger,
                 datatype,
-                HLTL3Tag,
+                HLTL3Tag="Default", # won't change from default tag
                 whitelist=None,
                 scheduler = "glite",
                 storage = "T2_UK_SGrid_RALPP",
-                useCAFsettings=False
+                useCAFsettings=False,
+                datasetInfo=None
                 ):
     ''' Make the .py and .cfg files necessary for generating ntuple trees.'''
 
@@ -205,7 +224,8 @@ events_per_job=100000\n"
                   "stoppedHSCPTree.root") 
     WritePyCfgFile(datatype,trigger,gtag,
                    HLTL3Tag,
-                   jobStr,makeReduced=False)
+                   jobStr,makeReduced=False,
+                   datasetInfo=datasetInfo)
 
     print
     # Write reduced cfg files
@@ -220,7 +240,9 @@ events_per_job=100000\n"
 
     WritePyCfgFile(datatype,trigger,gtag,
                    HLTL3Tag,
-                   reducedjobStr,makeReduced=True)
+                   reducedjobStr,makeReduced=True,
+                   datasetInfo=datasetInfo)
+                   
     print
     return True # True indicates that files written successfully
 
@@ -254,7 +276,7 @@ if __name__=="__main__":
     parser.add_option("--2011",
                       dest="trigger2011",
                       action="store_true",
-                      default=True,
+                      default=False,
                       help="use 2011 trigger config (default)")
     parser.add_option("--raw","--RAW",
                       dest="rawdata",
@@ -264,7 +286,7 @@ if __name__=="__main__":
     parser.add_option("--reco","--RECO",
                       dest="recodata",
                       action="store_true",
-                      default=True,
+                      default=False,
                       help="use RECO config (default)")
     parser.add_option("--mc","--MC",
                       dest="mcdata",
@@ -293,20 +315,63 @@ if __name__=="__main__":
 
     (opts,args)=parser.parse_args()
 
+    if (len(args)!=5):
+        print "Wrong number of arguments!"
+        usage()
+        sys.exit()
 
+    era = args[0]
+    label = args[1]
+    dataset = args[2]
+    gtag = args[3]
+    #runs = args[4]
+    jsonfile = args[4]
+
+    knownDatasets = SetDatasetInfo.GetDatasets()
+    if dataset not in knownDatasets:
+        print "WARNING!  Dataset %s is not in list of known datasets!"
+        print "You may want to update SetDatasetInfo.py!"
+        print
+        thisdataset=None
+    else:
+        thisdataset=knownDatasets[dataset]
+
+    trigger=None
+    if thisdataset.trigger<>None:
+        trigger=thisdataset.trigger
+        
     useLocalDBS = opts.useLocalDBS
     useJSON = opts.useJSON
     useCAFsettings = opts.useCAFsettings
     if opts.trigger2010==True and opts.trigger2011==False:
+        if (trigger<>None and trigger <>"2010"):
+            print "**********"
+            print "Warning!  Overwriting default trigger value of '%s'"%trigger
+            print "**********"
         trigger='2010'
     elif opts.trigger2010==False and opts.trigger2011==True:
+        if (trigger<>None and trigger<>"2011"):
+            print "**********"
+            print "Warning!  Overwriting default trigger value of '%s'"%trigger
+            print "**********"
         trigger = '2011'
     elif opts.trigger2010==False and opts.trigger2011==False:
-        print "ERROR!  No trigger type (--2010 or --2011) has been specified!"
-        sys.exit()
+        if trigger==None:
+            print "ERROR!  No trigger type (--2010 or --2011) has been specified!"
+            sys.exit()
     elif opts.trigger2010==True and opts.trigger2011==True:
         print "ERROR!  Trigger type can not be both --2010 and --2011!"
         sys.exit()
+
+    if opts.rawdata==False and opts.mcdata==False and opts.recodata==False:
+        if thisdataset<>None and thisdataset.datatype in ["RAW","RECO","MC"]:
+            datatype=thisdataset.datatype
+        else:
+            print "**********"
+            print "ERROR!  No data type specified on command line!"
+            print "Must specify --raw, --reco, or --mc,"
+            print "or have dataset's data type defined in SetDatasetInfo.py"
+            sys.exit()
 
     if opts.rawdata==True:
         if opts.recodata==False and opts.mcdata==False:
@@ -326,8 +391,18 @@ if __name__=="__main__":
         else:
             print "ERROR!  Cannot specify more than one data type (--raw, --reco, --mc)"
             sys.exit()
-            
+
+    if thisdataset<>None and thisdataset.datatype<>datatype:
+        print "****************"
+        print "Warning!  Specified data type of '%s' doesn't agree with data type '%s' defined in SetDatasetInfo.py for this dataset!"%(datatype,thisdataset.datatype)
+        print "****************"
+        
     HLTL3Tag = "Default"
+    # Get HLT tag from dataset definition, if available
+    if thisdataset<>None and thisdataset.InputTag["hltL3Tag"]<>None:
+        HLTL3Tag=thisdataset.InputTag["hltL3Tag"]
+
+    # use of new, old hlt options will overwrite default HLTL3Tag!
     if opts.newhlttag==True and opts.oldhlttag==False:
         HLTL3Tag="hltStoppedHSCPCaloJetEnergy50"
     elif opts.newhlttag==False and opts.oldhlttag==True:
@@ -345,19 +420,7 @@ if __name__=="__main__":
             sys.exit()
     elif opts.whitelist<>None:
         whitelist=opts.whitelist
-        
-    # arguments
-    if (len(args)!=5):
-        print "Wrong number of arguments!"
-        usage()
-        sys.exit()
 
-    era = args[0]
-    label = args[1]
-    dataset = args[2]
-    gtag = args[3]
-    #runs = args[4]
-    jsonfile = args[4]
 
     # Call the makeTreeJob function
     x=makeTreeJob(era=era,
@@ -372,7 +435,8 @@ if __name__=="__main__":
                   HLTL3Tag=HLTL3Tag,
                   whitelist=whitelist,  # add whitelist option at some point?
                   scheduler = "glite",
-                  storage = "T2_UK_SGrid_RALPP"
+                  storage = "T2_UK_SGrid_RALPP",
+                  datasetInfo=thisdataset
                   )
     if x==True:
         print "Successfully created files!"

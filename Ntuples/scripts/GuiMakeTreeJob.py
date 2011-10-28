@@ -9,6 +9,7 @@ sys.path.append(os.path.join(os.environ["CMSSW_BASE"],
 #from make_tree_job_for_gui import makeTreeJob
 from makeTreeJob import *
 from copyFiles import CopyFiles, copySites
+import SetDatasetInfo
 
 import tkMessageBox
 
@@ -64,6 +65,9 @@ class TreeJobGui:
         self.MessageFrame.columnconfigure(0,weight=1)
         self.Comments=Label(self.MessageFrame,text="TreeJob Generator GUI")
         self.Comments.grid(row=0,column=0,sticky=EW)
+
+        # Read dataset
+        self.datasetList=SetDatasetInfo.GetDatasets()
 
         # Set up defaults for copy locations
         self.SetStorage()
@@ -254,20 +258,20 @@ class TreeJobGui:
                           dest="storage",
                           default="T2_UK_SGrid_RALPP",
                           help="Specify storage location (default is T2_UK_SGrid_RALPP)")
-        parser.add_option("--hltL3Tag",
-                          dest="hltL3Tag",
-                          default="Default",
-                          help="Specify hltL3Tag  (default is 'Default', which will use whatever is already specified in cfg file.)")
-        parser.add_option("--newhlttag",
-                          dest="newhlttag",
-                          default=False,
-                          action="store_true",
-                          help="Specify new hltL3Tag (hltStoppedHSCPCaloJetEnergy50)")
-        parser.add_option("--oldhlttag",
-                          dest="oldhlttag",
-                          default=False,
-                          action="store_true",
-                          help="Specify old hltL3Tag (hltStoppedHSCPTight1CaloJetEnergy30)")
+        #parser.add_option("--hltL3Tag",
+        #                  dest="hltL3Tag",
+        #                  default="Default",
+        #                  help="Specify hltL3Tag  (default is 'Default', which will use whatever is already specified in cfg file.)")
+        #parser.add_option("--newhlttag",
+        #                  dest="newhlttag",
+        #                  default=False,
+        #                  action="store_true",
+        #                  help="Specify new hltL3Tag (hltStoppedHSCPCaloJetEnergy50)")
+        #parser.add_option("--oldhlttag",
+        #                  dest="oldhlttag",
+        #                  default=False,
+        #                  action="store_true",
+        #                  help="Specify old hltL3Tag (hltStoppedHSCPTight1CaloJetEnergy30)")
         parser.add_option("-s",
                           "--site",
                           default="RAL",
@@ -291,27 +295,27 @@ class TreeJobGui:
         (options, args) = parser.parse_args()
 
 
-        if options.newhlttag==True and options.oldhlttag==True:
-                print "Cannot specify both old and new hlttags as true!  Pick one!"
-        else:
-            if options.newhlttag==True:
-                if options.hltL3Tag=="Default":
-                    options.hltL3Tag="hltStoppedHSCPCaloJetEnergy50"
-                else:
-                    print "Cannot specify both '--newhlttag' and a separate '--hltL3Tag'!"
-                    print "Using the hltL3tag value '%s'"%options.hltL3Tag
-            elif options.oldhlttag==True:
-                if options.hltL3Tag=="Default":
-                    options.hltL3Tag="hltStoppedHSCPTight1CaloJetEnergy30"
-                else:
-                    print "Cannot specify both '--oldhlttag' and a separate '--hltL3Tag'!"
-                    print "Using the hltL3tag value '%s'"%options.hltL3Tag
+        #if options.newhlttag==True and options.oldhlttag==True:
+        #        print "Cannot specify both old and new hlttags as true!  Pick one!"
+        #else:
+        #    if options.newhlttag==True:
+        #        if options.hltL3Tag=="Default":
+        #            options.hltL3Tag="hltStoppedHSCPCaloJetEnergy50"
+        #        else:
+        #            print "Cannot specify both '--newhlttag' and a separate '--hltL3Tag'!"
+        #            print "Using the hltL3tag value '%s'"%options.hltL3Tag
+        #    elif options.oldhlttag==True:
+        #        if options.hltL3Tag=="Default":
+        #            options.hltL3Tag="hltStoppedHSCPTight1CaloJetEnergy30"
+        #        else:
+        #            print "Cannot specify both '--oldhlttag' and a separate '--hltL3Tag'!"
+        #           print "Using the hltL3tag value '%s'"%options.hltL3Tag
             
 
         self.INuseLocalDBS=options.useLocalDBS
         self.INuseJSON=options.useJSON
         self.INscheduler=options.scheduler
-        self.INhltL3Tag=options.hltL3Tag
+        #self.INhltL3Tag=options.hltL3Tag
         self.site=options.site
         self.srmcp=options.srmcp
         
@@ -511,7 +515,7 @@ class TreeJobGui:
                                     self.outputloc[2],
                                     self.outputloc[3],
                                     command = lambda y=self.storage.get():self.SetGridLoc(y))
-        self.storageMenu["width"]=15
+        self.storageMenu["width"]=35
         self.storageL=Label(self.CrabFrame,text="storage:")
         self.storageL.grid(row=row,column=0)
         self.storageMenu.grid(row=row,column=1,sticky=EW)
@@ -534,7 +538,7 @@ class TreeJobGui:
                                       "glite","caf","condor",self.schedulerchoices[3],
 
                                       command=lambda y=self.scheduler.get(): self.SetStorage())
-        self.schedulerMenu["width"]=15
+        self.schedulerMenu["width"]=35
 
         self.schedulerL=Label(self.CrabFrame,text="scheduler:")
         self.schedulerL.grid(row=row,column=0)
@@ -548,7 +552,7 @@ class TreeJobGui:
             self.Print( "ERROR!  Input UseLocal DBS choice '%s' not in available list of choices!"%self.INuseLocalDBS)
         self.useLocalDBSMenu=OptionMenu(self.CrabFrame,self.useLocalDBS,
                                       *self.useLocalDBSchoices)
-        self.useLocalDBSMenu["width"]=15
+        self.useLocalDBSMenu["width"]=35
         self.useLocalDBSL=Label(self.CrabFrame,text="useLocalDBS:")
         self.useLocalDBSL.grid(row=row,column=0)
         self.useLocalDBSMenu.grid(row=row,column=1,sticky=EW)
@@ -565,7 +569,7 @@ class TreeJobGui:
                                     True, False,
                                     command=lambda y=self.useJSON.get(): self.checkJSON(y)
                                     )
-        self.useJSONMenu["width"]=15
+        self.useJSONMenu["width"]=35
         self.useJSONL=Label(self.CrabFrame,text="useJSON:")
         self.useJSONL.grid(row=row,column=0)
         self.useJSONMenu.grid(row=row,column=1)
@@ -578,7 +582,7 @@ class TreeJobGui:
             self.triggerchoices.append(self.INtrigger)
         self.triggerMenu=OptionMenu(self.CrabFrame,self.trigger,
                                       *self.triggerchoices)
-        self.triggerMenu["width"]=15
+        self.triggerMenu["width"]=35
         self.triggerL=Label(self.CrabFrame,text="trigger:")
         self.triggerL.grid(row=row,column=0)
         self.triggerMenu.grid(row=row,column=1)
@@ -591,23 +595,23 @@ class TreeJobGui:
             self.datatypechoices.append(self.INdatatype)
         self.datatypeMenu=OptionMenu(self.CrabFrame,self.datatype,
                                       *self.datatypechoices)
-        self.datatypeMenu["width"]=15
+        self.datatypeMenu["width"]=35
         self.datatypeL=Label(self.CrabFrame,text="datatype:")
         self.datatypeL.grid(row=row,column=0)
         self.datatypeMenu.grid(row=row,column=1)
         row=row+1
-        self.hltL3Tag=StringVar()
-        self.hltL3Tagchoices=["Default","hltStoppedHSCPTight1CaloJetEnergy30","hltStoppedHSCPCaloJetEnergy50"]
-        if self.INhltL3Tag not in self.hltL3Tagchoices:
-            self.hltL3Tagchoices.append(self.INhltL3Tag)
-        self.hltL3Tag.set(self.INhltL3Tag)
-        self.hltL3TagMenu=OptionMenu(self.CrabFrame,self.hltL3Tag,
-                                      *self.hltL3Tagchoices)
-        self.hltL3TagMenu["width"]=35
-        self.hltL3TagL=Label(self.CrabFrame,text="hltL3Tag:")
-        self.hltL3TagL.grid(row=row,column=0)
-        self.hltL3TagMenu.grid(row=row,column=1)
-        row=row+1
+        #self.hltL3Tag=StringVar()
+        #self.hltL3Tagchoices=["Default","hltStoppedHSCPTight1CaloJetEnergy30","hltStoppedHSCPCaloJetEnergy50"]
+        #if self.INhltL3Tag not in self.hltL3Tagchoices:
+        #    self.hltL3Tagchoices.append(self.INhltL3Tag)
+        #self.hltL3Tag.set(self.INhltL3Tag)
+        #self.hltL3TagMenu=OptionMenu(self.CrabFrame,self.hltL3Tag,
+        #                              *self.hltL3Tagchoices)
+        #self.hltL3TagMenu["width"]=35
+        #self.hltL3TagL=Label(self.CrabFrame,text="hltL3Tag:")
+        #self.hltL3TagL.grid(row=row,column=0)
+        #self.hltL3TagMenu.grid(row=row,column=1)
+        #row=row+1
 
         self.MakeTreeButton=Button(self.CrabFrame,text="Make\nTree\nJob",
                                    command=lambda x=self:x.MakeTreeJob(),
@@ -691,41 +695,46 @@ class TreeJobGui:
                 return
         # Now check fill range, compare to HLT Tag.
         # Eventually, add more protections for various data consistency checks
-        labels=string.split(self.label.get(),"_")
-        try:
-            startfill=string.atoi(labels[0])
-            endfill=string.atoi(labels[1])
-            HLTL3Tag=self.hltL3Tag.get()
 
-            # fills 1711-1795
-            if (startfill<1795 and startfill>=1711 and
-                endfill>=1711 and endfill<1795
-                and HLTL3Tag<>"hltStoppedHSCPTight1CaloJetEnergy30"):
-                if (tkMessageBox.askokcancel(title="Bad HLT L3 Tag?",
-                                          message="HLT L3 Tag is not set to hltStoppedHSCPTight1CaloJetEnergy30, even though runs are in range [1711-1795).\nContinue?") == False):
-                    return
-            # fills > 1795
-            elif (startfill>=1795 and
-                  endfill>=1795
-                  and HLTL3Tag<>"hltStoppedHSCPCaloJetEnergy50"):
-                if (tkMessageBox.askokcancel(title="Bad HLT L3 Tag?",
-                                          message="HLT L3 Tag is not set to hltStoppedHSCPCaloJetEnergy50, even though runs are in range [1795-...]. \n Continue?") == False ):
-                    return
-            # fills < 1711
-            elif (startfill<1711 and endfill<1795 and
-                  (HLTL3Tag=="hltStoppedHSCPTight1CaloJetEnergy30" or
-                   HLTL3Tag=="hltStoppedHSCPCaloJetEnerg50")):
-                if (tkMessageBox.askokcancel(title="Bad HLT L3 Tag?",
-                                          message="HLT L3 Tag is set to '%s', even though runs are in range [0-1711). \n Continue?"%HLTL3Tag)==False):
-                    return 
-        except:  # format of labels not recognized
-            pass
+        ##labels=string.split(self.label.get(),"_")
+       ##  try:
+##             startfill=string.atoi(labels[0])
+##             endfill=string.atoi(labels[1])
+##             HLTL3Tag=self.hltL3Tag.get()
+
+##             # fills 1711-1795
+##             if (startfill<1795 and startfill>=1711 and
+##                 endfill>=1711 and endfill<1795
+##                 and HLTL3Tag<>"hltStoppedHSCPTight1CaloJetEnergy30"):
+##                 if (tkMessageBox.askokcancel(title="Bad HLT L3 Tag?",
+##                                           message="HLT L3 Tag is not set to hltStoppedHSCPTight1CaloJetEnergy30, even though runs are in range [1711-1795).\nContinue?") == False):
+##                     return
+##             # fills > 1795
+##             elif (startfill>=1795 and
+##                   endfill>=1795
+##                   and HLTL3Tag<>"hltStoppedHSCPCaloJetEnergy50"):
+##                 if (tkMessageBox.askokcancel(title="Bad HLT L3 Tag?",
+##                                           message="HLT L3 Tag is not set to hltStoppedHSCPCaloJetEnergy50, even though runs are in range [1795-...]. \n Continue?") == False ):
+##                     return
+##             # fills < 1711
+##             elif (startfill<1711 and endfill<1795 and
+##                   (HLTL3Tag=="hltStoppedHSCPTight1CaloJetEnergy30" or
+##                    HLTL3Tag=="hltStoppedHSCPCaloJetEnerg50")):
+##                 if (tkMessageBox.askokcancel(title="Bad HLT L3 Tag?",
+##                                           message="HLT L3 Tag is set to '%s', even though runs are in range [0-1711). \n Continue?"%HLTL3Tag)==False):
+##                     return 
+##         except:  # format of labels not recognized
+##             pass
 
         # print table
 
         print "Writing info for elog to 'table_info.txt'"
 
         outtable="table_info.txt"
+        if self.dataset.get() in self.datasetList.keys():
+            thisdataset=self.datasetList[self.dataset.get()]
+        else:
+            thisdataset=None
         x=makeTreeJob(era="%s_%s"%(self.era.get(),self.ntuplevar.get()),
                       label="%s_%s"%(self.label.get(),self.versionvar.get()),
                       dataset=self.dataset.get(),
@@ -737,8 +746,10 @@ class TreeJobGui:
                       useJSON=self.useJSON.get(),
                       trigger=self.trigger.get(),
                       datatype=self.datatype.get(),
+                      HLTL3Tag="Default",
                       whitelist=self.whitelist.get(),
-                      HLTL3Tag=self.hltL3Tag.get(),
+                      datasetInfo=thisdataset
+                      #HLTL3Tag=self.hltL3Tag.get(),
                       )
 
         if os.path.exists(outtable):
@@ -750,10 +761,10 @@ class TreeJobGui:
             cmd=cmd+" -c"
         if (self.useJSON.get()==True):
             cmd=cmd+" -j"
-        if self.hltL3Tag.get()=="hltStoppedHSCPCaloJetEnergy50":
-            cmd=cmd +" --newhlttag"
-        elif self.hltL3Tag.get()=="hltStoppedHSCPTight1CaloJetEnergy30":
-            cmd=cmd+" --oldhlttag"
+        #if self.hltL3Tag.get()=="hltStoppedHSCPCaloJetEnergy50":
+        #    cmd=cmd +" --newhlttag"
+        #elif self.hltL3Tag.get()=="hltStoppedHSCPTight1CaloJetEnergy30":
+        #    cmd=cmd+" --oldhlttag"
         cmd=cmd+" --%s --%s %s %s %s %s %s"%(string.lower(self.datatype.get()),
                                              self.trigger.get(),
                                              "%s_%s"%(self.era.get(),
