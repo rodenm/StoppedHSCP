@@ -39,7 +39,9 @@ def GetDatasets():
     name="/MinimumBias/Run2010A-HSCPSD-Apr21ReReco-v2/RAW-RECO"
     datasets[name]=DatasetInfo(name=name,
                                     trigger="2010",
-                                    datatype="RECO")
+                                    datatype="RAW")
+    #"RAW" indicates RAW+RECO in makeTreeJob.py
+    
     # What are the values for 2010 l1JetNobptxName, l1JetNoBptxNoHaloName?
     datasets[name].InputTag["hltL3Tag"]="hltStoppedHSCP1CaloJetEnergy"
 
@@ -48,7 +50,9 @@ def GetDatasets():
     name="/MinimumBias/Run2010B-HSCPSD-Apr21ReReco-v1/RAW-RECO"
     datasets[name]=DatasetInfo(name=name,
                                     trigger="2010",
-                                    datatype="RECO")
+                                    datatype="RAW")
+    #"RAW" indicates RAW+RECO in makeTreeJob.py
+     
     datasets[name].InputTag["hltL3Tag"]="hltStoppedHSCP1CaloJetEnergy"
 
     ###############################################
