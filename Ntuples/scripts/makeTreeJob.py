@@ -98,7 +98,9 @@ def WritePyCfgFile(datatype,
                    HLTL3Tag,
                    jobStr,
                    makeReduced=False,
-                   datasetInfo=None
+                   datasetInfo=None,
+                   l1JetNoBptxName=None,
+                   l1JetNoBptxNoHaloName=None
                    ):
     ''' Write python .py file that crab.cfg file uses for running the ntuple job.'''
     
@@ -127,6 +129,11 @@ readFiles.extend( [\n\
     cmsswStr=cmsswStr+"\n"
     if (HLTL3Tag<>"Default"):
         cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.hltL3Tag = cms.untracked.InputTag("%s","","HLT")\n\n'%HLTL3Tag
+
+    if (l1JetNoBptxName<>None):
+        cmsswStr=cmsswStr+"\nprocess.stoppedHSCPTree.l1JetNoBptxName = cms.untracked.InputTag('%s')\n"%l1JetNoBptxName
+    if (l1JetNoBptxNoHaloName<>None):
+        cmsswStr=cmsswStr+"\nprocess.stoppedHSCPTree.l1JetNoBptxNoHaloName = cms.untracked.InputTag('%s')\n"%l1JetNoBptxNoHaloName
 
     if (makeReduced==True):
         cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.doCaloTowers=False'
@@ -157,7 +164,9 @@ def makeTreeJob(era,
                 scheduler = "glite",
                 storage = "T2_UK_SGrid_RALPP",
                 useCAFsettings=False,
-                datasetInfo=None
+                datasetInfo=None,
+                l1JetNoBptxName=None,
+                l1JetNoBptxNoHaloName=None
                 ):
     ''' Make the .py and .cfg files necessary for generating ntuple trees.'''
 
@@ -224,8 +233,12 @@ events_per_job=100000\n"
                   "stoppedHSCPTree.root") 
     WritePyCfgFile(datatype,trigger,gtag,
                    HLTL3Tag,
-                   jobStr,makeReduced=False,
-                   datasetInfo=datasetInfo)
+                   jobStr,
+                   makeReduced=False,
+                   datasetInfo=datasetInfo,
+                   l1JetNoBptxName=l1JetNoBptxName,
+                   l1JetNoBptxNoHaloName=l1JetNoBptxNoHaloName
+                   )
 
     print
     # Write reduced cfg files
@@ -240,8 +253,12 @@ events_per_job=100000\n"
 
     WritePyCfgFile(datatype,trigger,gtag,
                    HLTL3Tag,
-                   reducedjobStr,makeReduced=True,
-                   datasetInfo=datasetInfo)
+                   reducedjobStr,
+                   makeReduced=True,
+                   datasetInfo=datasetInfo,
+                   l1JetNoBptxName=l1JetNoBptxName,
+                   l1JetNoBptxNoHaloName=l1JetNoBptxNoHaloName
+                   )
                    
     print
     return True # True indicates that files written successfully
@@ -312,6 +329,15 @@ if __name__=="__main__":
                       dest="whitelist",
                       default=None,
                       help="Specify whitelist site(s)")
+    parser.add_option("--l1JetNoBptxName",
+                      dest="l1JetNoBptxName",
+                      default=None,
+                      help="Specify l1JetNoBptxName that is different from default in cfi.py file")
+    parser.add_option("--l1JetNoBptxNoHaloName",
+                      dest="l1JetNoBptxNoHaloName",
+                      default=None,
+                      help="Specify l1JetNoBptxNoHaloName that is different from default in cfi.py file")
+    
 
     (opts,args)=parser.parse_args()
 
@@ -436,7 +462,9 @@ if __name__=="__main__":
                   whitelist=whitelist,  # add whitelist option at some point?
                   scheduler = "glite",
                   storage = "T2_UK_SGrid_RALPP",
-                  datasetInfo=thisdataset
+                  datasetInfo=thisdataset,
+                  l1JetNoBptxName=opts.l1JetNoBptxName,
+                  l1JetNoBptxNoHaloName=opts.l1JetNoBptxNoHaloName
                   )
     if x==True:
         print "Successfully created files!"
