@@ -22,7 +22,7 @@ from optparse import OptionParser
 
 import threading
 import time
-
+from copy import deepcopy
 
 ###  'copySites' variables is a dictionary storing some common locations of ntuples
 
@@ -60,7 +60,8 @@ class CopyFileThread(threading.Thread):
             retries=retries+1
             cp = Popen(self.command, shell=True)  # execute command
             # wait to see if copying is complete
-            cp.wait()  
+            cp.wait()  # is this necessary?
+
         if retries>=maxretries:
             print "Could not complete '%s'!"%self.command
             self.successfulCopy=False
@@ -77,7 +78,9 @@ def CopyFiles(user="jbrooke",
               verbose=False,
               overwrite=False,
               listfiles=False,
-              srmcp=False):
+              srmcp=False,
+              maxThreads=10,
+              sleeptime=60):
 
     # This sets the BDII variable to the current (June 22, 2011) CERN default
     # Temporary fix to remove issue with CERN 
@@ -88,6 +91,7 @@ def CopyFiles(user="jbrooke",
     # Specify output directory from base and dataset
     gridloc=os.path.join(gridloc,user,dataset)
     odir=os.path.join(odir,dataset)
+
     if (listfiles==False):
         if not os.path.exists(odir):  # Create output dir if it doesn't exist; not necessary for listfiles option
             os.makedirs(odir)
@@ -170,8 +174,9 @@ def CopyFiles(user="jbrooke",
     counter=1
 
     cmdThreads=[]
-
-    for file in allfiles:
+    allfiles.sort()
+    for f in range(len(allfiles)):
+        file=allfiles[f]
         #if (counter>1):           continue
         basename=os.path.basename(file)
         if basename.startswith("stoppedHSCP"):
@@ -196,7 +201,7 @@ def CopyFiles(user="jbrooke",
         
         print "\n%s\n"%command
         
-        print "Copying %s -- file %i of %i"%(os.path.join(odir,basename),counter,filecount)
+        print "Copying %s -- file %i of %i"%(os.path.join(odir,basename),f,filecount)
 
         # Protection against overwriting existing files -- ask if conflicting files should be overwritten
         if overwrite==False:
@@ -210,29 +215,58 @@ def CopyFiles(user="jbrooke",
                         continue
                     print "Overwriting '%s'..."%basename
 
-        counter=counter+1
+        
         cmdThreads.append(CopyFileThread(command))
-        cmdThreads[-1].start()
+        #cmdThreads[-1].start()  # don't start the copying yet
+
 
         #cp = Popen(command, shell=True)
         #cp.wait()
 
+    if ( maxThreads<0):
+        maxThreads=len(cmdThreads)
+
+    # Start first set of threads
+    nextThreadIndex=0
+    for m in range(0,maxThreads):
+        if m<len(cmdThreads):
+            cmdThreads[m].start()
+            nextThreadIndex=nextThreadIndex+1
+
+
     # Wait for all jobs to complete
-    alive=99
-    while alive>0:
+    isCompleted=[]
+    mysize=len(cmdThreads)
+    while len(isCompleted)<mysize:
         endtime=time.time()
-        alive=0
-        mysize=len(cmdThreads)
-        for i in cmdThreads:
+        # loop over all threads
+        for cmd in range(len(cmdThreads)):
+            # thread completed
+            if cmd in isCompleted:
+                continue
+            if cmd>=nextThreadIndex:
+                continue # don't check threads that haven't started yet
+            i=cmdThreads[cmd]
+            #print "Checking thread...",i.isAlive()
             if i.isAlive():
-                alive=alive+1
                 if (endtime-starttime)>300:
                     print "alive:  ",i.command
-        print "%i of %i total files are still being copied "%(alive,mysize)
+            else:
+                isCompleted.append(cmd)
+                #print "Thread %i completed; nextThreadIndex = %i"%(cmd,nextThreadIndex)
+                if (nextThreadIndex<mysize):
+                    cmdThreads[nextThreadIndex].start()
+                    nextThreadIndex=nextThreadIndex+1
+        print "%i of %i total files are still being copied; copying up to %i at a time "%((mysize-len(isCompleted)),
+                                                                                          mysize,
+                                                                                          maxThreads
+                                                                                          )
+        #print "isCompleted = ",isCompleted
+        #print "nextThreadIndex = ",nextThreadIndex
         sys.stdout.flush()
-        if (alive==0):
+        if len(isCompleted)==mysize:
             break
-        time.sleep(60)
+        time.sleep(sleeptime)
         
     endtime=time.time()
     print "Total time taken: %i min %.2f sec"%((endtime-starttime)/60, (endtime-starttime)%60)
@@ -340,6 +374,16 @@ if __name__=="__main__":
                       default=False,
                       action="store_true",
                       help="Use srmcp to copy files.  Default is false (lcg is used by default.)")
+    parser.add_option("-t","--sleeptime",
+                      dest="sleeptime",
+                      type="int",
+                      default=60,
+                      help="Specify the number of seconds to wait between copy message outputs.  Default is 60.")
+    parser.add_option("-x","--maxThreads",
+                      dest="maxThreads",
+                      type="int",
+                      default=10,
+                      help="Specify maximum number of copy jobs to occur at one time.  Default is 10.")
     
     (options,args)=parser.parse_args()
 
@@ -413,7 +457,10 @@ if __name__=="__main__":
                     verbose=options.verbose,
                     overwrite=options.overwrite,
                     listfiles=options.listfiles,
-                    srmcp=options.srmcp)
+                    srmcp=options.srmcp,
+                    maxThreads=options.maxThreads,
+                    sleeptime=options.sleeptime)
+
         if (x==False):
             print "\n\n*****************************************"
             print "ERROR!  Copy script did not complete successfully!"
