@@ -117,23 +117,23 @@ readFiles.extend( [\n\
 ] )\n\
 "
     if datasetInfo<>None:
-        keys=datasetInfo.InputTag.keys()
+        keys=datasetInfo.InputInfo.keys()
         keys.sort()
         for k in keys:
-            if datasetInfo.InputTag[k]==None:
+            if datasetInfo.InputInfo[k]==None:
                 continue
             if k=="hltL3Tag":
-                cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.%s = cms.untracked.InputTag("%s","","HLT")'%(k,datasetInfo.InputTag[k])
+                cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.%s = cms.untracked.InputTag("%s","","HLT")'%(k,datasetInfo.InputInfo[k])
             else:
-                cmsswStr=cmsswStr+"\nprocess.stoppedHSCPTree.%s = cms.untracked.InputTag('%s')"%(k,datasetInfo.InputTag[k])
+                cmsswStr=cmsswStr+"\nprocess.stoppedHSCPTree.%s = cms.untracked.string('%s')"%(k,datasetInfo.InputInfo[k])
     cmsswStr=cmsswStr+"\n"
     if (HLTL3Tag<>"Default"):
         cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.hltL3Tag = cms.untracked.InputTag("%s","","HLT")\n\n'%HLTL3Tag
 
     if (l1JetNoBptxName<>None):
-        cmsswStr=cmsswStr+"\nprocess.stoppedHSCPTree.l1JetNoBptxName = cms.untracked.InputTag('%s')\n"%l1JetNoBptxName
+        cmsswStr=cmsswStr+"\nprocess.stoppedHSCPTree.l1JetNoBptxName = cms.untracked.string('%s')\n"%l1JetNoBptxName
     if (l1JetNoBptxNoHaloName<>None):
-        cmsswStr=cmsswStr+"\nprocess.stoppedHSCPTree.l1JetNoBptxNoHaloName = cms.untracked.InputTag('%s')\n"%l1JetNoBptxNoHaloName
+        cmsswStr=cmsswStr+"\nprocess.stoppedHSCPTree.l1JetNoBptxNoHaloName = cms.untracked.string('%s')\n"%l1JetNoBptxNoHaloName
 
     if (makeReduced==True):
         cmsswStr=cmsswStr+'\nprocess.stoppedHSCPTree.doCaloTowers=False'

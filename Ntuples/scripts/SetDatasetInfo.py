@@ -9,23 +9,24 @@ class DatasetInfo:
         self.trigger=trigger
         self.datatype=datatype
         
-        ''' self.InputTag stores list of InputTag variables to be changed for a given dataset.
+        ''' self.InputInfo stores list variables to be changed for a given dataset.
         If variable value is None, no change is made.
+        Variables are assumed to by strings, except for hltL3Tag, which is an InputTag.  The variables are dealt with by makeTreeJob.py -- maybe a future iteration will allow the user to specify input type within this class, and makeTreeJob will just use that info?
         '''
-        self.InputTag={}  
-        self.InputTag["hltL3Tag"]=None
-        self.InputTag["l1JetNoBptxName"]=None # was L1_SingleJet20_NotBptxOR; changed to  L1_SingleJet20_NotBptxOR with fill 1960 (new dataset)
-        self.InputTag["l1JetNoBptxNoHaloName"]=None
+        self.InputInfo={}  
+        self.InputInfo["hltL3Tag"]=None
+        self.InputInfo["l1JetNoBptxName"]=None # was L1_SingleJet20_NotBptxOR; changed to  L1_SingleJet20_NotBptxOR with fill 1960 (new dataset)
+        self.InputInfo["l1JetNoBptxNoHaloName"]=None
         return
 
     def Print(self):
         print "Name =",self.name
         print "trigger = ",self.trigger
         print "datatype=",self.datatype
-        keys=self.InputTag.keys()
+        keys=self.InputInfo.keys()
         keys.sort()
         for k in keys:
-            print k,self.InputTag[k]
+            print k,self.InputInfo[k]
 
 def GetDatasets():
     ''' Set dataset info for all  datasets.'''
@@ -43,7 +44,7 @@ def GetDatasets():
     #"RAW" indicates RAW+RECO in makeTreeJob.py
     
     # What are the values for 2010 l1JetNobptxName, l1JetNoBptxNoHaloName?
-    datasets[name].InputTag["hltL3Tag"]="hltStoppedHSCP1CaloJetEnergy"
+    datasets[name].InputInfo["hltL3Tag"]="hltStoppedHSCP1CaloJetEnergy"
 
 
     #/MinimumBias/Run2010B-HSCPSD-Apr21ReReco-v1/RAW-RECO
@@ -53,7 +54,7 @@ def GetDatasets():
                                     datatype="RAW")
     #"RAW" indicates RAW+RECO in makeTreeJob.py
      
-    datasets[name].InputTag["hltL3Tag"]="hltStoppedHSCP1CaloJetEnergy"
+    datasets[name].InputInfo["hltL3Tag"]="hltStoppedHSCP1CaloJetEnergy"
 
     ###############################################
     #2011 datasets
@@ -66,9 +67,9 @@ def GetDatasets():
     datasets[name]=DatasetInfo(name=name,
                                     trigger="2011",
                                     datatype="RECO")
-    datasets[name].InputTag["hltL3Tag"]="hltStoppedHSCPTight1CaloJetEnergy30"
-    datasets[name].InputTag["l1JetNoBptxName"]='L1_SingleJet20_NotBptxOR'
-    datasets[name].InputTag["l1JetNoBptxNoHaloName"]='L1_SingleJet20_NotBptxOR_NotMuBeamHalo'
+    datasets[name].InputInfo["hltL3Tag"]="hltStoppedHSCPTight1CaloJetEnergy30"
+    datasets[name].InputInfo["l1JetNoBptxName"]='L1_SingleJet20_NotBptxOR'
+    datasets[name].InputInfo["l1JetNoBptxNoHaloName"]='L1_SingleJet20_NotBptxOR_NotMuBeamHalo'
     
 
     # /MinimumBias/Run2011A-HSCPSD-May10ReReco-v2/RECO
@@ -77,9 +78,9 @@ def GetDatasets():
     datasets[name]=DatasetInfo(name=name,
                                     trigger="2011",
                                     datatype="RECO")
-    datasets[name].InputTag["hltL3Tag"]="hltStoppedHSCPTight1CaloJetEnergy30"
-    datasets[name].InputTag["l1JetNoBptxName"]='L1_SingleJet20_NotBptxOR'
-    datasets[name].InputTag["l1JetNoBptxNoHaloName"]='L1_SingleJet20_NotBptxOR_NotMuBeamHalo'
+    datasets[name].InputInfo["hltL3Tag"]="hltStoppedHSCPTight1CaloJetEnergy30"
+    datasets[name].InputInfo["l1JetNoBptxName"]='L1_SingleJet20_NotBptxOR'
+    datasets[name].InputInfo["l1JetNoBptxNoHaloName"]='L1_SingleJet20_NotBptxOR_NotMuBeamHalo'
 
 
     #############################################
@@ -90,9 +91,9 @@ def GetDatasets():
     datasets[name]=DatasetInfo(name=name,
                                     trigger="2011",
                                     datatype="RECO")
-    datasets[name].InputTag["hltL3Tag"]="hltStoppedHSCPCaloJetEnergy50"
-    datasets[name].InputTag["l1JetNoBptxName"]='L1_SingleJet20_NotBptxOR'
-    datasets[name].InputTag["l1JetNoBptxNoHaloName"]='L1_SingleJet20_NotBptxOR_NotMuBeamHalo'
+    datasets[name].InputInfo["hltL3Tag"]="hltStoppedHSCPCaloJetEnergy50"
+    datasets[name].InputInfo["l1JetNoBptxName"]='L1_SingleJet20_NotBptxOR'
+    datasets[name].InputInfo["l1JetNoBptxNoHaloName"]='L1_SingleJet20_NotBptxOR_NotMuBeamHalo'
 
 
     # Beginning with this skim (c. fill 1960), l1JetNoBptx names change
@@ -101,9 +102,9 @@ def GetDatasets():
     datasets[name]=DatasetInfo(name=name,
                                     trigger="2011",
                                     datatype="RECO")
-    datasets[name].InputTag["hltL3Tag"]="hltStoppedHSCPCaloJetEnergy50"
-    datasets[name].InputTag["l1JetNoBptxName"]='L1_SingleJet20_Central_NotBptxOR'
-    datasets[name].InputTag["l1JetNoBptxNoHaloName"]='L1_SingleJet20_Central_NotBptxOR_NotMuBeamHalo'
+    datasets[name].InputInfo["hltL3Tag"]="hltStoppedHSCPCaloJetEnergy50"
+    datasets[name].InputInfo["l1JetNoBptxName"]='L1_SingleJet20_Central_NotBptxOR'
+    datasets[name].InputInfo["l1JetNoBptxNoHaloName"]='L1_SingleJet20_Central_NotBptxOR_NotMuBeamHalo'
 
     # /MinimumBias/Run2011A-HSCPSD-05Aug2011-v1/RECO
     # replaces PromptSkim v5 above; v5 had error
@@ -111,27 +112,27 @@ def GetDatasets():
     datasets[name]=DatasetInfo(name=name,
                                     trigger="2011",
                                     datatype="RECO")
-    datasets[name].InputTag["hltL3Tag"]="hltStoppedHSCPCaloJetEnergy50"
-    datasets[name].InputTag["l1JetNoBptxName"]='L1_SingleJet20_Central_NotBptxOR'
-    datasets[name].InputTag["l1JetNoBptxNoHaloName"]='L1_SingleJet20_Central_NotBptxOR_NotMuBeamHalo'
+    datasets[name].InputInfo["hltL3Tag"]="hltStoppedHSCPCaloJetEnergy50"
+    datasets[name].InputInfo["l1JetNoBptxName"]='L1_SingleJet20_Central_NotBptxOR'
+    datasets[name].InputInfo["l1JetNoBptxNoHaloName"]='L1_SingleJet20_Central_NotBptxOR_NotMuBeamHalo'
 
     # /MinimumBias/Run2011A-HSCPSD-PromptSkim-v6/RECO
     name="/MinimumBias/Run2011A-HSCPSD-PromptSkim-v6/RECO"
     datasets[name]=DatasetInfo(name=name,
                                     trigger="2011",
                                     datatype="RECO")
-    datasets[name].InputTag["hltL3Tag"]="hltStoppedHSCPCaloJetEnergy50"
-    datasets[name].InputTag["l1JetNoBptxName"]='L1_SingleJet20_Central_NotBptxOR'
-    datasets[name].InputTag["l1JetNoBptxNoHaloName"]='L1_SingleJet20_Central_NotBptxOR_NotMuBeamHalo'
+    datasets[name].InputInfo["hltL3Tag"]="hltStoppedHSCPCaloJetEnergy50"
+    datasets[name].InputInfo["l1JetNoBptxName"]='L1_SingleJet20_Central_NotBptxOR'
+    datasets[name].InputInfo["l1JetNoBptxNoHaloName"]='L1_SingleJet20_Central_NotBptxOR_NotMuBeamHalo'
 
     # /MinimumBias/Run2011B-HSCPSD-PromptSkim-v1/RECO
     name="/MinimumBias/Run2011B-HSCPSD-PromptSkim-v1/RECO"
     datasets[name]=DatasetInfo(name=name,
                                     trigger="2011",
                                     datatype="RECO")
-    datasets[name].InputTag["hltL3Tag"]="hltStoppedHSCPCaloJetEnergy50"
-    datasets[name].InputTag["l1JetNoBptxName"]='L1_SingleJet20_Central_NotBptxOR'
-    datasets[name].InputTag["l1JetNoBptxNoHaloName"]='L1_SingleJet20_Central_NotBptxOR_NotMuBeamHalo'
+    datasets[name].InputInfo["hltL3Tag"]="hltStoppedHSCPCaloJetEnergy50"
+    datasets[name].InputInfo["l1JetNoBptxName"]='L1_SingleJet20_Central_NotBptxOR'
+    datasets[name].InputInfo["l1JetNoBptxNoHaloName"]='L1_SingleJet20_Central_NotBptxOR_NotMuBeamHalo'
 
     return datasets
 
