@@ -255,6 +255,20 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   cscSegR(0),
   cscSegDirPhi(0),
   cscSegDirTheta(0),
+  cscSegTime(0),
+  cscHit_N (0),
+  cscHitZ (0),
+  cscHitRho (0),
+  cscHitPhi (0),
+  hePlusEnergy (-999),
+  hePlusAntiEnergy (-999),
+  hePlusPhi (-999),
+  heMinusEnergy (-999),
+  heMinusAntiEnergy (-999),
+  heMinusPhi (-999),
+  heEnergy (-999),
+  heAntiEnergy (-999),
+  hePhi (-999), 
   leadingDigiIEta(-999),
   leadingDigiIPhi(-999),
   leadingDigiTimeSamples(HBHEDataFrame::MAXSAMPLES),
@@ -523,7 +537,6 @@ void StoppedHSCPEvent::addHPD(HPD h) {
   ++hpd_N;
 }
 
-
 void StoppedHSCPEvent::addCscSegment(CscSegment s) {
   cscSegEndcap.push_back(s.endcap);
   cscSegRing.push_back(s.ring);
@@ -535,8 +548,43 @@ void StoppedHSCPEvent::addCscSegment(CscSegment s) {
   cscSegR.push_back(s.r);
   cscSegDirPhi.push_back(s.dirPhi);
   cscSegDirTheta.push_back(s.dirTheta);
+  cscSegTime.push_back(s.time);
   ++cscSeg_N;
 }
+
+void StoppedHSCPEvent::addCscHit(CscHit h) {
+  cscHitZ.push_back(h.z);
+  cscHitRho.push_back(h.rho);
+  cscHitPhi.push_back(h.phi);
+  cscHitTime.push_back(h.time);
+  ++cscHit_N;
+}
+
+void StoppedHSCPEvent::addHePlus(double energy, double antienergy, double phi) {
+  if (hePlusEnergy < energy) {
+    hePlusEnergy = energy;
+    hePlusAntiEnergy = antienergy;
+    hePlusPhi = phi;
+  }
+}
+
+void StoppedHSCPEvent::addHeMinus(double energy, double antienergy, double phi) {
+  if (heMinusEnergy < energy) {
+    heMinusEnergy = energy;
+    heMinusAntiEnergy = antienergy;
+    heMinusPhi = phi;
+  }
+}
+
+void StoppedHSCPEvent::addHe(double energy, double antienergy, double phi) {
+  if (heEnergy < energy) {
+    heEnergy = energy;
+    heAntiEnergy = antienergy;
+    hePhi = phi;
+  }
+} 
+
+
 
 void StoppedHSCPEvent::Dump() {
 

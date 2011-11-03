@@ -54,6 +54,8 @@ stoppedHSCPTree = cms.EDAnalyzer(
     rbxTag = cms.untracked.InputTag("hcalnoise"),
     hpdTag = cms.untracked.InputTag("hcalnoise"),
     hcalDigiTag = cms.untracked.InputTag("hcalDigis"),
+    cscSegmentsTag = cms.untracked.InputTag("cscSegments"),
+    cscRecHitsTag = cms.untracked.InputTag("csc2DRecHits"),
     digiMinFc = cms.untracked.double(30.),
     
     # content controls
@@ -62,6 +64,7 @@ stoppedHSCPTree = cms.EDAnalyzer(
     doRecHits = cms.untracked.bool(False),
     doHFRecHits = cms.untracked.bool(False),
     doCsc = cms.untracked.bool(True),
+    doCscRecHits = cms.untracked.bool(False),
     doDigis = cms.untracked.bool(True),
     writeHistos = cms.untracked.bool(False),
 

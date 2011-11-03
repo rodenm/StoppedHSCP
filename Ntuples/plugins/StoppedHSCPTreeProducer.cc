@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.10.2.1 2011/10/25 11:17:10 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.16 2011/10/28 21:04:56 temple Exp $
 //
 //
 
@@ -181,6 +181,8 @@ private:
 
   // write CSC segments
   void doCscSegments(const edm::Event&, const edm::EventSetup&);
+  void doCscHits(const edm::Event&, const edm::EventSetup&);
+  void doSlices (const edm::Event& iEvent, const edm::EventSetup& iSetup); 
 
   // write variables based on digis
   void doTimingFromDigis(const edm::Event&, const edm::EventSetup&);
@@ -259,6 +261,7 @@ private:
   bool doRecHits_;
   bool doHFRecHits_;
   bool doCscSegments_;
+  bool doCscRecHits_;
   bool doDigis_;
   bool doHltBit1_;
   bool doHltBit2_;
@@ -299,6 +302,7 @@ private:
   edm::InputTag hfRecHitTag_;
   edm::InputTag hcalDigiTag_;
   edm::InputTag cscSegmentsTag_;
+  edm::InputTag cscRecHitsTag_;
 
   // HLT config helper
   HLTConfigProvider hltConfig_;
@@ -380,6 +384,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   doRecHits_(iConfig.getUntrackedParameter<bool>("doRecHits",false)),
   doHFRecHits_(iConfig.getUntrackedParameter<bool>("doHFRecHits",false)),
   doCscSegments_(iConfig.getUntrackedParameter<bool>("doCsc",false)),
+  doCscRecHits_(iConfig.getUntrackedParameter<bool>("doCscRecHits",false)),
   doDigis_(iConfig.getUntrackedParameter<bool>("doDigis",false)),
   doHltBit1_(true),
   doHltBit2_(true),
@@ -421,6 +426,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   hfRecHitTag_(iConfig.getUntrackedParameter<edm::InputTag>("hfRecHitTag",edm::InputTag("hfreco"))),
   hcalDigiTag_(iConfig.getUntrackedParameter<edm::InputTag>("hcalDigiTag",edm::InputTag("hcalDigis"))),
   cscSegmentsTag_(iConfig.getUntrackedParameter<edm::InputTag>("cscSegmentsTag",edm::InputTag("cscSegments"))),
+  cscRecHitsTag_(iConfig.getUntrackedParameter<edm::InputTag>("cscRecHitsTag",edm::InputTag("csc2DRecHits"))), //JEFF
   towerMinEnergy_(iConfig.getUntrackedParameter<double>("towerMinEnergy", 1.)),
   towerMaxEta_(iConfig.getUntrackedParameter<double>("towerMaxEta", 1.3)),
   jetMinEnergy_(iConfig.getUntrackedParameter<double>("jetMinEnergy", 1.)),
@@ -682,7 +688,9 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
 
   // CSC segments
   doCscSegments(iEvent, iSetup);
-
+  doCscHits(iEvent, iSetup); 
+  doSlices(iEvent, iSetup);  // HE info
+  
   // digi based variables
   if (doDigis_) {
     doTimingFromDigis(iEvent, iSetup);
@@ -1753,7 +1761,6 @@ void StoppedHSCPTreeProducer::doCscSegments(const edm::Event& iEvent, const edm:
 	LocalVector segDir = seg->localDirection();
 	GlobalPoint globalPos = cscGeom->chamber(id)->toGlobal(localPos);
 	GlobalVector globalVec = cscGeom->chamber(id)->toGlobal(segDir);
-	
 	//float chisq    = seg->chi2();
 	//int nDOF       = 2*nhits-4;
 	//double chisqProb = ChiSquaredProbability( (double)chisq, nDOF );
@@ -1772,6 +1779,7 @@ void StoppedHSCPTreeProducer::doCscSegments(const edm::Event& iEvent, const edm:
 	s.r = sqrt((globalPos.x()*globalPos.x()) + (globalPos.y()*globalPos.y()));
 	s.dirTheta = globalVec.theta();
 	s.dirPhi = globalVec.phi();
+	s.time   = seg->time();
 	
 	event_->addCscSegment(s);
       }
@@ -1783,13 +1791,77 @@ void StoppedHSCPTreeProducer::doCscSegments(const edm::Event& iEvent, const edm:
     }
   }
 
-}
+} // doCscSegments
 
+void StoppedHSCPTreeProducer::doCscHits(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
+  if (!doCscRecHits_) return;
+  
+  edm::Handle<CSCRecHit2DCollection> hits;
+  iEvent.getByLabel(cscRecHitsTag_, hits);
+  edm::ESHandle<CSCGeometry> cscGeom;
+  iSetup.get<MuonGeometryRecord>().get(cscGeom);
+  
+  //int nRecHits = hits->size();
+  int iHit = 0;
+  CSCRecHit2DCollection::const_iterator dRHIter;
+  for (dRHIter = hits->begin(); dRHIter != hits->end(); dRHIter++) {
+    iHit++;
+    CSCDetId idrec = (CSCDetId)(*dRHIter).cscDetId();
+    // Following variables aren't yet used:
+    //int kEndcap  = idrec.endcap();
+    //int kRing    = idrec.ring();
+    //int kStation = idrec.station();
+    //int kChamber = idrec.chamber();
+    //int kLayer   = idrec.layer();
+    const CSCLayer* csclayer = cscGeom->layer( idrec );
+    LocalPoint rhitlocal = (*dRHIter).localPosition();
+    GlobalPoint rhitglobal= csclayer->toGlobal(rhitlocal);
+    shscp::CscHit h;
+    h.z = rhitglobal.z();
+    h.rho = rhitglobal.perp();
+    h.phi = rhitglobal.phi();
+    h.time = dRHIter->tpeak();
+    event_->addCscHit (h);
+  }
+} //doCscHits
 
-
-void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
-
-  // this code taken from John Paul Chou's noise info producer
+void StoppedHSCPTreeProducer::doSlices (const edm::Event& iEvent, const edm::EventSetup& iSetup) {
+  edm::Handle<CaloTowerCollection> towers;
+  iEvent.getByLabel(caloTowerTag_, towers);
+  for (int iPhi = 0; iPhi < 36; ++ iPhi) {
+    int iAntiPhi = iPhi - 18;
+    if (iAntiPhi < 0) iAntiPhi += 36;
+    double phi = iPhi < 18 ? 3.1415/18.*(iPhi + 0.5) : 3.1415/18.*(iPhi -36 + 0.5);
+    double energyPlus = 0;
+    double antienergyPlus = 0;
+    double energyMinus = 0;
+    double antienergyMinus = 0;
+    double energy = 0;
+    double antienergy = 0;
+    for (size_t itower = 0; itower < towers->size(); ++itower) {
+      const CaloTower& tower = (*towers)[itower];
+      CaloTowerDetId id = tower.id();
+      if (id.ietaAbs() >= 17 && id.ietaAbs() <= 24) { // HE in front of HB
+	if (id.iphi() > iPhi*2 && id.iphi() <= (iPhi+1)*2) {
+	  if (id.zside() > 0) energyPlus += tower.hadEnergy();
+	  else energyMinus += tower.hadEnergy();
+	  energy += tower.hadEnergy();
+	}
+	else if (id.iphi() > iAntiPhi*2 && id.iphi() <= (iAntiPhi+1)*2) {
+	  if (id.zside() > 0) antienergyPlus += tower.hadEnergy();
+	  else antienergyMinus += tower.hadEnergy();
+	  antienergy += tower.hadEnergy();
+	}
+      }
+    }
+    event_->addHePlus (energyPlus,  antienergyPlus, phi);
+    event_->addHeMinus (energyMinus,  antienergyMinus, phi);
+    event_->addHe (energy,  antienergy, phi);
+  }
+} // doSlices
+  
+  void StoppedHSCPTreeProducer::doTimingFromDigis(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
+ // this code taken from John Paul Chou's noise info producer
   // RecoMET/METProducers/src/HcalNoiseInfoProducer.cc
 
   // get the conditions and channel quality

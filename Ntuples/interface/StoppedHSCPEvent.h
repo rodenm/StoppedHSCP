@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.5 2011/09/16 16:45:51 temple Exp $
+// $Id: StoppedHSCPEvent.h,v 1.8 2011/10/28 21:02:21 temple Exp $
 //
 //
 
@@ -135,7 +135,7 @@ namespace shscp {
   };
 
   struct CscSegment {
-    CscSegment() : endcap(0), ring(0), station(0), chamber(0), nHits(0), phi(0.), z(0.), r(0.), dirPhi(0.), dirTheta(0.) { }
+    CscSegment() : endcap(0), ring(0), station(0), chamber(0), nHits(0), phi(0.), z(0.), r(0.), dirPhi(0.), dirTheta(0.), time(0) { }
     int endcap;
     int ring;
     int station;
@@ -146,7 +146,16 @@ namespace shscp {
     double r;
     double dirPhi;
     double dirTheta;
+    double time;
   };
+
+  struct CscHit {
+    CscHit() : z(0), rho(0), phi(0) {}
+    double z;
+    double rho;
+    double phi;
+    double time;
+  }; 
 
   // functor for ordering towers
   struct tow_gt : public std::binary_function<shscp::Tower, shscp::Tower, bool> {
@@ -185,7 +194,11 @@ class StoppedHSCPEvent : public TObject {
   void addRecHit(shscp::RecHit r);
   void addHFRecHit(shscp::RecHit r);
   void addCscSegment(shscp::CscSegment s);
-
+  void addCscHit(shscp::CscHit h);
+  void addHePlus(double energy, double antienergy, double phi);
+  void addHeMinus(double energy, double antienergy, double phi);
+  void addHe(double energy, double antienergy, double phi); 
+  
   // utils
   void Dump();
   
@@ -484,6 +497,25 @@ class StoppedHSCPEvent : public TObject {
   std::vector<Double_t> cscSegR;
   std::vector<Double_t> cscSegDirPhi;
   std::vector<Double_t> cscSegDirTheta;
+  std::vector<Double_t> cscSegTime;
+
+  // CSC hits
+  unsigned cscHit_N;
+  std::vector<Double_t> cscHitZ;
+  std::vector<Double_t> cscHitRho;
+  std::vector<Double_t> cscHitPhi;
+  std::vector<Double_t> cscHitTime; 
+
+  // HE energy -- Fedor's HE variables
+  Double_t hePlusEnergy;
+  Double_t hePlusAntiEnergy;
+  Double_t hePlusPhi;
+  Double_t heMinusEnergy;
+  Double_t heMinusAntiEnergy;
+  Double_t heMinusPhi;
+  Double_t heEnergy;
+  Double_t heAntiEnergy;
+  Double_t hePhi; 
 
   // digi pulse shape variables
   int leadingDigiIEta;
@@ -504,7 +536,7 @@ class StoppedHSCPEvent : public TObject {
   double top5DigiROuter;
 
 
-  ClassDef(StoppedHSCPEvent,18); // version 18: includes prescale info
+  ClassDef(StoppedHSCPEvent,19); // version 19: includes updated MC and CSC info
 
 };
 
