@@ -170,17 +170,18 @@ def makeTreeJob(era,
                 ):
     ''' Make the .py and .cfg files necessary for generating ntuple trees.'''
 
-    # Always check that fills.txt can be properly parsed
-    fillfile=os.path.join(os.environ['CMSSW_BASE'],"src","StoppedHSCP","Ntuples","data","fills.txt")
-    fillresult=pyGetFillScheme.CheckFillFile(fillfile)
-    if fillresult==False:
-        print "*********************************************"
-        print "****   WARNING!!!!   ************************"
-        print "****   Fill file '%s' ***********************"%fillfile
-        print "****   appears to have bad syntax! **********"
-        print "****   Results may be corrupted!  ***********"
-        print "*********************************************"
-        return False
+    # If not MC, Always check that fills.txt can be properly parsed
+    if (datatype<>"MC"):
+        fillfile=os.path.join(os.environ['CMSSW_BASE'],"src","StoppedHSCP","Ntuples","data","fills.txt")
+        fillresult=pyGetFillScheme.CheckFillFile(fillfile)
+        if fillresult==False:
+            print "*********************************************"
+            print "****   WARNING!!!!   ************************"
+            print "****   Fill file '%s' ***********************"%fillfile
+            print "****   appears to have bad syntax! **********"
+            print "****   Results may be corrupted!  ***********"
+            print "*********************************************"
+            return False
 
     # Set up names of tree .cfg and .py file
     name = era + "_" + label
@@ -199,8 +200,8 @@ def makeTreeJob(era,
 
     # runjsonfile can specify either json file or run selection
     runStr = ""
-    if (runjsonfile!="0" and not useJSON):
-        runStr = "runselection="+runs
+    if (runjsonfile!="0" and runjsonfile!=None and not useJSON):
+        runStr = "runselection="+runjsonfile
 
     # Specify number of lumis or number of events
     evtStr = ""
@@ -341,54 +342,58 @@ if __name__=="__main__":
 
     (opts,args)=parser.parse_args()
 
-    if (len(args)!=5):
-        print "Wrong number of arguments!"
-        usage()
-        sys.exit()
-
     era = args[0]
     label = args[1]
     dataset = args[2]
     gtag = args[3]
-    #runs = args[4]
-    jsonfile = args[4]
+    try:
+        jsonfile = args[4]
+    except:
+        jsonfile = None
 
+    # Check whether dataset is in list of known datasets
     knownDatasets = SetDatasetInfo.GetDatasets()
     if dataset not in knownDatasets:
-        print "WARNING!  Dataset %s is not in list of known datasets!"
+        print "WARNING!  Dataset %s is not in list of known datasets!"%dataset
         print "You may want to update SetDatasetInfo.py!"
         print
         thisdataset=None
     else:
         thisdataset=knownDatasets[dataset]
 
-    trigger=None
-    if thisdataset.trigger<>None:
-        trigger=thisdataset.trigger
-        
     useLocalDBS = opts.useLocalDBS
     useJSON = opts.useJSON
     useCAFsettings = opts.useCAFsettings
+
+    # Get trigger information
+    trigger=None
+    if thisdataset<>None and thisdataset.trigger<>None:
+        trigger=thisdataset.trigger
+
+    # Set trigger from command line; check for inconsistencies with dataset default
     if opts.trigger2010==True and opts.trigger2011==False:
         if (trigger<>None and trigger <>"2010"):
             print "**********"
-            print "Warning!  Overwriting default trigger value of '%s'"%trigger
+            print "Warning!  Overwriting default trigger value of '%s' with new value of '2010'"%trigger
             print "**********"
         trigger='2010'
     elif opts.trigger2010==False and opts.trigger2011==True:
         if (trigger<>None and trigger<>"2011"):
             print "**********"
-            print "Warning!  Overwriting default trigger value of '%s'"%trigger
+            print "Warning!  Overwriting default trigger value of '%s' with new value of '2011'"%trigger
             print "**********"
         trigger = '2011'
+    # No trigger specified
     elif opts.trigger2010==False and opts.trigger2011==False:
         if trigger==None:
             print "ERROR!  No trigger type (--2010 or --2011) has been specified!"
             sys.exit()
+    # Too many triggers specified
     elif opts.trigger2010==True and opts.trigger2011==True:
         print "ERROR!  Trigger type can not be both --2010 and --2011!"
         sys.exit()
 
+    datatype=None
     if opts.rawdata==False and opts.mcdata==False and opts.recodata==False:
         if thisdataset<>None and thisdataset.datatype in ["RAW","RECO","MC"]:
             datatype=thisdataset.datatype
@@ -446,6 +451,12 @@ if __name__=="__main__":
             sys.exit()
     elif opts.whitelist<>None:
         whitelist=opts.whitelist
+
+    # Check that all necessary options have been specified
+    if ((datatype=="MC" and len(args)<4) or (datatype<>"MC" and len(args)!=5)):
+        print "Wrong number of arguments!"
+        usage()
+        sys.exit()
 
 
     # Call the makeTreeJob function
