@@ -206,7 +206,7 @@ def MakeJsonFile(json=None,
     print
 
     # Make new json from input
-    print "Making new json file for runs %i-%i from original json file %s"%(runs[0],runs[-1],localjson)
+    print "Making new json file for runs %s-%s from original json file %s"%(runs[0],runs[-1],localjson)
 
     temp=open(localjson,'r')
     tempjson=JSON.load(temp)
