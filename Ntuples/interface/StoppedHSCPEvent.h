@@ -15,12 +15,12 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.8 2011/10/28 21:02:21 temple Exp $
+// $Id: StoppedHSCPEvent.h,v 1.9 2011/11/03 22:55:05 temple Exp $
 //
 //
 
 #include "TObject.h"
-
+#include "TString.h"
 #include <vector>
 #include <functional>
 
@@ -237,6 +237,43 @@ class StoppedHSCPEvent : public TObject {
   std::vector<Double_t> mcPy;
   std::vector<Double_t> mcPz;
   std::vector<Double_t> mcPt;
+
+  // MC result of hard scatter (gluino, stop, stau)
+  unsigned mcSparticle_N;
+  std::vector<UInt_t> mcSparticleId;
+  std::vector<Double_t> mcSparticleMass;
+  std::vector<Double_t> mcSparticleCharge;
+  std::vector<Double_t> mcSparticlePx;
+  std::vector<Double_t> mcSparticlePy;
+  std::vector<Double_t> mcSparticlePz;
+  std::vector<Double_t> mcSparticlePt;
+  std::vector<Double_t> mcSparticleE;
+  std::vector<Double_t> mcSparticlePhi;
+  std::vector<Double_t> mcSparticleEta;
+
+  // MC initial r-hadron (for gluino & stop)
+  unsigned mcRhadron_N;
+  std::vector<UInt_t> mcRhadronId;
+  std::vector<Double_t> mcRhadronMass;
+  std::vector<Double_t> mcRhadronCharge; // Not currently filled
+  std::vector<Double_t> mcRhadronPx;
+  std::vector<Double_t> mcRhadronPy;
+  std::vector<Double_t> mcRhadronPz;
+  std::vector<Double_t> mcRhadronPt;
+  std::vector<Double_t> mcRhadronE;
+  std::vector<Double_t> mcRhadronPhi;
+  std::vector<Double_t> mcRhadronEta;
+
+  // MC stopped points
+  unsigned mcStoppedParticle_N;
+  std::vector<TString> mcStoppedParticleName;
+  std::vector<UInt_t> mcStoppedParticleId;    // Not currently filled
+  std::vector<Double_t> mcStoppedParticleX;
+  std::vector<Double_t> mcStoppedParticleY;
+  std::vector<Double_t> mcStoppedParticleZ;
+  std::vector<Double_t> mcStoppedParticleR;
+  std::vector<Double_t> mcStoppedParticlePhi;
+  std::vector<Double_t> mcStoppedParticleTime;
 
   // event
   ULong_t id;
@@ -535,8 +572,7 @@ class StoppedHSCPEvent : public TObject {
   double top5DigiRPeak;
   double top5DigiROuter;
 
-
-  ClassDef(StoppedHSCPEvent,19); // version 19: includes updated MC and CSC info
+  ClassDef(StoppedHSCPEvent,20); // version 20: includes updated MC info
 
 };
 
