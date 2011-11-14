@@ -367,6 +367,11 @@ if __name__=="__main__":
 
     # Get trigger information
     trigger=None
+
+    if thisdataset<>None:
+        print "Default dataset settings for dataset '%s':"%dataset
+        thisdataset.Print()
+        
     if thisdataset<>None and thisdataset.trigger<>None:
         trigger=thisdataset.trigger
 
@@ -430,8 +435,10 @@ if __name__=="__main__":
         
     HLTL3Tag = "Default"
     # Get HLT tag from dataset definition, if available
-    if thisdataset<>None and thisdataset.InputTag["hltL3Tag"]<>None:
-        HLTL3Tag=thisdataset.InputTag["hltL3Tag"]
+
+
+    if thisdataset<>None and thisdataset.InputInfo["hltL3Tag"]<>None:
+        HLTL3Tag=thisdataset.InputInfo["hltL3Tag"]
 
     # use of new, old hlt options will overwrite default HLTL3Tag!
     if opts.newhlttag==True and opts.oldhlttag==False:
