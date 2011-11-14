@@ -777,15 +777,26 @@ class TreeJobGui:
 
         outfile.write("%s\n\n"%cmd)
         outfile.write( '\n[TABLE border="1"]\n')
-        thename="%s_%s"%(self.era.get(),self.label.get())
+        thename="stoppedHSCP_tree_%s_%s_%s_%s"%(self.era.get(),self.ntuplevar.get(),
+                               self.label.get(),self.versionvar.get())
         outfile.write( "Name | %s |-\n"%thename)
         try:
             temp=string.split(self.label.get(),"_")
             outfile.write( "Fills | %s-%s |-\n"%(temp[0],temp[1]))
         except IndexError:
             outfile.write( "Fills | %s |-\n"%self.label.get())
-        outfile.write( "Runs    |      |-\n")
-        outfile.write( "Ntuples | %s%s/stoppedHSCP_tree_%s |-\n"%(self.gridroot.get(),os.path.join(self.gridloc.get(),self.user.get()),thename))
+        # try to get runs from json file
+        if self.useJSON.get()==True:
+            try:
+                theseruns=os.path.basename(myfile)
+                theseruns=string.strip(theseruns,".json")
+                theseruns=string.split(theseruns,"_")
+                outfile.write("Runs   | %s-%s |-\n"%(theseruns[-2],theseruns[-1]))
+            except:
+                outfile.write("Runs   | ?-? |-\n")
+        else:        
+            outfile.write( "Runs    |      |-\n")
+        outfile.write( "Ntuples | %s%s/%s |-\n"%(self.gridroot.get(),os.path.join(self.gridloc.get(),self.user.get()),thename))
         outfile.write( "Lumi    |      |-\n")
         outfile.write( "Dataset  | %s |-\n"%self.dataset.get())
         outfile.write( "Global Tag | %s |-\n"%self.gtag.get())
