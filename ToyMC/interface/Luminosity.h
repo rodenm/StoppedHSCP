@@ -45,6 +45,10 @@ class Luminosity {
   // was CMS sensitive for this block
   bool cmsSensitive(unsigned long int i) const { return lumis_.at(i).good; }
   
+  // build model from the database
+  void buildFromDB(unsigned lumiFirstRun,
+		   unsigned lumiLastRun);
+
   // build model from file, for a list of runs
   void buildFromFile(std::vector<unsigned long> runs, 
 		     bool useHists,

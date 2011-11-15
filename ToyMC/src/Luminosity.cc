@@ -2,6 +2,8 @@
 
 #include "StoppedHSCP/ToyMC/interface/jsonxx.h"
 
+#include "OnlineDB/Oracle/interface/Oracle.h" 
+
 #include "TFile.h"
 #include "TH1D.h"
 
@@ -57,6 +59,34 @@ void Luminosity::makePlots() const {
   c->Write();
 
 }
+
+
+void Luminosity::buildFromDB(unsigned lumiFirstRun, unsigned lumiLastRun) {
+
+  // connect to DB
+  oracle::occi::Environment* dbEnv = Environment::createEnvironment();
+  oracle::occi::Connection* dbConn;
+  
+  const string userName = "cms_runinfo_r";
+  const string password = "mickey2mouse";
+  const string connectString = "cms_orcoff_prod";
+  if (dbConn) return;
+  dbConn = dbEnv->createConnection(userName, password, connectString);
+
+
+
+
+
+  // clean up DB connection
+  if (dbConn) {
+    dbEnv->terminateConnection(dbConn);
+    dbConn = 0;
+  }
+
+  Environment::terminateEnvironment (dbEnv);
+  
+}
+
 
 void Luminosity::buildFromFile(std::vector<unsigned long> runs, bool useHists, std::string goodLSFile, unsigned lumiFirstRun, unsigned lumiLastRun) {
 
