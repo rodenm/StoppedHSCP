@@ -17,6 +17,7 @@ process.ntuple.remove(process.gctDigis)
 process.ntuple.remove(process.gtDigis)
 process.ntuple.remove(process.l1extraParticles)
 process.ntuple.remove(process.hcalDigis)
+process.ntuple.remove(process.hltStoppedHSCPHpdFilter)
 
 # 2011 trigger config  (although it's irrelevant for MC as BPTX assumed to fire for all MC)
 
