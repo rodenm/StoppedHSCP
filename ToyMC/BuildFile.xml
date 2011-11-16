@@ -3,6 +3,7 @@
 <use name="roostats"/>
 <use name="StoppedHSCP/Analysis"/>
 <use name="StoppedHSCP/Statistics"/>
+<use name="OnlineDB/Oracle"/>
 
 <export>
   <use name="root"/>

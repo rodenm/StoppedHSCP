@@ -2,14 +2,18 @@
 #ifndef Luminosity_h
 #define Luminosity_h
 
+#include "StoppedHSCP/ToyMC/interface/jsonxx.h"
+
 #include <vector>
 #include "TCanvas.h"
+#include "TFile.h"
 
 struct LumiBlock {
   unsigned long run;
   unsigned long ls;
   double lumi;
   bool good;
+  double timestamp;
 };
 
 class Luminosity {
@@ -24,6 +28,37 @@ class Luminosity {
  public:
   Luminosity();
   ~Luminosity();
+
+  // setup first
+
+  // open good LS file
+  void openGoodLSFile(bool useHists,
+		      std::string goodLSFile);
+
+  bool goodData(unsigned run, unsigned ls);
+
+  // build model from the database
+  void buildFromDB(std::vector<unsigned long> runs,
+		   bool useHists,
+		   std::string goodLSFile,
+		   unsigned lumiFirstRun,
+		   unsigned lumiLastRun);
+
+  // build model from file, for a list of runs
+  void buildFromFile(std::vector<unsigned long> runs, 
+		     bool useHists,
+		     std::string goodLSFile,
+		     unsigned lumiFirstRun,
+		     unsigned lumiLastRun);
+
+  // generate model from parameters
+  void buildFromModel(unsigned int cycles, 
+		      unsigned int units_on, 
+		      unsigned int units_off,
+		      double amt);
+
+
+  // access methods
 
   // STL access operators
   unsigned int size() const;
@@ -44,35 +79,26 @@ class Luminosity {
 
   // was CMS sensitive for this block
   bool cmsSensitive(unsigned long int i) const { return lumis_.at(i).good; }
-  
-  // build model from the database
-  void buildFromDB(unsigned lumiFirstRun,
-		   unsigned lumiLastRun);
-
-  // build model from file, for a list of runs
-  void buildFromFile(std::vector<unsigned long> runs, 
-		     bool useHists,
-		     std::string goodLSFile,
-		     unsigned lumiFirstRun,
-		     unsigned lumiLastRun);
-
-  // generate model from parameters
-  void buildFromModel(unsigned int cycles, 
-		      unsigned int units_on, 
-		      unsigned int units_off,
-		      double amt);
 
   double getTotalLumi() { return totalLumi; }
 
   // make plots
   void makePlots() const;
 
+  // print out
   void dump(ostream& o, bool full);
 
  private:
 
+  // good lumi information - either histogram file or JSON file
+  bool useHists_;
+  TFile* histFile_;
+  jsonxx::Object goodLumis_;
+
+  // the lumi data structure
   std::vector<struct LumiBlock> lumis_;
 
+  // summary info
   double totalLumi;
   unsigned nGoodLS;
 

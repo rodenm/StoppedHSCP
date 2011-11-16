@@ -1,3 +1,5 @@
 <use name="StoppedHSCP/ToyMC"/>
 
 <bin name="simulate" file="simulate.cpp"/>
+
+<bin name="simulateDB" file="SimulateDB.cpp"/>

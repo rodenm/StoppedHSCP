@@ -51,7 +51,8 @@ void Simulator::setupObservedEvents() {
 }
 
 
-void Simulator::setupLumi() {
+void Simulator::setupLumi(bool buildFromDB,
+			  bool useHists) {
 
   // get runs for all fills
   std::vector<unsigned long> runs;
@@ -61,8 +62,16 @@ void Simulator::setupLumi() {
   }	
 
   // build lumi from runs
-  //lumi_.buildFromFile(runs, false, expt_->jsonFile, expt_->lumiFirstRun, expt_->lumiLastRun);
-  lumi_.buildFromFile(runs, true, expt_->histFile, expt_->lumiFirstRun, expt_->lumiLastRun);
+  std::string goodDataFile;
+  if (useHists) goodDataFile = expt_->histFile;
+  else goodDataFile = expt_->jsonFile;
+
+  if (buildFromDB) {
+    lumi_.buildFromDB(runs, useHists, goodDataFile, expt_->lumiFirstRun, expt_->lumiLastRun);
+  }
+  else {
+    lumi_.buildFromFile(runs, useHists, goodDataFile, expt_->lumiFirstRun, expt_->lumiLastRun);
+  }
 
 }
 
