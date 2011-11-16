@@ -86,6 +86,7 @@ proxy_server = myproxy.cern.ch"
         else:
             crabstring=crabstring+"\n"
     # create CRAB file
+    
     crab = open(cfgname, 'w')
     print "Writing file '%s'"%cfgname
     crab.write(crabstring)
@@ -188,6 +189,10 @@ def makeTreeJob(era,
     cfgname = "crab_tree_"+name+".cfg"
     jobStr = "stoppedHSCP_tree_"+name+".py"
     dirStr = "stoppedHSCP_tree_"+name
+    # remove unnecessary white space
+    cfgname=string.replace(cfgname," ","")
+    jobStr=string.replace(jobStr," ","")
+    dirStr=string.replace(dirStr," ","")
 
     # Set up names of reduced ntuples files
     reducedcfgname="crab_tree_%s_reduced.cfg"%name
@@ -400,7 +405,7 @@ if __name__=="__main__":
 
     datatype=None
     if opts.rawdata==False and opts.mcdata==False and opts.recodata==False:
-        if thisdataset<>None and thisdataset.datatype in ["RAW","RECO","MC"]:
+        if thisdataset<>None and thisdataset.datatype in ["RAWRECO","RECO","MC"]:
             datatype=thisdataset.datatype
         else:
             print "**********"
@@ -411,7 +416,7 @@ if __name__=="__main__":
 
     if opts.rawdata==True:
         if opts.recodata==False and opts.mcdata==False:
-            datatype = 'RAW'
+            datatype = 'RAWRECO'
         else:
             print "ERROR!  Cannot specify more than one data type (--raw, --reco, --mc)"
             sys.exit()
