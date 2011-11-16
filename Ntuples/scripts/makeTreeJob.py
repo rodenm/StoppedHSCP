@@ -150,6 +150,76 @@ readFiles.extend( [\n\
     cmssw.close()
 
     return
+
+################################################################
+
+def PrintTable(era,
+               label,
+               dataset,
+               gtag,
+               runjsonfile,
+               useJSON,
+               user,
+               storage="T2_UK_SGrid_RALPP",
+               useCAFsettings=False):
+    outtable="table_info.txt"
+    if os.path.exists(outtable):
+        outfile=open(outtable,'a')
+    else:
+        outfile=open(outtable,'w')
+    cmd="python makeTreeJob.py "
+    if (useCAFsettings):
+        cmd=cmd+" -c "
+    if (useJSON):
+        cmd=cmd+" -j "
+    cmd = cmd + " %s %s %s %s %s"%(string.strip(era),
+                                   string.strip(label),
+                                   string.strip(dataset),
+                                   string.strip(gtag),
+                                   string.strip(runjsonfile))
+    outfile.write("%s\n\n"%cmd)
+    outfile.write( '\n[TABLE border="1"]\n')
+    thename="stoppedHSCP_tree_%s_%s"%(era,label)
+    outfile.write( "Name | %s |-\n"%thename)
+    try:
+        temp=string.split(label,"_")
+        outfile.write( "Fills | %s-%s |-\n"%(temp[0],temp[1]))
+    except IndexError:
+        outfile.write( "Fills | %s |-\n"%label)
+    # try to get runs from json file
+    if useJSON==True:
+        try:
+            theseruns=os.path.basename(runjsonfile)
+            theseruns=string.strip(theseruns,".json")
+            theseruns=string.split(theseruns,"_")
+            outfile.write("Runs   | %s-%s |-\n"%(theseruns[-2],theseruns[-1]))
+        except:
+            outfile.write("Runs   | ?-? |-\n")
+    else:        
+        outfile.write( "Runs    |      |-\n")
+    if storage<>"T2_UK_SGrid_RALPP":
+        outfile.write( "Ntuples | SPECIFY NTUPLE LOCATION |-\n")
+    else:
+        gridroot="srm://heplnx204.pp.rl.ac.uk:8443/srm/managerv2?SFN="
+        gridloc="/pnfs/pp.rl.ac.uk/data/cms/store/user/"
+        if user.find("temple")>-1:
+            user="temple"  # set Jeff's user name to temple, even if local name is jtemple
+        outfile.write("Ntuples | %s%s/%s |-\n"%(gridroot,os.path.join(gridloc,user),thename))
+    outfile.write( "Lumi    | SPECIFY LUMI     |-\n")
+    outfile.write( "Dataset  | %s |-\n"%dataset)
+    outfile.write( "Global Tag | %s |-\n"%gtag)
+    try:
+        outfile.write( "CMSSW Version | %s |-\n"%os.environ["CMSSW_VERSION"])
+    except KeyError:
+        outfile.write( "CMSSW Version | NOT SPECIFIED! |-\n")
+    outfile.write( "CVS tag  |      |-\n")
+    if (useJSON==True):
+        outfile.write( "JSON file | %s |-\n"%runjsonfile)
+    else:
+        outfile.write( "JSON file | NOT SPECIFIED! |-\n")
+    outfile.write( "[/TABLE]\n\n")
+    outfile.close()
+
 ################################################################
 
 def makeTreeJob(era,
@@ -167,7 +237,8 @@ def makeTreeJob(era,
                 useCAFsettings=False,
                 datasetInfo=None,
                 l1JetNoBptxName=None,
-                l1JetNoBptxNoHaloName=None
+                l1JetNoBptxNoHaloName=None,
+                write_output=True
                 ):
     ''' Make the .py and .cfg files necessary for generating ntuple trees.'''
 
@@ -343,6 +414,18 @@ if __name__=="__main__":
                       dest="l1JetNoBptxNoHaloName",
                       default=None,
                       help="Specify l1JetNoBptxNoHaloName that is different from default in cfi.py file")
+    try:
+        user=os.environ["USER"]
+    except:
+        user="UNKNOWN"
+    parser.add_option("-u","--user",
+                      dest="user",
+                      default=user,
+                      help="Specify user at SE site (not necessarily the same as local user name")
+    parser.add_option("-s","--storage",
+                      dest="storage",
+                      default="T2_UK_SGrid_RALPP",
+                      help="Specify storage site")
     
 
     (opts,args)=parser.parse_args()
@@ -484,7 +567,8 @@ if __name__=="__main__":
                   HLTL3Tag=HLTL3Tag,
                   whitelist=whitelist,  # add whitelist option at some point?
                   scheduler = "glite",
-                  storage = "T2_UK_SGrid_RALPP",
+                  storage = opts.storage,
+                  useCAFsettings=opts.useCAFsettings,
                   datasetInfo=thisdataset,
                   l1JetNoBptxName=opts.l1JetNoBptxName,
                   l1JetNoBptxNoHaloName=opts.l1JetNoBptxNoHaloName
@@ -492,3 +576,13 @@ if __name__=="__main__":
     if x==True:
         print "Successfully created files!"
 
+    PrintTable(era=era,
+               label=label,
+               dataset=dataset,
+               gtag=gtag,
+               runjsonfile=jsonfile,
+               useJSON=useJSON,
+               storage=opts.storage,
+               user=opts.user,
+               useCAFsettings=opts.useCAFsettings
+               )
