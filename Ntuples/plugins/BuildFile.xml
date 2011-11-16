@@ -35,6 +35,7 @@
   <use name="HLTrigger/HLTcore"/>
 
   <use name="CommonTools/UtilAlgos"/>
+  <use name="SimGeneral/HepPDTRecord"/>
 
   <use name="TrackingTools/TrajectoryState"/>
   <use name="TrackingTools/TrackAssociator"/>

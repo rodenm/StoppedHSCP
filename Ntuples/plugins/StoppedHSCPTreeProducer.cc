@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.16 2011/10/28 21:04:56 temple Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.17 2011/11/03 22:55:05 temple Exp $
 //
 //
 
@@ -119,7 +119,8 @@
 #include "DataFormats/HcalDetId/interface/HcalDetId.h"
 #include "DataFormats/HcalDetId/interface/HcalSubdetector.h"
 
-
+// MC
+#include "SimGeneral/HepPDTRecord/interface/ParticleDataTable.h"
 
 // ROOT output stuff
 #include "FWCore/ServiceRegistry/interface/Service.h"
@@ -286,6 +287,8 @@ private:
   std::string hltPathJetE50NoBptx3BXNoHalo_;
   edm::InputTag hltL3Tag_;
   edm::InputTag mcTag_;
+  std::string mcProducer_;
+  edm::InputTag hepProducer_;
   edm::InputTag jetTag_;
   edm::InputTag jetAK5Tag_;
   edm::InputTag muonTag_;
@@ -313,6 +316,9 @@ private:
 
   // geometry
   const CaloGeometry* caloGeom_;
+
+  // HepPDT table
+  edm::ESHandle<HepPDT::ParticleDataTable> fPDGTable;
 
   // cuts
   double towerMinEnergy_;
@@ -410,6 +416,8 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   hltPathJetE50NoBptx3BXNoHalo_(iConfig.getUntrackedParameter<std::string>("hltPathJetE50NoBptx3BXNoHalo",std::string("HLT_JetE50_NoBPTX3BX_NoHalo_v1"))),
   hltL3Tag_(iConfig.getUntrackedParameter<edm::InputTag>("hltL3Tag",edm::InputTag("hltStoppedHSCP1CaloJetEnergy","","HLT"))),
   mcTag_(iConfig.getUntrackedParameter<edm::InputTag>("mcTag",edm::InputTag("generator"))),
+  mcProducer_ (iConfig.getUntrackedParameter<std::string>("producer", "g4SimHits")),
+  hepProducer_ (iConfig.getUntrackedParameter<edm::InputTag>("hepMCProducerTag", edm::InputTag("generator", "", "SIM"))),
   jetTag_(iConfig.getUntrackedParameter<edm::InputTag>("jetTag",edm::InputTag("iterativeCone5CaloJets"))),
   jetAK5Tag_(iConfig.getUntrackedParameter<edm::InputTag>("jetAK5Tag",edm::InputTag("ak5CaloJets"))),
   muonTag_(iConfig.getUntrackedParameter<edm::InputTag>("muonTag",edm::InputTag("muons"))),
@@ -500,6 +508,9 @@ StoppedHSCPTreeProducer::beginJob()
 void 
 StoppedHSCPTreeProducer::beginRun(edm::Run const & iRun, edm::EventSetup const& iSetup)
 {
+  // Get PDT Table if MC
+  if (isMC_)
+    iSetup.getData(fPDGTable);
 
   // HLT setup
   bool changed;
@@ -779,10 +790,153 @@ void StoppedHSCPTreeProducer::doMC(const edm::Event& iEvent) {
     mcMissing_ = true;
   }
 
+  // Now fill variables based on the StoppedParticles vectors made by RHStopTracer module
+  edm::Handle<std::vector<std::string> > names;
+  iEvent.getByLabel (mcProducer_, "StoppedParticlesName", names);
+  edm::Handle<std::vector<float> > xs;
+  iEvent.getByLabel (mcProducer_, "StoppedParticlesX", xs);
+  edm::Handle<std::vector<float> > ys;
+  iEvent.getByLabel (mcProducer_, "StoppedParticlesY", ys);
+  edm::Handle<std::vector<float> > zs;
+  iEvent.getByLabel (mcProducer_, "StoppedParticlesZ", zs);
+  edm::Handle<std::vector<float> > times;
+  iEvent.getByLabel (mcProducer_, "StoppedParticlesTime", times);
+  if (!names.isValid() || !xs.isValid() || !ys.isValid() || !zs.isValid() || !times.isValid()){
+    edm::LogError ("MissingProduct") << "StoppedParticles* vectors not available. Branch "
+				     << "will not be filled." << std::endl;
+  } else if (names->size() != xs->size() || xs->size() != ys->size() || ys->size() != zs->size()) {
+    edm::LogError ("StoppedHSCPTreeProducer") << "mismatch array sizes name/x/y/z:"
+					      << names->size() << '/' << xs->size() << '/' 
+					      << ys->size() << '/' << zs->size() << std::endl;
+  } else {
+    if (names->size() > 0) {
+      for (size_t i = 0; i < names->size(); ++i) {
+	float phi = ((*ys)[i]==0 && (*xs)[i]==0) ? 0 : atan2((*ys)[i],(*xs)[i]);
+	
+	// TODO: find a way to get the pdgid, mass, and charge of the stopped particle 
+	// (the name is not in the ParticleDataTable)
+	Double_t mass = -1.0;
+	Double_t charge = 99.0;
+	Int_t pdgid = 0;
+	const HepPDT::ParticleData* PData = fPDGTable->particle(names->at(i));
+	if (PData == 0) {
+	  LogDebug ("StoppedHSCPTreeProducer") << "could not get particle data from the"
+					       << " table for " << names->at(i)
+					       << std::endl;
+	} else {
+	  mass = PData->mass();
+	  charge = PData->charge();
+	  pdgid = PData->ID().pid();
+	}
+	event_->mcStoppedParticleName.push_back(names->at(i));
+	event_->mcStoppedParticleId.push_back(pdgid);
+	event_->mcStoppedParticleX.push_back(xs->at(i));
+	event_->mcStoppedParticleY.push_back(ys->at(i));
+	event_->mcStoppedParticleZ.push_back(zs->at(i));
+	event_->mcStoppedParticleR.push_back(sqrt(xs->at(i)*xs->at(i) + ys->at(i)*ys->at(i)));
+	event_->mcStoppedParticlePhi.push_back(phi);
+	event_->mcStoppedParticleTime.push_back(times->at(i));
+	event_->mcStoppedParticle_N++;
+      }
+    }
+  }
+
+  // Search the stage 1 HepMC records for the initial SUSY particle (gluino, stop, stau...)
+  // and for the initial R-hadrons
+  edm::Handle<edm::HepMCProduct> hepMCproduct;
+  iEvent.getByLabel(hepProducer_, hepMCproduct);
+  if (!hepMCproduct.isValid()) {
+    edm::LogError ("MissingProduct") << "Stage 1 HepMC product not found. Branch "
+				     << "will not be filled." << std::endl;
+  } else {
+    const HepMC::GenEvent* mc = hepMCproduct->GetEvent();
+    if( mc == 0 ) {
+      throw edm::Exception( edm::errors::InvalidReference ) << "HepMC has null pointer "
+							    << "to GenEvent" << std::endl;
+    }
+    // Uncomment this to print the full HepMC record for each event (for debugging or whatever)
+    //mc->print( std::cout );
+    
+    // Iterate over the HepMC particles, look for the sparticles that produce r-hadrons,
+    for ( HepMC::GenEvent::particle_const_iterator piter  = mc->particles_begin();
+	  piter != mc->particles_end(); 
+	  ++piter ) {
+      HepMC::GenParticle* p = *piter;
+      int partId = fabs(p->pdg_id());
+      
+      // Search for the original sparticle (gluino, stop - left and right handed, stau)
+      // -- Assumes the first two sparticles found are the correct ones to save.
+      if ((partId == 1000021 || partId == 1000006 || partId == 2000006 || partId == 1000015 
+	   || partId == 2000015) && event_->mcSparticle_N < 2) {
+	math::XYZTLorentzVector momentum1(p->momentum().px(),
+					  p->momentum().py(),
+					  p->momentum().pz(),
+					  p->momentum().e());
+	Double_t phi = momentum1.phi();
+	Double_t pt = momentum1.pt();
+	Double_t e = momentum1.e();
+	Double_t eta = momentum1.eta();
+	Double_t mass = p->momentum().m();
+	Double_t charge = 999.0;
+	const HepPDT::ParticleData* PData = fPDGTable->particle(HepPDT::ParticleID(p->pdg_id()));
+	if(PData==0) {
+	  LogDebug ("StoppedHSCPTreeProducer") << "Error getting HepPDT data table for "
+					       << p->pdg_id() << ". Unable to fill charge "
+					       << "of sparticle." << std::endl;
+	} else {
+	  charge = PData->charge();
+	}
+	event_->mcSparticleId.push_back(p->pdg_id());
+	event_->mcSparticleMass.push_back(mass);
+	event_->mcSparticleCharge.push_back(charge);
+	event_->mcSparticlePx.push_back(momentum1.x());
+	event_->mcSparticlePy.push_back(momentum1.y());
+	event_->mcSparticlePz.push_back(momentum1.z());
+	event_->mcSparticlePt.push_back(pt);
+	event_->mcSparticleE.push_back(e);
+	event_->mcSparticleEta.push_back(eta);
+	event_->mcSparticlePhi.push_back(phi);
+	event_->mcSparticle_N++;
+      }
+    
+      // I'm making the (possibly invalid) assumption here that R-hadrons all have numbers 
+      // between the SUSY particles and 2,000,000. 
+      // -- Assumes the first two r-hadrons we come across are the ones we want.
+      // -- This branch may not be filled for stau MC.
+      else if (partId > 1000100 && partId < 2000000 && event_->mcRhadron_N < 2) {
+	math::XYZTLorentzVector momentum1(p->momentum().px(),
+					  p->momentum().py(),
+					  p->momentum().pz(),
+					  p->momentum().e());
+	Double_t phi = momentum1.phi();
+	Double_t pt = momentum1.pt();
+	Double_t e = momentum1.e();
+	Double_t eta = momentum1.eta();
+	Double_t mass = p->momentum().m();
+	Double_t charge = 999.0;
+	const HepPDT::ParticleData* PData = fPDGTable->particle(HepPDT::ParticleID(p->pdg_id()));
+	if(PData==0) {
+	  LogDebug ("StoppedHSCPTreeProducer") << "Error getting HepPDT data table for "
+					       << p->pdg_id() << ". Unable to fill charge "
+					       << "of rhadron." << std::endl;
+	} else {
+	  charge = PData->charge();
+	}
+	event_->mcRhadronId.push_back(p->pdg_id());
+	event_->mcRhadronMass.push_back(mass);
+	event_->mcRhadronCharge.push_back(charge);
+	event_->mcRhadronPx.push_back(momentum1.x());
+	event_->mcRhadronPy.push_back(momentum1.y());
+	event_->mcRhadronPz.push_back(momentum1.z());
+	event_->mcRhadronPt.push_back(pt);
+	event_->mcRhadronE.push_back(e);
+	event_->mcRhadronEta.push_back(eta);
+	event_->mcRhadronPhi.push_back(phi);
+	event_->mcRhadron_N++; 
+      }
+    }  
+  }
 }
-
-
-
 
 void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent) {
 
