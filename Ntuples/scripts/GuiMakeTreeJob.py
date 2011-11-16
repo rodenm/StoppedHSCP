@@ -735,9 +735,11 @@ class TreeJobGui:
             thisdataset=self.datasetList[self.dataset.get()]
         else:
             thisdataset=None
-        x=makeTreeJob(era="%s_%s"%(self.era.get(),self.ntuplevar.get()),
-                      label="%s_%s"%(self.label.get(),self.versionvar.get()),
-                      dataset=self.dataset.get(),
+        x=makeTreeJob(era="%s_%s"%(string.strip(self.era.get()),
+                                   string.strip(self.ntuplevar.get())),
+                      label="%s_%s"%(string.strip(self.label.get()),
+                                     string.strip(self.versionvar.get())),
+                      dataset=string.strip(self.dataset.get()),
                       gtag=self.gtag.get(),
                       runjsonfile= myfile,
                       scheduler=self.scheduler.get(),
@@ -765,15 +767,17 @@ class TreeJobGui:
         #    cmd=cmd +" --newhlttag"
         #elif self.hltL3Tag.get()=="hltStoppedHSCPTight1CaloJetEnergy30":
         #    cmd=cmd+" --oldhlttag"
-        cmd=cmd+" --%s --%s %s %s %s %s %s"%(string.lower(self.datatype.get()),
-                                             self.trigger.get(),
-                                             "%s_%s"%(self.era.get(),
-                                                      self.ntuplevar.get()),
-                                             "%s_%s"%(self.label.get(),
-                                                      self.versionvar.get()),
-                                             self.dataset.get(),
-                                             self.gtag.get(),
-                                             myfile)
+        cmd=cmd+" %s %s %s %s %s"%(
+            # datatype, trigger no longer need to be specified
+            #string.lower(self.datatype.get()),
+            #self.trigger.get(),
+            "%s_%s"%(string.strip(self.era.get()),
+                     string.strip(self.ntuplevar.get())),
+            "%s_%s"%(string.strip(self.label.get()),
+                     string.strip(self.versionvar.get())),
+            self.dataset.get(),
+            self.gtag.get(),
+            myfile)
 
         outfile.write("%s\n\n"%cmd)
         outfile.write( '\n[TABLE border="1"]\n')
