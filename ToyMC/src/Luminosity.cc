@@ -153,73 +153,72 @@ void Luminosity::buildFromDB(std::vector<unsigned long> runs,
   // loop over runs
   for (unsigned run=lumiFirstRun; run<=lumiLastRun; ++run) {
 
-    // get all sections
-    std::vector<int> lumiList;
-    char query [4096];
-    sprintf (query, "select LUMILSNUM from cms_lumi_prod.LUMISUMMARY where RUNNUM=%d ORDER BY LUMILSNUM", run);
-    oracle::occi::Statement *stmt = dbConn->createStatement(query);
+    std::cout << "Getting lumi data for run " << run << std::endl;
+    
+    // prepare query to get list of lumi sections for this run
+    std::string query("select LUMILSNUM from cms_lumi_prod.LUMISUMMARY where RUNNUM=");
+    query.append( boost::lexical_cast<std::string>(run) );
+    query.append(" ORDER BY LUMILSNUM");
+
+    // execute query
+    oracle::occi::Statement *stmt = dbConn->createStatement(query.c_str());
     oracle::occi::ResultSet *result1 = stmt->executeQuery();
 
+    // push lumi section numbers into vector
+    std::vector<int> lumiList;
     while (result1->next()) {
       lumiList.push_back(result1->getInt(1));
     }
+
+    // terminate query
     stmt->closeResultSet(result1);
     dbConn->terminateStatement(stmt);
 
-//   // get run info
-//   char query [4096];
-//   sprintf (query, "select RUNNUM, HLTKEY, FILLNUM, STARTTIME, STOPTIME from cms_lumi_prod.cmsrunsummary where RUNNUM=%d", fRun);
-//   Statement *stmt = mConn->createStatement(query);
-//   ResultSet *rs = stmt->executeQuery();
-//   if (!rs->next()) return false;
-//   fRecord->run = rs->getInt(1);
-//   fRecord->hltKey = rs->getString(2);
-//   fRecord->fill = rs->getInt(3);
-//   time_t utime = 0;
-//   convertTimestamp (rs->getTimestamp(4), &utime);
-//   fRecord->startTime = utime;
-//   convertTimestamp (rs->getTimestamp(5), &utime);
-//   fRecord->stopTime = utime;
+    // if there are no lumi sections, skip to next run
+    if (lumiList.size()==0) continue;
 
-    std::cout << "Getting lumi data for run " << run << std::endl;
-
-    // loop over lumis?
-    std::vector<int>::const_iterator ls;
-    for (ls=lumiList.begin(); ls!=lumiList.end(); ++ls) {
-
-      char query2 [4096];
-      sprintf (query2, "select RUNNUM, CMSLSNUM, INSTLUMI from cms_lumi_prod.LUMISUMMARY where RUNNUM=%d and LUMILSNUM=%d", run, (*ls));
-      //      sprintf (query2, "select LUMISUMMARY_ID, RUNNUM, CMSLSNUM, LUMILSNUM, LUMIVERSION, DTNORM, LHCNORM, INSTLUMI, INSTLUMIERROR, INSTLUMIQUALITY, CMSALIVE, STARTORBIT, NUMORBIT, LUMISECTIONQUALITY, BEAMENERGY, BEAMSTATUS from cms_lumi_prod.LUMISUMMARY where RUNNUM=%d and LUMILSNUM=%d", run, *ls);
-
-      //      std::cout << "Querying lumi DB about run " << run << ", LS " << (*ls) << std::endl;
-      oracle::occi::Statement *stmt2 = dbConn->createStatement(query2);
-      oracle::occi::ResultSet *result2 = stmt2->executeQuery();
-
-      if (!result2->next()) {
-	std::cerr << "Failed to retrieve lumi info for run " << run << ", LS " << (*ls) << std::endl;
-	continue;
-      }
-
-      // create and fill lumi block
+    // make a comma separated list of lumi sections
+    std::string lsvals;
+    for (std::vector<int>::const_iterator i=lumiList.begin(); i!=lumiList.end(); ++i) {
+      lsvals.append( boost::lexical_cast<std::string>(*i) );
+      lsvals.append( "," );
+    }
+    lsvals.erase(lsvals.length()-1, 1); // remove trailing comma
+    
+    // build the query itself
+    std::string query2("select RUNNUM, CMSLSNUM, INSTLUMI from cms_lumi_prod.LUMISUMMARY where RUNNUM=");
+    query2.append( boost::lexical_cast<std::string>(run) );
+    query2.append( " and LUMILSNUM in (" );
+    query2.append( lsvals );
+    query2.append( ")" );
+    //      std::cout << query2 << std::endl;
+    
+    // execute query
+    oracle::occi::Statement *stmt2 = dbConn->createStatement(query2.c_str());
+    oracle::occi::ResultSet *result2 = stmt2->executeQuery();
+    
+    // loop over returned lumi sections and store
+    while (result2->next() ){
+      
       LumiBlock lb;
-
+      
       lb.run  = run;
       lb.ls   = (unsigned long) result2->getInt(2);
       lb.lumi = result2->getDouble(3);
-
-      stmt2->closeResultSet(result2);
-      dbConn->terminateStatement(stmt2);
-
-      lb.good = goodData(lb.run, lb.ls);
+      lb.good = goodData(lb.run, lb.ls);	
       
       totalLumi += lb.lumi;
       lumis_.push_back(lb);
-
+      
     }
+
+    // terminate query
+    stmt2->closeResultSet(result2);
+    dbConn->terminateStatement(stmt2);
 
   }
 
-  // clean up DB connection
+  // close DB connection
   if (dbConn) {
     dbEnv->terminateConnection(dbConn);
     dbConn = 0;
