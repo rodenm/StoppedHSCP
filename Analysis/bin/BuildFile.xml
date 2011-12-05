@@ -11,3 +11,7 @@
 
 <bin name="bxDistributions" file="BXDistributions.cpp"/>
 
+<bin name="haloBackground" file="HaloBackground.cpp"/>
+
+<bin name="backgroundStability" file="BackgroundStability.cpp"/>
+
