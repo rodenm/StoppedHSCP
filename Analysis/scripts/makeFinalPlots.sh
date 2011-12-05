@@ -9,12 +9,12 @@ maxInstLumi=$3
 # Set defaults in case lumi, maxLumi not provided
 if [ $# -lt 2 ]
 then
-    lumi=877.  # Units of pb^-1
+    lumi=4560.  # Units of pb^-1
 fi
 
 if [ $# -lt 3 ]
 then 
-    maxInstLumi=1300.  # Units of 10^30 cm^-2 s^-1
+    maxInstLumi=3300.  # Units of 10^30 cm^-2 s^-1
 fi
 
 pwd=$PWD
@@ -32,7 +32,7 @@ cp $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/stopMass.C   $dataset/.
 cp $CMSSW_BASE/src/StoppedHSCP/Analysis/data/mcGluino.txt $dataset/.
 cp $CMSSW_BASE/src/StoppedHSCP/Analysis/data/mcStop.txt $dataset/.
 
-cp $dataset/toymc/summary.txt $dataset/toymc.txt
+#cp $dataset/toymc/summary.txt $dataset/toymc.txt
 
 cd $dataset
 

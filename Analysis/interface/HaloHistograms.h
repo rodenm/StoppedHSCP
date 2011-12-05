@@ -1,6 +1,7 @@
 #ifndef HaloHistograms_h
 #define HaloHistograms_h
 
+#include "StoppedHSCP/Analysis/interface/MultiHistogram1D.h"
 
 #include "StoppedHSCP/Analysis/interface/Cuts.h"
 
