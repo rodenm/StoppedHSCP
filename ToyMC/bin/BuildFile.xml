@@ -3,3 +3,5 @@
 <bin name="simulate" file="simulate.cpp"/>
 
 <bin name="simulateDB" file="SimulateDB.cpp"/>
+
+<bin name="simulateMulti" file="SimulateMultiFill.cpp"/>

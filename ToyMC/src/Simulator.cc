@@ -52,6 +52,7 @@ void Simulator::setupObservedEvents() {
 
 
 void Simulator::setupLumi(bool buildFromDB,
+			  bool lumiCalc2,
 			  bool useHists) {
 
   // get runs for all fills
@@ -70,7 +71,12 @@ void Simulator::setupLumi(bool buildFromDB,
     lumi_.buildFromDB(runs, useHists, goodDataFile, expt_->lumiFirstRun, expt_->lumiLastRun);
   }
   else {
-    lumi_.buildFromFile(runs, useHists, goodDataFile, expt_->lumiFirstRun, expt_->lumiLastRun);
+    if (lumiCalc2) {
+      lumi_.buildFromFile2(runs, useHists, goodDataFile, expt_->lumiFirstRun, expt_->lumiLastRun);
+    }
+    else {
+      lumi_.buildFromFile(runs, useHists, goodDataFile, expt_->lumiFirstRun, expt_->lumiLastRun);
+    }
   }
 
 }
@@ -141,7 +147,7 @@ void Simulator::simulateSignal(unsigned firstFill, unsigned lastFill) {
       double time = random_.Exp(expt_->lifetime);
 
       // calculate time in units of BX/orbit/LS
-      unsigned long timeLS     = (unsigned) floor(time / TIME_PER_LS);
+      unsigned long timeLS     = (unsigned long) floor(time / TIME_PER_LS);
       double remainder1        = time - (timeLS * TIME_PER_LS);
       unsigned long timeOrbits = (unsigned long) floor(remainder1 / TIME_PER_ORBIT);
       double remainder2        = remainder1 - (timeOrbits * TIME_PER_ORBIT);
@@ -206,6 +212,7 @@ void Simulator::simulateSignal(unsigned firstFill, unsigned lastFill) {
   std::cout << "Effective lumi  : " << effLumi << std::endl;
   std::cout << "Expected signal : " << expt_->expSignal << std::endl;
   std::cout << "Total N decays  : " << expt_->nDecays_MC << std::endl;
+  std::cout << std::endl;
 
   effLumi_ = effLumi;
 
@@ -347,6 +354,7 @@ void Simulator::calculateObservedEvents(unsigned firstFill, unsigned lastFill) {
   expt_->nObserved += nEvents;
 
   std::cout << "N obs : " << nEvents << std::endl;
+  std::cout << std::endl;
 
   nObs_ = nEvents;
 

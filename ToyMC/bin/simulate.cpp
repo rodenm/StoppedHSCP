@@ -21,7 +21,6 @@ int main(int argc, char* argv[]) {
 
   Experiment* e;
 
-
   // read parameters from file and create experiment object
   e = new Experiment(paramfile);
   std::cout << "Simulation parameters" << std::endl;
@@ -47,7 +46,7 @@ int main(int argc, char* argv[]) {
   sim.setupObservedEvents();
 
   // set up luminosity data
-  sim.setupLumi(false, true);
+  sim.setupLumi(false, false, true);
 
   // set up lifetime mask
   sim.setupLifetimeMask();

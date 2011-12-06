@@ -91,7 +91,7 @@ for lifetime in lifetimes:
     # write job script
     script = open(jobdir+'/job'+str(count)+'.sh', 'w')
     script.write('cd '+jobdir+'\n')
-    script.write('simulate params'+str(count)+'.txt >& job.log\n')
+    script.write('simulateMulti params'+str(count)+'.txt >& job.log\n')
     script.write('cd '+os.environ['PWD']+'\n')
     script.close()
 

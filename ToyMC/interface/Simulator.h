@@ -24,7 +24,7 @@ class Simulator {
   
   // set up
   void setParameters(Experiment* e);
-  void setupLumi(bool buildFromDB, bool useHists);
+  void setupLumi(bool buildFromDB, bool lumiCalc2, bool useHists);
   void setFillScheme(unsigned fill);
   void setupLifetimeMask();
   void setupObservedEvents();
@@ -57,6 +57,8 @@ class Simulator {
 /*   void writeOutLifetimeFit(); */
 
   LhcFills& getLhcFills() { return fills_; }
+
+  Luminosity& getLuminosity() { return lumi_; }
 
   void reset() {
     effLumi_ = 0.;

@@ -8,12 +8,16 @@
 #include "TCanvas.h"
 #include "TFile.h"
 
+
+
 struct LumiBlock {
+  unsigned long id;
   unsigned long run;
   unsigned long ls;
+  unsigned long orbit;
   double lumi;
   bool good;
-  double timestamp;
+  time_t timestamp;
 };
 
 class Luminosity {
@@ -51,6 +55,13 @@ class Luminosity {
 		     unsigned lumiFirstRun,
 		     unsigned lumiLastRun);
 
+  // build model from file, compatible with lumiCalc2 output
+  void buildFromFile2(std::vector<unsigned long> runs, 
+		     bool useHists,
+		     std::string goodLSFile,
+		     unsigned lumiFirstRun,
+		     unsigned lumiLastRun);
+
   // generate model from parameters
   void buildFromModel(unsigned int cycles, 
 		      unsigned int units_on, 
@@ -80,7 +91,7 @@ class Luminosity {
   // was CMS sensitive for this block
   bool cmsSensitive(unsigned long int i) const { return lumis_.at(i).good; }
 
-  double getTotalLumi() { return totalLumi; }
+  double getTotalLumi() { return totalLumi_; }
 
   // make plots
   void makePlots() const;
@@ -99,8 +110,8 @@ class Luminosity {
   std::vector<struct LumiBlock> lumis_;
 
   // summary info
-  double totalLumi;
-  unsigned nGoodLS;
+  double totalLumi_;
+  unsigned nGoodLS_;
 
 };
 

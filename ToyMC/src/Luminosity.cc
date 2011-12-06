@@ -1,5 +1,7 @@
 #include "StoppedHSCP/ToyMC/interface/Luminosity.h"
 
+#include "StoppedHSCP/Ntuples/interface/Constants.h"
+
 //#include "StoppedHSCP/ToyMC/interface/jsonxx.h"
 
 #include "OnlineDB/Oracle/interface/Oracle.h" 
@@ -8,7 +10,7 @@
 #include "TH1D.h"
 
 #include <algorithm>
-
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -18,7 +20,74 @@
 const double Luminosity::LUMIFILE_TO_PB = 1e-6;
 const double Luminosity::THRESHOLD = 0.00001;  // threshold below which lumi is ignored (in pb-1)
 
-Luminosity::Luminosity() {
+time_t convertOracleTimestamp(const oracle::occi::Timestamp& timestamp) {
+  struct tm timeinfo,epoch;
+  
+  epoch.tm_year = 1970 - 1900;
+  epoch.tm_mon = 0;
+  epoch.tm_mday = 1;
+  epoch.tm_hour = 0;
+  epoch.tm_min = 0;
+  epoch.tm_sec = 0;
+  epoch.tm_isdst = 0;
+  time_t epochTime = mktime (&epoch);
+  int t0;
+  unsigned t1,t2,t3,t4;
+  timestamp.getDate(t0, t2, t3);
+  timeinfo.tm_year = t0 - 1900;
+  timeinfo.tm_mon = int(t2) - 1;
+  timeinfo.tm_mday = int(t3);
+  timestamp.getTime (t1, t2, t3, t4);
+  timeinfo.tm_hour = int(t1);
+  timeinfo.tm_min = int(t2);
+  timeinfo.tm_sec = int(t3);
+  timeinfo.tm_isdst = 0;
+  time_t localTime = mktime (&timeinfo);
+  time_t output = localTime - epochTime;
+  return output;
+}
+
+time_t convertTimestamp(std::string timestamp) {
+
+  // string input format is "mm/dd/yy HH:MM:SS"
+
+  struct tm epoch;
+  epoch.tm_year = 1970 - 1900;
+  epoch.tm_mon = 1;
+  epoch.tm_mday = 1;
+  epoch.tm_hour = 0;
+  epoch.tm_min = 0;
+  epoch.tm_sec = 0;
+  epoch.tm_isdst = 0;
+  time_t epochTime = mktime (&epoch);
+
+  struct tm local;
+  std::vector<std::string> vals;
+  boost::split(vals, timestamp, boost::is_any_of("/ :"));
+//   std::cout << timestamp << std::endl;
+//   std::cout << vals.at(0) << " " << vals.at(1) << " " << vals.at(2) << " " << vals.at(3) << " " << vals.at(4) << " " << vals.at(5) << std::endl;
+  local.tm_year = 100+boost::lexical_cast<int>(vals.at(2));
+  local.tm_mon  = boost::lexical_cast<int>(vals.at(0));
+  local.tm_mday = boost::lexical_cast<int>(vals.at(1));
+  local.tm_hour = boost::lexical_cast<int>(vals.at(3));
+  local.tm_min  = boost::lexical_cast<int>(vals.at(4));
+  local.tm_sec  = boost::lexical_cast<int>(vals.at(5));
+  time_t localTime = mktime(&local);
+
+  time_t output = localTime - epochTime;
+  //  std::cout << ctime(&output);
+  return output;
+		     
+}
+
+
+Luminosity::Luminosity() :
+  useHists_(false),
+  histFile_(0),
+  lumis_(0),
+  totalLumi_(0),
+  nGoodLS_(0)
+{
 
 }
 
@@ -33,30 +102,32 @@ unsigned int Luminosity::size() const {
 
 
 void Luminosity::makePlots() const {
-  TCanvas *c = new TCanvas("lumi_dist");
+
+  std::cout << "Making plots of " << lumis_.size() << " LS" << std::endl;
+
+  TCanvas *c = new TCanvas("cLumi", "", 1500, 300);
   
   c->cd();
 
-  TH1D *lumi_dist_h = new TH1D("lumi_dist_h", "Luminosity distribution",
-			       lumis_.size(), -0.5, lumis_.size() -0.5);
-  TH1D *cms_dist_h = new TH1D("cms_dist_h", "CMS Sensitivity",
-			       lumis_.size(), -0.5, lumis_.size() -0.5);
+  TH1D* hLumi = new TH1D("hLumiDist", "Delivered luminosity", lumis_.size(), -0.5, lumis_.size() -0.5);
+  TH1D* hGood = new TH1D("hSensitive", "CMS Sensitivity", lumis_.size(), -0.5, lumis_.size() -0.5);
 
-  unsigned int counter = 0;
-  for (std::vector<struct LumiBlock>::const_iterator cit = lumis_.begin();
-       cit != lumis_.end(); cit++) {
-    lumi_dist_h->Fill(counter, cit->lumi);
-    cms_dist_h->Fill(counter++, (cit->good?
-				 1. : 0));
+  for (unsigned i=0; i<lumis_.size(); ++i) {
+    hLumi->Fill(i, lumis_.at(i).lumi);
+    hGood->Fill(i, lumis_.at(i).good ? 1. : 0. );
   }
 
-  lumi_dist_h->Draw();
-  cms_dist_h->Draw("same");
-  cms_dist_h->SetLineColor(4);
-  cms_dist_h->SetFillColor(4);
-  cms_dist_h->SetFillStyle(3005);
-  c->Print("lumi_dist.eps");
-  c->Write();
+  hLumi->Draw();
+  c->Print("LumiDist.png");
+
+  hGood->SetLineColor(4);
+  hGood->Draw();
+  c->Print("GoodDataDist.png");
+
+  hLumi->Scale(10./hLumi->GetMaximum());
+  hLumi->Draw();
+  hGood->Draw("SAME");
+  c->Print("LumiDist2.png");
 
 }
 
@@ -130,11 +201,17 @@ bool Luminosity::goodData(unsigned run, unsigned ls) {
 
 }
 
+
 void Luminosity::buildFromDB(std::vector<unsigned long> runs,
 			     bool useHists,
 			     std::string goodLSFile,
 			     unsigned lumiFirstRun,
 			     unsigned lumiLastRun) {
+  
+  // reset stuff
+  lumis_.clear();
+  totalLumi_ = 0.;
+  nGoodLS_   = 0;
 
   // connect to DB
   oracle::occi::Environment* dbEnv = oracle::occi::Environment::createEnvironment();
@@ -150,74 +227,48 @@ void Luminosity::buildFromDB(std::vector<unsigned long> runs,
   // read good data file
   openGoodLSFile(useHists, goodLSFile);
 
-  // loop over runs
-  for (unsigned run=lumiFirstRun; run<=lumiLastRun; ++run) {
+  // prepare query
+   std::string query( "SELECT cms_lumi_prod.lumisummary.runnum, cms_lumi_prod.lumisummary.lumilsnum, cms_lumi_prod.lumisummary.cmslsnum, cms_lumi_prod.lumisummary.instlumi, cms_lumi_prod.lumisummary.lumiversion, cms_lumi_prod.lumisummary.numorbit, cms_lumi_prod.cmsrunsummary.starttime FROM cms_lumi_prod.cmsrunsummary INNER JOIN cms_lumi_prod.lumisummary ON cms_lumi_prod.cmsrunsummary.runnum=cms_lumi_prod.lumisummary.runnum WHERE cms_lumi_prod.cmsrunsummary.runnum>= " );
+   query.append( boost::lexical_cast<std::string>(lumiFirstRun) );
+   query.append( " AND cms_lumi_prod.cmsrunsummary.runnum<=" );
+   query.append( boost::lexical_cast<std::string>(lumiLastRun) );
+   query.append( " ORDER BY cms_lumi_prod.lumisummary.runnum,cms_lumi_prod.lumisummary.lumilsnum " );
 
-    std::cout << "Getting lumi data for run " << run << std::endl;
+   std::cout << std::endl << query << std::endl << std::endl;
+
+  // execute query
+  oracle::occi::Statement *stmt = dbConn->createStatement(query.c_str());
+  oracle::occi::ResultSet *result = stmt->executeQuery();
+
+  // loop over returned lumi sections and store
+  while (result->next() ){
     
-    // prepare query to get list of lumi sections for this run
-    std::string query("select LUMILSNUM from cms_lumi_prod.LUMISUMMARY where RUNNUM=");
-    query.append( boost::lexical_cast<std::string>(run) );
-    query.append(" ORDER BY LUMILSNUM");
-
-    // execute query
-    oracle::occi::Statement *stmt = dbConn->createStatement(query.c_str());
-    oracle::occi::ResultSet *result1 = stmt->executeQuery();
-
-    // push lumi section numbers into vector
-    std::vector<int> lumiList;
-    while (result1->next()) {
-      lumiList.push_back(result1->getInt(1));
-    }
-
-    // terminate query
-    stmt->closeResultSet(result1);
-    dbConn->terminateStatement(stmt);
-
-    // if there are no lumi sections, skip to next run
-    if (lumiList.size()==0) continue;
-
-    // make a comma separated list of lumi sections
-    std::string lsvals;
-    for (std::vector<int>::const_iterator i=lumiList.begin(); i!=lumiList.end(); ++i) {
-      lsvals.append( boost::lexical_cast<std::string>(*i) );
-      lsvals.append( "," );
-    }
-    lsvals.erase(lsvals.length()-1, 1); // remove trailing comma
+    LumiBlock lb;
     
-    // build the query itself
-    std::string query2("select RUNNUM, CMSLSNUM, INSTLUMI from cms_lumi_prod.LUMISUMMARY where RUNNUM=");
-    query2.append( boost::lexical_cast<std::string>(run) );
-    query2.append( " and LUMILSNUM in (" );
-    query2.append( lsvals );
-    query2.append( ")" );
-    //      std::cout << query2 << std::endl;
-    
-    // execute query
-    oracle::occi::Statement *stmt2 = dbConn->createStatement(query2.c_str());
-    oracle::occi::ResultSet *result2 = stmt2->executeQuery();
-    
-    // loop over returned lumi sections and store
-    while (result2->next() ){
-      
-      LumiBlock lb;
-      
-      lb.run  = run;
-      lb.ls   = (unsigned long) result2->getInt(2);
-      lb.lumi = result2->getDouble(3);
-      lb.good = goodData(lb.run, lb.ls);	
-      
-      totalLumi += lb.lumi;
-      lumis_.push_back(lb);
-      
-    }
+    lb.run  = (unsigned long) result->getInt(1);
+    lb.id   = (unsigned long) result->getInt(2);
+    lb.ls   = (unsigned long) result->getInt(3);
+    lb.lumi = result->getDouble(4);
+    int ver = result->getInt(5);
+    lb.good = goodData(lb.run, lb.ls);	
 
-    // terminate query
-    stmt2->closeResultSet(result2);
-    dbConn->terminateStatement(stmt2);
+    lb.orbit = result->getInt(6);
+    // calculate timestamp from run start + orbits
+    lb.timestamp = 0.;
 
+    //std::cout << "Run " << lb.run << ", LS " << lb.ls << ", lumi " << lb.lumi << ", ver " << ver << std::endl;
+    
+    lumis_.push_back(lb);
+    
+    totalLumi_ += lb.lumi;
+    if (lb.good) ++nGoodLS_;
+   
   }
-
+  
+  // terminate query
+  stmt->closeResultSet(result);
+  dbConn->terminateStatement(stmt);
+  
   // close DB connection
   if (dbConn) {
     dbEnv->terminateConnection(dbConn);
@@ -226,6 +277,10 @@ void Luminosity::buildFromDB(std::vector<unsigned long> runs,
 
   oracle::occi::Environment::terminateEnvironment (dbEnv);
   
+  makePlots();
+
+  dump(std::cout, false);
+
 }
 
 
@@ -248,7 +303,9 @@ void Luminosity::buildFromFile(std::vector<unsigned long> runs,
 
   // setup lumi info
   lumis_.clear();
-  totalLumi = 0.;
+  totalLumi_ = 0.;
+  nGoodLS_   = 0;
+
   if (!lumifile.fail()) {
 
     // read header
@@ -287,8 +344,10 @@ void Luminosity::buildFromFile(std::vector<unsigned long> runs,
 	// set good data flag
 	lb.good = goodData(lb.run, lb.ls);
 
-	totalLumi += lb.lumi;
 	lumis_.push_back(lb);
+
+	totalLumi_ += lb.lumi;
+	if (lb.good) ++nGoodLS_;
 
       }
 
@@ -299,18 +358,167 @@ void Luminosity::buildFromFile(std::vector<unsigned long> runs,
     std::cerr << "Could not open lumi file : " << filename << std::endl;
   }
 
-  // count good lumis
-  nGoodLS = 0;
-  for (unsigned i=0; i<lumis_.size(); ++i) {
-    if (lumis_.at(i).good) ++nGoodLS;
-  }
+  makePlots();
 
   dump(std::cout, false);
-  std::cout << std::endl;
+
+}
+
+
+void Luminosity::buildFromFile2(std::vector<unsigned long> runs,
+			       bool useHists,
+			       std::string goodLSFile,
+			       unsigned lumiFirstRun,
+			       unsigned lumiLastRun) {
+
+  std::cout << "Setting up Lumi data" << std::endl;
+
+  // open file with lumi info
+  std::string filename(getenv("CMSSW_BASE"));
+  filename+=std::string("/src/StoppedHSCP/Analysis/data/lumi2.csv");
+  std::cout << "Reading lumi info from " << filename << std::endl;
+  std::ifstream lumifile(filename.c_str());
+  
+  // open GOODLS file with CMS live info
+  openGoodLSFile(useHists, goodLSFile);
+
+  // setup lumi info
+  lumis_.clear();
+  totalLumi_ = 0.;
+  nGoodLS_   = 0;
+
+  if (!lumifile.fail()) {
+
+    // read header
+    std::string line;
+    getline(lumifile, line);
+
+    // loop over lines
+    while (!lumifile.eof()) {
+
+      getline(lumifile, line);
+
+      // split into tokens
+      std::vector<std::string> strs;
+      boost::split(strs, line, boost::is_any_of(",\n"));
+
+      // convert to lumi block info
+      if (strs.size() > 5) {
+
+	LumiBlock lb;
+
+	// strs.at(0) = run
+	// strs.at(1) = ls:ls ???
+	// strs.at(2) = timestamp in format "mm/dd/yy HH:MM:SS"
+	// strs.at(3) = beam mode
+	// strs.at(4) = beam energy
+	// strs.at(5) = delivered lumi
+	// strs.at(6) = recorded lumi (deadtime corrected)
+	
+	//	std::cout << strs.at(0) << " " << strs.at(1) << " " << strs.at(2) << " " << strs.at(3) << " " << strs.at(4) << " " << strs.at(5) << " " << strs.at(6) << std::endl;
+
+	// run
+	lb.run  = boost::lexical_cast<unsigned long>(strs.at(0));
+
+	// ignore anything before the first lumi run
+	if (lb.run < lumiFirstRun) continue;
+
+	// stop if we went past the last lumi run
+	if (lb.run > lumiLastRun) break;
+	
+	// LS
+	std::vector<std::string> tmp;
+	boost::split(tmp, strs.at(1), boost::is_any_of(":"));
+	lb.ls   = boost::lexical_cast<unsigned long>(tmp.at(0));
+
+	// time
+	lb.timestamp = convertTimestamp(strs.at(2));
+
+	// lumi
+	lb.lumi = LUMIFILE_TO_PB * boost::lexical_cast<double>(strs.at(5));
+
+	// data good
+	lb.good = false;
+	
+	// set good data flag
+	lb.good = goodData(lb.run, lb.ls);
+
+	//	std::cout << "This LS : " << lb.run << "/" << lb.ls << " at " << ctime(&(lb.timestamp));
+
+	// check if this lb comes immediately after the previous one
+	// and insert blank lumi sections if not
+	if (lumis_.size()>0) {
+
+	  LumiBlock last = lumis_.at(lumis_.size()-1);
+	  double diff = difftime(lb.timestamp, last.timestamp);
+	  int nLBToInsert = (int) ( (diff-TIME_PER_LS) / TIME_PER_LS );
+
+	  if (nLBToInsert > 1) {
+
+	    // adjacent LS in the same run, should not be inserting any LS
+	    if (last.run == lb.run && (lb.ls-last.ls)==1) {
+	      std::cerr << "ERROR : Time between adjacent LS > 23 seconds" << std::endl;
+	      std::cerr << "  Last LS : " << last.run << "/" << last.ls << " at " << ctime(&(last.timestamp));
+	      std::cerr << "  This LS : " << lb.run << "/" << lb.ls << " at " << ctime(&(lb.timestamp));
+	      std::cerr << "  Time between is " << diff << " seconds" << std::endl;
+	      std::cerr << "  Want to insert " << nLBToInsert << " LS" << std::endl;
+	      std::cerr << "  Not going to insert any LS" << std::endl;
+	      continue;
+	    }
+	    
+	    // LS missing from a run
+	    if (last.run == lb.run && (lb.ls-last.ls)>1) {
+	      std::cout << "WARNING : Inserting LS within a run" << std::endl;
+	      std::cout << "  Last LS : " << last.run << "/" << last.ls << " at " << ctime(&(last.timestamp));
+	      std::cout << "  This LS : " << lb.run << "/" << lb.ls << " at " << ctime(&(lb.timestamp));
+	      std::cout << "  Time between is " << diff << " seconds" << std::endl;
+	      std::cout << "  Wanted to insert " << nLBToInsert << " LS" << std::endl;
+	      std::cout << "  Going to insert " << (lb.ls-last.ls)-1 << " LS" << std::endl;
+	      nLBToInsert = (int) (lb.ls-last.ls)-1;
+	    }
+
+	    // debug print out
+// 	    std::cout << "Last LS : " << last.run << "/" << last.ls << " at " << ctime(&(last.timestamp));
+// 	    std::cout << "This LS : " << lb.run << "/" << lb.ls << " at " << ctime(&(lb.timestamp));
+// 	    std::cout << "Time between is " << diff << " seconds" << std::endl;
+// 	    std::cout << "Want to insert " << nLBToInsert << " LS" << std::endl;
+	    
+	    // do it
+	    for (int i=1; i<=nLBToInsert; ++i) {
+	      LumiBlock tmp;
+	      tmp.run = last.run;
+	      tmp.ls  = last.ls+i;
+	      lumis_.push_back(tmp);
+	    }
+	  }
+	  
+	}
+
+	// add the real lumi block
+	lumis_.push_back(lb);
+
+	// keep a tally
+	totalLumi_ += lb.lumi;
+	if (lb.good) ++nGoodLS_;
+
+      }
+      else {
+	std::cout << "Bad line in lumi file : " << line << std::endl;
+      }
+
+    }
+
+  }
+  else {
+    std::cerr << "Could not open lumi file : " << filename << std::endl;
+  }
 
   makePlots();
 
+  dump(std::cout, false);
+
 }
+
 
 void Luminosity::buildFromModel(unsigned int cycles, 
 				unsigned int units_on, 
@@ -336,6 +544,11 @@ void Luminosity::buildFromModel(unsigned int cycles,
       lumis_.push_back(l);
     }
   }
+
+  makePlots();
+
+  dump(std::cout, false);
+
 }
 
 
@@ -349,11 +562,13 @@ void Luminosity::dump(ostream& o, bool full) {
     }
   }
 
-  std::cout << "Total lumi                 : " << totalLumi << " /pb" << std::endl;
-  std::cout << "N lumi sections good/total : " << nGoodLS << "/" << lumis_.size() << std::endl;
+  std::cout << "Total lumi                 : " << totalLumi_ << " /pb" << std::endl;
+  std::cout << "N lumi sections good/total : " << nGoodLS_ << "/" << lumis_.size() << std::endl;
   if (lumis_.size() > 0) {
     std::cout << "First run                  : " << lumis_.begin()->run << std::endl;
-    std::cout << "Last run                   : " << --(lumis_.end())->run << std::endl;
+    std::cout << "Last run                   : " << lumis_.at(lumis_.size()-1).run << std::endl;
   }
+
+  std::cout << std::endl;
 
 }
