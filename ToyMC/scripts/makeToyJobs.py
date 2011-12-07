@@ -10,21 +10,26 @@ import getopt
 
 # command line arguments
 def usage():
-    print "makeToyJobs.py [-h] [-j n processes] <dataset>"
+    print "makeToyJobs.py [-h] [-o] [-j n processes] <dataset>"
+    print "If -o option specified, old 'simulate' command used."
+    print "Otherwise, new 'simulateMulti' command is used."
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "hj")
+    opts, args = getopt.getopt(sys.argv[1:], "hjo")
 except getopt.GetoptError:
     usage()
     sys.exit(2)
 
 njobs=1
+useOld=False
 for opt, arg in opts:
     if opt=='-h':
         usage()
         sys.exit()
     if opt=='-j':
         njobs=arg
+    if opt=="-o":
+        useOld=True
 
 if len(args)<1:
     usage()
@@ -91,7 +96,11 @@ for lifetime in lifetimes:
     # write job script
     script = open(jobdir+'/job'+str(count)+'.sh', 'w')
     script.write('cd '+jobdir+'\n')
-    script.write('simulateMulti params'+str(count)+'.txt >& job.log\n')
+    # Use simulateMulti by default; simulate if old style specified
+    basecommand="simulateMulti"
+    if useOld==True:
+        basecommand="simulate"
+    script.write('%s params'+str(count)+'.txt >& job.log\n'%basecommand)
     script.write('cd '+os.environ['PWD']+'\n')
     script.close()
 
