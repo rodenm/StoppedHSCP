@@ -38,6 +38,7 @@ def GenericCommand(cmd):
     return
     
 def RunAnalysis(outdir, indirs, steps=[],makeHistsOptions={},
+                oldSim=False,
                 lumi=-1,
                 maxInstLumi=-1):
     if len(steps)==0:
@@ -95,7 +96,11 @@ def RunAnalysis(outdir, indirs, steps=[],makeHistsOptions={},
     if 6 in steps:
         # Step 6:  Make Toy MC jobs
         os.system("chmod a+rw %s"%os.path.join(outdir,"histograms.root"))
-        cmd="python %s/src/StoppedHSCP/ToyMC/scripts/makeToyJobs.py %s"%(os.environ["CMSSW_BASE"],outdir)
+        cmd="python %s/src/StoppedHSCP/ToyMC/scripts/makeToyJobs.py  "%(os.environ["CMSSW_BASE"])
+        args="%s"%(outdir)
+        if (oldSim==True):  # add -o option before args
+            args="-o %s"%args
+        cmd="%s %s"%(cmd,args)
         GenericCommand(cmd)
 
     if 7 in steps:
@@ -197,6 +202,11 @@ if __name__=="__main__":
                                  "Options for 'makeFinalPlots'",
                                 "Optional arguments below are used in Step 8 (makeFinalPlots)."
                                  )
+    makeFinalGroup.add_option("--oldSim",
+                              dest="oldSim",
+                              action="store_true",
+                              default=False,
+                              help="If specified, use old simulate method, instead of new default 'simulateMulti'.")
     makeFinalGroup.add_option("-l","--lumi",
                               dest="lumi",
                               type="float",
@@ -280,6 +290,7 @@ if __name__=="__main__":
                 options.inputdir,
                 steps,
                 makeHistsOptions=makehistopt,
+                oldSim=options.oldSim,
                 lumi=options.lumi,
                 maxInstLumi=options.maxInstLumi
                 )
