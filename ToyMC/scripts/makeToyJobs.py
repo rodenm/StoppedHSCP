@@ -22,6 +22,7 @@ except getopt.GetoptError:
 
 njobs=1
 useOld=False
+
 for opt, arg in opts:
     if opt=='-h':
         usage()
@@ -100,7 +101,7 @@ for lifetime in lifetimes:
     basecommand="simulateMulti"
     if useOld==True:
         basecommand="simulate"
-    script.write('%s params'+str(count)+'.txt >& job.log\n'%basecommand)
+    script.write('%s params'%basecommand+str(count)+'.txt >& job.log\n')
     script.write('cd '+os.environ['PWD']+'\n')
     script.close()
 
