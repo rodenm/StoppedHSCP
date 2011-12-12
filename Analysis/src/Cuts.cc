@@ -89,6 +89,16 @@ bool Cuts::triggerCut() const {      // require event passed main trigger
   else if (event_->fill>=1795)
     trigger = event_->hltJetE50NoBptx3BXNoHalo;
 
+  // check list of good fills - dirty hack for now
+  unsigned fill = event_->fill;
+  unsigned run = event_->run;
+  if (fill==0 || 
+      //fill==1293 || fill==1308 || fill==1309 ||               // Run2010A bad fills
+      //fill==1373 || fill==1375 ||                             // Run2010B bad fills
+      (fill >= 1622 && fill <= 1647)                         // 75ns runs from 2011
+      )
+    trigger=false;
+
   return trigger;
 
 }
