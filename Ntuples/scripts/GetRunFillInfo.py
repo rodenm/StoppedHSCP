@@ -96,6 +96,11 @@ def SearchDBS(datasets=["/MinimumBias/Run2011A-HSCPSD-PromptSkim-v6/RECO"],
               debug=False):
     ''' Searches DBS for runs in a given dataset.'''
     runs=[]
+    
+    # not all runs in range 163581-163869 were bad; here is a list of bad runs
+    # (according to data/badPrescale_163581_163869.json)
+    badprescaleruns=[163581, 163582, 163583, 163584, 163585, 163586, 163587, 163588, 163589, 163591, 163592, 163593, 163601, 163606, 163607, 163610, 163611, 163616, 163622, 163626, 163627, 163628, 163630, 163644, 163650, 163652, 163655, 163657, 163658, 163659, 163660, 163674, 163675, 163676, 163684, 163687, 163689, 163697, 163705, 163708, 163709, 163715, 163720, 163722, 163723, 163725, 163726, 163727, 163728, 163732, 163734, 163735, 163737, 163738, 163740, 163743, 163744, 163745, 163747, 163751, 163752, 163753, 163754, 163755, 163756, 163757, 163758, 163759, 163767, 163768, 163769, 163771, 163772, 163776, 163778, 163780, 163782, 163787, 163789, 163790, 163791, 163793, 163795, 163796, 163798, 163800, 163801, 163804, 163808, 163809, 163811, 163813, 163814, 163815, 163817, 163819, 163820, 163821, 163822, 163823, 163829, 163834, 163837, 163839, 163845, 163847, 163849, 163850, 163851, 163852, 163853, 163855, 163859, 163861, 163869]
+
     for d in datasets:
         cmd="dbs --search --query='find run where dataset=%s'"%d
         print "Searching DBS, using this command:"
@@ -105,11 +110,17 @@ def SearchDBS(datasets=["/MinimumBias/Run2011A-HSCPSD-PromptSkim-v6/RECO"],
         for i in out:
             try:
                 run=string.atoi(string.strip(i))
-                if (run>=163581 and run<=163869):
+                if (run in badprescaleruns):
                     print "Run %i was prescaled; ignoring this run"%run
                     continue
                 elif (run>=176709 and run<=176795):
                     print "Run %i had bad HBHE window; ignoring this run"%run
+                    continue
+                elif (run>=146698 and run<=146807):
+                    print "Drifting pedestals; excluding run %i"%run
+                    continue
+                elif (run>=160577 and run<=161312):
+                    print "75 ns running; excluding run %i"%run
                     continue
                 runs.append(run)
             except:
