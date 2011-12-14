@@ -15,6 +15,23 @@ public:
   Example(int argc, char* argv[]) :
     BasicAnalyser(argc, argv) {
     ofilename_ = std::string("Example.root");  /// SET YOUR OUTPUT FILENAME HERE
+
+    // get options
+    po::options_description desc("Custom options");
+    po::positional_options_description poptd;
+
+    desc.add_options()
+      ("special,s", po::value<std::string>(), "Special option")
+
+    po::variables_map vm;
+    po::store(po::parse_command_line(argc, argv,desc), vm);
+    po::notify(vm);
+    
+    // get my custom option
+    if (vm.count("special")) {
+      std::string special = vm["special"].as<std::string>();
+    }
+
   }
   
   ~Example() { };
