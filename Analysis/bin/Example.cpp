@@ -7,7 +7,11 @@
 #include "TChain.h"
 #include "TH1D.h"
 
+#include <boost/program_options.hpp>
+
+
 using namespace std;
+namespace po = boost::program_options;
 
 class Example : public BasicAnalyser {
 
@@ -21,7 +25,7 @@ public:
     po::positional_options_description poptd;
 
     desc.add_options()
-      ("special,s", po::value<std::string>(), "Special option")
+      ("special,s", po::value<std::string>(), "Special option");
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv,desc), vm);
