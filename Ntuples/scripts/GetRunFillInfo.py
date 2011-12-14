@@ -19,6 +19,8 @@ from optparse import OptionParser
 import time
 import threading
 
+from checkFillsFileForRuns import*
+
 
 # for json support
 try: # FUTURE: Python 2.6, prior to 2.6 requires simplejson
@@ -261,6 +263,9 @@ def MakeJsonFile(json=None,
 
     finalkeys=finaljsondict.keys()
     finalkeys.sort()
+    if len(finalkeys)<1:
+        print "<MakeJsonFile> ERROR!  No json runs found"
+        return False
 
     print "Json file contains runs %u-%u"%(string.atoi(finalkeys[0]),
                                            string.atoi(finalkeys[-1])
@@ -276,10 +281,11 @@ def MakeJsonFile(json=None,
     if os.getenv("CMSSW_BASE")<>None:
         print "Copying new json file to %s"%os.path.join(os.getenv("CMSSW_BASE"),"src/StoppedHSCP/Ntuples/data",newfile)
         cmd="cp %s %s"%(newfile, 
-                        os.path.join(os.getenv("CMSSW_BASE"),"src/StoppedHSCP/Ntuples/data"))
+                        os.path.join(os.getenv("CMSSW_BASE"),
+                                     "src/StoppedHSCP/Ntuples/data"))
         x=os.system(cmd)
         if x>0:
-            print "<MakeJsonFile>ERROR!  Could not copy file '%s'"%newfile
+            print "<MakeJsonFile> ERROR!  Could not copy file '%s'"%newfile
             return False
     else:
         print "Unable to identify CMSSW base directory!"
@@ -323,7 +329,7 @@ if __name__=="__main__":
     opts,args=parser.parse_args()
 
     if len(opts.datasets)==0:
-        opts.datasets=["/MinimumBias/Run2011A-HSCPSD-PromptSkim-v6/RECO"]
+        opts.datasets=["/MinimumBias/Run2011B-HSCPSD-PromptSkim-v1/RECO"]
 
     if opts.golden2011==True:
         # Can't include re-reco, because those runs may have different JSON than prompt
@@ -375,3 +381,8 @@ if __name__=="__main__":
     else:
         print "No starting input Json file provided."
         print "Cannot produce a revised json for the listed runs."
+
+    # STEP 4:  Make sure all runs in json file are in fills.txt
+    fillsfile="%s/src/StoppedHSCP/Ntuples/data/fills.txt"%os.getenv("CMSSW_BASE")
+    jsonfile=opts.json
+    MainCheckFills(fillsfile=fillsfile, jsonfile=jsonfile)
