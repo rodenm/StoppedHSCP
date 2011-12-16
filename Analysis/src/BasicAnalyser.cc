@@ -14,6 +14,7 @@
 #include <boost/program_options.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/filesystem.hpp>
 
 namespace po = boost::program_options;
 
@@ -35,7 +36,7 @@ BasicAnalyser::BasicAnalyser(int argc, char* argv[]) :
 
   // get options
   po::options_description desc("Allowed options");
-  po::positional_options_description poptd;
+  //  po::positional_options_description poptd;
 
   desc.add_options()
     ("help,h", "Display this message")
@@ -45,7 +46,7 @@ BasicAnalyser::BasicAnalyser(int argc, char* argv[]) :
     ("mc,m", "Run on MC");
 
   po::variables_map vm;
-  po::store(po::parse_command_line(argc, argv,desc), vm);
+  po::store(po::command_line_parser(argc, argv).options(desc).allow_unregistered().run(), vm);  
   po::notify(vm);
 
   // help
@@ -54,9 +55,15 @@ BasicAnalyser::BasicAnalyser(int argc, char* argv[]) :
     std::exit(1);
   }
   
-  // set output directory
+  // set output directory & create it if it doesn't exist already
   if (vm.count("outdir")) {
     outdir_ = vm["outdir"].as<std::string>();
+
+    boost::filesystem::path opath(outdir_);
+    if (!exists(opath)) {
+      std::cout << "Creating output directory : " << outdir_ << std::endl;
+      boost::filesystem::create_directory(opath);
+    }
   }
   
   // set input directory
@@ -89,8 +96,8 @@ BasicAnalyser::BasicAnalyser(int argc, char* argv[]) :
     }
   }
   closedir(dp);
-  
-  // print some info
+
+  // print some info & catch some error conditions
   std::cout << "Stopped Gluino Analysis" << std::endl;
 
   // no input files
@@ -99,7 +106,7 @@ BasicAnalyser::BasicAnalyser(int argc, char* argv[]) :
     std::exit(-1);
   }
 
-  // no output files
+  // output directory
   if (outdir_ == std::string("")) {
     std::cout <<"BasicAnalyser Error : no output directory specified!"<<std::endl;
     std::exit(-1);

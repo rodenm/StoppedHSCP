@@ -28,12 +28,13 @@ public:
       ("special,s", po::value<std::string>(), "Special option");
 
     po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv,desc), vm);
+    po::store(po::command_line_parser(argc, argv).options(desc).allow_unregistered().run(), vm);  
     po::notify(vm);
     
     // get my custom option
     if (vm.count("special")) {
       std::string special = vm["special"].as<std::string>();
+      std::cout << "Command line argument : " << special << std::endl;
     }
 
   }
