@@ -93,8 +93,8 @@ bool Cuts::triggerCut() const {      // require event passed main trigger
   unsigned fill = event_->fill;
   unsigned run = event_->run;
   if (!isMC_ && (fill==0 || 
-		 //fill==1293 || fill==1308 || fill==1309 ||               // Run2010A bad fills
-		 //fill==1373 || fill==1375 ||                             // Run2010B bad fills
+		 //fill==1293 || fill==1308 || fill==1309 ||            // Run2010A bad fills
+		 //fill==1373 || fill==1375 ||                          // Run2010B bad fills
 		 (fill >= 1622 && fill <= 1647)                         // 75ns runs from 2011
 		 ))
     trigger=false;
@@ -125,7 +125,8 @@ bool Cuts::vertexVeto() const {      // no vertex
 }
 
 bool Cuts::haloVeto() const {        // no halo ID
-  return !(event_->beamHalo_CSCLoose) ;//&& geometryHaloCut();
+  //return !(event_->beamHalo_CSCLoose) ;//&& geometryHaloCut();
+  return (event_->cscSeg_N == 0);//&& geometryHaloCut();
 }
 
 bool Cuts::hfVeto() const {
