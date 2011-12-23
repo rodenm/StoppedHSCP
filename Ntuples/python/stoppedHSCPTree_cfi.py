@@ -56,6 +56,10 @@ stoppedHSCPTree = cms.EDAnalyzer(
     hcalDigiTag = cms.untracked.InputTag("hcalDigis"),
     cscSegmentsTag = cms.untracked.InputTag("cscSegments"),
     cscRecHitsTag = cms.untracked.InputTag("csc2DRecHits"),
+
+    DTRecHitsTag=cms.untracked.InputTag("dt1DRecHits"),
+    DT4DSegmentsTag=cms.untracked.InputTag("dt4DSegments"),
+
     digiMinFc = cms.untracked.double(30.),
     
     # content controls
@@ -65,6 +69,7 @@ stoppedHSCPTree = cms.EDAnalyzer(
     doHFRecHits = cms.untracked.bool(False),
     doCsc = cms.untracked.bool(True),
     doCscRecHits = cms.untracked.bool(False),
+    doDT    = cms.untracked.bool(False),  # muon Drift Tubes
     doDigis = cms.untracked.bool(True),
     writeHistos = cms.untracked.bool(False),
 
