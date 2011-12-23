@@ -172,6 +172,8 @@ def PrintTable(era,
         cmd=cmd+" -c "
     if (useJSON):
         cmd=cmd+" -j "
+    if runjsonfile==None:
+        runjsonfile="None"
     cmd = cmd + " %s %s %s %s %s"%(string.strip(era),
                                    string.strip(label),
                                    string.strip(dataset),
