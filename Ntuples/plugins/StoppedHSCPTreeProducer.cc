@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.17 2011/11/03 22:55:05 temple Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.18 2011/11/16 00:22:55 rodenm Exp $
 //
 //
 
@@ -66,6 +66,8 @@
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 
+
+
 // Vertices
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
@@ -107,6 +109,19 @@
 #include "Geometry/CSCGeometry/interface/CSCChamber.h"
 #include "Geometry/CSCGeometry/interface/CSCLayer.h"
 #include "Geometry/CSCGeometry/interface/CSCLayerGeometry.h"
+
+// DT segments
+#include "DataFormats/DTRecHit/interface/DTRecHit1D.h"
+#include "DataFormats/DTRecHit/interface/DTRecSegment4D.h"
+#include "DataFormats/DTRecHit/interface/DTRecSegment2D.h"
+#include "DataFormats/DTRecHit/interface/DTRecHitCollection.h"
+#include "DataFormats/DTRecHit/interface/DTRecSegment2DCollection.h"
+#include "DataFormats/DTRecHit/interface/DTRecSegment4DCollection.h"
+#include "Geometry/DTGeometry/interface/DTChamber.h"
+#include "Geometry/DTGeometry/interface/DTLayer.h"
+#include "Geometry/DTGeometry/interface/DTGeometry.h"
+#include "DataFormats/MuonDetId/interface/DTLayerId.h"
+#include "DataFormats/MuonDetId/interface/DTWireId.h"
 
 // digis
 #include "CalibFormats/HcalObjects/interface/HcalCoderDb.h"
@@ -167,6 +182,7 @@ private:
   void doJets(const edm::Event&);
   void doGlobalCalo(const edm::Event&);
   void doMuons(const edm::Event&);
+  void doMuonDTs(const edm::Event&, const edm::EventSetup&);
   void doVertices(const edm::Event&);
   void doTracks(const edm::Event&);
   void doBeamHalo(const edm::Event&);
@@ -263,12 +279,16 @@ private:
   bool doHFRecHits_;
   bool doCscSegments_;
   bool doCscRecHits_;
+  bool doDT_; // muon drift tubes
+
   bool doDigis_;
   bool doHltBit1_;
   bool doHltBit2_;
   bool doHltBit3_;
   bool doHltBit4_;
   bool writeHistos_;
+  
+
 
   // EDM input tags
   edm::InputTag condInEdmTag_;
@@ -306,6 +326,8 @@ private:
   edm::InputTag hcalDigiTag_;
   edm::InputTag cscSegmentsTag_;
   edm::InputTag cscRecHitsTag_;
+  edm::InputTag DTRecHitsTag_;
+  edm::InputTag DT4DSegmentsTag_;
 
   // HLT config helper
   HLTConfigProvider hltConfig_;
@@ -391,6 +413,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   doHFRecHits_(iConfig.getUntrackedParameter<bool>("doHFRecHits",false)),
   doCscSegments_(iConfig.getUntrackedParameter<bool>("doCsc",false)),
   doCscRecHits_(iConfig.getUntrackedParameter<bool>("doCscRecHits",false)),
+  doDT_(iConfig.getUntrackedParameter<bool>("doDT",false)),
   doDigis_(iConfig.getUntrackedParameter<bool>("doDigis",false)),
   doHltBit1_(true),
   doHltBit2_(true),
@@ -434,7 +457,9 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   hfRecHitTag_(iConfig.getUntrackedParameter<edm::InputTag>("hfRecHitTag",edm::InputTag("hfreco"))),
   hcalDigiTag_(iConfig.getUntrackedParameter<edm::InputTag>("hcalDigiTag",edm::InputTag("hcalDigis"))),
   cscSegmentsTag_(iConfig.getUntrackedParameter<edm::InputTag>("cscSegmentsTag",edm::InputTag("cscSegments"))),
-  cscRecHitsTag_(iConfig.getUntrackedParameter<edm::InputTag>("cscRecHitsTag",edm::InputTag("csc2DRecHits"))), //JEFF
+  cscRecHitsTag_(iConfig.getUntrackedParameter<edm::InputTag>("cscRecHitsTag",edm::InputTag("csc2DRecHits"))), 
+  DTRecHitsTag_(iConfig.getUntrackedParameter<edm::InputTag>("DTRecHitsTag",edm::InputTag("dt1DRecHits"))),
+  DT4DSegmentsTag_(iConfig.getUntrackedParameter<edm::InputTag>("DT4DSegmentsTag",edm::InputTag("dt4DSegments"))),
   towerMinEnergy_(iConfig.getUntrackedParameter<double>("towerMinEnergy", 1.)),
   towerMaxEta_(iConfig.getUntrackedParameter<double>("towerMaxEta", 1.3)),
   jetMinEnergy_(iConfig.getUntrackedParameter<double>("jetMinEnergy", 1.)),
@@ -672,10 +697,11 @@ StoppedHSCPTreeProducer::endJob() {
 void
 StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
+ 
   event_ = new StoppedHSCPEvent();
-  
+ 
   if (isMC_) doMC(iEvent);
-
+ 
   // event & trigger info
   doEventInfo(iEvent);
   doTrigger(iEvent, iSetup);
@@ -685,10 +711,10 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
   doGlobalCalo(iEvent); // uses ntuple calotower info for leadingIphiFractionValue
   doMuons(iEvent);
 
+
   doBeamHalo(iEvent);
   doVertices(iEvent);
   doTracks(iEvent);
-
 
   // HCAL noise summary info
   doHcalNoise(iEvent);
@@ -701,7 +727,10 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
   doCscSegments(iEvent, iSetup);
   doCscHits(iEvent, iSetup); 
   doSlices(iEvent, iSetup);  // HE info
-  
+
+  // DT Segments
+  doMuonDTs(iEvent,iSetup);
+
   // digi based variables
   if (doDigis_) {
     doTimingFromDigis(iEvent, iSetup);
@@ -1509,6 +1538,66 @@ void StoppedHSCPTreeProducer::doTracks(const edm::Event& iEvent) {
   
 }
 
+
+void StoppedHSCPTreeProducer::doMuonDTs(const edm::Event& iEvent,const edm::EventSetup& iSetup ) 
+{
+
+  edm::ESHandle<DTGeometry> dtGeom;
+  iSetup.get<MuonGeometryRecord>().get(dtGeom);
+
+  edm::Handle<DTRecSegment4DCollection> all4DSegments;
+  iEvent.getByLabel(DT4DSegmentsTag_, all4DSegments);
+  edm::Handle<DTRecHitCollection> dtRecHits;
+  iEvent.getByLabel(DTRecHitsTag_,dtRecHits);
+
+  int nsegments=0; // count total number of segments
+
+  // loop over each DT chamber
+  DTRecSegment4DCollection::id_iterator chamberId;
+  for (chamberId = all4DSegments->id_begin();
+       chamberId != all4DSegments->id_end();
+       ++chamberId)
+    {
+      const DTChamber* chamber = dtGeom->chamber(*chamberId); 
+
+      DTRecSegment4DCollection::range  range = all4DSegments->get(*chamberId);
+      int nchamberseg=0;
+
+      // loop over all segments in chamber
+      for (DTRecSegment4DCollection::const_iterator segment4D = range.first;
+	   segment4D!=range.second;
+	   ++segment4D)
+	{
+	  // skip invalid values
+	  if((*chamberId).station() != 4 && 
+	     (*segment4D).dimension() != 4) continue;
+	  if((*chamberId).station() == 4 && 
+	     (*segment4D).dimension() != 2) continue;
+	  ++nchamberseg;
+
+	  const GeomDet* gdet=dtGeom->idToDet(segment4D->geographicalId());
+	  const BoundPlane& DTSurface = gdet->surface();
+	  LocalPoint segmentLocal = (*segment4D).localPosition();
+	  GlobalPoint segmentGlobal = DTSurface.toGlobal(segmentLocal);
+
+
+
+
+	  shscp::DTSegment dt;
+	  dt.wheel=(chamber->id()).wheel();
+	  dt.station=(chamber->id()).station();
+	  dt.sector=(chamber->id()).sector();
+	  dt.localX=segmentLocal.x();
+	  dt.localY=segmentLocal.y();
+	  dt.z=segmentGlobal.z();
+	  dt.rho=segmentGlobal.perp();
+	  dt.phi=segmentGlobal.phi();
+	  event_->addDTSegment(dt);
+	}
+      nsegments+=nchamberseg;
+    }
+
+} // void StoppedHSCPTreeProducer::doMuonDTs
 
 
 void StoppedHSCPTreeProducer::doBeamHalo(const edm::Event& iEvent)

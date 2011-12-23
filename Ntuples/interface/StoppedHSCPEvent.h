@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.9 2011/11/03 22:55:05 temple Exp $
+// $Id: StoppedHSCPEvent.h,v 1.10 2011/11/09 16:57:22 rodenm Exp $
 //
 //
 
@@ -149,6 +149,7 @@ namespace shscp {
     double time;
   };
 
+
   struct CscHit {
     CscHit() : z(0), rho(0), phi(0) {}
     double z;
@@ -156,6 +157,21 @@ namespace shscp {
     double phi;
     double time;
   }; 
+
+  struct DTSegment{
+    DTSegment(): wheel(0),station(0),sector(0),
+		 localX(0.),localY(0.),
+		 z(0.),rho(0.),phi(0.){}
+    int wheel;
+    int station;
+    int sector;
+    double localX; 
+    double localY;
+    double z;
+    double rho;
+    double phi;
+      }; // DTSegment
+
 
   // functor for ordering towers
   struct tow_gt : public std::binary_function<shscp::Tower, shscp::Tower, bool> {
@@ -195,6 +211,7 @@ class StoppedHSCPEvent : public TObject {
   void addHFRecHit(shscp::RecHit r);
   void addCscSegment(shscp::CscSegment s);
   void addCscHit(shscp::CscHit h);
+  void addDTSegment(shscp::DTSegment dt);
   void addHePlus(double energy, double antienergy, double phi);
   void addHeMinus(double energy, double antienergy, double phi);
   void addHe(double energy, double antienergy, double phi); 
@@ -543,6 +560,17 @@ class StoppedHSCPEvent : public TObject {
   std::vector<Double_t> cscHitPhi;
   std::vector<Double_t> cscHitTime; 
 
+  // DT segments
+  unsigned DTSegment_N;
+  std::vector<Int_t> DTSegWheel;
+  std::vector<Int_t> DTSegStation;
+  std::vector<Int_t> DTSegSector;
+  std::vector<Double_t> DTSegLocalX;
+  std::vector<Double_t> DTSegLocalY;
+  std::vector<Double_t> DTSegZ;
+  std::vector<Double_t> DTSegRho;
+  std::vector<Double_t> DTSegPhi;
+
   // HE energy -- Fedor's HE variables
   Double_t hePlusEnergy;
   Double_t hePlusAntiEnergy;
@@ -572,7 +600,7 @@ class StoppedHSCPEvent : public TObject {
   double top5DigiRPeak;
   double top5DigiROuter;
 
-  ClassDef(StoppedHSCPEvent,20); // version 20: includes updated MC info
+  ClassDef(StoppedHSCPEvent,21); // version 21: includes DT info
 
 };
 
