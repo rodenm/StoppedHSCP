@@ -291,6 +291,16 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   cscHitZ (0),
   cscHitRho (0),
   cscHitPhi (0),
+  DTSegment_N(0),
+  DTSegWheel(0),
+  DTSegStation(0),
+  DTSegSector(0),
+  DTSegLocalX(0),
+  DTSegLocalY(0),
+  DTSegZ(0),
+  DTSegRho(0),
+  DTSegPhi(0),
+  //DTSegTime(0),
   hePlusEnergy (-999),
   hePlusAntiEnergy (-999),
   hePlusPhi (-999),
@@ -589,6 +599,20 @@ void StoppedHSCPEvent::addCscHit(CscHit h) {
   cscHitPhi.push_back(h.phi);
   cscHitTime.push_back(h.time);
   ++cscHit_N;
+}
+
+void StoppedHSCPEvent::addDTSegment(DTSegment dt)
+{
+  DTSegWheel.push_back(dt.wheel);
+  DTSegStation.push_back(dt.station);
+  DTSegSector.push_back(dt.sector);
+  DTSegLocalX.push_back(dt.localX);
+  DTSegLocalY.push_back(dt.localY);
+  DTSegZ.push_back(dt.z);
+  DTSegRho.push_back(dt.rho);
+  DTSegPhi.push_back(dt.phi);
+  //DTSegTime.push_back(dt.time);
+  ++DTSegment_N;
 }
 
 void StoppedHSCPEvent::addHePlus(double energy, double antienergy, double phi) {
