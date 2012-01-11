@@ -552,7 +552,7 @@ if __name__=="__main__":
     # Check that all necessary options have been specified
     if ((datatype=="MC" and len(args)<4) or (datatype<>"MC" and len(args)!=5)):
         print "Wrong number of arguments!"
-        usage()
+        OptParserUsage()
         sys.exit()
 
 
