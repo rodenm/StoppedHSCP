@@ -1,4 +1,5 @@
 #include "StoppedHSCP/Analysis/interface/RunReducedHistograms.h"
+#include "StoppedHSCP/Analysis/interface/BadRuns.h"
 
 
 RunReducedHistograms::RunReducedHistograms(TFile* outfile, 
@@ -62,6 +63,12 @@ RunReducedHistograms::RunReducedHistograms(TFile* outfile,
 	  if (thisName.find("hEventLS_")==0)
 	    {
 	      unsigned long thisRun =(unsigned long)atol((thisName.substr(9)).c_str());
+	      //std::cout <<"RUNREDUCED RUN = "<<thisRun<<std::endl;
+	      if (isBadRun(thisRun)) 
+		{
+		  //std::cout <<"RUNREDUCED BAD RUN "<<thisRun<<std::endl;
+		  //continue;
+		}
 	      if (thisRun>lastrun)
 		lastrun=thisRun;
 	      if (thisRun<firstrun)
@@ -134,4 +141,5 @@ void RunReducedHistograms::summarise() {
   hEventsPerRun_->Write("",TObject::kOverwrite);
 
 }
+
 
