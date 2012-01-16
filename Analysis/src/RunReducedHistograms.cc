@@ -67,7 +67,7 @@ RunReducedHistograms::RunReducedHistograms(TFile* outfile,
 	      if (isBadRun(thisRun)) 
 		{
 		  //std::cout <<"RUNREDUCED BAD RUN "<<thisRun<<std::endl;
-		  //continue;
+		  continue;
 		}
 	      if (thisRun>lastrun)
 		lastrun=thisRun;
