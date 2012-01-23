@@ -34,6 +34,7 @@
 
   <use name="HLTrigger/HLTcore"/>
 
+  <use name="CommonTools/Utils"/>
   <use name="CommonTools/UtilAlgos"/>
   <use name="SimGeneral/HepPDTRecord"/>
 

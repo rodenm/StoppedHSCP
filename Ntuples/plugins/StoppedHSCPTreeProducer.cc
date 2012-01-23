@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.18 2011/11/16 00:22:55 rodenm Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.19 2011/12/23 19:58:28 temple Exp $
 //
 //
 
@@ -71,6 +71,10 @@
 // Vertices
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
+
+// tracks
+#include "DataFormats/TrackReco/interface/TrackFwd.h"
+#include "DataFormats/TrackReco/interface/Track.h"
 
 // Beam Halo Summary
 #include "DataFormats/METReco/interface/BeamHaloSummary.h"
@@ -1534,8 +1538,19 @@ void StoppedHSCPTreeProducer::doTracks(const edm::Event& iEvent) {
   edm::Handle<reco::TrackCollection> recoTracks;
   iEvent.getByLabel(tracksTag_, recoTracks);
  
-  event_->track_N = recoTracks->size();
-  
+  TrackCollection::const_iterator trk;
+  for (trk=recoTracks->begin(); trk!=recoTracks->end(); ++trk) {
+    shscp::Track track;
+    track.chi2  = trk->chi2();
+    track.ndof  = trk->ndof();
+    track.nHits = trk->numberOfValidHits();
+    track.nLost = trk->numberOfLostHits();
+    track.p     = trk->p();
+    track.innerMom = trk->innerMomentum().r();
+    track.outerMom = trk->outerP();
+    event_->addTrack(track);
+  }
+
 }
 
 

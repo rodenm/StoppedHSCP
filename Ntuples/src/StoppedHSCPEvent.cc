@@ -615,6 +615,18 @@ void StoppedHSCPEvent::addDTSegment(DTSegment dt)
   ++DTSegment_N;
 }
 
+void StoppedHSCPEvent::addTrack(Track track) {
+
+  trackChi2.push_back(track.chi2);
+  trackNdof.push_back(track.ndof);
+  trackNHits.push_back(track.nHits);
+  trackNLost.push_back(track.nLost);
+  trackP.push_back(track.p);
+  trackInnerMom.push_back(track.innerMom);
+  trackOuterMom.push_back(track.outerMom);
+  ++track_N;
+}
+
 void StoppedHSCPEvent::addHePlus(double energy, double antienergy, double phi) {
   if (hePlusEnergy < energy) {
     hePlusEnergy = energy;
@@ -638,8 +650,6 @@ void StoppedHSCPEvent::addHe(double energy, double antienergy, double phi) {
     hePhi = phi;
   }
 } 
-
-
 
 void StoppedHSCPEvent::Dump() {
 

@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.10 2011/11/09 16:57:22 rodenm Exp $
+// $Id: StoppedHSCPEvent.h,v 1.11 2011/12/23 19:58:52 temple Exp $
 //
 //
 
@@ -170,9 +170,20 @@ namespace shscp {
     double z;
     double rho;
     double phi;
-      }; // DTSegment
-
-
+  }; // DTSegment
+  
+  
+  struct Track {
+    Track() : chi2(0.), ndof(0.), nHits(0), nLost(0), p(0.), innerMom(0.), outerMom(0.) {}
+    double chi2;
+    double ndof;
+    int nHits;
+    int nLost;
+    double p;
+    double innerMom;
+    double outerMom;
+  };
+  
   // functor for ordering towers
   struct tow_gt : public std::binary_function<shscp::Tower, shscp::Tower, bool> {
     bool operator()(const shscp::Tower& x, const shscp::Tower& y) {
@@ -213,6 +224,7 @@ class StoppedHSCPEvent : public TObject {
   void addCscHit(shscp::CscHit h);
   void addDTSegment(shscp::DTSegment dt);
   void addHePlus(double energy, double antienergy, double phi);
+  void addTrack(shscp::Track track);
   void addHeMinus(double energy, double antienergy, double phi);
   void addHe(double energy, double antienergy, double phi); 
   
@@ -435,6 +447,14 @@ class StoppedHSCPEvent : public TObject {
 
   // tracks
   unsigned track_N;
+  std::vector<double> trackChi2;
+  std::vector<double> trackNdof;
+  std::vector<int> trackNHits;
+  std::vector<int> trackNLost;
+  std::vector<double> trackP;
+  std::vector<double> trackInnerMom;
+  std::vector<double> trackOuterMom;
+ 
 
   // Beam Halo data
   bool beamHalo_CSCTight;
