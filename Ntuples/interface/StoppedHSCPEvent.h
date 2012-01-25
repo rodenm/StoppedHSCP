@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.11 2011/12/23 19:58:52 temple Exp $
+// $Id: StoppedHSCPEvent.h,v 1.12 2012/01/23 18:24:06 jbrooke Exp $
 //
 //
 
@@ -174,14 +174,13 @@ namespace shscp {
   
   
   struct Track {
-    Track() : chi2(0.), ndof(0.), nHits(0), nLost(0), p(0.), innerMom(0.), outerMom(0.) {}
+    Track() : chi2(0.), ndof(0.), nHits(0), nLost(0), quality(0), p(0.) {}
     double chi2;
     double ndof;
     int nHits;
     int nLost;
+    int quality;
     double p;
-    double innerMom;
-    double outerMom;
   };
   
   // functor for ordering towers
@@ -451,9 +450,8 @@ class StoppedHSCPEvent : public TObject {
   std::vector<double> trackNdof;
   std::vector<int> trackNHits;
   std::vector<int> trackNLost;
+  std::vector<int> trackQuality;
   std::vector<double> trackP;
-  std::vector<double> trackInnerMom;
-  std::vector<double> trackOuterMom;
  
 
   // Beam Halo data

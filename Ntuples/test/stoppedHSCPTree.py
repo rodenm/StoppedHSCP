@@ -19,7 +19,8 @@ readFiles = cms.untracked.vstring()
 secFiles = cms.untracked.vstring()
 process.source = cms.Source ("PoolSource",fileNames = readFiles, secondaryFileNames = secFiles)
 readFiles.extend( [
-    '/store/data/Run2011A/MinimumBias/RECO/PromptReco-v6/000/173/692/FE3E0C58-D5CE-E011-97E4-BCAEC518FF91.root'
+    '/store/data/Run2011A/MinimumBias/RECO/HSCPSD-PromptSkim-v6/0000/FEF8C3F8-58D9-E011-8925-003048678B94.root'
+#    '/store/data/Run2011A/MinimumBias/RECO/PromptReco-v6/000/173/692/FE3E0C58-D5CE-E011-97E4-BCAEC518FF91.root'
 #'/store/data/Run2011B/MinimumBias/RECO/HSCPSD-PromptSkim-v1/0000/FAA237CA-5BDC-E011-A567-0018F3D09658.root'
 #    '/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/016/7CB12B4D-A955-E011-8882-001D09F24691.root',
 #    '/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/016/785B1701-AA55-E011-8F68-000423D9997E.root',

@@ -175,6 +175,13 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   vtxNDOF(0),
   vtxZ(0.),
   vtxRho(0.),
+  track_N(0),
+  trackChi2(0.),
+  trackNdof(0),
+  trackNHits(0),
+  trackNLost(0),
+  trackP(0.),
+  trackQuality(0),
   beamHalo_CSCTight(false),
   beamHalo_CSCLoose(false),
   beamHalo_HcalTight(false),
@@ -621,9 +628,8 @@ void StoppedHSCPEvent::addTrack(Track track) {
   trackNdof.push_back(track.ndof);
   trackNHits.push_back(track.nHits);
   trackNLost.push_back(track.nLost);
+  trackQuality.push_back(track.quality);
   trackP.push_back(track.p);
-  trackInnerMom.push_back(track.innerMom);
-  trackOuterMom.push_back(track.outerMom);
   ++track_N;
 }
 

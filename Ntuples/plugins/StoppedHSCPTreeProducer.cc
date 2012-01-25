@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.19 2011/12/23 19:58:28 temple Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.20 2012/01/23 18:24:06 jbrooke Exp $
 //
 //
 
@@ -1519,6 +1519,7 @@ void StoppedHSCPTreeProducer::doVertices(const edm::Event& iEvent) {
 	event_->vtxZ.push_back(it->z());
 	event_->vtxRho.push_back(it->position().rho());
 	event_->nVtx++;
+	event_->vtx_N++;
       }
     }
   }
@@ -1546,8 +1547,8 @@ void StoppedHSCPTreeProducer::doTracks(const edm::Event& iEvent) {
     track.nHits = trk->numberOfValidHits();
     track.nLost = trk->numberOfLostHits();
     track.p     = trk->p();
-    track.innerMom = trk->innerMomentum().r();
-    track.outerMom = trk->outerP();
+    reco::TrackBase::TrackQuality q = reco::TrackBase::qualityByName("highPurity");
+    track.quality = (trk->quality(q) ? 1 : 0);
     event_->addTrack(track);
   }
 
