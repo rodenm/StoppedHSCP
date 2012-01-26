@@ -14,7 +14,7 @@ fi
 
 if [ $# -lt 3 ]
 then 
-    maxInstLumi=3300.  # Units of 10^30 cm^-2 s^-1
+    maxInstLumi=5000.  # Units of 10^30 cm^-2 s^-1
 fi
 
 pwd=$PWD

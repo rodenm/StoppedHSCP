@@ -13,7 +13,10 @@
 #define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
 
 
-Cuts::Cuts(StoppedHSCPEvent* event, bool isMC, unsigned version, LhcFills* fills) :
+Cuts::Cuts(StoppedHSCPEvent* event,
+	   bool isMC,
+	   unsigned version,
+	   LhcFills* fills) :
   event_(event),
   isMC_(isMC),
   version_(version),
@@ -71,6 +74,12 @@ Cuts::~Cuts() {
 }
 
 
+  
+
+
+
+
+
 bool Cuts::triggerCut() const {      // require event passed main trigger
 
   //  bool trigBX = 
@@ -92,10 +101,13 @@ bool Cuts::triggerCut() const {      // require event passed main trigger
   // check list of good fills - dirty hack for now
   unsigned fill = event_->fill;
   unsigned run = event_->run;
-  if (!isMC_ && (fill==0 || 
-		 //fill==1293 || fill==1308 || fill==1309 ||            // Run2010A bad fills
-		 //fill==1373 || fill==1375 ||                          // Run2010B bad fills
-		 (fill >= 1622 && fill <= 1647)                         // 75ns runs from 2011
+  if (!isMC_ && (fill==0 ||
+		 (fill >= 1186 && fill <= 1207) ||            // Run 2010A high cosmic rate
+		 fill==1293 || fill==1308 || fill==1309 ||    // Run 2010A low rates
+		 fill==1373 || fill==1375 ||                  // Run2010B low rate (drifting pedestal)
+		 fill==1393 || fill==1394 ||                  // Run2010B low rate
+		 (fill >= 1615 && fill <= 1647) ||            // 75ns runs from 2011
+		 (run >=176709 && run <= 176795)
 		 ))
     trigger=false;
 

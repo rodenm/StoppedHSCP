@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import sys
-import getopt
+import optparse
 import string
 import os
 import re
@@ -22,32 +22,20 @@ def usage():
 
 def printSummary():
 
-    # get arguments
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "hm")
-    except getopt.GetoptError:
-        print "<printSummary> Could Not get options!" 
-        usage()
-        return False
-        
+    # options
+    parser = optparse.OptionParser()
+    parser.add_option("-f", "--file", action="store", default="histograms.root")
+    parser.add_option("-m", "--mc", action="store", default=False)
     
-    if len(args) < 1 :
-        print "<printSummary> Wrong number of arguments"
-        usage()
-        return False
+    (opts, args)=parser.parse_args()
 
+    file = opts.file
+    dataset = args[0]
+
+    
     try:
-        # options
-        isMC=False
-        for opt, arg in opts:
-            if opt=='-h':
-                usage()
-                exit.sys()
-            if opt=='-m':
-                isMC=True
 
         # arguments
-        dataset=args[0]
         ddir = os.environ['PWD']+'/'+dataset
 
         # cmssw
@@ -57,7 +45,7 @@ def printSummary():
         print "Summary for dataset : ", dataset
         print
 
-        hfile=TFile(dataset+"/histograms.root")
+        hfile=TFile(dataset+"/"+file)
 
         # run info
         time=0

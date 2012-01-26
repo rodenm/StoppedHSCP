@@ -55,6 +55,7 @@ private:
   MultiHistogram1D hRelBXCosmic_;
   MultiHistogram1D hRelBXNoise_;
   MultiHistogram1D hRelBXNoID_;
+  MultiHistogram1D hRelBXSearch_;
 
   std::vector<unsigned> collBaseRate_;
   std::vector<unsigned> collBaseRateHalo_;
@@ -80,6 +81,7 @@ private:
   MultiHistogram1D hRelUPBunchBXCosmic_;
   MultiHistogram1D hRelUPBunchBXNoise_;
   MultiHistogram1D hRelUPBunchBXNoID_;
+  MultiHistogram1D hRelUPBunchBXSearch_;
 
   std::vector<unsigned> upBaseRate_;
   std::vector<unsigned> upBaseRateHalo_;
@@ -115,6 +117,7 @@ void BXDistributions::loop() {
   hRelBXCosmic_.setup(ofile_, "hRelBXCosmic", "Relative BX (Cosmic)", 2000, -1000., 1000.);
   hRelBXNoise_.setup(ofile_, "hRelBXNoise", "Relative BX (Noise)", 2000, -1000., 1000.);
   hRelBXNoID_.setup(ofile_, "hRelBXNoID", "Relative BX (No ID)", 2000, -1000., 1000.);
+  hRelBXSearch_.setup(ofile_, "hRelBXSearch", "Relative BX (Search)", 2000, -1000., 1000.);
 
   hRelUPBunchBXNorm_.setup(ofile_, "hRelUPBunchBXNorm", "Relative BX normalisation", 2000, -1000., 1000.);
   hRelUPBunchBX_.setup(ofile_, "hRelUPBunchBX", "Relative BX", 2000, -1000., 1000.);
@@ -124,6 +127,7 @@ void BXDistributions::loop() {
   hRelUPBunchBXCosmic_.setup(ofile_, "hRelUPBunchBXCosmic", "Relative BX (Cosmic)", 2000, -1000., 1000.);
   hRelUPBunchBXNoise_.setup(ofile_, "hRelUPBunchBXNoise", "Relative BX (Noise)", 2000, -1000., 1000.);
   hRelUPBunchBXNoID_.setup(ofile_, "hRelUPBunchBXNoID", "Relative BX (No ID)", 2000, -1000., 1000.);
+  hRelUPBunchBXSearch_.setup(ofile_, "hRelUPBunchBXSearch", "Relative BX (Search)", 2000, -1000., 1000.);
 
   reset();
  
@@ -166,6 +170,7 @@ void BXDistributions::loop() {
       hRelBXCosmic_.fill(fill, 0., 0.);
       hRelBXNoise_.fill(fill, 0., 0.);
       hRelBXNoID_.fill(fill, 0., 0.);
+      hRelBXSearch_.fill(fill, 0., 0.);
 
       if (collBaseRate_.size() < fill+1) collBaseRate_.resize(fill+1, 0);
       if (collBaseRateBG_.size() < fill+1) collBaseRateBG_.resize(fill+1, 0);
@@ -188,6 +193,7 @@ void BXDistributions::loop() {
       hRelUPBunchBXCosmic_.fill(fill, 0., 0.);
       hRelUPBunchBXNoise_.fill(fill, 0., 0.);
       hRelUPBunchBXNoID_.fill(fill, 0., 0.);
+      hRelUPBunchBXSearch_.fill(fill, 0., 0.);
 
       if (upBaseRate_.size() < fill+1) upBaseRate_.resize(fill+1, 0);
       if (upBaseRateBG_.size() < fill+1) upBaseRateBG_.resize(fill+1, 0);
@@ -208,12 +214,14 @@ void BXDistributions::loop() {
      
     // fill histograms
     bool hasJet = (event_->jet_N>0 && event_->jetE[0]>30. && event_->jetEta[0]<1.3);
-    bool isColl = (event_->vtx_N>0);
-    bool isBeamGas = (event_->vtx_N==0 && event_->track_N>1);
-    bool isHalo = (event_->vtx_N==0 && event_->track_N<2 && event_->beamHalo_CSCLoose);
-    bool isCosmic = (event_->vtx_N==0 && event_->track_N<2 && !event_->beamHalo_CSCLoose && event_->mu_N>0);
-    bool isNoise = (event_->vtx_N==0 && event_->track_N<2 && !event_->beamHalo_CSCLoose && event_->mu_N==0 && !event_->noiseFilterResult);
-    bool isNoID = (event_->vtx_N==0 && event_->track_N<2 && !event_->beamHalo_CSCLoose && event_->mu_N==0 && event_->noiseFilterResult);
+
+    // event classes (very loose right now!)
+    bool isColl     = event_->vtx_N>0;
+    bool isBeamGas  = event_->track_N>1 && !isColl;
+    bool isHalo     = event_->cscSeg_N>0 && !isBeamGas && !isColl;
+    bool isCosmic   = event_->mu_N>0 && !isHalo && !isBeamGas && !isColl;
+    bool isNoise    = !event_->noiseFilterResult;
+    bool isNoID     = (!isNoise && !isCosmic && !isHalo && !isBeamGas && !isColl);
 
     int bx = event_->bx;
     int bxWrtBunch = event_->bxWrtBunch;
@@ -236,6 +244,7 @@ void BXDistributions::loop() {
 	if (isCosmic)  hRelBXCosmic_.fill(fill, bxWrtBunch);
 	if (isNoise)   hRelBXNoise_.fill(fill, bxWrtBunch);
 	if (isNoID)    hRelBXNoID_.fill(fill, bxWrtBunch);
+	if (cuts_.cut())    hRelBXSearch_.fill(fill, bxWrtBunch);
 
 	// record base rate
 	if (abs(bxWrtBunch) > 5) {
@@ -267,6 +276,7 @@ void BXDistributions::loop() {
 	if (isCosmic)  hRelUPBunchBXCosmic_.fill(fill,  bxWrtBunch);
 	if (isNoise)   hRelUPBunchBXNoise_.fill(fill,  bxWrtBunch);
 	if (isNoID)    hRelUPBunchBXNoID_.fill(fill,  bxWrtBunch);
+	if (cuts_.cut())    hRelUPBunchBXSearch_.fill(fill,  bxWrtBunch);
 
 	// record base rate
 	if (abs(bxWrtBunch) > 5) {
@@ -309,6 +319,7 @@ void BXDistributions::loop() {
   hRelBXCosmic_.save();
   hRelBXNoise_.save();
   hRelBXNoID_.save();
+  hRelBXSearch_.save();
 
   hRelUPBunchBXNorm_.save();
   hRelUPBunchBX_.save();
@@ -318,6 +329,7 @@ void BXDistributions::loop() {
   hRelUPBunchBXCosmic_.save();
   hRelUPBunchBXNoise_.save();
   hRelUPBunchBXNoID_.save();
+  hRelUPBunchBXSearch_.save();
 
   ofile_->cd();
  

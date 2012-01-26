@@ -110,9 +110,12 @@ class Cuts {
   // vector of cut names
   std::vector<std::string> names_;
 
-  // hack!
+  // LHC fills info for applying BX cuts
   LhcFills* fills_;
-  
+
+  // list of good lumis
+  std::vector< std::pair<unsigned, unsigned> > goodLumis_;
+ 
 };
 
 #endif

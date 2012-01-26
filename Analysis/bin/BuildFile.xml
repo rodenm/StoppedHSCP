@@ -15,3 +15,9 @@
 
 <bin name="backgroundStability" file="BackgroundStability.cpp"/>
 
+<bin name="backgrounds" file="Backgrounds.cpp"/>
+
+<bin name="beamGas" file="BeamGas.cpp"/>
+
+<bin name="search" file="Search.cpp"/>
+

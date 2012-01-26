@@ -1,5 +1,5 @@
 
-void makeFinalPlots(double lumi=886., double maxInstLumi=1300.)
+void makeFinalPlots(double lumi=4560., double maxInstLumi=5000.)
 {
   std::cout <<" Integrated lumi = "<<lumi<<"  max Inst. Lumi = "<<maxInstLumi<<std::endl;
   gROOT->ProcessLine(".X finalPlotStyle.C+");
