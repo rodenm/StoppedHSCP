@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.20 2012/01/23 18:24:06 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.21 2012/01/25 16:41:50 jbrooke Exp $
 //
 //
 
@@ -75,6 +75,14 @@
 // tracks
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include "DataFormats/TrackReco/interface/Track.h"
+
+#include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
+#include "TrackingTools/TransientTrack/interface/TransientTrack.h"
+#include "TrackingTools/Records/interface/TransientTrackRecord.h"
+#include "TrackingTools/MaterialEffects/interface/PropagatorWithMaterial.h"
+#include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
+#include "DataFormats/GeometrySurface/interface/BoundCylinder.h"
+#include "DataFormats/GeometrySurface/interface/SimpleCylinderBounds.h"
 
 // Beam Halo Summary
 #include "DataFormats/METReco/interface/BeamHaloSummary.h"
@@ -188,7 +196,7 @@ private:
   void doMuons(const edm::Event&);
   void doMuonDTs(const edm::Event&, const edm::EventSetup&);
   void doVertices(const edm::Event&);
-  void doTracks(const edm::Event&);
+  void doTracks(const edm::Event&, const edm::EventSetup&);
   void doBeamHalo(const edm::Event&);
 
   // write variables based on HCAL noise summary
@@ -403,7 +411,16 @@ private:
   std::vector<unsigned> hcalDetJets_;
 
   std::vector<HBHERecHit> recHits_;
+
+  const TransientTrackBuilder    *theTTBuilder_;
+  edm::ESHandle<MagneticField>   theMF_;
+  TrajectoryStateOnSurface       stateAtHCAL_; 
+  mutable PropagatorWithMaterial *forwardPropagator_ ;
+  PropagationDirection           dir_;
+  BoundCylinder                  *theHCALbarrel_;
+
 };
+
 
 
 
@@ -510,7 +527,14 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   HcalLogicalMapGenerator gen;
   logicalMap_=new HcalLogicalMap(gen.createMap());
 
-  //  fills_.print(std::cout);
+  const float epsilon = 0.001;
+  Surface::RotationType rot; // unit rotation matrix
+
+  // values taken from CMS NOTE 2005/016
+  const float barrelRadius = 287.65;
+  const float barrelHalfLength = 433.20;
+
+  theHCALbarrel_ = new BoundCylinder( Surface::PositionType(0,0,0), rot, SimpleCylinderBounds( -epsilon, barrelRadius+epsilon, -barrelHalfLength, barrelHalfLength));
 
 }
 
@@ -718,7 +742,7 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
 
   doBeamHalo(iEvent);
   doVertices(iEvent);
-  doTracks(iEvent);
+  doTracks(iEvent, iSetup);
 
   // HCAL noise summary info
   doHcalNoise(iEvent);
@@ -1534,11 +1558,17 @@ void StoppedHSCPTreeProducer::doVertices(const edm::Event& iEvent) {
 
 
 
-void StoppedHSCPTreeProducer::doTracks(const edm::Event& iEvent) {
+void StoppedHSCPTreeProducer::doTracks(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
   edm::Handle<reco::TrackCollection> recoTracks;
   iEvent.getByLabel(tracksTag_, recoTracks);
  
+  edm::ESHandle<TransientTrackBuilder> builder;
+  iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder",builder);
+  theTTBuilder_ = builder.product();
+  iSetup.get<IdealMagneticFieldRecord>().get(theMF_); 
+  
+
   TrackCollection::const_iterator trk;
   for (trk=recoTracks->begin(); trk!=recoTracks->end(); ++trk) {
     shscp::Track track;
@@ -1549,6 +1579,36 @@ void StoppedHSCPTreeProducer::doTracks(const edm::Event& iEvent) {
     track.p     = trk->p();
     reco::TrackBase::TrackQuality q = reco::TrackBase::qualityByName("highPurity");
     track.quality = (trk->quality(q) ? 1 : 0);
+
+//     bool muontrackavailable = false;
+//     edm::Ref<TrackCollection> muontrack = (&*it)->globalTrack();
+//     if (muontrack.isNonnull()) { 
+//       muontrackavailable = true; 
+//     } 
+//     else {
+//       muontrack = (&*it)->innerTrack();
+//       if (muontrack.isNonnull()) { 
+// 	muontrackavailable = true; 
+//       } 
+//       else {
+// 	muontrack = (&*it)->outerTrack();
+// 	if (muontrack.isNonnull()) { 
+// 	  muontrackavailable = true; 
+// 	}
+//       }
+//     }
+    
+//     if (muontrackavailable) {
+    TransientTrack theTransientTrack = theTTBuilder_->build(&*trk);
+    const TrajectoryStateOnSurface myTSOS = theTransientTrack.innermostMeasurementState();
+    if ( myTSOS.isValid() ) { 
+      stateAtHCAL_= forwardPropagator_->propagate( myTSOS, *theHCALbarrel_ );
+      if (stateAtHCAL_.isValid()) {
+	track.hcalEta = stateAtHCAL_.globalDirection().eta();
+	track.hcalPhi = stateAtHCAL_.globalDirection().phi();
+      } 
+    } 
+    
     event_->addTrack(track);
   }
 

@@ -12,14 +12,20 @@ process.MessageLogger.cerr.INFO.limit = cms.untracked.int32(10)
 # change Global Tag
 process.GlobalTag.globaltag = 'GR_P_V17::All'
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 # input files
 readFiles = cms.untracked.vstring()
 secFiles = cms.untracked.vstring()
 process.source = cms.Source ("PoolSource",fileNames = readFiles, secondaryFileNames = secFiles)
 readFiles.extend( [
+    '/store/data/Run2011A/MinimumBias/RECO/HSCPSD-PromptSkim-v6/0000/F2DEC753-3CDB-E011-8DAC-001A92971BBA.root',
+    '/store/data/Run2011A/MinimumBias/RECO/HSCPSD-PromptSkim-v6/0000/F45C34E5-27D1-E011-8AD2-00261894392D.root',
+    '/store/data/Run2011A/MinimumBias/RECO/HSCPSD-PromptSkim-v6/0000/F8182426-37DB-E011-98F7-002618943920.root',
+    '/store/data/Run2011A/MinimumBias/RECO/HSCPSD-PromptSkim-v6/0000/FA6C542C-57D9-E011-8CEE-00248C55CC3C.root',
+    '/store/data/Run2011A/MinimumBias/RECO/HSCPSD-PromptSkim-v6/0000/FE0D1F50-2DD9-E011-A06E-002618FDA204.root',
     '/store/data/Run2011A/MinimumBias/RECO/HSCPSD-PromptSkim-v6/0000/FEF8C3F8-58D9-E011-8925-003048678B94.root'
+    
 #    '/store/data/Run2011A/MinimumBias/RECO/PromptReco-v6/000/173/692/FE3E0C58-D5CE-E011-97E4-BCAEC518FF91.root'
 #'/store/data/Run2011B/MinimumBias/RECO/HSCPSD-PromptSkim-v1/0000/FAA237CA-5BDC-E011-A567-0018F3D09658.root'
 #    '/store/data/Run2011A/MinimumBias/RECO/PromptReco-v1/000/161/016/7CB12B4D-A955-E011-8882-001D09F24691.root',
