@@ -36,6 +36,7 @@ def OptParserUsage():
     mytext=mytext+"\t\t* 'dataset' specifies full dataset name \n\t\t\t(e.g., '/MinimumBias/Run2011B-HSCPSD-PromptSkim-v1/RECO')\n"
     mytext=mytext+"\t\t* 'global tag' takes the form 'GR_P_V22::All'\n"
     mytext=mytext+"\t\t* 'runlist/JSON file' specifies the runlist or json file for the data.\n"
+    mytext=mytext+"\n The provided dataset name automatically specifies trigger configuration and data format (raw/rawreco), based on information in SetDatasetInfo.py.  These defaults can be overridden through the use of optional parameters.\n"
     mytext=mytext+"\n\nOptional parameters listed below:"
     return mytext
 
