@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.21 2012/01/25 16:41:50 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.22 2012/01/27 02:21:49 jbrooke Exp $
 //
 //
 
@@ -1577,6 +1577,7 @@ void StoppedHSCPTreeProducer::doTracks(const edm::Event& iEvent, const edm::Even
     track.nHits = trk->numberOfValidHits();
     track.nLost = trk->numberOfLostHits();
     track.p     = trk->p();
+
     reco::TrackBase::TrackQuality q = reco::TrackBase::qualityByName("highPurity");
     track.quality = (trk->quality(q) ? 1 : 0);
 
@@ -1599,6 +1600,9 @@ void StoppedHSCPTreeProducer::doTracks(const edm::Event& iEvent, const edm::Even
 //     }
     
 //     if (muontrackavailable) {
+
+    // This doesn't work -- causes occasional crashes.  Jeff, Jan 27.
+    /*
     TransientTrack theTransientTrack = theTTBuilder_->build(&*trk);
     const TrajectoryStateOnSurface myTSOS = theTransientTrack.innermostMeasurementState();
     if ( myTSOS.isValid() ) { 
@@ -1608,7 +1612,7 @@ void StoppedHSCPTreeProducer::doTracks(const edm::Event& iEvent, const edm::Even
 	track.hcalPhi = stateAtHCAL_.globalDirection().phi();
       } 
     } 
-    
+    */
     event_->addTrack(track);
   }
 
