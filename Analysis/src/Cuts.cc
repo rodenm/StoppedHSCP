@@ -2,6 +2,7 @@
 
 #include "StoppedHSCP/Ntuples/interface/StoppedHSCPEvent.h"
 #include "StoppedHSCP/Ntuples/interface/LhcFills.h"
+#include "StoppedHSCP/Analysis/interface/BadRuns.h"
 
 
 #include <iostream>
@@ -86,6 +87,9 @@ bool Cuts::triggerCut() const {      // require event passed main trigger
 
   bool trigger = false;
 
+  // Skip bad fills and runs; uses method from BadRuns.cc
+  if (isBadFillOrRun(event_->fill,event_->run)) return false;
+
   //1) in Run2010A, require hltJetNoBptx only
   if (event_->fill<1711)
     trigger = event_->hltJetNoBptx;// && abs(event_->bxWrtBunch) > 1;
@@ -97,19 +101,6 @@ bool Cuts::triggerCut() const {      // require event passed main trigger
   //3) in Run2011A, post tech stop (fills 1795 onwards) require hltJetE50NoBptx3BXNoHalo only
   else if (event_->fill>=1795)
     trigger = event_->hltJetE50NoBptx3BXNoHalo;
-
-  // check list of good fills - dirty hack for now
-  unsigned fill = event_->fill;
-  unsigned run = event_->run;
-  if (!isMC_ && (fill==0 ||
-		 (fill >= 1186 && fill <= 1207) ||            // Run 2010A high cosmic rate
-		 fill==1293 || fill==1308 || fill==1309 ||    // Run 2010A low rates
-		 fill==1373 || fill==1375 ||                  // Run2010B low rate (drifting pedestal)
-		 fill==1393 || fill==1394 ||                  // Run2010B low rate
-		 (fill >= 1615 && fill <= 1647) ||            // 75ns runs from 2011
-		 (run >=176709 && run <= 176795)
-		 ))
-    trigger=false;
 
   return trigger;
 
