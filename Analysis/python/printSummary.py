@@ -24,12 +24,16 @@ def printSummary():
 
     # options
     parser = optparse.OptionParser()
-    parser.add_option("-f", "--file", action="store", default="histograms.root")
-    parser.add_option("-m", "--mc", action="store", default=False)
+    parser.add_option("-f", "--file", action="store",
+                      dest="inputFile",
+                      default="histograms.root")
+    parser.add_option("-m", "--mc", action="store",
+                      dest="isMC",
+                      default=False)
     
     (opts, args)=parser.parse_args()
 
-    file = opts.file
+    theFile = opts.inputFile
     dataset = args[0]
 
     
@@ -45,11 +49,11 @@ def printSummary():
         print "Summary for dataset : ", dataset
         print
 
-        hfile=TFile(dataset+"/"+file)
+        hfile=TFile(dataset+"/"+theFile)
 
         # run info
         time=0
-        if (not isMC):
+        if (not opts.isMC):
             # Previously-used method for accessing time, # of lb -- doesn't work on reduced ntuples
             ##htime=hfile.Get("runs/hruntime")
             ##hnlb=hfile.Get("runs/hrunlb")
@@ -84,7 +88,7 @@ def printSummary():
         hnmu=hfile.Get("histograms/NoCuts/hnmu")
 
         ntot=hnmu.GetEntries()
-        if isMC:
+        if opts.isMC:
             ntot=hcutcum.GetBinContent(1)
 
         # if (ntot==0):  print "ERROR!  Total number of entries = 0!"  # EXIT?
@@ -93,7 +97,7 @@ def printSummary():
         print
         print '[TABLE border=1]'
 
-        if isMC:
+        if opts.isMC:
             print "|Cut\t|N\t|cum %\t|N-1 % |-"
         else:
             print "|Cut\t|N\t|Rate (Hz) |N-1 % |N-1 (Hz)|-"
@@ -103,7 +107,7 @@ def printSummary():
             nind = hcutind.GetBinContent(i+1)
             nnmo = hcutnmo.GetBinContent(i+1)
             label = hcutcum.GetXaxis().GetBinLabel(i+1)
-            if isMC:
+            if opts.isMC:
                 if (ntot<>0):
                     print '|%i %s | %i | %.2e | %.2e |' % (i, label, ncum, 100.*ncum/ntot, 100.*nnmo/ntot)
                 else:
@@ -122,7 +126,7 @@ def printSummary():
         print
         print '[TABLE border=1]'
 
-        if isMC:
+        if opts.isMC:
             print "|Cut\t|N-1 % |-"
         else:
             print "|Cut\t|N-1 (Hz)|-"
@@ -132,7 +136,7 @@ def printSummary():
         for i in range(0,7):
             nnmo = hnm1Test.GetBinContent(i+1)
             label = hnm1Test.GetXaxis().GetBinLabel(i+1)
-            if isMC:
+            if opts.isMC:
                 if (ntot<>0):
                     print '|%i %s | %i | %.2e |' % (i, label, nnmo, 100.*nnmo/ntot)
                 else:
@@ -278,7 +282,7 @@ def printSummary():
 
         # write TeX file
         texfile = open(dataset+"/table.tex", "w")
-        if isMC:
+        if opts.isMC:
             texfile.write( "& Cut & cum \% & N-1 \% & \\\ \hline \n" )
         else:
             texfile.write( "& Cut & Rate (Hz) & N-1 rate (Hz) & \\\ \hline \n" )
@@ -288,7 +292,7 @@ def printSummary():
             nind = hcutind.GetBinContent(i+1)
             nnmo = hcutnmo.GetBinContent(i+1)
             label = hcutcum.GetXaxis().GetBinLabel(i+1)
-            if isMC:
+            if opts.isMC:
                 if (ntot<>0):
                     texfile.write( '& %s & %.2e & %.2e & \\\ \n' % (label, 100.*ncum/ntot, 100.*nnmo/ntot) )
                 else:
