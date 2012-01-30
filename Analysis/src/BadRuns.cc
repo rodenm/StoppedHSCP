@@ -22,7 +22,7 @@ bool isBadRun(unsigned long run){
   return false;
 }
 
-bool isBadFillOrRun(int fill, int run)
+bool isBadFillOrRun(unsigned fill, unsigned run)
 {
   // Explicitly checks bad fills or runs
 

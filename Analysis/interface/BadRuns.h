@@ -3,7 +3,7 @@
 
 
 // explicitly checks for bad runs and fill numbers
-bool isBadFillOrRun(int fill, int run);
+bool isBadFillOrRun(unsigned fill, unsigned run);
 
 // checks for bad runs (including those from bad fills, but 
 // those runs are hard coded based on the info in fills.txt from
