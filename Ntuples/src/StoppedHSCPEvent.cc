@@ -310,6 +310,10 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   DTSegRho(0),
   DTSegPhi(0),
   //DTSegTime(0),
+  rpcHit_N(0),
+  rpcHitZ(0),
+  rpcHitRho(0),
+  rpcHitPhi(0),
   hePlusEnergy (-999),
   hePlusAntiEnergy (-999),
   hePlusPhi (-999),
@@ -622,6 +626,14 @@ void StoppedHSCPEvent::addDTSegment(DTSegment dt)
   DTSegPhi.push_back(dt.phi);
   //DTSegTime.push_back(dt.time);
   ++DTSegment_N;
+}
+
+void StoppedHSCPEvent::addRpcHit(RpcHit h)
+{
+  rpcHitZ.push_back(h.z);
+  rpcHitRho.push_back(h.rho);
+  rpcHitPhi.push_back(h.phi);
+  ++rpcHit_N;
 }
 
 void StoppedHSCPEvent::addTrack(Track track) {

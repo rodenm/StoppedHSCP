@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.22 2012/01/27 02:21:49 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.23 2012/01/29 23:17:58 temple Exp $
 //
 //
 
@@ -135,6 +135,12 @@
 #include "DataFormats/MuonDetId/interface/DTLayerId.h"
 #include "DataFormats/MuonDetId/interface/DTWireId.h"
 
+// RPC hits
+#include "DataFormats/RPCRecHit/interface/RPCRecHit.h"
+#include "DataFormats/RPCRecHit/interface/RPCRecHitCollection.h"
+#include "Geometry/RPCGeometry/interface/RPCGeometry.h"
+#include "Geometry/RPCGeometry/interface/RPCChamber.h"
+
 // digis
 #include "CalibFormats/HcalObjects/interface/HcalCoderDb.h"
 #include "CalibFormats/HcalObjects/interface/HcalCalibrations.h"
@@ -195,6 +201,7 @@ private:
   void doGlobalCalo(const edm::Event&);
   void doMuons(const edm::Event&);
   void doMuonDTs(const edm::Event&, const edm::EventSetup&);
+  void doMuonRPCs(const edm::Event&, const edm::EventSetup&);
   void doVertices(const edm::Event&);
   void doTracks(const edm::Event&, const edm::EventSetup&);
   void doBeamHalo(const edm::Event&);
@@ -292,6 +299,7 @@ private:
   bool doCscSegments_;
   bool doCscRecHits_;
   bool doDT_; // muon drift tubes
+  bool doRpcRecHits_;
 
   bool doDigis_;
   bool doHltBit1_;
@@ -340,6 +348,7 @@ private:
   edm::InputTag cscRecHitsTag_;
   edm::InputTag DTRecHitsTag_;
   edm::InputTag DT4DSegmentsTag_;
+  edm::InputTag rpcRecHitsTag_;
 
   // HLT config helper
   HLTConfigProvider hltConfig_;
@@ -435,6 +444,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   doCscSegments_(iConfig.getUntrackedParameter<bool>("doCsc",false)),
   doCscRecHits_(iConfig.getUntrackedParameter<bool>("doCscRecHits",false)),
   doDT_(iConfig.getUntrackedParameter<bool>("doDT",false)),
+  doRpcRecHits_(iConfig.getUntrackedParameter<bool>("doRpcRecHits",false)),
   doDigis_(iConfig.getUntrackedParameter<bool>("doDigis",false)),
   doHltBit1_(true),
   doHltBit2_(true),
@@ -481,6 +491,8 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   cscRecHitsTag_(iConfig.getUntrackedParameter<edm::InputTag>("cscRecHitsTag",edm::InputTag("csc2DRecHits"))), 
   DTRecHitsTag_(iConfig.getUntrackedParameter<edm::InputTag>("DTRecHitsTag",edm::InputTag("dt1DRecHits"))),
   DT4DSegmentsTag_(iConfig.getUntrackedParameter<edm::InputTag>("DT4DSegmentsTag",edm::InputTag("dt4DSegments"))),
+  rpcRecHitsTag_(iConfig.getUntrackedParameter<edm::InputTag>("rpcRecHitsTag",edm::InputTag("rpcRecHits"))),
+
   towerMinEnergy_(iConfig.getUntrackedParameter<double>("towerMinEnergy", 1.)),
   towerMaxEta_(iConfig.getUntrackedParameter<double>("towerMaxEta", 1.3)),
   jetMinEnergy_(iConfig.getUntrackedParameter<double>("jetMinEnergy", 1.)),
@@ -758,6 +770,9 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
 
   // DT Segments
   doMuonDTs(iEvent,iSetup);
+
+  // RPCs
+  doMuonRPCs(iEvent,iSetup);
 
   // digi based variables
   if (doDigis_) {
@@ -1621,7 +1636,8 @@ void StoppedHSCPTreeProducer::doTracks(const edm::Event& iEvent, const edm::Even
 
 void StoppedHSCPTreeProducer::doMuonDTs(const edm::Event& iEvent,const edm::EventSetup& iSetup ) 
 {
-
+  if (doDT_==false) return;
+  
   edm::ESHandle<DTGeometry> dtGeom;
   iSetup.get<MuonGeometryRecord>().get(dtGeom);
 
@@ -1679,6 +1695,33 @@ void StoppedHSCPTreeProducer::doMuonDTs(const edm::Event& iEvent,const edm::Even
 
 } // void StoppedHSCPTreeProducer::doMuonDTs
 
+
+void StoppedHSCPTreeProducer::doMuonRPCs(const edm::Event& iEvent,const edm::EventSetup& iSetup )
+{
+  if (!doRpcRecHits_) return;
+  //Jeff
+  edm::Handle<RPCRecHitCollection> hits;
+  iEvent.getByLabel(rpcRecHitsTag_, hits);
+  edm::ESHandle<RPCGeometry> rpcGeom;
+  iSetup.get<MuonGeometryRecord>().get(rpcGeom);
+  
+  //int nRecHits = hits->size();
+  int iHit = 0;
+  RPCRecHitCollection::const_iterator rpcIter;
+  for (rpcIter = hits->begin(); rpcIter != hits->end(); ++rpcIter) {
+    ++iHit;
+    const RPCDetId detId = static_cast<const RPCDetId>(rpcIter->rpcId());
+    const RPCRoll* roll = dynamic_cast<const RPCRoll*>(rpcGeom->roll(detId));
+    const GlobalPoint rhitglobal = roll->toGlobal(rpcIter->localPosition());
+
+    shscp::RpcHit h;
+    h.z = rhitglobal.z();
+    h.rho = rhitglobal.perp();
+    h.phi = rhitglobal.phi();
+    event_->addRpcHit (h);
+  } // loop on rpc hits
+
+} // void StoppedHSCPTreeProducer::doMuonRPCs
 
 void StoppedHSCPTreeProducer::doBeamHalo(const edm::Event& iEvent)
 {

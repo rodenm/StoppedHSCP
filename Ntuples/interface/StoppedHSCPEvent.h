@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.13 2012/01/25 16:41:49 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.14 2012/01/27 02:21:49 jbrooke Exp $
 //
 //
 
@@ -173,6 +173,14 @@ namespace shscp {
   }; // DTSegment
   
   
+  struct RpcHit {
+    RpcHit(): z(0), rho(0), phi(0){}
+    double z;
+    double rho; 
+    double phi;
+  };
+
+  
   struct Track {
     Track() : chi2(0.), ndof(0.), nHits(0), nLost(0), quality(0), p(0.), hcalEta(0.), hcalPhi(0.) {}
     double chi2;
@@ -224,6 +232,7 @@ class StoppedHSCPEvent : public TObject {
   void addCscSegment(shscp::CscSegment s);
   void addCscHit(shscp::CscHit h);
   void addDTSegment(shscp::DTSegment dt);
+  void addRpcHit(shscp::RpcHit h);
   void addHePlus(double energy, double antienergy, double phi);
   void addTrack(shscp::Track track);
   void addHeMinus(double energy, double antienergy, double phi);
@@ -593,6 +602,12 @@ class StoppedHSCPEvent : public TObject {
   std::vector<Double_t> DTSegRho;
   std::vector<Double_t> DTSegPhi;
 
+  // RPC hits
+  unsigned rpcHit_N;
+  std::vector<Double_t> rpcHitZ;
+  std::vector<Double_t> rpcHitRho;
+  std::vector<Double_t> rpcHitPhi;
+
   // HE energy -- Fedor's HE variables
   Double_t hePlusEnergy;
   Double_t hePlusAntiEnergy;
@@ -622,7 +637,7 @@ class StoppedHSCPEvent : public TObject {
   double top5DigiRPeak;
   double top5DigiROuter;
 
-  ClassDef(StoppedHSCPEvent,21); // version 21: includes DT info
+  ClassDef(StoppedHSCPEvent,22); // version 22: includes RPC info
 
 };
 

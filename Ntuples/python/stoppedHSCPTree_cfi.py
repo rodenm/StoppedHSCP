@@ -69,7 +69,8 @@ stoppedHSCPTree = cms.EDAnalyzer(
     doHFRecHits = cms.untracked.bool(False),
     doCsc = cms.untracked.bool(True),
     doCscRecHits = cms.untracked.bool(False),
-    doDT    = cms.untracked.bool(False),  # muon Drift Tubes
+    doDT    = cms.untracked.bool(True),  # muon Drift Tubes
+    doRpcRecHits = cms.untracked.bool(True),
     doDigis = cms.untracked.bool(True),
     writeHistos = cms.untracked.bool(False),
 
