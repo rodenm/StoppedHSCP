@@ -113,7 +113,9 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   hltJetPhi(0),
   jet_N(0),
   jetE(0),
+  jetECorr(0),
   jetEt(0),
+  jetEtCorr(0),
   jetEta(0),
   jetPhi(0),
   jetEHad(0),
@@ -126,7 +128,9 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   jetN90Hits(0),
   studyJet_N(0),
   studyJetE(0),
+  studyJetECorr(0),
   studyJetEt(0),
+  studyJetEtCorr(0),
   studyJetEta(0),
   studyJetPhi(0),
   studyJetEHad(0),
@@ -139,7 +143,9 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   studyJetN90Hits(0),
   jetAK5_N(0),
   jetAK5E(0),
+  jetAK5ECorr(0),
   jetAK5Et(0),
+  jetAK5EtCorr(0),
   jetAK5Eta(0),
   jetAK5Phi(0),
   jetAK5EHad(0),
@@ -152,7 +158,9 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   jetAK5N90Hits(0),
   studyJetAK5_N(0),
   studyJetAK5E(0),
+  studyJetAK5ECorr(0),
   studyJetAK5Et(0),
+  studyJetAK5EtCorr(0),
   studyJetAK5Eta(0),
   studyJetAK5Phi(0),
   studyJetAK5EHad(0),
@@ -402,7 +410,9 @@ void StoppedHSCPEvent::addHltJet(TrigJet j) {
 void StoppedHSCPEvent::addJet(Jet j) {
   if (jet_N < MAX_N_JETS) {
     jetE.push_back(j.e);
+    jetECorr.push_back(j.e_corr);
     jetEt.push_back(j.et);
+    jetEtCorr.push_back(j.et_corr);
     jetEta.push_back(j.eta);
     jetPhi.push_back(j.phi);
     jetEHad.push_back(j.eHad);
@@ -420,7 +430,9 @@ void StoppedHSCPEvent::addJet(Jet j) {
 void StoppedHSCPEvent::addStudyJet(Jet j) {
   if (studyJet_N < MAX_N_JETS) {
     studyJetE.push_back(j.e);
+    studyJetECorr.push_back(j.e_corr);
     studyJetEt.push_back(j.et);
+    studyJetEtCorr.push_back(j.et_corr);
     studyJetEta.push_back(j.eta);
     studyJetPhi.push_back(j.phi);
     studyJetEHad.push_back(j.eHad);
@@ -438,7 +450,9 @@ void StoppedHSCPEvent::addStudyJet(Jet j) {
 void StoppedHSCPEvent::addAK5Jet(Jet j) {
   if (jetAK5_N < MAX_N_JETS) {
     jetAK5E.push_back(j.e);
+    jetAK5ECorr.push_back(j.e_corr);
     jetAK5Et.push_back(j.et);
+    jetAK5EtCorr.push_back(j.et_corr);
     jetAK5Eta.push_back(j.eta);
     jetAK5Phi.push_back(j.phi);
     jetAK5EHad.push_back(j.eHad);
@@ -456,7 +470,9 @@ void StoppedHSCPEvent::addAK5Jet(Jet j) {
 void StoppedHSCPEvent::addAK5StudyJet(Jet j) {
   if (studyJetAK5_N < MAX_N_JETS) {
     studyJetAK5E.push_back(j.e);
+    studyJetAK5ECorr.push_back(j.e_corr);
     studyJetAK5Et.push_back(j.et);
+    studyJetAK5EtCorr.push_back(j.et_corr);
     studyJetAK5Eta.push_back(j.eta);
     studyJetAK5Phi.push_back(j.phi);
     studyJetAK5EHad.push_back(j.eHad);

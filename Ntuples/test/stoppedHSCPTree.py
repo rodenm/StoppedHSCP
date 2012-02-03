@@ -10,7 +10,7 @@ from StoppedHSCP.Ntuples.stoppedHSCPTree_MC_2011_cfg import *
 process.MessageLogger.cerr.INFO.limit = cms.untracked.int32(10)
 
 # change Global Tag
-process.GlobalTag.globaltag = 'GR_P_V17::All'
+process.GlobalTag.globaltag = 'GR_R_42_V23::All'
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 

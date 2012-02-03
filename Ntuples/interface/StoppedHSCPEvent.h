@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.14 2012/01/27 02:21:49 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.15 2012/02/02 00:59:21 temple Exp $
 //
 //
 
@@ -59,7 +59,9 @@ namespace shscp {
     Jet() : e(0.),et(0.),eta(0.),phi(0.),eHad(0.),eEm(0.),eMaxEcalTow(0.),eMaxHcalTow(0.),n60(0),n90(0),n90Hits(0),fHPD(0.),
 	    r1(0.),r2(0.),rp(0.),ro(0.),r1_top5(0.),r2_top5(0.),rp_top5(0.),ro_top5(0.) { }
     double e;
+    double e_corr;
     double et;
+    double et_corr;
     double eta;
     double phi;
     double eHad;
@@ -380,7 +382,9 @@ class StoppedHSCPEvent : public TObject {
   // reco jets
   unsigned jet_N;
   std::vector<Double_t> jetE;
+  std::vector<Double_t> jetECorr;
   std::vector<Double_t> jetEt;
+  std::vector<Double_t> jetEtCorr;
   std::vector<Double_t> jetEta;
   std::vector<Double_t> jetPhi;
   std::vector<Double_t> jetEHad;
@@ -395,7 +399,9 @@ class StoppedHSCPEvent : public TObject {
   // reco jets used for studies only
   unsigned studyJet_N;
   std::vector<Double_t> studyJetE;
+  std::vector<Double_t> studyJetECorr;
   std::vector<Double_t> studyJetEt;
+  std::vector<Double_t> studyJetEtCorr;
   std::vector<Double_t> studyJetEta;
   std::vector<Double_t> studyJetPhi;
   std::vector<Double_t> studyJetEHad;
@@ -411,7 +417,9 @@ class StoppedHSCPEvent : public TObject {
   // AK5 jets
   unsigned jetAK5_N;
   std::vector<Double_t> jetAK5E;
+  std::vector<Double_t> jetAK5ECorr;
   std::vector<Double_t> jetAK5Et;
+  std::vector<Double_t> jetAK5EtCorr;
   std::vector<Double_t> jetAK5Eta;
   std::vector<Double_t> jetAK5Phi;
   std::vector<Double_t> jetAK5EHad;
@@ -426,7 +434,9 @@ class StoppedHSCPEvent : public TObject {
  // AK5 jets used for studies only
   unsigned studyJetAK5_N;
   std::vector<Double_t> studyJetAK5E;
+  std::vector<Double_t> studyJetAK5ECorr;
   std::vector<Double_t> studyJetAK5Et;
+  std::vector<Double_t> studyJetAK5EtCorr;
   std::vector<Double_t> studyJetAK5Eta;
   std::vector<Double_t> studyJetAK5Phi;
   std::vector<Double_t> studyJetAK5EHad;

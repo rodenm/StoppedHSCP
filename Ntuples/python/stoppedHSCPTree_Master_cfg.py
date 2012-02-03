@@ -61,6 +61,11 @@ process.load('Configuration/StandardSequences/L1Extra_cff')
 # Ntuple producer
 process.load('StoppedHSCP/Ntuples/stoppedHSCPTree_cfi')
 
+# get jet corrections
+process.load('JetMETCorrections.Configuration.DefaultJEC_cff')
+process.stoppedHSCPTree.jetCorrectorServiceName = cms.untracked.string("ak5CaloL2L3")
+process.ak5CaloL1Offset.useCondDB = False
+
 # histogram producer
 process.load('StoppedHSCP/Ntuples/stoppedHSCPHistograms_cfi')
 
@@ -96,7 +101,7 @@ process.TFileService = cms.Service("TFileService",
 
 
 # input files
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
 readFiles = cms.untracked.vstring()
 secFiles = cms.untracked.vstring()
 process.source = cms.Source ("PoolSource",fileNames = readFiles, secondaryFileNames = secFiles)

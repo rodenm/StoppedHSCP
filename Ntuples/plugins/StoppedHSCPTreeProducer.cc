@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.23 2012/01/29 23:17:58 temple Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.24 2012/02/02 00:59:21 temple Exp $
 //
 //
 
@@ -61,6 +61,8 @@
 
 // jets
 #include "DataFormats/JetReco/interface/CaloJetCollection.h"
+
+#include "JetMETCorrections/Objects/interface/JetCorrector.h"
 
 // muons
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
@@ -197,7 +199,7 @@ private:
   void doTrigger(const edm::Event&, const edm::EventSetup&);
 
   // write basic RECO objects
-  void doJets(const edm::Event&);
+  void doJets(const edm::Event&, const edm::EventSetup&);
   void doGlobalCalo(const edm::Event&);
   void doMuons(const edm::Event&);
   void doMuonDTs(const edm::Event&, const edm::EventSetup&);
@@ -329,6 +331,7 @@ private:
   edm::InputTag mcTag_;
   std::string mcProducer_;
   edm::InputTag hepProducer_;
+  std::string jetCorrectorServiceName_;
   edm::InputTag jetTag_;
   edm::InputTag jetAK5Tag_;
   edm::InputTag muonTag_;
@@ -472,6 +475,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   mcTag_(iConfig.getUntrackedParameter<edm::InputTag>("mcTag",edm::InputTag("generator"))),
   mcProducer_ (iConfig.getUntrackedParameter<std::string>("producer", "g4SimHits")),
   hepProducer_ (iConfig.getUntrackedParameter<edm::InputTag>("hepMCProducerTag", edm::InputTag("generator", "", "SIM"))),
+  jetCorrectorServiceName_(iConfig.getUntrackedParameter<std::string>("jetCorrectorServiceName","ic5CaloL1L2L3Residual")),
   jetTag_(iConfig.getUntrackedParameter<edm::InputTag>("jetTag",edm::InputTag("iterativeCone5CaloJets"))),
   jetAK5Tag_(iConfig.getUntrackedParameter<edm::InputTag>("jetAK5Tag",edm::InputTag("ak5CaloJets"))),
   muonTag_(iConfig.getUntrackedParameter<edm::InputTag>("muonTag",edm::InputTag("muons"))),
@@ -747,7 +751,7 @@ StoppedHSCPTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup
   doTrigger(iEvent, iSetup);
 
   // general RECO info
-  doJets(iEvent);
+  doJets(iEvent, iSetup);
   doGlobalCalo(iEvent); // uses ntuple calotower info for leadingIphiFractionValue
   doMuons(iEvent);
 
@@ -1363,7 +1367,9 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
 
 
 
-void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
+void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
+
+  const JetCorrector* jetCorrector = JetCorrector::getJetCorrector(jetCorrectorServiceName_,iSetup);
 
    edm::Handle<CaloJetCollection> caloJets;
    iEvent.getByLabel(jetTag_, caloJets);
@@ -1379,12 +1385,18 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
 	 it!=jets.end();
 	 ++it, ++njet) {
        if (it->energy() > jetMinEnergy_) {
+
+	 edm::RefToBase<reco::Jet> jetRef(edm::Ref<reco::CaloJetCollection>(caloJets,njet));  
+	 double scale = jetCorrector->correction(*it,jetRef,iEvent,iSetup);
+
 	 // store jet in TTree
 	 shscp::Jet jet;
+	 jet.e = it->energy();
+	 jet.e_corr = it->energy()*scale;
 	 jet.et = it->et();
+	 jet.et_corr = it->et()*scale;
 	 jet.eta = it->eta();
 	 jet.phi = it->phi();
-	 jet.e = it->energy();
 	 jet.eEm = it->emEnergyInEB();
 	 jet.eHad = it->hadEnergyInHB();
 	 jet.eMaxEcalTow = it->maxEInEmTowers();
@@ -1462,6 +1474,10 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent) {
      for(CaloJetCollection::const_iterator it=jets.begin(); 
 	 it!=jets.end();
 	 ++it) {
+
+       //       edm::RefToBase<reco::Jet> jetRef(edm::Ref<reco::CaloJetCollection>(ak5Jets,njet));  
+       //       double scale = caloJetCorrector->correction(*it,jetRef,iEvent,iSetup);
+       
        if (it->energy() > jetMinEnergy_) { 
 	 // store jet in TTree
 	 shscp::Jet jet;
