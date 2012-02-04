@@ -129,7 +129,7 @@ bool Cuts::vertexVeto() const {      // no vertex
 
 bool Cuts::haloVeto() const {        // no halo ID
   //return !(event_->beamHalo_CSCLoose) ;//&& geometryHaloCut();
-  return (event_->cscSeg_N == 0);//&& geometryHaloCut();
+  return (event_->cscSeg_N == 0);// && geometryHaloCut());
 }
 
 bool Cuts::hfVeto() const {
@@ -141,7 +141,7 @@ bool Cuts::trackVeto() const {
 }
 
 bool Cuts::cosmicVeto() const {      // no cosmic muon
-  return event_->mu_N==0;
+  return (event_->mu_N==0 && event_->DTSegment_N < 3);
 }
 
 bool Cuts::hcalNoiseVeto() const {   // std HCAL noise veto
@@ -150,12 +150,12 @@ bool Cuts::hcalNoiseVeto() const {   // std HCAL noise veto
 }
 
 bool Cuts::looseJetCut() const {     // low Et threshold
-  return event_->jet_N>0 && event_->jetE[0]>30. && fabs(event_->jetEta[0])<1.3;
+  return event_->jet_N>0 && event_->jetECorr[0]>30. && fabs(event_->jetEta[0])<1.3;
 }
 
 bool Cuts::jetEnergyCut() const {    // require jet above Et threshold
   // raise jet energy cut to 70, since we're using a 50-GeV trigger?
-  return event_->jet_N>0 && event_->jetE[0]>70. && fabs(event_->jetEta[0])<1.;
+  return event_->jet_N>0 && event_->jetECorr[0]>70. && fabs(event_->jetEta[0])<1.;
 }
 
 bool Cuts::jetN60Cut() const {       // jet n60
@@ -300,13 +300,13 @@ bool Cuts::cutNSyst(unsigned n, double smear) const
   switch (n) {
   case 4:
     if (event_->jet_N>0  && event_->jetEta[0]<1.3) {
-      double jetE_syst = event_->jetE[0] * smear;
+      double jetE_syst = event_->jetECorr[0] * smear;
       return jetE_syst>30.;
     }
     else return false;
   case 5:
     if (event_->jet_N>0  && event_->jetEta[0]<1.3) {
-      double jetE_syst = event_->jetE[0] * smear;
+      double jetE_syst = event_->jetECorr[0] * smear;
       return jetE_syst>50.;
     }
     else return false;
