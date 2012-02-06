@@ -361,8 +361,8 @@ void BackgroundStability::loop() {
   TH1D* hNoiseRateByFill = new TH1D("hNoiseRateByFill", "Noise flag", nFills, 0, 0);
   TH1D* hCosmicRateByFill = new TH1D("hCosmicRateByFill", "N_{#mu} > 0", nFills, 0, 0);
   TH1D* hCosmic2RateByFill = new TH1D("hCosmic2RateByFill", "N_{#mu} > 0  (v2)", nFills, 0, 0);
-  TH1D* hCosmic3RateByFill = new TH1D("hCosmic2RateByFill", "N_{#mu} > 0  (v2)", nFills, 0, 0);
-  TH1D* hNM1CosmicRateByFill = new TH1D("hMuonNMinusOneRateByFill", "N_{vtx} > 0", nFills, 0, 0);
+  TH1D* hCosmic3RateByFill = new TH1D("hCosmic3RateByFill", "N_{#mu} > 0  (v2)", nFills, 0, 0);
+  TH1D* hNM1CosmicRateByFill = new TH1D("hNM1CosmicRateByFill", "N_{vtx} > 0", nFills, 0, 0);
   TH1D* hBeamHaloRateByFill = new TH1D("hBeamHaloRateByFill", "Beam halo flag", nFills, 0, 0);
   TH1D* hBeamGasRateByFill = new TH1D("hBeamGasRateByFill", "N_{trk} > 0 and not beam halo flag", nFills, 0, 0);
   TH1D* hVertexRateByFill = new TH1D("hVertexRateByFill", "N_{vtx} > 0", nFills, 0, 0);
