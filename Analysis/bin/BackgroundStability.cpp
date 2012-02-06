@@ -45,13 +45,15 @@ private:
   std::vector<unsigned long> nNoiseFlagByFill_;
   std::vector<unsigned long> nCosmicByFill_;
   std::vector<unsigned long> nCosmic2ByFill_;
+  std::vector<unsigned long> nCosmic3ByFill_;
+  std::vector<unsigned long> nm1CosmicByFill_;
   std::vector<unsigned long> nBeamHaloByFill_;
   std::vector<unsigned long> nBeamGasByFill_;
   std::vector<unsigned long> nVertexByFill_;
   std::vector<unsigned long> nUnidentifiedByFill_;
 
-  std::vector<unsigned long> nCSCSegByFill_;
-  std::vector<unsigned long> nMuonNMinusOneByFill_;
+//   std::vector<unsigned long> nCSCSegByFill_;
+//   std::vector<unsigned long> nMuonNMinusOneByFill_;
 
   // energy distributions for different types
   MultiHistogram1D jetENoiseByFill_;
@@ -154,13 +156,6 @@ void BackgroundStability::loop() {
     // record fills run over
     unsigned fill = event_->fill;
 
-    // skip bad fills
-    if (fill==0 ||
-	(fill >= 1186 && fill <= 1207) ||            // Run 2010A high cosmic rate
-	fill==1293 || fill==1308 || fill==1309 ||    // Run 2010A low rates
-	fill==1373 || fill==1375 ||                  // Run2010B drifting pedestal
-	(fill >= 1622 && fill <= 1647)) continue;
-    
     // count lumi sections
     std::pair<unsigned long, unsigned long> runLumiPair(event_->run, event_->lb);
     std::vector<std::pair<unsigned long, unsigned long> >::const_iterator itr = 
@@ -207,6 +202,7 @@ void BackgroundStability::loop() {
     unsigned long run = event_->run;
     std::vector<unsigned long>::const_iterator itr3 = find(runList_.begin(), runList_.end(), run);
     if (itr3 == runList_.end()) runList_.push_back(run);
+
     if (run > maxRun) maxRun = run;
 
     // keep vectors big enough
@@ -214,14 +210,12 @@ void BackgroundStability::loop() {
     if (nNoiseFlagByFill_.size() < fill+1) nNoiseFlagByFill_.resize(fill+1, 0);
     if (nCosmicByFill_.size() < fill+1) nCosmicByFill_.resize(fill+1, 0);
     if (nCosmic2ByFill_.size() < fill+1) nCosmic2ByFill_.resize(fill+1, 0);
+    if (nCosmic3ByFill_.size() < fill+1) nCosmic3ByFill_.resize(fill+1, 0);
+    if (nm1CosmicByFill_.size() < fill+1) nm1CosmicByFill_.resize(fill+1, 0);
     if (nBeamHaloByFill_.size() < fill+1) nBeamHaloByFill_.resize(fill+1, 0);
     if (nBeamGasByFill_.size() < fill+1) nBeamGasByFill_.resize(fill+1, 0);
     if (nVertexByFill_.size() < fill+1) nVertexByFill_.resize(fill+1, 0);
     if (nUnidentifiedByFill_.size() < fill+1) nUnidentifiedByFill_.resize(fill+1, 0);
-
-    if (nCSCSegByFill_.size() < fill+1) nCSCSegByFill_.resize(fill+1, 0);
-
-    if (nMuonNMinusOneByFill_.size() < fill+1) nMuonNMinusOneByFill_.resize(fill+1, 0);
 
     if (nTriggerByRun_.size() < run+1) nTriggerByRun_.resize(run+1, 0);
     if (nNoiseFlagByRun_.size() < run+1) nNoiseFlagByRun_.resize(run+1, 0);
@@ -229,6 +223,8 @@ void BackgroundStability::loop() {
     if (nBeamHaloByRun_.size() < run+1) nBeamHaloByRun_.resize(run+1, 0);
     if (nBeamGasByRun_.size() < run+1) nBeamGasByRun_.resize(run+1, 0);
     if (nVertexByRun_.size() < run+1) nVertexByRun_.resize(run+1, 0);
+
+    if (event_->jet_N == 0) continue;
 
     // event quantities
     bool trig       = cuts_.triggerCut();
@@ -242,6 +238,8 @@ void BackgroundStability::loop() {
     double fiphi    = event_->leadingIPhiFractionValue;
     bool bh         = event_->beamHalo_CSCLoose;
     unsigned nmu    = event_->mu_N;
+    unsigned ndt    = event_->DTSegment_N;
+    unsigned nrpc   = event_->rpcHit_N;
     unsigned ncsc   = event_->cscSeg_N;
     unsigned ntrk   = event_->track_N;
     unsigned nvtx   = event_->nVtx;
@@ -249,7 +247,10 @@ void BackgroundStability::loop() {
     // event classes (very loose right now!)
     bool isNoise    = !event_->noiseFilterResult;
     bool isCosmic   = nmu > 0;
+    bool isCosmic2  = ndt > 0;
+    bool isCosmic3  = nrpc > 0;
     bool isBeamHalo = ncsc > 0;
+    bool isBeamHalo2 = bh;
     bool isBeamGas  = ntrk > 1;
     bool isVtx      = nvtx > 0;
     bool isUnid     = (!isNoise && !isCosmic && !isBeamHalo && !isBeamGas && !isVtx);
@@ -278,13 +279,12 @@ void BackgroundStability::loop() {
 	jetN90CosmicByFill_.fill(fill, event_->jetN90[0]);
 	jetNTowCosmicByFill_.fill(fill, event_->nTowerSameiPhi);
       }
-      //     if (isCosmic2) {
-      //       nCosmic2ByFill_.at(fill) += 1;
-      //       jetECosmic2ByFill_.fill(fill, event_->jetE[0]);
-      //       jetN60Cosmic2ByFill_.fill(fill, event_->jetN60[0]);
-      //       jetN90Cosmic2ByFill_.fill(fill, event_->jetN90[0]);
-      //       jetNTowCosmic2ByFill_.fill(fill, event_->nTowerSameiPhi);
-      //     }
+      if (isCosmic2 && !isBeamHalo && !isBeamGas && !isVtx) {
+	nCosmic2ByFill_.at(fill) += 1;
+      }
+      if (isCosmic3 && !isBeamHalo && !isBeamGas && !isVtx) {
+	nCosmic3ByFill_.at(fill) += 1;
+      }
       if (isBeamHalo && !isBeamGas && !isVtx) {
 	nBeamHaloByFill_.at(fill) += 1;
 	jetEBeamHaloByFill_.fill(fill, event_->jetE[0]);
@@ -314,12 +314,10 @@ void BackgroundStability::loop() {
 	jetNTowUnidentifiedByFill_.fill(fill, event_->nTowerSameiPhi);
       }
       
-      if (ncsc>0) nCSCSegByFill_.at(fill) += 1;
-      
-      
+      //      if (ncsc>0) nCSCSegByFill_.at(fill) += 1;      
       
       // n-1
-      if (cuts_.cutNMinusOne(5)) nMuonNMinusOneByFill_.at(fill) += 1;
+      if (cuts_.cutNMinusOne(5)) nm1CosmicByFill_.at(fill) += 1;
       
       // by run
       if (isNoise && !isCosmic && !isBeamHalo && !isBeamGas && !isVtx) nNoiseFlagByRun_.at(run) += 1;
@@ -363,12 +361,12 @@ void BackgroundStability::loop() {
   TH1D* hNoiseRateByFill = new TH1D("hNoiseRateByFill", "Noise flag", nFills, 0, 0);
   TH1D* hCosmicRateByFill = new TH1D("hCosmicRateByFill", "N_{#mu} > 0", nFills, 0, 0);
   TH1D* hCosmic2RateByFill = new TH1D("hCosmic2RateByFill", "N_{#mu} > 0  (v2)", nFills, 0, 0);
+  TH1D* hCosmic3RateByFill = new TH1D("hCosmic2RateByFill", "N_{#mu} > 0  (v2)", nFills, 0, 0);
+  TH1D* hNM1CosmicRateByFill = new TH1D("hMuonNMinusOneRateByFill", "N_{vtx} > 0", nFills, 0, 0);
   TH1D* hBeamHaloRateByFill = new TH1D("hBeamHaloRateByFill", "Beam halo flag", nFills, 0, 0);
   TH1D* hBeamGasRateByFill = new TH1D("hBeamGasRateByFill", "N_{trk} > 0 and not beam halo flag", nFills, 0, 0);
   TH1D* hVertexRateByFill = new TH1D("hVertexRateByFill", "N_{vtx} > 0", nFills, 0, 0);
   TH1D* hUnidentifiedRateByFill = new TH1D("hUnidentifiedRateByFill", "N_{vtx} > 0", nFills, 0, 0);
-  TH1D* hCSCSegRateByFill = new TH1D("hCSCSegRateByFill", "N_{CSC Seg} > 0", nFills, 0, 0);
-  TH1D* hMuonNMinusOneRateByFill = new TH1D("hMuonNMinusOneRateByFill", "N_{vtx} > 0", nFills, 0, 0);
 
   TH1D* hMeanENoiseByFill = new TH1D("hMeanENoiseByFill", "Noise flag", nFills, 0, 0);
   TH1D* hMeanECosmicByFill = new TH1D("hMeanECosmicByFill", "N_{#mu} > 0", nFills, 0, 0);
@@ -427,11 +425,11 @@ void BackgroundStability::loop() {
     hNoiseRateByFill->Fill(fillstr.c_str(), 0.);
     hCosmicRateByFill->Fill(fillstr.c_str(), 0.);
     hCosmic2RateByFill->Fill(fillstr.c_str(), 0.);
+    hCosmic3RateByFill->Fill(fillstr.c_str(), 0.);
+    hNM1CosmicRateByFill->Fill(fillstr.c_str(), 0.);
     hBeamHaloRateByFill->Fill(fillstr.c_str(), 0.);
     hBeamGasRateByFill->Fill(fillstr.c_str(), 0.);
     hVertexRateByFill->Fill(fillstr.c_str(), 0.);
-    hCSCSegRateByFill->Fill(fillstr.c_str(), 0.);
-    hMuonNMinusOneRateByFill->Fill(fillstr.c_str(), 0.);
 
     if (livetime>0.) {
 
@@ -446,6 +444,12 @@ void BackgroundStability::loop() {
 
       for (unsigned long i=0; i<nCosmic2ByFill_.at(fill); ++i) 
 	hCosmic2RateByFill->Fill(fillstr.c_str(), 1./livetime);
+
+      for (unsigned long i=0; i<nCosmic3ByFill_.at(fill); ++i) 
+	hCosmic3RateByFill->Fill(fillstr.c_str(), 1./livetime);
+
+      for (unsigned long i=0; i<nm1CosmicByFill_.at(fill); ++i) 
+	hNM1CosmicRateByFill->Fill(fillstr.c_str(), 1./livetime);
       
       for (unsigned long i=0; i<nBeamHaloByFill_.at(fill); ++i) 
 	hBeamHaloRateByFill->Fill(fillstr.c_str(), 1./livetime);
@@ -458,12 +462,6 @@ void BackgroundStability::loop() {
 
       for (unsigned long i=0; i<nUnidentifiedByFill_.at(fill); ++i) 
 	hUnidentifiedRateByFill->Fill(fillstr.c_str(), 1./livetime);
-
-      for (unsigned long i=0; i<nCSCSegByFill_.at(fill); ++i) 
-	hCSCSegRateByFill->Fill(fillstr.c_str(), 1./livetime);
-
-      for (unsigned long i=0; i<nMuonNMinusOneByFill_.at(fill); ++i) 
-	hMuonNMinusOneRateByFill->Fill(fillstr.c_str(), 1./livetime);
 
       // energy distribution characterisation
       TF1* fexp = new TF1("fexp", "[0]+[1]*exp([2]/x)", 50., 150.);
@@ -674,12 +672,12 @@ void BackgroundStability::loop() {
   hNoiseRateByFill->Write("",TObject::kOverwrite);
   hCosmicRateByFill->Write("",TObject::kOverwrite);
   hCosmic2RateByFill->Write("",TObject::kOverwrite);
+  hCosmic3RateByFill->Write("",TObject::kOverwrite);
+  hNM1CosmicRateByFill->Write("",TObject::kOverwrite);
   hBeamHaloRateByFill->Write("",TObject::kOverwrite);
   hBeamGasRateByFill->Write("",TObject::kOverwrite);
   hVertexRateByFill->Write("",TObject::kOverwrite);
   hUnidentifiedRateByFill->Write("",TObject::kOverwrite);
-  hCSCSegRateByFill->Write("",TObject::kOverwrite);
-  hMuonNMinusOneRateByFill->Write("",TObject::kOverwrite);
 
   hMeanENoiseByFill->Write("",TObject::kOverwrite);
   hMeanECosmicByFill->Write("",TObject::kOverwrite);
