@@ -19,5 +19,7 @@
 
 <bin name="beamGas" file="BeamGas.cpp"/>
 
+<bin name="cosmics" file="Cosmics.cpp"/>
+
 <bin name="search" file="Search.cpp"/>
 
