@@ -25,6 +25,8 @@ from plots import *
 tdrStyle()
 gROOT.SetStyle("tdrStyle")
 gROOT.ForceStyle()
+gStyle.SetOptStat(0)
+
 
 #input file
 file = TFile(dataset+"/BackgroundStability.root", "read")
@@ -39,48 +41,52 @@ if not os.path.exists(d):
 c = TCanvas("c","",600,200)
 
 # plot definition
-def ratePlot(histname, ofile, xtitle="Fill", ytitle="Hz"):
+def ratePlot(histname, ofile, title="", xtitle="Fill", ytitle="Hz"):
     hist = file.Get(histname)
     hist.SetMarkerStyle(7)
+    hist.SetTitle(title)
     hist.SetXTitle(xtitle)
     hist.SetYTitle(ytitle)
+    hist.GetXaxis().SetLabelSize(0.06)
+    hist.GetYaxis().SetLabelSize(0.06)
 #    hist.SetMarkerSize(1)
     hist.Draw()
-    c.Print(odir+ofile)
+    c.Print(odir+dataset+"_"+ofile)
 
 # start plotting
-ratePlot("hEventRateByFill", "EventRateByFill.pdf")
+ratePlot("hEventRateByFill", "EventRateByFill.pdf", "Event rate")
 
-ratePlot("hNoiseRateByFill", "NoiseRateByFill.pdf")
-ratePlot("hMeanENoiseByFill", "NoiseMeanEByFill.pdf", "Fill", "mean(E_{jet})")
-ratePlot("hStdDevENoiseByFill", "NoiseStdDevEByFill.pdf", "Fill", "#sigma(E_{jet})")
+ratePlot("hNoiseRateByFill", "NoiseRateByFill.pdf", "Noise rate")
+ratePlot("hMeanENoiseByFill", "NoiseMeanEByFill.pdf", "Noise", "Fill", "mean(E_{jet})")
+ratePlot("hStdDevENoiseByFill", "NoiseStdDevEByFill.pdf", "Noise", "Fill", "#sigma(E_{jet})")
 
-ratePlot("hCosmicRateByFill", "CosmicRateByFill.pdf")
-ratePlot("hMeanECosmicByFill", "CosmicMeanEByFill.pdf",  "Fill", "mean(E_{jet})")
-ratePlot("hStdDevECosmicByFill", "CosmicStdDevEByFill.pdf", "Fill", "#sigma(E_{jet})")
+ratePlot("hCosmicRateByFill", "CosmicRateByFill.pdf", "#mu rate")
+ratePlot("hMeanECosmicByFill", "CosmicMeanEByFill.pdf",  "#mu", "Fill", "mean(E_{jet})")
+ratePlot("hStdDevECosmicByFill", "CosmicStdDevEByFill.pdf", "#mu", "Fill", "#sigma(E_{jet})")
 
-ratePlot("hBeamHaloRateByFill", "BeamHaloRateByFill.pdf")
-ratePlot("hMeanEBeamHaloByFill", "BeamHaloMeanEByFill.pdf",  "Fill", "mean(E_{jet})")
-ratePlot("hStdDevEBeamHaloByFill", "BeamHaloStdDevEByFill.pdf", "Fill", "#sigma(E_{jet})")
+ratePlot("hBeamHaloRateByFill", "BeamHaloRateByFill.pdf", "Halo rate")
+ratePlot("hMeanEBeamHaloByFill", "BeamHaloMeanEByFill.pdf",  "Halo", "Fill", "mean(E_{jet})")
+ratePlot("hStdDevEBeamHaloByFill", "BeamHaloStdDevEByFill.pdf", "Halo", "Fill", "#sigma(E_{jet})")
 
-ratePlot("hBeamGasRateByFill", "BeamGasRateByFill.pdf")
-ratePlot("hMeanEBeamGasByFill", "BeamGasMeanEByFill.pdf",  "Fill", "mean(E_{jet})")
-ratePlot("hStdDevEBeamGasByFill", "BeamGasStdDevEByFill.pdf", "Fill", "#sigma(E_{jet})")
+ratePlot("hBeamGasRateByFill", "BeamGasRateByFill.pdf", "Beam-gas rate")
+ratePlot("hMeanEBeamGasByFill", "BeamGasMeanEByFill.pdf", "Beam-gas", "Fill", "mean(E_{jet})")
+ratePlot("hStdDevEBeamGasByFill", "BeamGasStdDevEByFill.pdf", "Beam-gas", "Fill", "#sigma(E_{jet})")
 
-ratePlot("hVertexRateByFill", "VertexRateByFill.pdf")
-ratePlot("hMeanEVertexByFill", "VertexMeanEByFill.pdf",  "Fill", "mean(E_{jet})")
-ratePlot("hStdDevEVertexByFill", "VertexStdDevEByFill.pdf", "Fill", "#sigma(E_{jet})")
+ratePlot("hVertexRateByFill", "VertexRateByFill.pdf", "Vertex rate")
+ratePlot("hMeanEVertexByFill", "VertexMeanEByFill.pdf",  "Vertex", "Fill", "mean(E_{jet})")
+ratePlot("hStdDevEVertexByFill", "VertexStdDevEByFill.pdf", "Vertex", "Fill", "#sigma(E_{jet})")
 
-ratePlot("hUnidentifiedRateByFill", "UnidentifiedRateByFill.pdf")
-ratePlot("hMeanEUnidentifiedByFill", "UnidentifiedMeanEByFill.pdf",  "Fill", "<E_{jet}>")
-ratePlot("hStdDevEUnidentifiedByFill", "UnidentifiedStdDevEByFill.pdf")
+ratePlot("hUnidentifiedRateByFill", "UnidentifiedRateByFill.pdf", "Unid rate")
+ratePlot("hMeanEUnidentifiedByFill", "UnidentifiedMeanEByFill.pdf", "Unid", "Fill", "<E_{jet}>")
+ratePlot("hStdDevEUnidentifiedByFill", "UnidentifiedStdDevEByFill.pdf", "Unid", "Fill", "#sigma(E_{jet})")
 
 
-ratePlot("hCosmic2RateByFill", "Cosmic2RateByFill.pdf")
+ratePlot("hCosmic2RateByFill", "Cosmic2RateByFill.pdf", "DT cosmic rate")
+ratePlot("hCosmic3RateByFill", "Cosmic3RateByFill.pdf", "RPC cosmic rate")
 
-ratePlot("hCSCSegRateByFill", "CSCSegRateByFill.pdf")
+#ratePlot("hCSCSegRateByFill", "CSCSegRateByFill.pdf")
 
-ratePlot("hMuonNMinusOneRateByFill", "MuonNMinusOneRateByFill.pdf")
+ratePlot("hNM1CosmicRateByFill", "CosmicNM1RateByFill.pdf", "N-1(cosmic)", "Fill", "Hz")
 
 ratePlot("hEventRateByRun", "EventRateByRun.pdf", "Run")
 ratePlot("hTriggerRateByRun", "TriggerRateByRun.pdf", "Run")

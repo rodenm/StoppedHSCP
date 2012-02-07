@@ -267,17 +267,17 @@ void BackgroundStability::loop() {
       
       if (isNoise && !isCosmic && !isBeamHalo && !isBeamGas && !isVtx) {
 	nNoiseFlagByFill_.at(fill) += 1;
-	jetENoiseByFill_.fill(fill, event_->jetE[0]);
-	jetN60NoiseByFill_.fill(fill, event_->jetN60[0]);
-	jetN90NoiseByFill_.fill(fill, event_->jetN90[0]);
-	jetNTowNoiseByFill_.fill(fill, event_->nTowerSameiPhi);
+	jetENoiseByFill_.fill(fill, e);
+	jetN60NoiseByFill_.fill(fill, n60);
+	jetN90NoiseByFill_.fill(fill, n90);
+	jetNTowNoiseByFill_.fill(fill, ntow);
       }
       if (isCosmic && !isBeamHalo && !isBeamGas && !isVtx) {
 	nCosmicByFill_.at(fill) += 1;
-	jetECosmicByFill_.fill(fill, event_->jetE[0]);
-	jetN60CosmicByFill_.fill(fill, event_->jetN60[0]);
-	jetN90CosmicByFill_.fill(fill, event_->jetN90[0]);
-	jetNTowCosmicByFill_.fill(fill, event_->nTowerSameiPhi);
+	jetECosmicByFill_.fill(fill, e);
+	jetN60CosmicByFill_.fill(fill, n60);
+	jetN90CosmicByFill_.fill(fill, n90);
+	jetNTowCosmicByFill_.fill(fill, ntow);
       }
       if (isCosmic2 && !isBeamHalo && !isBeamGas && !isVtx) {
 	nCosmic2ByFill_.at(fill) += 1;
@@ -287,31 +287,31 @@ void BackgroundStability::loop() {
       }
       if (isBeamHalo && !isBeamGas && !isVtx) {
 	nBeamHaloByFill_.at(fill) += 1;
-	jetEBeamHaloByFill_.fill(fill, event_->jetE[0]);
-	jetN60BeamHaloByFill_.fill(fill, event_->jetN60[0]);
-	jetN90BeamHaloByFill_.fill(fill, event_->jetN90[0]);
-	jetNTowBeamHaloByFill_.fill(fill, event_->nTowerSameiPhi);
+	jetEBeamHaloByFill_.fill(fill, e);
+	jetN60BeamHaloByFill_.fill(fill, n60);
+	jetN90BeamHaloByFill_.fill(fill, n90);
+	jetNTowBeamHaloByFill_.fill(fill, ntow);
       }
       if (isBeamGas && !isVtx) {
 	nBeamGasByFill_.at(fill) += 1;
-	jetEBeamGasByFill_.fill(fill, event_->jetE[0]);
-	jetN60BeamGasByFill_.fill(fill, event_->jetN60[0]);
-	jetN90BeamGasByFill_.fill(fill, event_->jetN90[0]);
-	jetNTowBeamGasByFill_.fill(fill, event_->nTowerSameiPhi);
+	jetEBeamGasByFill_.fill(fill, e);
+	jetN60BeamGasByFill_.fill(fill, n60);
+	jetN90BeamGasByFill_.fill(fill, n90);
+	jetNTowBeamGasByFill_.fill(fill, ntow);
       }
       if (isVtx) {
 	nVertexByFill_.at(fill) += 1;
-	jetEVertexByFill_.fill(fill, event_->jetE[0]);
-	jetN60VertexByFill_.fill(fill, event_->jetN60[0]);
-	jetN90VertexByFill_.fill(fill, event_->jetN90[0]);
-	jetNTowVertexByFill_.fill(fill, event_->nTowerSameiPhi);
+	jetEVertexByFill_.fill(fill, e);
+	jetN60VertexByFill_.fill(fill, n60);
+	jetN90VertexByFill_.fill(fill, n90);
+	jetNTowVertexByFill_.fill(fill, ntow);
       }
       if (!isNoise && !isCosmic && !isBeamHalo && !isBeamGas && !isVtx) {
 	nUnidentifiedByFill_.at(fill) += 1;
-	jetEUnidentifiedByFill_.fill(fill, event_->jetE[0]);
-	jetN60UnidentifiedByFill_.fill(fill, event_->jetN60[0]);
-	jetN90UnidentifiedByFill_.fill(fill, event_->jetN90[0]);
-	jetNTowUnidentifiedByFill_.fill(fill, event_->nTowerSameiPhi);
+	jetEUnidentifiedByFill_.fill(fill, e);
+	jetN60UnidentifiedByFill_.fill(fill, n60);
+	jetN90UnidentifiedByFill_.fill(fill, n90);
+	jetNTowUnidentifiedByFill_.fill(fill, ntow);
       }
       
       //      if (ncsc>0) nCSCSegByFill_.at(fill) += 1;      

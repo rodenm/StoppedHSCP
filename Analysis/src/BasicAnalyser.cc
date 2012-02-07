@@ -42,6 +42,7 @@ BasicAnalyser::BasicAnalyser(int argc, char* argv[]) :
     ("help,h", "Display this message")
     ("outdir,o", po::value<std::string>(), "Output directory")
     ("indir,i", po::value<std::string>(), "Input directory")
+    ("cuts,c", po::value<unsigned>()->default_value(0), "Cuts version")
     ("num,n", po::value<unsigned long long>()->default_value(0), "Number of events to process")
     ("mc,m", "Run on MC");
 
@@ -74,6 +75,10 @@ BasicAnalyser::BasicAnalyser(int argc, char* argv[]) :
   // set number of events
   if (vm.count("num") && vm["num"].as<unsigned long long>()>0)
     maxEvents_=ULong64_t(vm["num"].as<unsigned long long>());
+
+  // set cut version
+  if (vm.count("cuts") && vm["cuts"].as<unsigned>()>0) 
+    cuts_ = Cuts(0, false, vm["cuts"].as<unsigned>(), 0);
 
   /// set if is this MC
   if (vm.count("mc")) {

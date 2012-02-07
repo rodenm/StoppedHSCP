@@ -35,6 +35,8 @@ class Cuts {
   bool hcalNoiseVeto() const;   // std HCAL noise veto
   bool looseJetCut() const;     // low Et threshold
   bool jetEnergyCut() const;    // require jet above Et threshold
+  bool looseJetCorrCut() const; // low Et threshold (corrected Et)
+  bool jetEnergyCorrCut() const;// require jet above Et threshold (corrected Et)
   bool jetN60Cut() const;       // jet n60
   bool jetN90Cut() const;       // jet n90
   bool towersIPhiCut() const;   // cut on N leading towers at same iphi

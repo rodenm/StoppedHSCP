@@ -68,6 +68,27 @@ Cuts::Cuts(StoppedHSCPEvent* event,
     addCut(&Cuts::digiROuterCut, "Router digi");
   }
 
+  // use corrected jet Et
+  if (version_ == 2) {
+    addCut(&Cuts::triggerCut, "trigger");      // 0
+    addCut(&Cuts::bptxVeto, "BPTX veto");      // 1
+    addCut(&Cuts::bxVeto, "BX veto");          // 2
+    addCut(&Cuts::vertexVeto, "Vertex veto");  // 3
+    addCut(&Cuts::haloVeto, "Halo veto");      // 4
+    addCut(&Cuts::cosmicVeto, "Cosmic veto");  // 5
+    addCut(&Cuts::hcalNoiseVeto, "Noise veto");// 6
+    addCut(&Cuts::looseJetCorrCut, "E30");     // 7
+    addCut(&Cuts::jetEnergyCorrCut, "E70");    // 8
+    addCut(&Cuts::jetN60Cut, "n60");           // 9
+    addCut(&Cuts::jetN90Cut, "n90");           // 10
+    addCut(&Cuts::towersIPhiCut, "nTowiPhi");  // 11
+    addCut(&Cuts::iPhiFractionCut, "iPhiFrac");// 12
+    addCut(&Cuts::hpdR1Cut, "R1");             // 13
+    addCut(&Cuts::hpdR2Cut, "R2");             // 14
+    addCut(&Cuts::hpdRPeakCut, "Rpeak");       // 15
+    addCut(&Cuts::hpdROuterCut, "Router");     // 16
+  }
+
 }
 
 Cuts::~Cuts() {
@@ -150,12 +171,21 @@ bool Cuts::hcalNoiseVeto() const {   // std HCAL noise veto
 }
 
 bool Cuts::looseJetCut() const {     // low Et threshold
-  return event_->jet_N>0 && event_->jetECorr[0]>30. && fabs(event_->jetEta[0])<1.3;
+  return event_->jet_N>0 && event_->jetE[0]>30. && fabs(event_->jetEta[0])<1.3;
 }
 
 bool Cuts::jetEnergyCut() const {    // require jet above Et threshold
   // raise jet energy cut to 70, since we're using a 50-GeV trigger?
-  return event_->jet_N>0 && event_->jetECorr[0]>70. && fabs(event_->jetEta[0])<1.;
+  return event_->jet_N>0 && event_->jetE[0]>70. && fabs(event_->jetEta[0])<1.;
+}
+
+bool Cuts::looseJetCorrCut() const {     // low Et threshold
+  return event_->jet_N>0 && event_->jetECorr[0]>45. && fabs(event_->jetEta[0])<1.3;
+}
+
+bool Cuts::jetEnergyCorrCut() const {    // require jet above Et threshold
+  // raise jet energy cut to 70, since we're using a 50-GeV trigger?
+  return event_->jet_N>0 && event_->jetECorr[0]>100. && fabs(event_->jetEta[0])<1.;
 }
 
 bool Cuts::jetN60Cut() const {       // jet n60
@@ -300,13 +330,13 @@ bool Cuts::cutNSyst(unsigned n, double smear) const
   switch (n) {
   case 4:
     if (event_->jet_N>0  && event_->jetEta[0]<1.3) {
-      double jetE_syst = event_->jetECorr[0] * smear;
+      double jetE_syst = event_->jetE[0] * smear;
       return jetE_syst>30.;
     }
     else return false;
   case 5:
     if (event_->jet_N>0  && event_->jetEta[0]<1.3) {
-      double jetE_syst = event_->jetECorr[0] * smear;
+      double jetE_syst = event_->jetE[0] * smear;
       return jetE_syst>50.;
     }
     else return false;
