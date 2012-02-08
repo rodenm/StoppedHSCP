@@ -25,6 +25,8 @@ class Livetime {
   std::vector<unsigned long> fillList();
 
   std::vector<unsigned long> runList();
+
+  std::vector<std::pair<unsigned long, unsigned long> > runLumiPairs();
   
   void writeHistograms(TFile* ofile);
 

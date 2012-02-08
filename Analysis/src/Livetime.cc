@@ -69,6 +69,10 @@ std::vector<unsigned long> Livetime::runList()  {
   return runList_;
 }
 
+std::vector<std::pair<unsigned long, unsigned long> > Livetime::runLumiPairs() {
+  return runLumiPairs_;
+}
+
 
 double Livetime::getLivetimeByRun(unsigned long run) {
   
