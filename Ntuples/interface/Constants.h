@@ -13,4 +13,7 @@ const double TIME_WINDOW     = 1.256;
 const int BX_VETO_MINUS = -2;
 const int BX_VETO_PLUS = 2;
 
+const int BX_ABORTGAP = 3485;
+const int BX_L1GAP = 3529;
+
 #endif
