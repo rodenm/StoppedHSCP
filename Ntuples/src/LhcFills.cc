@@ -442,7 +442,7 @@ const int long LhcFills::getBxWrtCollision(unsigned long fill, unsigned long bxI
   }
 
   //  if (bxInOrbit==81) {
-    std::cout << std::endl << "First " << colls.at(0) << ", bxLast " << bxLast << ", bxNext " << bxNext << ", bxAfter " << bxAfter << ", bxBefore " << bxBefore << std::endl;;
+  //    std::cout << std::endl << "First " << colls.at(0) << ", bxLast " << bxLast << ", bxNext " << bxNext << ", bxAfter " << bxAfter << ", bxBefore " << bxBefore << std::endl;;
     //  }
   
   return ( abs(bxAfter) <= abs(bxBefore) ? bxAfter : bxBefore );
