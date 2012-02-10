@@ -9,6 +9,8 @@
 
 <bin name="example" file="Example.cpp"/>
 
+<bin name="mcAnalysis" file="MCAnalysis.cpp"/>
+
 <bin name="bxDistributions" file="BXDistributions.cpp"/>
 
 <bin name="haloBackground" file="HaloBackground.cpp"/>
