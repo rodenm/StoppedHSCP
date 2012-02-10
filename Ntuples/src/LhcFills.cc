@@ -388,7 +388,7 @@ const int long LhcFills::getBxWrtBunch(unsigned long fill, unsigned long bxInOrb
     }
     // general case
     else {      
-      for (unsigned c=0; c<(bunches.size()-1) && bunches.at(c)<bxInOrbit; ++c) {
+      for (unsigned c=0; c<(bunches.size()-1) && bunches.at(c)<=bxInOrbit; ++c) {
 	bxLast = bunches.at(c);
 	bxNext = bunches.at(c+1);
 	bxAfter = bxInOrbit - bxLast;
@@ -431,7 +431,7 @@ const int long LhcFills::getBxWrtCollision(unsigned long fill, unsigned long bxI
     }
     // general case
     else {      
-      for (unsigned c=0; c<(colls.size()-1) && colls.at(c)<bxInOrbit; ++c) {
+      for (unsigned c=0; c<(colls.size()-1) && colls.at(c)<=bxInOrbit; ++c) {
 	bxLast = colls.at(c);
 	bxNext = colls.at(c+1);
 	bxAfter = bxInOrbit - bxLast;
@@ -440,6 +440,10 @@ const int long LhcFills::getBxWrtCollision(unsigned long fill, unsigned long bxI
     }
 
   }
+
+  //  if (bxInOrbit==81) {
+    std::cout << std::endl << "First " << colls.at(0) << ", bxLast " << bxLast << ", bxNext " << bxNext << ", bxAfter " << bxAfter << ", bxBefore " << bxBefore << std::endl;;
+    //  }
   
   return ( abs(bxAfter) <= abs(bxBefore) ? bxAfter : bxBefore );
 
@@ -475,6 +479,16 @@ void LhcFills::print(std::ostream& o) {
       o << fills_.at(i).beam2.at(j) << ",";
     }
     o << std::endl;
+    o << "\t" << "Collisions : ";
+    for (unsigned j=0; j<fills_.at(i).collisions.size(); ++j) {
+      o << fills_.at(i).collisions.at(j) << ",";
+    }
+    o << std::endl;
+    o << "\t" << "Bunches : ";
+    for (unsigned j=0; j<fills_.at(i).bunches.size(); ++j) {
+      o << fills_.at(i).bunches.at(j) << ",";
+    }
+    o << std::endl << std::endl;
   }
   o << std::endl;
 }
