@@ -4,6 +4,7 @@
 // class to run an event loop on StoppedHSCP ntuples
 
 #include "StoppedHSCP/Analysis/interface/Cuts.h"
+#include "StoppedHSCP/Analysis/interface/Livetime.h"
 #include "StoppedHSCP/Ntuples/interface/StoppedHSCPEvent.h"
 #include "StoppedHSCP/Ntuples/interface/LhcFills.h"
 
@@ -76,6 +77,9 @@ class BasicAnalyser {
 
   // the fill structure (temporarily useful)
   LhcFills lhcFills_;
+
+  // livetime calculator
+  Livetime livetime_;
 
 };
 

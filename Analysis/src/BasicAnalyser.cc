@@ -31,7 +31,8 @@ BasicAnalyser::BasicAnalyser(int argc, char* argv[]) :
   ofile_(0),
   event_(0),
   cuts_(0, false, 0, 0),
-  lhcFills_()
+  lhcFills_(),
+  livetime_(&lhcFills_)
 {
 
   // get options
