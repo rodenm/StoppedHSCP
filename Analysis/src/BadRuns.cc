@@ -47,5 +47,23 @@ bool isBadFillOrRun(unsigned fill, unsigned run)
   if (fill>=1615 && fill<=1647) return true;
   if (run>=176709 && run<=176795) return true;
 
+  if (fill==1801) return true;
+  if (fill==1956) return true;
+  if (fill==1958) return true;
+  if (fill==2029) return true;
+  if (fill==2032) return true;
+  if (fill==2129) return true;
+  if (fill==2151) return true;
+  if (fill==2152) return true;
+  if (fill==2208) return true;
+  if (fill==2210) return true;
+  if (fill==2215) return true;
+  if (fill==2216) return true;
+  if (fill==2217) return true;
+  if (fill==2218) return true;
+  if (fill==2219) return true;
+  if (fill==2240) return true;
+  if (fill==2241) return true;
+
   return false;
 }
