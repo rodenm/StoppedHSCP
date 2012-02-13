@@ -33,7 +33,7 @@ Cuts::Cuts(StoppedHSCPEvent* event,
     addCut(&Cuts::bxVeto, "BX veto");          // 2
     addCut(&Cuts::vertexVeto, "Vertex veto");  // 3
     addCut(&Cuts::haloVeto, "Halo veto");      // 4
-    addCut(&Cuts::cosmicVeto, "Cosmic veto");  // 5
+    addCut(&Cuts::cosmicVeto2, "Cosmic veto");  // 5
     addCut(&Cuts::hcalNoiseVeto, "Noise veto");// 6
     addCut(&Cuts::looseJetCut, "E30");         // 7
     addCut(&Cuts::jetEnergyCut, "E70");        // 8
@@ -141,7 +141,7 @@ bool Cuts::bptxVeto() const {        // cut on time wrt BPTX signal
 
 bool Cuts::bxVeto() const {          // cut on BX wrt expected collisions
   //return isMC_ || !(fills_->getMaskFromRun(event_->run).at(event_->bx));
-  return isMC_ || abs(event_->bxWrtBunch) > 2;
+  return isMC_ || abs(fills_->getBxWrtBunch(event_->fill, event_->bx)) > 2;
 }
 
 bool Cuts::vertexVeto() const {      // no vertex
@@ -162,7 +162,15 @@ bool Cuts::trackVeto() const {
 }
 
 bool Cuts::cosmicVeto() const {      // no cosmic muon
+  return (event_->mu_N==0);
+}
+
+bool Cuts::cosmicVeto2() const {      // no cosmic muon
   return (event_->mu_N==0 && event_->DTSegment_N < 3);
+}
+
+bool Cuts::cosmicVeto3() const {      // no cosmic muon
+  return (event_->mu_N==0 && event_->DTSegment_N < 3 && event_->rpcHit_N<3);
 }
 
 bool Cuts::hcalNoiseVeto() const {   // std HCAL noise veto
