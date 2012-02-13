@@ -30,8 +30,10 @@ class Cuts {
   bool vertexVeto() const;      // no vertex
   bool haloVeto() const;        // no halo ID
   bool hfVeto() const;          // no HF activity
-  bool trackVeto() const;        // require no tracks
-  bool cosmicVeto() const;      // no cosmic muon
+  bool trackVeto() const;       // require no tracks
+  bool cosmicVeto() const;      // no cosmic muon (muom)
+  bool cosmicVeto2() const;     // no cosmic muon (muon or DT)
+  bool cosmicVeto3() const;     // no cosmic muon (muon or DT or RPC)
   bool hcalNoiseVeto() const;   // std HCAL noise veto
   bool looseJetCut() const;     // low Et threshold
   bool jetEnergyCut() const;    // require jet above Et threshold

@@ -33,7 +33,7 @@ Cuts::Cuts(StoppedHSCPEvent* event,
     addCut(&Cuts::bxVeto, "BX veto");          // 2
     addCut(&Cuts::vertexVeto, "Vertex veto");  // 3
     addCut(&Cuts::haloVeto, "Halo veto");      // 4
-    addCut(&Cuts::cosmicVeto2, "Cosmic veto");  // 5
+    addCut(&Cuts::cosmicVeto3, "Cosmic veto");  // 5
     addCut(&Cuts::hcalNoiseVeto, "Noise veto");// 6
     addCut(&Cuts::looseJetCut, "E30");         // 7
     addCut(&Cuts::jetEnergyCut, "E70");        // 8
@@ -170,7 +170,20 @@ bool Cuts::cosmicVeto2() const {      // no cosmic muon
 }
 
 bool Cuts::cosmicVeto3() const {      // no cosmic muon
-  return (event_->mu_N==0 && event_->DTSegment_N < 3 && event_->rpcHit_N<3);
+  if (event_->mu_N==0 && event_->DTSegment_N < 3) {
+    unsigned nCloseRPCPairs = 0;
+    for (unsigned irpc = 0; irpc < event_->rpcHit_N; irpc++) {
+      for (unsigned jrpc = irpc+1; jrpc < event_->rpcHit_N; jrpc++) {
+	double deltaZ = fabs(event_->rpcHitZ[irpc] - event_->rpcHitZ[jrpc]);
+	double deltaPhi = acos(cos(event_->rpcHitPhi[irpc] - event_->rpcHitPhi[jrpc]));
+	if (deltaZ < 100.0 and deltaPhi < 0.5) {
+	  nCloseRPCPairs++;
+	}
+      }
+    }
+    return (nCloseRPCPairs < 2);
+  }
+  return (false);
 }
 
 bool Cuts::hcalNoiseVeto() const {   // std HCAL noise veto
