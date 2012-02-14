@@ -30,7 +30,6 @@ class Search : public BasicAnalyser {
 public:
   Search(int argc, char* argv[]) :
     BasicAnalyser(argc, argv),
-    livetime_(&lhcFills_),
     nSelected_(0) {
     ofilename_ = std::string("Search.root");  /// SET YOUR OUTPUT FILENAME HERE
 
@@ -62,8 +61,6 @@ public:
 private:
 
   // YOUR CODE HERE
-  Livetime livetime_;
-
   unsigned nSelected_;
   TH1D* searchJetE_;
   TH1D* searchJetEta_;
@@ -149,26 +146,25 @@ void Search::loop() {
 
   // setup log files
   std::string fd(outdir_);
-  fd+="/fullDump.log";
+  fd+="/searchDump.txt";
   std::ofstream dumpFile;
   dumpFile.open(fd.c_str());
   dumpFile << "Cut variables for events passing all cuts" << std::endl << std::endl;
   
   std::string ei(outdir_);
-  ei+="/eventList.log";
+  ei+="/searchEvents.txt";
   std::ofstream eventFile;
   eventFile.open(ei.c_str());
 
   std::string pf(outdir_);
-  pf+="/pickEvents.txt";
+  pf+="/searchPickEvents.txt";
   std::ofstream pickFile;
   pickFile.open(pf.c_str());
 
   std::string lf(outdir_);
-  lf+="/lifetimes.txt";
+  lf+="/searchLifetimes.txt";
   std::ofstream lifetimeFile;
   lifetimeFile.open(lf.c_str());
-
 
   reset();
   nextEvent();

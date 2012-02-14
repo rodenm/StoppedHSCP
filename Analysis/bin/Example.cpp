@@ -69,6 +69,10 @@ void Example::loop() {
       std::cout << "Processing " << i << "th event of " <<maxEvents_<< std::endl;
     }
 
+    // calculate livetime
+    livetime_.newEvent(event_->fill, event_->run, event_->lb);
+
+
     // YOUR CODE HERE
     myHistogram_->Fill(1);
 

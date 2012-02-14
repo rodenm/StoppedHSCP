@@ -2,7 +2,6 @@
 #define Backgrounds_h
 
 #include "StoppedHSCP/Analysis/interface/BasicAnalyser.h"
-#include "StoppedHSCP/Analysis/interface/Livetime.h"
 #include "StoppedHSCP/Analysis/interface/MultiHistogram1D.h"
 #include "StoppedHSCP/Ntuples/interface/Constants.h"
 
@@ -23,8 +22,7 @@ class Backgrounds : public BasicAnalyser {
 
 public:
   Backgrounds(int argc, char* argv[]) :
-    BasicAnalyser(argc, argv),
-    livetime_(&lhcFills_) {
+    BasicAnalyser(argc, argv) {
     ofilename_ = std::string("Backgrounds.root");  /// SET YOUR OUTPUT FILENAME HERE
     TH1::SetDefaultSumw2();
   }
@@ -36,7 +34,6 @@ public:
 private:
 
   // YOUR CODE HERE
-  Livetime livetime_;
 
   std::vector<unsigned long> fillList_;
   MultiHistogram1D normBX_;
@@ -82,7 +79,7 @@ private:
   TH1D* cosmicRP_;
   TH1D* cosmicRO_;
 
-  // beam halo
+  // Beam halo
   TH1D* beamHaloJetE_;
   TH1D* beamHaloJetEta_;
   TH1D* beamHaloJetPhi_;
@@ -346,6 +343,8 @@ void Backgrounds::loop() {
       fillList_.push_back(fill);
 
     }
+
+    if (event_->jet_N==0) continue;
 
     // event quantities
     bool trig       = cuts_.triggerCut();
