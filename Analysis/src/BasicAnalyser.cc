@@ -78,8 +78,7 @@ BasicAnalyser::BasicAnalyser(int argc, char* argv[]) :
     maxEvents_=ULong64_t(vm["num"].as<unsigned long long>());
 
   // set cut version
-  if (vm.count("cuts") && vm["cuts"].as<unsigned>()>0) 
-    cuts_ = Cuts(0, false, vm["cuts"].as<unsigned>(), 0);
+  cuts_ = Cuts(0, false, vm["cuts"].as<unsigned>(), &lhcFills_);
 
   /// set if is this MC
   if (vm.count("mc")) {
