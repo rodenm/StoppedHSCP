@@ -170,6 +170,7 @@ bool Cuts::cosmicVeto2() const {      // no cosmic muon
 }
 
 bool Cuts::cosmicVeto3() const {      // no cosmic muon
+  //  return (event_->mu_N==0 && event_->DTSegment_N < 3 && event_->rpcHit_N < 3);
   if (event_->mu_N==0 && event_->DTSegment_N < 3) {
     unsigned nCloseRPCPairs = 0;
     for (unsigned irpc = 0; irpc < event_->rpcHit_N; irpc++) {
