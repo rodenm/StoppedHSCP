@@ -1,6 +1,7 @@
 #include "StoppedHSCP/Analysis/interface/RunHistograms.h"
 
 #include "StoppedHSCP/Ntuples/interface/Constants.h"
+#include "StoppedHSCP/Analysis/interface/BadRuns.h"
 
 #include "TMath.h"
 
@@ -133,6 +134,7 @@ void RunHistograms::summarise() {
        ++itr) {
     
     unsigned long run = *itr;
+    if (isBadRun(run)) continue; // don't fill info for bad runs
 
     std::stringstream runss;
     runss << (*itr);

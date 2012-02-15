@@ -1,7 +1,23 @@
 #include "StoppedHSCP/Analysis/interface/BadRuns.h"
 
+/*
+
+Note:  To remove a bad fill or run, you must add it to both the isBadFillOrRun and the isBadRun methods.
+
+isBadFillOrRun is used in Cuts.cc, and can cut on either fill or run values.
+isBadRun is used in RunReducedHistograms for calculating live times.  Because the live time calculation is based on a histogram
+that contains live times vs runs, one must specify a run number, rather than a fill number in this method.  
+
+The tool "convertBadFillsToBadRuns.py" in the scripts subdirectory will dump out all runs associated with user-inputted bad fills,
+using the list of runs in Ntuples/data/fills.txt to make the correlation between runs and fills.  The output of this script can be 
+inserted into the 'isBadRun' method to veto runs associated with a bad fill.
+
+*/
+
+
 bool isBadRun(unsigned long run){
-  // Checks for bad runs.  Runs associated with bad fills were taken from fills.txt
+  // Checks for bad runs. Necessary to specify by run for lumi live time calculation, which is taken from histogram with run info, but no fill info!
+  // Runs associated with bad fills were taken from fills.txt
 
   // fills 1186-1207
   if (run>=139020 && run<=139790) return true;
@@ -19,7 +35,34 @@ bool isBadRun(unsigned long run){
   if (run==147284) return true; // 1394
   // HBHE problem
   if (run>=176709 && run<=176795) return true;
+
+
+  // bad vacuum
+  /*
+    bad vacuum fills:  1801,1956,1958,2029,2032,2129,2151,2152,2208,2210,2215,2216,2217,2217,2219,2240,2241
+
+    if (fill==1801 || fill==1956 || fill==1958 || fill==2029 ||
+    fill==2032 || fill==2129 || fill==2151 || fill==2152 ||
+    fill==2208 || fill==2210 || fill==2215 || fill==2216 ||
+    fill==2217 || fill==2218 || fill==2219 || fill==2240 || fill==2241) return true;
+  */
+
+  if ((run==165506)  ||  (run==170452)  ||  (run==170527)  ||  (run==173389)  || 
+      (run==173439)  ||  (run==173438)  ||  (run==176807)  ||  (run==176805)  || 
+      (run==176801)  ||  (run==176799)  ||  (run==176797)  ||  (run==176796)  || 
+      (run==176795)  ||  (run==177088)  ||  (run==177095)  ||  (run==177096)  || 
+      (run==178424)  ||  (run==178421)  ||  (run==178420)  ||  (run==178479)  || 
+      (run==178677)  ||  (run==178675)  ||  (run==178671)  ||  (run==178670)  || 
+      (run==178669)  ||  (run==178667)  ||  (run==178738)  ||  (run==178731)  || 
+      (run==178724)  ||  (run==178712)  ||  (run==178708)  ||  (run==178703)  || 
+      (run==178786)  ||  (run==178786)  ||  (run==178871)  ||  (run==178866)  || 
+      (run==178854)  ||  (run==178840)  ||  (run==179476)  ||  (run==179452)  || 
+      (run==179434)  ||  (run==179431)  ||  (run==179497) )
+    return true;
+
   return false;
+
+
 }
 
 bool isBadFillOrRun(unsigned fill, unsigned run)
@@ -47,6 +90,7 @@ bool isBadFillOrRun(unsigned fill, unsigned run)
   if (fill>=1615 && fill<=1647) return true;
   if (run>=176709 && run<=176795) return true;
 
+  //bad vacuum fills
   if (fill==1801) return true;
   if (fill==1956) return true;
   if (fill==1958) return true;
@@ -64,6 +108,8 @@ bool isBadFillOrRun(unsigned fill, unsigned run)
   if (fill==2219) return true;
   if (fill==2240) return true;
   if (fill==2241) return true;
+
+
 
   return false;
 }
