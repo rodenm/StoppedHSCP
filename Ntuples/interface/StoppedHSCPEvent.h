@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.15 2012/02/02 00:59:21 temple Exp $
+// $Id: StoppedHSCPEvent.h,v 1.16 2012/02/03 01:32:02 jbrooke Exp $
 //
 //
 
@@ -176,10 +176,11 @@ namespace shscp {
   
   
   struct RpcHit {
-    RpcHit(): z(0), rho(0), phi(0){}
+    RpcHit(): z(0), rho(0), phi(0), region(0){}
     double z;
     double rho; 
     double phi;
+    int region;
   };
 
   
@@ -617,6 +618,7 @@ class StoppedHSCPEvent : public TObject {
   std::vector<Double_t> rpcHitZ;
   std::vector<Double_t> rpcHitRho;
   std::vector<Double_t> rpcHitPhi;
+  std::vector<Int_t>    rpcHitRegion;
 
   // HE energy -- Fedor's HE variables
   Double_t hePlusEnergy;

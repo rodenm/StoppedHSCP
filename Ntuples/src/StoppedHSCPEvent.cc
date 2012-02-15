@@ -322,6 +322,7 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   rpcHitZ(0),
   rpcHitRho(0),
   rpcHitPhi(0),
+  rpcHitRegion(0),
   hePlusEnergy (-999),
   hePlusAntiEnergy (-999),
   hePlusPhi (-999),
@@ -649,6 +650,7 @@ void StoppedHSCPEvent::addRpcHit(RpcHit h)
   rpcHitZ.push_back(h.z);
   rpcHitRho.push_back(h.rho);
   rpcHitPhi.push_back(h.phi);
+  rpcHitRegion.push_back(h.region);
   ++rpcHit_N;
 }
 

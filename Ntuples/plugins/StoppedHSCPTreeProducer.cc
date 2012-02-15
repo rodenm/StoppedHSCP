@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.24 2012/02/02 00:59:21 temple Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.25 2012/02/03 01:32:03 jbrooke Exp $
 //
 //
 
@@ -1734,6 +1734,7 @@ void StoppedHSCPTreeProducer::doMuonRPCs(const edm::Event& iEvent,const edm::Eve
     h.z = rhitglobal.z();
     h.rho = rhitglobal.perp();
     h.phi = rhitglobal.phi();
+    h.region = detId.region();
     event_->addRpcHit (h);
   } // loop on rpc hits
 
