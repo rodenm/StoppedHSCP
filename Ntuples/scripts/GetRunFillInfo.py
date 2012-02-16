@@ -117,7 +117,7 @@ def SearchDBS(datasets=["/MinimumBias/Run2011A-HSCPSD-PromptSkim-v6/RECO"],
                    178724,178712,178708,178703, 
                    178786,178786,178871,178866, 
                    178854,178840,179476,179452, 
-                   179434,179431,179497]
+                   179434,179431,179497,178803]
 
     for d in datasets:
         cmd="dbs --search --query='find run where dataset=%s'"%d
