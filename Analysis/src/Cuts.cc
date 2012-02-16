@@ -177,9 +177,17 @@ bool Cuts::cosmicVeto3() const {      // no cosmic muon
       for (unsigned jrpc = irpc+1; jrpc < event_->rpcHit_N; jrpc++) {
 	double deltaZ = fabs(event_->rpcHitZ[irpc] - event_->rpcHitZ[jrpc]);
 	double deltaPhi = acos(cos(event_->rpcHitPhi[irpc] - event_->rpcHitPhi[jrpc]));
-	if (deltaZ < 100.0 and deltaPhi < 0.5) {
+	
+	// Require barrel hits to be localized in z, endcap hits to be localzied in phi
+	if (deltaZ < 40.0 && event_->rpcHitRegion[irpc] == 0 && event_->rpcHitRegion[jrpc] == 0) {
 	  nCloseRPCPairs++;
 	}
+	if (deltaPhi < 0.4 && abs(event_->rpcHitRegion[irpc]) == 1 && abs(event_->rpcHitRegion[jrpc]) == 1) {
+	  nCloseRPCPairs++;
+	}
+	//if (deltaZ < 100.0 and deltaPhi < 0.5) {
+	//  nCloseRPCPairs++;
+	//}
       }
     }
     return (nCloseRPCPairs < 2);
