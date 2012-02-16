@@ -103,6 +103,22 @@ def SearchDBS(datasets=["/MinimumBias/Run2011A-HSCPSD-PromptSkim-v6/RECO"],
     # (according to data/badPrescale_163581_163869.json)
     badprescaleruns=[163581, 163582, 163583, 163584, 163585, 163586, 163587, 163588, 163589, 163591, 163592, 163593, 163601, 163606, 163607, 163610, 163611, 163616, 163622, 163626, 163627, 163628, 163630, 163644, 163650, 163652, 163655, 163657, 163658, 163659, 163660, 163674, 163675, 163676, 163684, 163687, 163689, 163697, 163705, 163708, 163709, 163715, 163720, 163722, 163723, 163725, 163726, 163727, 163728, 163732, 163734, 163735, 163737, 163738, 163740, 163743, 163744, 163745, 163747, 163751, 163752, 163753, 163754, 163755, 163756, 163757, 163758, 163759, 163767, 163768, 163769, 163771, 163772, 163776, 163778, 163780, 163782, 163787, 163789, 163790, 163791, 163793, 163795, 163796, 163798, 163800, 163801, 163804, 163808, 163809, 163811, 163813, 163814, 163815, 163817, 163819, 163820, 163821, 163822, 163823, 163829, 163834, 163837, 163839, 163845, 163847, 163849, 163850, 163851, 163852, 163853, 163855, 163859, 163861, 163869]
 
+    # runs associated with bad vacuum fills
+    # bad fills:   1801,1956,1958,2029,2032,2129,2151,2152,2208,2210,2215,2216,2217,2217,2219,2240,2241
+    # fill/run association comes from fills.txt
+
+    badvacuumruns=[165506,170452,170527,173389, 
+                   173439,173438,176807,176805, 
+                   176801,176799,176797,176796, 
+                   176795,177088,177095,177096, 
+                   178424,178421,178420,178479, 
+                   178677,178675,178671,178670, 
+                   178669,178667,178738,178731, 
+                   178724,178712,178708,178703, 
+                   178786,178786,178871,178866, 
+                   178854,178840,179476,179452, 
+                   179434,179431,179497]
+
     for d in datasets:
         cmd="dbs --search --query='find run where dataset=%s'"%d
         print "Searching DBS, using this command:"
@@ -114,6 +130,9 @@ def SearchDBS(datasets=["/MinimumBias/Run2011A-HSCPSD-PromptSkim-v6/RECO"],
                 run=string.atoi(string.strip(i))
                 if (run in badprescaleruns):
                     print "Run %i was prescaled; ignoring this run"%run
+                    continue
+                elif (run in badvacuumruns):
+                    print "Run %i comes from a fill with bad vacuum; ignoring this run"%run
                     continue
                 elif (run>=176709 and run<=176795):
                     print "Run %i had bad HBHE window; ignoring this run"%run
@@ -273,12 +292,13 @@ def MakeJsonFile(json=None,
     newfile="runs_SE_%u_%u.json"%(string.atoi(finalkeys[0]),
                                   string.atoi(finalkeys[-1])
                                   )
+
     print "Moving file '%s' to '%s'"%(newjson,newfile)
     cmd="mv %s %s"%(newjson, newfile)
     os.system(cmd)
 
     # Copy file to ../data directory.  Change 'cp' to 'mv'?
-    if os.getenv("CMSSW_BASE")<>None:
+    if 1<0 or os.getenv("CMSSW_BASE")<>None:
         print "Copying new json file to %s"%os.path.join(os.getenv("CMSSW_BASE"),"src/StoppedHSCP/Ntuples/data",newfile)
         cmd="cp %s %s"%(newfile, 
                         os.path.join(os.getenv("CMSSW_BASE"),
