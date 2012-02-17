@@ -2,7 +2,7 @@
 from math import *
 
 # constants
-TIME_PER_BX       = 25.e-9
+TIME_PER_BX       = 24.95097e-9
 BX_PER_ORBIT      = 3564
 ORBIT_PER_LS      = pow(2., 18)
 TIME_PER_LS       = TIME_PER_BX * BX_PER_ORBIT * ORBIT_PER_LS
