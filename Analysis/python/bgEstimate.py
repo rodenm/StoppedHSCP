@@ -3,8 +3,8 @@
 from math import sqrt
 
 # fixed numbers [ value, uncertainty ]
-noiseRate   = [ 2.4E-7, 1.1E-7 ]
-cosmicIneff = [ 0.0029, 0.0007 ]
+noiseRate   = [ 1.6E-6, 2.52E-6 ]
+cosmicIneff = [ 0.00214, 0.00023 ]
 
 def totalBackground( livetime, cosmicNM1, nHalo ):
 
@@ -12,7 +12,7 @@ def totalBackground( livetime, cosmicNM1, nHalo ):
     r2 = cosmicNM1[1]/cosmicNM1[0]
     r3 = nHalo[1]/nHalo[0]
 
-    Rn = noiseRate[1]/noiseRate[0]
+    rn = noiseRate[1]/noiseRate[0]
     rc = cosmicIneff[1]/cosmicIneff[0]
 
     nNoise = [ ]
@@ -40,44 +40,44 @@ def totalBackground( livetime, cosmicNM1, nHalo ):
 
 
 # 2010A
-livetime  = [ 891393, 23 ]
-cosmicNM1 = [ 1650, sqrt(1650) ]
+livetime  = [ 897802, 23 ]
+cosmicNM1 = [ 1663, sqrt(1663) ]
 nHalo     = [ 1e-32, 0.0 ]
 print "Run2010A"
 res2010A = totalBackground( livetime, cosmicNM1, nHalo )
 res2010A.append( [5] )
 
 # 2010B
-livetime  = [ 300088, 23 ]
-cosmicNM1 = [ 467, sqrt(467) ]
+livetime  = [ 300065, 23 ]
+cosmicNM1 = [ 473, sqrt(473) ]
 nHalo     = [ 0.33, 0.16 ]
 print "Run2010B"
 res2010B = totalBackground( livetime, cosmicNM1, nHalo )
-res2010B.append( [7] )
+res2010B.append( [4] )
 
 # 2011A
-livetime  = [ 848787, 23 ]
-cosmicNM1 = [ 2278, sqrt(2278) ]
+livetime  = [ 724767, 23 ]
+cosmicNM1 = [ 2243, sqrt(2243) ]
 nHalo     = [ 1.2, 0.6 ]
 print "Run2011A"
 res2011A = totalBackground( livetime, cosmicNM1, nHalo )
 res2011A.append( [9] )
 
 # 2011B
-livetime  = [ 203320, 23 ]
-cosmicNM1 = [ 530, sqrt(530) ]
+livetime  = [ 159283, 23 ]
+cosmicNM1 = [ 423, sqrt(423) ]
 nHalo     = [ 0.3, 0.1 ]
 print "Run2011B"
 res2011B = totalBackground( livetime, cosmicNM1, nHalo )
-res2011B.append( [6] )
+res2011B.append( [3] )
 
 # 2011A+B
-livetime  = [ 1052139, 23 ]
-cosmicNM1 = [ 2808, sqrt(2808) ]
+livetime  = [ 884051, 23 ]
+cosmicNM1 = [ 2666, sqrt(2666) ]
 nHalo     = [ 1.5, 0.7 ]
 print "Run2011A+B"
 res2011AB = totalBackground( livetime, cosmicNM1, nHalo )
-res2011AB.append( [15] )
+res2011AB.append( [12] )
 
 print "[TABLE border='1']"  
 print "Period | Noise         | Cosmic         | Halo          | Total         | NObs |-"
