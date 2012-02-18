@@ -56,11 +56,38 @@ public:
   
   void printCutValues(ostream& o);
 
+  void cutAxisLabels(TH1D* h);
+
   virtual void loop();
   
 private:
 
   // YOUR CODE HERE
+
+  // cut flow
+  TH1D* hncutind_;
+  TH1D* hncutcum_;
+  TH1D* hnminus1cut_;
+
+  // systematics
+  TH1D* hncutsystlo_;
+  TH1D* hncutsysthi_;
+  TH1D* hncutsystg_;
+  
+  // N-1 distributions
+  TH1D* hnmu_nmo_;
+  TH1D* hjete_nmo_;
+  TH1D* hjetn60_nmo_;
+  TH1D* hjetn90_nmo_;
+  TH1D* hntowiphi_nmo_;
+  TH1D* hiphifrac_nmo_;
+  TH1D* hr1_nmo_;
+  TH1D* hr2_nmo_;
+  TH1D* hrpk_nmo_;
+  TH1D* hrout_nmo_;
+  TH1D* hjetemf_nmo_;
+
+  // final selection
   unsigned nSelected_;
   TH1D* searchJetE_;
   TH1D* searchJetEta_;
@@ -142,6 +169,31 @@ void Search::loop() {
   searchNTrack_   = new TH1D("hSearchNTrack",  "Search - N_{track}",      20, -0.5, 19.5);
   searchNVtx_     = new TH1D("hSearchNVtx",    "Search - N_{vertex}",     10, -0.5, 9.5);
 
+  hncutind_ = new TH1D("hncutind", "Cut counts", 20, 0., 20.);
+  cutAxisLabels(hncutind_);
+  hncutcum_ = new TH1D("hncutcum", "Cumulative cut counts", 20, 0., 20.);
+  cutAxisLabels(hncutcum_);  
+  hnminus1cut_ = new TH1D("hnminus1cut", "N-1 cut counts", 20, 0., 20.);
+  cutAxisLabels(hnminus1cut_);
+
+  hncutsystlo_ = new TH1D("hncutsystlo", "Cum cut counts (low JES syst)", 20, 0., 20.);
+  cutAxisLabels(hncutsystlo_);  
+  hncutsysthi_ = new TH1D("hncutsysthi", "Cum cut counts (hi JES syst)", 20, 0., 20.);
+  cutAxisLabels(hncutsysthi_);  
+  hncutsystg_ = new TH1D("hncutsystg", "Cum cut counts (Gauss JES syst)", 20, 0., 20.);
+  cutAxisLabels(hncutsystg_);  
+
+  hnmu_nmo_ = new TH1D("hnmu_nmo", "N muons (N-1)", 4, -0.5, 3.5);;
+  hjete_nmo_ = new TH1D("hjete_nmo", "Leading jet energy (N-1)", 50, 0., 200.);
+  hjetn60_nmo_ = new TH1D("hjetn60_nmo", "Leading jet N60 (N-1)", 25, 0., 25.);
+  hjetn90_nmo_ = new TH1D("hjetn90_nmo", "Leading jet N90 (N-1)", 25, 0., 25.);
+  hntowiphi_nmo_ = new TH1D("hntowsameiphi_nmo", "N leading towers at same iphi (N-1)", 20, -0.5, 19.5);
+  hiphifrac_nmo_ = new TH1D("hiphifrac_nmo", "iphi E fraction", 50, 0., 1.);
+  hr1_nmo_ = new TH1D("hr1_nmo", "R_{1} (N-1)", 50, 0., 1.);
+  hr2_nmo_ = new TH1D("hr2_nmo", "R_{2} (N-1)", 50, 0., 1.);
+  hrpk_nmo_ = new TH1D("hrpk_nmo", "R_{peak} (N-1)", 50, 0., 1.);
+  hrout_nmo_ = new TH1D("hrout_nmo", "R_{outer} (N-1)", 30, 0., 1.);
+  hjetemf_nmo_ = new TH1D("hjetemf_nmo", "Leading jet EM fraction (N-1)", 100, 0., 1.);
 
 
   // setup log files
@@ -190,19 +242,83 @@ void Search::loop() {
 
     // event quantities
     int bxWrtBunch  = event_->bxWrtBunch;
-    double e        = event_->jetE[0];
-    double eta      = event_->jetEta[0];
-    double phi      = event_->jetPhi[0];
-    unsigned n60    = event_->jetN60[0];
-    unsigned n90    = event_->jetN90[0];
+    double e(0.), eta(0.), phi(0.);
+    unsigned n60(0), n90(0);
+    if (event_->jet_N>0) {
+      double e        = event_->jetE[0];
+      double eta      = event_->jetEta[0];
+      double phi      = event_->jetPhi[0];
+      unsigned n60    = event_->jetN60[0];
+      unsigned n90    = event_->jetN90[0];
+    }
     unsigned ntow   = event_->nTowerSameiPhi;
     double fiphi    = event_->leadingIPhiFractionValue;
+    double r1       = event_->topHPD5R1;
+    double r2       = event_->topHPD5R2;
+    double rp       = event_->topHPD5RPeak;
+    double ro       = event_->topHPD5ROuter;
     bool bh         = event_->beamHalo_CSCLoose;
     unsigned nmu    = event_->mu_N;
     unsigned ncsc   = event_->cscSeg_N;
     unsigned ntrk   = event_->track_N;
     unsigned nvtx   = event_->nVtx;
 
+    // cut flow histograms
+    bool fail=false;
+    for (unsigned c=0; c<cuts_.nCuts(); c++) {
+      
+      // N-1
+      if (cuts_.cutNMinusOne(c)) {
+	hnminus1cut_->Fill(c);
+// 	hbx_nm1_.at(c)->Fill(event.bx);
+// 	hrelbx_nm1_.at(c)->Fill(event.bxWrtCollision);
+// 	if (event.jet_N > 0) {
+// 	  hjete_nm1_.at(c)->Fill(event.jetE[0]);
+// 	  hjeteta_nm1_.at(c)->Fill(event.jetEta[0]);
+// 	  hjetphi_nm1_.at(c)->Fill(event.jetPhi[0]);
+// 	  hjetetaphi_nm1_.at(c)->Fill(event.jetEta[0], event.jetPhi[0]);
+// 	}
+      }
+      // passes all cuts so far
+      if (cuts_.cutN(c)) {
+	hncutind_->Fill(c);
+      }
+      
+      else fail |= true;
+      if (!fail) {
+	hncutcum_->Fill(c);
+	
+      }
+    }
+    
+    // N-1 histograms
+    if (cuts_.cutNMinusOne(5)) hnmu_nmo_->Fill(nmu);
+    if (cuts_.cutNMinusOne(8)) hjete_nmo_->Fill(e);
+    if (cuts_.cutNMinusOne(9)) hjetn60_nmo_->Fill(n60);
+    if (cuts_.cutNMinusOne(10)) hjetn90_nmo_->Fill(n90);
+    if (cuts_.cutNMinusOne(11)) hntowiphi_nmo_->Fill(ntow);
+    if (cuts_.cutNMinusOne(12)) hiphifrac_nmo_->Fill(fiphi);
+    if (cuts_.cutNMinusOne(13)) hr1_nmo_->Fill(r1);
+    if (cuts_.cutNMinusOne(14)) hr2_nmo_->Fill(r2);
+    if (cuts_.cutNMinusOne(15)) hrpk_nmo_->Fill(rp);
+    if (cuts_.cutNMinusOne(16)) hrout_nmo_->Fill(ro);
+    
+    // systematics
+    fail=false;
+    double smear = 0.9;
+    for (unsigned c=0; c<cuts_.nCuts(); c++) {
+      if (!cuts_.cutNSyst(c, smear)) fail |= true;
+      if (!fail) hncutsystlo_->Fill(c);
+    }
+    
+    fail=false;
+    smear = 1.1;
+    for (unsigned c=0; c<cuts_.nCuts(); c++) {
+      if (!cuts_.cutNSyst(c, smear)) fail |= true;
+      if (!fail) hncutsysthi_->Fill(c);
+    }
+
+    // final selection histograms
     if (cuts_.cut()) {
 
       // fill histograms
@@ -258,14 +374,57 @@ void Search::loop() {
   }
   std::cout << std::endl;
 
+  double livetime = livetime_.getTotalLivetime();
+  std::cout << "Total livetime : " << livetime << std::endl;
 
-  std::cout << "Total livetime : " << livetime_.getTotalLivetime() << std::endl;
-
-  std::cout << "Final rate : " << nSelected_/livetime_.getTotalLivetime()
-	    << " +/- " << sqrt(nSelected_)/livetime_.getTotalLivetime() 
+  std::cout << "Final rate : " << nSelected_/livetime
+	    << " +/- " << sqrt(nSelected_)/livetime
 	    << std::endl;
 
+  std::cout << std::endl;
+
+  // write out cutflow
+  std::cout << "[TABLE border=1]" << std::endl;
+  unsigned ntot = hncutcum_->GetBinContent(1);
+  if (isMC_) std::cout << "|Cut\t|N\t|cum %\t|N-1 % |-" << std::endl;
+  else std::cout << "|Cut\t|N\t|Rate (Hz) |N-1 % |N-1 (Hz)|-" << std::endl;
+  for (unsigned i=0; i<cuts_.nCuts(); ++i) {
+    unsigned ncum = hncutcum_->GetBinContent(i+1);
+    unsigned nind = hncutind_->GetBinContent(i+1);
+    unsigned nnmo = hnminus1cut_->GetBinContent(i+1);
+    std::string label = hncutcum_->GetXaxis()->GetBinLabel(i+1);
+    if (isMC_) {
+      if (ntot>0) printf("|%i %s | %i | %.2e | %.2e |\n", i, label.c_str(), ncum, 100.*ncum/ntot, 100.*nnmo/ntot);
+      else printf("|%i %s | %i | N/A | N/A |\n", i, label.c_str(), ncum);
+    }
+    else {
+      if (ntot>0) printf("|%i %s | %i | %.2e +/- %.2e | %i | %.2e +/- %.2e |-\n", i, label.c_str(), ncum, ncum/livetime, sqrt(ncum)/livetime, nnmo, nnmo/livetime, sqrt(nnmo)/livetime);
+    else printf("|%i %s | %i | N/A | N/A | N/A |\n", i, label.c_str(), ncum);
+    }
+  }
+  std::cout << "[/TABLE]" << std::endl;
+
+  std::cout << std::endl;
+
+
   // save histograms
+  hncutind_->Write("",TObject::kOverwrite);
+  hncutcum_->Write("",TObject::kOverwrite);
+  hnminus1cut_->Write("",TObject::kOverwrite);
+  hncutsystlo_->Write("",TObject::kOverwrite);
+  hncutsysthi_->Write("",TObject::kOverwrite);
+  hncutsystg_->Write("",TObject::kOverwrite);
+  hnmu_nmo_->Write("",TObject::kOverwrite);
+  hjete_nmo_->Write("",TObject::kOverwrite);
+  hjetn60_nmo_->Write("",TObject::kOverwrite);
+  hjetn90_nmo_->Write("",TObject::kOverwrite);
+  hntowiphi_nmo_->Write("",TObject::kOverwrite);
+  hiphifrac_nmo_->Write("",TObject::kOverwrite);
+  hr1_nmo_->Write("",TObject::kOverwrite);
+  hr2_nmo_->Write("",TObject::kOverwrite);
+  hrpk_nmo_->Write("",TObject::kOverwrite);
+  hrout_nmo_->Write("",TObject::kOverwrite);
+  hjetemf_nmo_->Write("",TObject::kOverwrite);
   searchJetE_->Write("",TObject::kOverwrite);
   searchJetEta_->Write("",TObject::kOverwrite);
   searchJetPhi_->Write("",TObject::kOverwrite);
@@ -350,6 +509,13 @@ void Search::loop() {
 
 }
 
+void Search::cutAxisLabels(TH1D* h) {
+
+  for (unsigned i=0; i<cuts_.nCuts(); ++i) {
+    h->GetXaxis()->SetBinLabel(i+1, cuts_.cutName(i).c_str());
+  }
+
+}
 
 
 // this is the main program, no need to do anything here
