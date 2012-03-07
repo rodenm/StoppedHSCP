@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.16 2012/02/03 01:32:02 jbrooke Exp $
+// $Id: StoppedHSCPEvent.h,v 1.17 2012/02/15 21:40:53 rodenm Exp $
 //
 //
 
@@ -649,7 +649,7 @@ class StoppedHSCPEvent : public TObject {
   double top5DigiRPeak;
   double top5DigiROuter;
 
-  ClassDef(StoppedHSCPEvent,22); // version 22: includes RPC info
+  ClassDef(StoppedHSCPEvent,24); // version 24: updated DT segments
 
 };
 

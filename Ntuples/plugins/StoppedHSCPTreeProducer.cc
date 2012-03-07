@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.25 2012/02/03 01:32:03 jbrooke Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.26 2012/02/15 21:40:52 rodenm Exp $
 //
 //
 
@@ -1681,10 +1681,12 @@ void StoppedHSCPTreeProducer::doMuonDTs(const edm::Event& iEvent,const edm::Even
 	   ++segment4D)
 	{
 	  // skip invalid values
+	  /*
 	  if((*chamberId).station() != 4 && 
 	     (*segment4D).dimension() != 4) continue;
 	  if((*chamberId).station() == 4 && 
 	     (*segment4D).dimension() != 2) continue;
+	  */
 	  ++nchamberseg;
 
 	  const GeomDet* gdet=dtGeom->idToDet(segment4D->geographicalId());
