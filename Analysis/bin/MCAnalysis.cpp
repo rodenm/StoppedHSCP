@@ -514,7 +514,7 @@ void MCAnalysis::efficiencyStudy() {
   // TODO: The no-jet solution is kind of a cop-out.
 
   unsigned iMatch;
-  if (event_->jet_N == 0) {
+  if (event_->jet_N == 0 || event_->mcStoppedParticle_N == 1) {
     iMatch = 0;
   } else {
     double stoppedEta0 = eta(event_->mcStoppedParticleX[0], 
