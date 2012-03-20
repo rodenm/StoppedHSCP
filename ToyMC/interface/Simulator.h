@@ -24,7 +24,7 @@ class Simulator {
   
   // set up
   void setParameters(Experiment* e);
-  void setupLumi(bool buildFromDB, bool lumiCalc2, bool useHists);
+  void setupLumi(bool buildFromDB, bool lumiCalc2, bool useHists, std::string file);
   void setFillScheme(unsigned fill);
   void setupLifetimeMask();
   void setupObservedEvents();

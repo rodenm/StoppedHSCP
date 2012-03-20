@@ -49,19 +49,21 @@ class Luminosity {
 		   unsigned lumiLastRun);
 
   // build model from file, for a list of runs
-  void buildFromFile(std::vector<unsigned long> runs, 
+  void buildFromFile(std::string filename,
+		     std::vector<unsigned long> runs, 
 		     bool useHists,
 		     std::string goodLSFile,
 		     unsigned lumiFirstRun,
 		     unsigned lumiLastRun);
 
   // build model from file, compatible with lumiCalc2 output
-  void buildFromFile2(std::vector<unsigned long> runs, 
-		     bool useHists,
-		     std::string goodLSFile,
-		     unsigned lumiFirstRun,
-		     unsigned lumiLastRun);
-
+  void buildFromFile2(std::string filename,
+		      std::vector<unsigned long> runs, 
+		      bool useHists,
+		      std::string goodLSFile,
+		      unsigned lumiFirstRun,
+		      unsigned lumiLastRun);
+  
   // generate model from parameters
   void buildFromModel(unsigned int cycles, 
 		      unsigned int units_on, 

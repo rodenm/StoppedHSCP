@@ -284,7 +284,8 @@ void Luminosity::buildFromDB(std::vector<unsigned long> runs,
 }
 
 
-void Luminosity::buildFromFile(std::vector<unsigned long> runs,
+void Luminosity::buildFromFile(std::string filename,
+			       std::vector<unsigned long> runs,
 			       bool useHists,
 			       std::string goodLSFile,
 			       unsigned lumiFirstRun,
@@ -293,8 +294,6 @@ void Luminosity::buildFromFile(std::vector<unsigned long> runs,
   std::cout << "Setting up Lumi data" << std::endl;
 
   // open file with lumi info
-  std::string filename(getenv("CMSSW_BASE"));
-  filename+=std::string("/src/StoppedHSCP/Analysis/data/lumi_all.csv");
   std::cout << "Reading lumi info from " << filename << std::endl;
   std::ifstream lumifile(filename.c_str());
   
@@ -365,17 +364,16 @@ void Luminosity::buildFromFile(std::vector<unsigned long> runs,
 }
 
 
-void Luminosity::buildFromFile2(std::vector<unsigned long> runs,
-			       bool useHists,
-			       std::string goodLSFile,
-			       unsigned lumiFirstRun,
-			       unsigned lumiLastRun) {
+void Luminosity::buildFromFile2(std::string filename,
+				std::vector<unsigned long> runs,
+				bool useHists,
+				std::string goodLSFile,
+				unsigned lumiFirstRun,
+				unsigned lumiLastRun) {
 
   std::cout << "Setting up Lumi data" << std::endl;
 
   // open file with lumi info
-  std::string filename(getenv("CMSSW_BASE"));
-  filename+=std::string("/src/StoppedHSCP/Analysis/data/lumi2.csv");
   std::cout << "Reading lumi info from " << filename << std::endl;
   std::ifstream lumifile(filename.c_str());
   

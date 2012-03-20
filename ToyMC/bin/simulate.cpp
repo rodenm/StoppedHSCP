@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
   sim.setupObservedEvents();
 
   // set up luminosity data
-  sim.setupLumi(false, false, true);
+  sim.setupLumi(false, false, true, e->lumiFile);
 
   // set up lifetime mask
   sim.setupLifetimeMask();

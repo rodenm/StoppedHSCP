@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
   sim.setupObservedEvents();
 
   // set up luminosity data
-  sim.setupLumi(true, false, true);
+  sim.setupLumi(true, false, true, std::string(""));
 
   // set up lifetime mask
   sim.setupLifetimeMask();

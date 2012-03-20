@@ -53,7 +53,8 @@ void Simulator::setupObservedEvents() {
 
 void Simulator::setupLumi(bool buildFromDB,
 			  bool lumiCalc2,
-			  bool useHists) {
+			  bool useHists,
+			  std::string file) {
 
   // get runs for all fills
   std::vector<unsigned long> runs;
@@ -72,10 +73,10 @@ void Simulator::setupLumi(bool buildFromDB,
   }
   else {
     if (lumiCalc2) {
-      lumi_.buildFromFile2(runs, useHists, goodDataFile, expt_->lumiFirstRun, expt_->lumiLastRun);
+      lumi_.buildFromFile2(file, runs, useHists, goodDataFile, expt_->lumiFirstRun, expt_->lumiLastRun);
     }
     else {
-      lumi_.buildFromFile(runs, useHists, goodDataFile, expt_->lumiFirstRun, expt_->lumiLastRun);
+      lumi_.buildFromFile(file, runs, useHists, goodDataFile, expt_->lumiFirstRun, expt_->lumiLastRun);
     }
   }
 
