@@ -416,7 +416,11 @@ void Luminosity::buildFromFile2(std::string filename,
 	//	std::cout << strs.at(0) << " " << strs.at(1) << " " << strs.at(2) << " " << strs.at(3) << " " << strs.at(4) << " " << strs.at(5) << " " << strs.at(6) << std::endl;
 
 	// run
-	lb.run  = boost::lexical_cast<unsigned long>(strs.at(0));
+	std::vector<std::string> rfstrs;
+	boost::split(rfstrs, strs.at(0), boost::is_any_of(":"));
+	//	std::cout << strs.at(0) << " " << rfstrs.size() << std::endl;
+
+	lb.run  = boost::lexical_cast<unsigned long>(rfstrs.at(0));
 
 	// ignore anything before the first lumi run
 	if (lb.run < lumiFirstRun) continue;
