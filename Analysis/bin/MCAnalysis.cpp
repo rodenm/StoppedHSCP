@@ -356,6 +356,8 @@ void MCAnalysis::loop() {
     std::cout << "HE & selected count = " << reco_he_count_ << std::endl;
     std::cout << "MB & selected count = " << reco_mb_count_ << std::endl;
     std::cout << "ME & selected count = " << reco_me_count_ << std::endl;
+    std::cout << "Detector & selected count = " << selected_indetector_count_ << std::endl << std::endl;;
+
     std::cout << "Other & selected count = " << reco_other_count_ << std::endl << std::endl;
  
     std::cout << "detector_count = " << detector_count_ << std::endl;
@@ -363,7 +365,7 @@ void MCAnalysis::loop() {
     std::cout << "no r-baryon count = " << not_rbaryon_count_ << std::endl;
     std::cout << "no r-baryon (stopped in EB+HB) count = " << not_rbaryon_inhbeb_count_ << std::endl;
     std::cout << "glueball count = " << glueball_count_ << std::endl << std::endl;
-    std::cout << "\n\n@@@@@@@@@@@@@@@ selected_indetector_count = " << selected_indetector_count_ << std::endl << std::endl;;
+    
   }
 
   if (doOverlap_) {
