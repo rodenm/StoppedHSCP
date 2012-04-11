@@ -64,7 +64,7 @@ process.load('StoppedHSCP/Ntuples/stoppedHSCPTree_cfi')
 # get jet corrections
 process.load('JetMETCorrections.Configuration.DefaultJEC_cff')
 process.stoppedHSCPTree.jetCorrectorServiceName = cms.untracked.string("ak5CaloL2L3")
-process.ak5CaloL1Offset.useCondDB = False
+#process.ak5CaloL1Offset.useCondDB = False
 
 # histogram producer
 process.load('StoppedHSCP/Ntuples/stoppedHSCPHistograms_cfi')
