@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.18 2012/03/07 00:39:17 temple Exp $
+// $Id: StoppedHSCPEvent.h,v 1.19 2012/03/07 00:43:37 temple Exp $
 //
 //
 
@@ -350,6 +350,7 @@ class StoppedHSCPEvent : public TObject {
   bool hltJetNoBptxNoHalo;
   bool hltJetNoBptx3BXNoHalo;
   bool hltJetE50NoBptx3BXNoHalo;
+  bool hltJetE70NoBptx3BXNoHalo;
 
   // Add prescales
   Int_t algoTriggerPrescaleIndex;
@@ -364,6 +365,7 @@ class StoppedHSCPEvent : public TObject {
   Int_t hltJetNoBptxNoHaloPrescale;
   Int_t hltJetNoBptx3BXNoHaloPrescale;
   Int_t hltJetE50NoBptx3BXNoHaloPrescale;
+  Int_t hltJetE70NoBptx3BXNoHaloPrescale;
 
   // trigger jets
   unsigned l1Jet_N;
@@ -649,7 +651,7 @@ class StoppedHSCPEvent : public TObject {
   double top5DigiRPeak;
   double top5DigiROuter;
 
-  ClassDef(StoppedHSCPEvent,22); // version 22: includes RPC info
+  ClassDef(StoppedHSCPEvent,24); // version 24: includes new 2012 triggers
 
 };
 

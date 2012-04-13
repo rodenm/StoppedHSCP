@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.27 2012/03/07 00:39:18 temple Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.28 2012/03/07 00:43:37 temple Exp $
 //
 //
 
@@ -308,6 +308,7 @@ private:
   bool doHltBit2_;
   bool doHltBit3_;
   bool doHltBit4_;
+  bool doHltBit5_;
   bool writeHistos_;
   
 
@@ -327,6 +328,7 @@ private:
   std::string hltPathJetNoBptxNoHalo_;
   std::string hltPathJetNoBptx3BXNoHalo_;
   std::string hltPathJetE50NoBptx3BXNoHalo_;
+  std::string hltPathJetE70NoBptx3BXNoHalo_;
   edm::InputTag hltL3Tag_;
   edm::InputTag mcTag_;
   std::string mcProducer_;
@@ -359,6 +361,7 @@ private:
   unsigned hltPathIndexJetNoBptxNoHalo_;
   unsigned hltPathIndexJetNoBptx3BXNoHalo_;
   unsigned hltPathIndexJetE50NoBptx3BXNoHalo_;
+  unsigned hltPathIndexJetE70NoBptx3BXNoHalo_;
 
   // geometry
   const CaloGeometry* caloGeom_;
@@ -453,6 +456,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   doHltBit2_(true),
   doHltBit3_(true),
   doHltBit4_(true),
+  doHltBit5_(true),
   writeHistos_(iConfig.getUntrackedParameter<bool>("writeHistos",false)),
   condInEdmTag_(iConfig.getUntrackedParameter<edm::InputTag>("conditionsInEdm",std::string("CondInEdmInputTag"))),
   l1JetsTag_(iConfig.getUntrackedParameter<std::string>("l1JetsTag",std::string("l1extraParticles"))),
@@ -471,6 +475,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   hltPathJetNoBptxNoHalo_(iConfig.getUntrackedParameter<std::string>("hltPathJetNoBptxNoHalo",std::string("HLT_JetE30_NoBPTX_NoHalo_v1"))),
   hltPathJetNoBptx3BXNoHalo_(iConfig.getUntrackedParameter<std::string>("hltPathJetNoBptx3BXNoHalo",std::string("HLT_JetE30_NoBPTX3BX_NoHalo_v1"))),
   hltPathJetE50NoBptx3BXNoHalo_(iConfig.getUntrackedParameter<std::string>("hltPathJetE50NoBptx3BXNoHalo",std::string("HLT_JetE50_NoBPTX3BX_NoHalo_v1"))),
+  hltPathJetE70NoBptx3BXNoHalo_(iConfig.getUntrackedParameter<std::string>("hltPathJetE70NoBptx3BXNoHalo",std::string("HLT_JetE70_NoBPTX3BX_NoHalo_v1"))),
   hltL3Tag_(iConfig.getUntrackedParameter<edm::InputTag>("hltL3Tag",edm::InputTag("hltStoppedHSCP1CaloJetEnergy","","HLT"))),
   mcTag_(iConfig.getUntrackedParameter<edm::InputTag>("mcTag",edm::InputTag("generator"))),
   mcProducer_ (iConfig.getUntrackedParameter<std::string>("producer", "g4SimHits")),
@@ -686,6 +691,32 @@ StoppedHSCPTreeProducer::beginRun(edm::Run const & iRun, edm::EventSetup const& 
   catch (cms::Exception e) {
     edm::LogWarning("StoppedHSCPTree") << "HLTJetE50NoBPTX3BXNoHalo:  Could not find an HLT path matching " << hltPathJetE50NoBptx3BXNoHalo_ << ".  Branch will not be filled" << std::endl;
     doHltBit4_ = false;
+  }
+  // HLT Path -- JetE70 No BPTX, No Halo, 3BX (new for 2012)
+  try {
+    hltPathIndexJetE70NoBptx3BXNoHalo_=(hltConfig_.triggerNames()).size();  // default value
+    for (uint i=0;i<(hltConfig_.triggerNames()).size();++i)
+      {
+	std::string trigName=hltConfig_.triggerName(i);
+	// Search for first occurrence of trigger name
+	if (hltPathJetE70NoBptx3BXNoHalo_.size()>0 &&
+	    trigName.find(hltPathJetE70NoBptx3BXNoHalo_)!= std::string::npos)
+	  {
+	    hltPathIndexJetE70NoBptx3BXNoHalo_ = hltConfig_.triggerIndex(trigName); // could just set to i, but let's be careful...
+	  }
+      }
+    edm::LogInfo("StoppedHSCPTree") << hltPathJetE70NoBptx3BXNoHalo_ << " index is " << hltPathIndexJetE70NoBptx3BXNoHalo_ << std::endl;
+    if (hltPathIndexJetE70NoBptx3BXNoHalo_==(hltConfig_.triggerNames()).size())
+      {
+	edm::LogWarning("StoppedHSCPTree") << "HLTJetE70NoBPTX3BXNoHalo:  Could not find an HLT path matching "<<hltPathJetE70NoBptx3BXNoHalo_<<".  Branch will not be filled."<<std::endl;
+	doHltBit5_=false;
+      }
+    else
+      edm::LogInfo("StoppedHSCPTree") << hltPathJetE70NoBptx3BXNoHalo_ << " index is " << hltPathIndexJetE70NoBptx3BXNoHalo_ << std::endl;
+  }
+  catch (cms::Exception e) {
+    edm::LogWarning("StoppedHSCPTree") << "HLTJetE70NoBPTX3BXNoHalo:  Could not find an HLT path matching " << hltPathJetE70NoBptx3BXNoHalo_ << ".  Branch will not be filled" << std::endl;
+    doHltBit5_ = false;
   }
 
 
@@ -1188,7 +1219,7 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
   if (errorAlgo!=0)
     event_->algoTriggerPrescaleIndex=-999;
   if (errorTech!=0)
-    event_->algoTriggerPrescaleIndex=-999;
+    event_->techTriggerPrescaleIndex=-999;
 
   event_->gtAlgoWord0 = gtAlgoWord0;
   event_->gtAlgoWord1 = gtAlgoWord1;
@@ -1205,6 +1236,7 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
 								l1JetNoBptxNoHaloName_,
 								errorCode);
   if (errorCode!=0) event_->l1JetNoBptxNoHaloPrescale=-999;
+  std::cout <<"PRESCALE 20 = "<< event_->l1JetNoBptxNoHaloPrescale <<"  errorCode = "<<errorCode<<std::endl;
 
   event_->l1Jet32NoBptxNoHaloPrescale = l1gtutils->prescaleFactor(iEvent,
 								  l1Jet32NoBptxNoHaloName_,
@@ -1213,7 +1245,7 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
 
   
   // Test output; need to check error code
-  //std::cout <<"PRESCALE 32 = "<< event_->l1Jet32NoBptxNoHaloPrescale <<"  errorCode = "<<errorCode<<std::endl;
+  std::cout <<"PRESCALE 32 = "<< event_->l1Jet32NoBptxNoHaloPrescale <<"  errorCode = "<<errorCode<<std::endl;
 
 
   // L1 trigger bits for -2..+2 BX
@@ -1247,7 +1279,11 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
   
   // HLT config setup
   // moved to beginRun()
-  bool hltBitJetNoBptx(false), hltBitJetNoBptxNoHalo(false), hltBitJetNoBptx3BXNoHalo(false), hltBitJetE50NoBptx3BXNoHalo(false);
+  bool hltBitJetNoBptx(false), 
+    hltBitJetNoBptxNoHalo(false), 
+    hltBitJetNoBptx3BXNoHalo(false), 
+    hltBitJetE50NoBptx3BXNoHalo(false), 
+    hltBitJetE70NoBptx3BXNoHalo(false);
 
   // get HLT results
   edm::Handle<edm::TriggerResults> HLTR;
@@ -1259,16 +1295,19 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
     if (doHltBit2_ && hltPathIndexJetNoBptxNoHalo_ < HLTR->size()) hltBitJetNoBptxNoHalo = HLTR->accept(hltPathIndexJetNoBptxNoHalo_); 
     if (doHltBit3_ && hltPathIndexJetNoBptx3BXNoHalo_ < HLTR->size()) hltBitJetNoBptx3BXNoHalo = HLTR->accept(hltPathIndexJetNoBptx3BXNoHalo_); 
     if (doHltBit4_ && hltPathIndexJetE50NoBptx3BXNoHalo_ < HLTR->size()) hltBitJetE50NoBptx3BXNoHalo = HLTR->accept(hltPathIndexJetE50NoBptx3BXNoHalo_); 
+    if (doHltBit5_ && hltPathIndexJetE70NoBptx3BXNoHalo_ < HLTR->size()) hltBitJetE70NoBptx3BXNoHalo = HLTR->accept(hltPathIndexJetE70NoBptx3BXNoHalo_); 
   }
   else {
     if (doHltBit1_) edm::LogWarning("MissingProduct") << "HLT information not found for HltBit1.  Branch will not be filled" << std::endl;
     if (doHltBit2_) edm::LogWarning("MissingProduct") << "HLT information not found for HltBit2.  Branch will not be filled" << std::endl;
     if (doHltBit3_) edm::LogWarning("MissingProduct") << "HLT information not found for HltBit3.  Branch will not be filled" << std::endl;
     if (doHltBit4_) edm::LogWarning("MissingProduct") << "HLT information not found for HltBit4.  Branch will not be filled" << std::endl;
+    if (doHltBit5_) edm::LogWarning("MissingProduct") << "HLT information not found for HltBit5.  Branch will not be filled" << std::endl;
     doHltBit1_ = false;
     doHltBit2_ = false;
     doHltBit3_ = false;
     doHltBit4_ = false;
+    doHltBit5_ = false;
   }
 
   // store bits
@@ -1276,6 +1315,7 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
   event_->hltJetNoBptxNoHalo = hltBitJetNoBptxNoHalo;
   event_->hltJetNoBptx3BXNoHalo = hltBitJetNoBptx3BXNoHalo;
   event_->hltJetE50NoBptx3BXNoHalo = hltBitJetE50NoBptx3BXNoHalo;
+  event_->hltJetE70NoBptx3BXNoHalo = hltBitJetE70NoBptx3BXNoHalo;
   
   // Store HLT prescale info
   event_->hltPrescaleIndex=hltConfig_.prescaleSet(iEvent, iSetup);
@@ -1283,6 +1323,7 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
   event_->hltJetNoBptxNoHaloPrescale=hltConfig_.prescaleValue(iEvent, iSetup, hltPathJetNoBptxNoHalo_);
   event_->hltJetNoBptx3BXNoHaloPrescale=hltConfig_.prescaleValue(iEvent, iSetup, hltPathJetNoBptx3BXNoHalo_);
   event_->hltJetE50NoBptx3BXNoHaloPrescale=hltConfig_.prescaleValue(iEvent, iSetup, hltPathJetE50NoBptx3BXNoHalo_);
+  event_->hltJetE70NoBptx3BXNoHaloPrescale=hltConfig_.prescaleValue(iEvent, iSetup, hltPathJetE70NoBptx3BXNoHalo_);
   
 
   // L1 jets

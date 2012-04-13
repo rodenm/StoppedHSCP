@@ -134,6 +134,21 @@ def GetDatasets():
     datasets[name].InputInfo["l1JetNoBptxName"]='L1_SingleJet20_Central_NotBptxOR'
     datasets[name].InputInfo["l1JetNoBptxNoHaloName"]='L1_SingleJet20_Central_NotBptxOR_NotMuBeamHalo'
 
+    #############################################
+    # 2012 Datasets
+    #############################################
+
+    #/MinimumBias/Run2012A-PromptReco-v1/RECO
+    name="/MinimumBias/Run2012A-PromptReco-v1/RECO"
+    datasets[name]=DatasetInfo(name=name,
+                               trigger="2012",
+                               datatype="RECO")
+    datasets[name].InputInfo["hltL3Tag"]="hltStoppedHSCPCaloJetEnergy50"
+    datasets[name].InputInfo["l1JetNoBptxName"]='L1_SingleJetC20_NotBptxOR'
+    datasets[name].InputInfo["l1JetNoBptxNoHaloName"]='L1_SingleJetC20_NotBptxOR'
+    datasets[name].InputInfo["l1Jet32NoBptxNoHaloName"]='L1_SingleJetC32_NotBptxOR'
+                     
+
     return datasets
 
 
