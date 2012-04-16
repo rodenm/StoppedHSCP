@@ -20,6 +20,6 @@ hltPathJetE70NoBptx3BXNoHalo = cms.untracked.string("HLT_JetE70_NoBPTX3BX_NoHalo
 l1JetNoBptxNoHaloName = cms.untracked.string("L1_SingleJetC20_NotBptxOR")
 l1Jet32NoBptxNoHaloName = cms.untracked.string("L1_SingleJetC32_NotBptxOR")
 
-hltL3Tag = cms.untracked.InputTag("hltStoppedHSCPTight1CaloJetEnergy30","","HLT")
+hltL3Tag = cms.untracked.InputTag("hltStoppedHSCP1CaloJetEnergy70","","HLT")
 # Use the tag below for fills 1795 and above:
 #hltL3Tag = cms.untracked.InputTag("hltStoppedHSCPCaloJetEnergy50","","HLT")

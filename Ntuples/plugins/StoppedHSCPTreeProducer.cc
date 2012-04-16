@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.28 2012/03/07 00:43:37 temple Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.29 2012/04/13 21:45:55 rodenm Exp $
 //
 //
 
@@ -589,7 +589,7 @@ StoppedHSCPTreeProducer::beginRun(edm::Run const & iRun, edm::EventSetup const& 
   // HLT setup
   bool changed;
   hltConfig_.init(iRun, iSetup, hltResultsTag_.process(), changed);
-  
+
   // HLT Path -- No BPTX
   try{
     hltPathIndexJetNoBptx_=(hltConfig_.triggerNames()).size();  // default setting -- trigger not found
@@ -1209,6 +1209,7 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
   // Get prescale information
   L1GtUtils* l1gtutils = new L1GtUtils();
   l1gtutils->retrieveL1EventSetup(iSetup);
+  l1gtutils->getL1GtRunCache(iEvent, iSetup, true, false); // TODO: if this works, move to beginRun?
 
   int errorAlgo=0;
   int errorTech=0;
@@ -1216,10 +1217,16 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
   //Are Algo and Trigger prescale indices supposed to be the same?  Save them separately, for now
   event_->algoTriggerPrescaleIndex =l1gtutils->prescaleFactorSetIndex(iEvent,L1GtUtils::AlgorithmTrigger,errorAlgo);
   event_->techTriggerPrescaleIndex =l1gtutils->prescaleFactorSetIndex(iEvent,L1GtUtils::TechnicalTrigger,errorTech);
-  if (errorAlgo!=0)
+  if (errorAlgo!=0) {
     event_->algoTriggerPrescaleIndex=-999;
-  if (errorTech!=0)
+    edm::LogError ("StoppedHSCPTreeProducer") << "Error retreiving algo trigger prescale index: " 
+					 << errorAlgo << std::endl;
+  }
+  if (errorTech!=0) {
     event_->techTriggerPrescaleIndex=-999;
+    edm::LogError ("StoppedHSCPTreeProducer") << "Error retreiving tech trigger prescale index: " 
+					 << errorTech << std::endl;
+  }
 
   event_->gtAlgoWord0 = gtAlgoWord0;
   event_->gtAlgoWord1 = gtAlgoWord1;
@@ -1228,25 +1235,36 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
   // Get prescales for individual L1 triggers
   
   int errorCode=0;
+
+  // L1GtUtils::prescaleFactor() - line 1300
+  // L1GtUtils::l1Results()      - line 1146 - sets tags m_provL1GtRecordInputTag and calls...
+  // L1GtUtils::l1Results()      - line 679 
   event_->l1JetNoBptxPrescale = l1gtutils->prescaleFactor(iEvent,
 							  l1JetNoBptxName_,
 							  errorCode);
-  if (errorCode!=0) event_->l1JetNoBptxPrescale=-999;
+  if (errorCode!=0) {
+    event_->l1JetNoBptxPrescale=-999;
+    edm::LogError ("StoppedHSCPTreeProducer") << "Error retreiving l1JetNoBptxPrescale factor: " 
+					 << errorCode << std::endl;
+  }
+  
   event_->l1JetNoBptxNoHaloPrescale = l1gtutils->prescaleFactor(iEvent,
 								l1JetNoBptxNoHaloName_,
 								errorCode);
-  if (errorCode!=0) event_->l1JetNoBptxNoHaloPrescale=-999;
-  std::cout <<"PRESCALE 20 = "<< event_->l1JetNoBptxNoHaloPrescale <<"  errorCode = "<<errorCode<<std::endl;
+  if (errorCode!=0) {
+    event_->l1JetNoBptxNoHaloPrescale=-999;
+    edm::LogError ("StoppedHSCPTreeProducer") << "Error retreiving l1JetNoBptxNoHaloPrescale factor: " 
+					 << errorCode << std::endl;
+  }
 
   event_->l1Jet32NoBptxNoHaloPrescale = l1gtutils->prescaleFactor(iEvent,
 								  l1Jet32NoBptxNoHaloName_,
 								  errorCode);
-  if (errorCode!=0) event_->l1Jet32NoBptxNoHaloPrescale=-999;
-
-  
-  // Test output; need to check error code
-  std::cout <<"PRESCALE 32 = "<< event_->l1Jet32NoBptxNoHaloPrescale <<"  errorCode = "<<errorCode<<std::endl;
-
+  if (errorCode!=0) {
+    event_->l1Jet32NoBptxNoHaloPrescale=-999;
+    edm::LogError ("StoppedHSCPTreeProducer") << "Error retreiving l1Jet32NoBptxNoHaloPrescale factor: " 
+					 << errorCode << std::endl;
+  }
 
   // L1 trigger bits for -2..+2 BX
   int start = -2;
@@ -1369,7 +1387,7 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
     const unsigned int filterIndex (trgEvent->filterIndex(hltL3Tag_) );
 
     //   edm::LogInfo("StoppedHSCP") << "Debugging HLT...  StoppedHSCP index=" << filterIndex 
-    //				<< ",  N paths=" << trgEvent->sizeFilters() << std::endl;
+    //				     << ",  N paths=" << trgEvent->sizeFilters() << std::endl;
     
     if (filterIndex < trgEvent->sizeFilters()) {
             
@@ -1396,7 +1414,11 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
 	
       }
       
-    }
+    } 
+    //else {
+    //  edm::LogError("StoppedHSCPTreeProducer") << "Bad hltL3Tag. L3 filter index could not be found: "
+    //					       << hltL3Tag_ << std::endl;
+    //}
 
   }
   else {
