@@ -141,8 +141,8 @@ def searchrun(runno):
 global RUNMIN,RUNMAX,BFIELD
 def ene_in_run(run_data):
     global RUNMIN,RUNMAX,BFIELD
-    BEAM_ENE_ALL=[450.0,3500.0]
-    BEAM_ENE_DEF=3500.0
+    BEAM_ENE_ALL=[450.0,4000.0]
+    BEAM_ENE_DEF=4000.0
     ene_map={}
     print "Retrieving energy from the RR run tabel and making some check...."
     for line in run_data.split("\n"):
@@ -150,9 +150,8 @@ def ene_in_run(run_data):
         run=line.split(',')[0]
         if run.isdigit():
             # we need to do something to avoid parsing commas in comment column
-            group=line.split('",')[8]
+            group=line.split('",')[9]
             energy=group.split(',')[0]
-#            print run,line,group,energy
 #            fill=group.split(',')[1]
 #            print run,energy,fill
             mindiff=999999.
