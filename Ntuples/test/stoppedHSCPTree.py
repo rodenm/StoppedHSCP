@@ -5,7 +5,7 @@
 #
 import FWCore.ParameterSet.Config as cms
 
-from StoppedHSCP.Ntuples.stoppedHSCPTree_MC_2011_cfg import *
+from StoppedHSCP.Ntuples.stoppedHSCPTree_MC_2012_cfg import *
 
 process.MessageLogger.cerr.INFO.limit = cms.untracked.int32(10)
 
