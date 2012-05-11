@@ -129,7 +129,7 @@ bool Cuts::triggerCut() const {      // require event passed main trigger
 
   //4) Starting in 2012, higher threshold trigger
   else if (event_->fill>2351)
-    trigger = event_->hltJetE70NoBptx3BXNoHalo;
+    trigger = event_->hltJetE50NoBptx3BXNoHalo;
 
   return trigger;
 
@@ -214,8 +214,7 @@ bool Cuts::looseJetCut() const {     // low Et threshold
 
 bool Cuts::jetEnergyCut() const {    // require jet above Et threshold
   // raise jet energy cut to 70, since we're using a 50-GeV trigger?
-  // 4/26/12: Raise jet energy cut to 90GeV for the 70GeV trigger
-  return event_->jet_N>0 && event_->jetE[0]>90. && fabs(event_->jetEta[0])<1.;
+  return event_->jet_N>0 && event_->jetE[0]>70. && fabs(event_->jetEta[0])<1.;
 }
 
 bool Cuts::looseJetCorrCut() const {     // low Et threshold
