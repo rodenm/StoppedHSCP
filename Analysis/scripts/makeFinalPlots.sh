@@ -32,7 +32,7 @@ cp $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/stopMass.C   $dataset/.
 cp $CMSSW_BASE/src/StoppedHSCP/Analysis/data/mcGluino.txt $dataset/.
 cp $CMSSW_BASE/src/StoppedHSCP/Analysis/data/mcStop.txt $dataset/.
 
-#cp $dataset/toymc/summary.txt $dataset/toymc.txt
+cp $dataset/toymc/summary.txt $dataset/toymc.txt
 
 cd $dataset
 
