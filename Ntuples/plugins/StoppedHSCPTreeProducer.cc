@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.29 2012/04/13 21:45:55 rodenm Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.30 2012/04/16 23:37:24 rodenm Exp $
 //
 //
 
@@ -473,9 +473,9 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   hltEventTag_(iConfig.getUntrackedParameter<edm::InputTag>("hltEventTag",edm::InputTag("hltTriggerSummaryAOD","","HLT"))),
   hltPathJetNoBptx_(iConfig.getUntrackedParameter<std::string>("hltPathJetNoBptx",std::string("HLT_JetE30_NoBPTX_v1"))),
   hltPathJetNoBptxNoHalo_(iConfig.getUntrackedParameter<std::string>("hltPathJetNoBptxNoHalo",std::string("HLT_JetE30_NoBPTX_NoHalo_v1"))),
-  hltPathJetNoBptx3BXNoHalo_(iConfig.getUntrackedParameter<std::string>("hltPathJetNoBptx3BXNoHalo",std::string("HLT_JetE30_NoBPTX3BX_NoHalo_v1"))),
-  hltPathJetE50NoBptx3BXNoHalo_(iConfig.getUntrackedParameter<std::string>("hltPathJetE50NoBptx3BXNoHalo",std::string("HLT_JetE50_NoBPTX3BX_NoHalo_v1"))),
-  hltPathJetE70NoBptx3BXNoHalo_(iConfig.getUntrackedParameter<std::string>("hltPathJetE70NoBptx3BXNoHalo",std::string("HLT_JetE70_NoBPTX3BX_NoHalo_v1"))),
+  hltPathJetNoBptx3BXNoHalo_(iConfig.getUntrackedParameter<std::string>("hltPathJetNoBptx3BXNoHalo",std::string("HLT_JetE30_NoBPTX3BX_"))),
+  hltPathJetE50NoBptx3BXNoHalo_(iConfig.getUntrackedParameter<std::string>("hltPathJetE50NoBptx3BXNoHalo",std::string("HLT_JetE50_NoBPTX3BX_"))),
+  hltPathJetE70NoBptx3BXNoHalo_(iConfig.getUntrackedParameter<std::string>("hltPathJetE70NoBptx3BXNoHalo",std::string("HLT_JetE70_NoBPTX3BX_"))),
   hltL3Tag_(iConfig.getUntrackedParameter<edm::InputTag>("hltL3Tag",edm::InputTag("hltStoppedHSCP1CaloJetEnergy","","HLT"))),
   mcTag_(iConfig.getUntrackedParameter<edm::InputTag>("mcTag",edm::InputTag("generator"))),
   mcProducer_ (iConfig.getUntrackedParameter<std::string>("producer", "g4SimHits")),
@@ -576,6 +576,23 @@ StoppedHSCPTreeProducer::~StoppedHSCPTreeProducer() {
 void 
 StoppedHSCPTreeProducer::beginJob()
 {
+  
+  std::cout << " l1JetsTag_; " << l1JetsTag_ << std::endl;
+  std::cout << " l1BitsTag_; " <<l1BitsTag_ << std::endl;
+  std::cout << " l1JetNoBptxName_; " <<  l1JetNoBptxName_ << std::endl;
+  std::cout << " l1JetNoBptxNoHaloName_; " << l1JetNoBptxNoHaloName_ << std::endl;
+  std::cout << " l1Jet32NoBptxNoHaloName_; " <<  l1Jet32NoBptxNoHaloName_ << std::endl;
+  std::cout << " l1BptxName_; " <<  l1BptxName_ << std::endl;
+  std::cout << " l1MuBeamHaloName_; " <<  l1MuBeamHaloName_ << std::endl;
+  std::cout << " hltResultsTag_; " << hltResultsTag_ << std::endl;
+  std::cout << " hltEventTag_; " << hltEventTag_ << std::endl;
+  std::cout << " hltPathJetNoBptx_; " << hltPathJetNoBptx_ << std::endl;
+  std::cout << " hltPathJetNoBptxNoHalo_; " << hltPathJetNoBptxNoHalo_ << std::endl;
+  std::cout << " hltPathJetNoBptx3BXNoHalo_; " << hltPathJetNoBptx3BXNoHalo_ << std::endl;
+  std::cout << " hltPathJetE50NoBptx3BXNoHalo_; " << hltPathJetE50NoBptx3BXNoHalo_ << std::endl;
+  std::cout << " hltPathJetE70NoBptx3BXNoHalo_; " << hltPathJetE70NoBptx3BXNoHalo_ << std::endl;
+  std::cout << " hltL3Tag_; " << hltL3Tag_ << std::endl;
+  
 }
 
 // -- called once per run

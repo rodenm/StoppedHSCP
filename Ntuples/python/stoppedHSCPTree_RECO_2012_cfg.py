@@ -18,5 +18,8 @@ process.hltHighLevel.HLTPaths = HLTPaths
 process.stoppedHSCPTree.hltPathJetNoBptx = hltPathJetNoBptx
 process.stoppedHSCPTree.hltPathJetNoBptxNoHalo = hltPathJetNoBptxNoHalo
 process.stoppedHSCPTree.hltPathJetNoBptx3BXNoHalo = hltPathJetNoBptx3BXNoHalo
+process.stoppedHSCPTree.hltPathJetE50NoBptx3BXNoHalo = hltPathJetE50NoBptx3BXNoHalo
+process.stoppedHSCPTree.hltPathJetE70NoBptx3BXNoHalo = hltPathJetE70NoBptx3BXNoHalo
+
 process.stoppedHSCPTree.hltL3Tag = hltL3Tag
 process.stoppedHSCPTree.doDigis=False 

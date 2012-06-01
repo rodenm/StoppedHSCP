@@ -11,9 +11,9 @@ import FWCore.ParameterSet.Config as cms
 #Wild cards are okay for these names
 HLTPaths = cms.vstring(
     "HLT_JetE30_NoBPTX_v*",           
-    "HLT_JetE30_NoBPTX3BX_*v*", # HLT_JetE30_NoBPTX3BX_NoHalo_v*
-    "HLT_JetE50_NoBPTX3BX_*v*", # HLT_JetE50_NoBPTX3BX_NoHalo_v*
-    "HLT_JetE70_NoBPTX3BX_*v*"  # HLT_JetE70_NoBPTX3BX_NoHalo_v*
+    "HLT_JetE30_NoBPTX3BX_*", # HLT_JetE30_NoBPTX3BX_NoHalo_v*
+    "HLT_JetE50_NoBPTX3BX_*", # HLT_JetE50_NoBPTX3BX_NoHalo_v*
+    "HLT_JetE70_NoBPTX3BX_*"  # HLT_JetE70_NoBPTX3BX_NoHalo_v*
 )
 
 # Wild cards are not currently supported for these strings
