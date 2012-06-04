@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.30 2012/04/16 23:37:24 rodenm Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.31 2012/06/01 21:10:27 rodenm Exp $
 //
 //
 
@@ -1290,7 +1290,7 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
     start=0;
     end=1;
   }
-  for (int bx=-start; bx<end; ++bx) {
+  for (int bx=start; bx<end; ++bx) {
 
     const DecisionWord decisionWord = gtReadoutRecord->decisionWord(bx);
     const TechnicalTriggerWord technicalWord = gtReadoutRecord->technicalTriggerWord(bx);
