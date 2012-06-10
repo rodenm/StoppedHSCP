@@ -79,18 +79,23 @@ print "Run2011A+B"
 res2011AB = totalBackground( livetime, cosmicNM1, nHalo )
 res2011AB.append( [12] )
 
+# Calculate halo rate based on Elog 513 in which we estimate 1.5 +/- 0.7 background for N-1=105
+# 2012 rates are calculated with: 1.5/105 * (current N-1)
+#
 # 2012A
+# N-1 halo: 28
 livetime  = [ 97862, 23 ]
 cosmicNM1 = [ 143, sqrt(143) ]
-nHalo     = [ 0.0001, 0.0001 ]
+nHalo     = [ 0.4, 0.2 ]
 print "Run2012A"
 res2012A = totalBackground( livetime, cosmicNM1, nHalo )
 res2012A.append( [2] ) # THIS IS nOBS
 
 # 2012B
+# N-1 halo: 15
 livetime  = [ 84723, 23 ]
 cosmicNM1 = [ 171, sqrt(171) ]
-nHalo     = [ 0.0001, 0.0001 ]
+nHalo     = [ 0.21, 0.1 ]
 print "Run2012A"
 res2012B = totalBackground( livetime, cosmicNM1, nHalo )
 res2012B.append( [0] ) # THIS IS nOBS
