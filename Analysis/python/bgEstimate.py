@@ -93,9 +93,9 @@ res2012A.append( [2] ) # THIS IS nOBS
 
 # 2012B
 # N-1 halo: 15
-livetime  = [ 109121, 23 ]
-cosmicNM1 = [ 231, sqrt(231) ]
-nHalo     = [ 0.24, 0.11 ]
+livetime  = [ 210786, 23 ]
+cosmicNM1 = [ 473, sqrt(473) ]
+nHalo     = [ 0.39, 0.18 ]
 print "Run2012A"
 res2012B = totalBackground( livetime, cosmicNM1, nHalo )
 res2012B.append( [0] ) # THIS IS nOBS
