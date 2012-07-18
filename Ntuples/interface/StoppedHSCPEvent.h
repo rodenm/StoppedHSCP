@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.19 2012/03/07 00:43:37 temple Exp $
+// $Id: StoppedHSCPEvent.h,v 1.20 2012/04/13 21:45:54 rodenm Exp $
 //
 //
 
@@ -334,6 +334,11 @@ class StoppedHSCPEvent : public TObject {
   Long_t bxAfterBunch;
   Long_t bxBeforeBunch;
   Long_t bxWrtBunch;
+
+  // lumi details (for this bx +/- 2)
+  std::vector<Double_t> beam1Intensity; // in #protons
+  std::vector<Double_t> beam2Intensity; // in #protons
+  std::vector<Double_t> lumiByBx;       // in ub^-1 s^-1
 
   // trigger
   ULong64_t gtAlgoWord0;

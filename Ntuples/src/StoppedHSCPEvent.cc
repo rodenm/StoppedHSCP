@@ -78,6 +78,9 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   bxAfterBunch(0),
   bxBeforeBunch(0),
   bxWrtBunch(-99999),
+  beam1Intensity(5),
+  beam2Intensity(5),
+  lumiByBx(5),
   gtAlgoWord0(0),
   gtAlgoWord1(0),
   gtTechWord(0),
@@ -358,6 +361,9 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
     l1JetNoBptxNoHalo.at(k) = 0;//false;
     l1Bptx.at(k) = 0;//false;
     l1MuBeamHalo.at(k) = 0;//false;
+    beam1Intensity.at(k) = -1.0;
+    beam2Intensity.at(k) = -1.0;
+    lumiByBx.at(k) = -1.0;
   }
   
   for (int k=0; k<HBHEDataFrame::MAXSAMPLES; ++k) { 

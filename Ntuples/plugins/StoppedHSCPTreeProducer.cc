@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.32 2012/06/04 19:30:14 rodenm Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.33 2012/07/18 17:27:14 rodenm Exp $
 //
 //
 
@@ -35,7 +35,7 @@
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 #include "DataFormats/Common/interface/ConditionsInEdm.h"
-
+#include "DataFormats/Luminosity/interface/LumiDetails.h"
 
 // L1
 #include "CondFormats/L1TObjects/interface/L1GtTriggerMenu.h"
@@ -1177,7 +1177,7 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent) {
   //	    <<"\nbxWrtBunch = "<< bxWrtBunch
   //	    << std::endl;
 
-// set variables in ntuple
+  // set variables in ntuple
   event_->id = id;
   event_->bx = bx;
   event_->orbit = orbit;
@@ -1194,6 +1194,54 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent) {
   event_->bxBeforeBunch = bxBeforeBunch;
   event_->bxWrtBunch = bxWrtBunch;
 
+
+
+  // Get luminosity and intensity info from LumiDetails. 
+  // NOTE: luminosity values are calibrated but uncorrected
+  // see also: https://twiki.cern.ch/twiki/bin/view/CMS/LumiCalc#LumiDetails
+  edm::Handle<LumiDetails> lumiDetails;
+  iEvent.getLuminosityBlock().getByLabel("lumiProducer",lumiDetails); 
+  
+  if (!lumiDetails.isValid())  
+    return; // Nothing to do here
+
+  // debugging
+  bool debug = true;
+  if (bx < 4 || bx > 3560) {
+    std::cout << "\nEvent " << event_->run << ":" << event_->lb << ":" << event_->id
+	      << "\nbx = " << bx 
+	      << "\n==================================" << std::endl;
+    debug = true;
+  }
+
+  for (int i = -2; i < 3; i++) {
+    int iBx = bx + i;
+    if ( iBx < 0 ) iBx += bxPerOrbit;
+    if ( iBx > (int)bxPerOrbit-1) iBx -= bxPerOrbit;
+    if (debug) std::cout << iBx << "\t";
+
+    Double_t beam1Intensity = lumiDetails->lumiBeam1Intensity(iBx);
+    Double_t beam2Intensity = lumiDetails->lumiBeam2Intensity(iBx);
+    Double_t lumiByBx = lumiDetails->lumiValue(LumiDetails::kOCC1,iBx)*6.37;
+    
+    event_->beam1Intensity.at(i+2) = beam1Intensity;
+    event_->beam2Intensity.at(i+2) = beam2Intensity;
+    event_->lumiByBx.at(i+2) = lumiByBx;
+  } 
+
+  if (debug) {
+    std::cout<<std::endl;
+    std::cout<<"  x\tbeam1I\tbeam2I\tlumiByBx(ub^-1 s^-1)\n" 
+	     <<" ------------------------------------------------------------------- "
+	     << std::endl;
+    for (int x=0; x<5; x++) {
+      std::cout << "  " << x 
+		<< "\t" << event_->beam1Intensity.at(x)
+		<< "\t" << event_->beam2Intensity.at(x)
+		<< "\t" << event_->lumiByBx.at(x)
+		<< std::endl;
+    }
+  }
 }
   
 
