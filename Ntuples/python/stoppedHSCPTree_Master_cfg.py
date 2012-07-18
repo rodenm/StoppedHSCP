@@ -18,7 +18,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 
 # geometry & magnetic field
-process.load('Configuration/StandardSequences/GeometryIdeal_cff')
+process.load('Configuration.Geometry.GeometryIdeal_cff')
 process.load("Configuration.StandardSequences.MagneticField_38T_cff")
 process.load("Configuration.StandardSequences.Reconstruction_cff")
 
