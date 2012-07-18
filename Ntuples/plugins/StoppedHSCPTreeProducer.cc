@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.33 2012/07/18 17:27:14 rodenm Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.34 2012/07/18 22:30:30 rodenm Exp $
 //
 //
 
@@ -1206,7 +1206,7 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent) {
     return; // Nothing to do here
 
   // debugging
-  bool debug = true;
+  bool debug = false;
   if (bx < 4 || bx > 3560) {
     std::cout << "\nEvent " << event_->run << ":" << event_->lb << ":" << event_->id
 	      << "\nbx = " << bx 
