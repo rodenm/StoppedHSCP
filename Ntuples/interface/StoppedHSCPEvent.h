@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.20 2012/04/13 21:45:54 rodenm Exp $
+// $Id: StoppedHSCPEvent.h,v 1.21 2012/07/18 22:30:30 rodenm Exp $
 //
 //
 
@@ -336,6 +336,7 @@ class StoppedHSCPEvent : public TObject {
   Long_t bxWrtBunch;
 
   // lumi details (for this bx +/- 2)
+  // All are set to -1 if LumiDetails collection is unavailable
   std::vector<Double_t> beam1Intensity; // in #protons
   std::vector<Double_t> beam2Intensity; // in #protons
   std::vector<Double_t> lumiByBx;       // in ub^-1 s^-1

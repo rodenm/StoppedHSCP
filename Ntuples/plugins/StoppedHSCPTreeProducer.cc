@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.34 2012/07/18 22:30:30 rodenm Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.35 2012/07/18 23:39:00 rodenm Exp $
 //
 //
 
@@ -591,7 +591,7 @@ StoppedHSCPTreeProducer::beginJob()
   std::cout << " hltPathJetNoBptx3BXNoHalo_; " << hltPathJetNoBptx3BXNoHalo_ << std::endl;
   std::cout << " hltPathJetE50NoBptx3BXNoHalo_; " << hltPathJetE50NoBptx3BXNoHalo_ << std::endl;
   std::cout << " hltPathJetE70NoBptx3BXNoHalo_; " << hltPathJetE70NoBptx3BXNoHalo_ << std::endl;
-  std::cout << " hltL3Tag_; " << hltL3Tag_ << std::endl;
+  std::cout << " hltL3Tag_; " << hltL3Tag_ << std::endl << std::endl;
   
 }
 
@@ -1168,14 +1168,15 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent) {
 
   // compute relative BX
   int bxWrtBunch    = ( abs(bxAfterBunch) <= abs(bxBeforeBunch) ? bxAfterBunch : bxBeforeBunch );
-
-  //std::cout << "bxAfterCollision = " << bxAfter
-  //	    <<"\nbxBeforeCollision = "<< bxBefore
-  //	    <<"\nbxWrtCollision = "<< bxWrt
-  //	    <<"\nbxAfterBunch = "<< bxAfterBunch
-  //	    <<"\nbxBeforeBunch = "<< bxBeforeBunch
-  //	    <<"\nbxWrtBunch = "<< bxWrtBunch
-  //	    << std::endl;
+  /**
+  std::cout << "bxAfterCollision = " << bxAfter
+  	    <<"\nbxBeforeCollision = "<< bxBefore
+  	    <<"\nbxWrtCollision = "<< bxWrt
+  	    <<"\nbxAfterBunch = "<< bxAfterBunch
+  	    <<"\nbxBeforeBunch = "<< bxBeforeBunch
+  	    <<"\nbxWrtBunch = "<< bxWrtBunch
+  	    << std::endl;
+  */
 
   // set variables in ntuple
   event_->id = id;
@@ -1195,17 +1196,26 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent) {
   event_->bxWrtBunch = bxWrtBunch;
 
 
-
   // Get luminosity and intensity info from LumiDetails. 
   // NOTE: luminosity values are calibrated but uncorrected
   // see also: https://twiki.cern.ch/twiki/bin/view/CMS/LumiCalc#LumiDetails
   edm::Handle<LumiDetails> lumiDetails;
   iEvent.getLuminosityBlock().getByLabel("lumiProducer",lumiDetails); 
   
-  if (!lumiDetails.isValid())  
-    return; // Nothing to do here
+  if (!lumiDetails.isValid()) {
+    edm::LogError("MissingProduct") << "Could not retreive LumiDetails collection for " 
+				    << event_->run << ":" << event_->lb << ":" << event_->id
+				    <<std::endl;
+    return; 
+  } else if (!lumiDetails->isValid()) {
+    edm::LogWarning("doEventInfo()") << "LumiDetails collection invalid (empty) for "
+						   << event_->run << ":" << event_->lb << ":" 
+						   << event_->id << std::endl;
+    return;
+  }
 
   // debugging
+  //std::cout << "Lumi version: " << lumiDetails->lumiVersion() << std::endl;
   bool debug = false;
   if (bx < 4 || bx > 3560) {
     std::cout << "\nEvent " << event_->run << ":" << event_->lb << ":" << event_->id
@@ -1219,14 +1229,16 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent) {
     if ( iBx < 0 ) iBx += bxPerOrbit;
     if ( iBx > (int)bxPerOrbit-1) iBx -= bxPerOrbit;
     if (debug) std::cout << iBx << "\t";
-
+    
+    Double_t lumiByBx = lumiDetails->lumiValue(LumiDetails::kOCC1,iBx)*6.37;
     Double_t beam1Intensity = lumiDetails->lumiBeam1Intensity(iBx);
     Double_t beam2Intensity = lumiDetails->lumiBeam2Intensity(iBx);
-    Double_t lumiByBx = lumiDetails->lumiValue(LumiDetails::kOCC1,iBx)*6.37;
-    
+    //std::cout << "...Retreived details" << std::endl;
+
     event_->beam1Intensity.at(i+2) = beam1Intensity;
     event_->beam2Intensity.at(i+2) = beam2Intensity;
     event_->lumiByBx.at(i+2) = lumiByBx;
+    //std::cout << "...Saved details" << std::endl;    
   } 
 
   if (debug) {
