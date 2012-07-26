@@ -134,6 +134,32 @@ def GetDatasets():
     datasets[name].InputInfo["l1JetNoBptxName"]='L1_SingleJet20_Central_NotBptxOR'
     datasets[name].InputInfo["l1JetNoBptxNoHaloName"]='L1_SingleJet20_Central_NotBptxOR_NotMuBeamHalo'
 
+    ################################################
+    # Nov08 ReReco for all of 2011 into CMSSW_4_4_2
+    #
+    # I'm really not sure these values are right for
+    # the 2011A dataset. There were so many different
+    # settings in 2011A and I don't know what happened
+    # when all of the various datasets were combined
+    ################################################
+    # /MinimumBias/Run2011A-HSCPSD-08Nov2011-v1/RECO
+    name="/MinimumBias/Run2011A-HSCPSD-08Nov2011-v1/RECO"
+    datasets[name]=DatasetInfo(name=name,
+                                    trigger="2011",
+                                    datatype="RECO")
+    datasets[name].InputInfo["hltL3Tag"]="hltStoppedHSCPCaloJetEnergy50"
+    datasets[name].InputInfo["l1JetNoBptxName"]='L1_SingleJet20_Central_NotBptxOR'
+    datasets[name].InputInfo["l1JetNoBptxNoHaloName"]='L1_SingleJet20_Central_NotBptxOR_NotMuBeamHalo'
+
+    # /MinimumBias/Run2011B-HSCPSD-19Nov2011-v1/RECO 
+    name="/MinimumBias/Run2011B-HSCPSD-19Nov2011-v1/RECO"
+    datasets[name]=DatasetInfo(name=name,
+                                    trigger="2011",
+                                    datatype="RECO")
+    datasets[name].InputInfo["hltL3Tag"]="hltStoppedHSCPCaloJetEnergy50"
+    datasets[name].InputInfo["l1JetNoBptxName"]='L1_SingleJet20_Central_NotBptxOR'
+    datasets[name].InputInfo["l1JetNoBptxNoHaloName"]='L1_SingleJet20_Central_NotBptxOR_NotMuBeamHalo'
+
     #############################################
     # 2012 Datasets
     #############################################
