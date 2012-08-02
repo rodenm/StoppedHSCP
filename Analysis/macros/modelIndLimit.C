@@ -11,6 +11,8 @@
 // (PeakInstLumi). 
 // Units are 10^30 cm^-2 s^-1
 #define MAXINSTLUMI 1300
+// ENERGY is a string
+#define ENERGY "8"
 // *********************************
 
 #include <string>
@@ -72,7 +74,10 @@ void modelIndLimit(double lumi=-1.,double maxInstLumi=-1.)
 
 //	blurb->AddText("LUMI pb^{-1}");
 //	blurb->AddText("L^{max}_{inst} = MAXLUMI 10^{33} cm^{-2}s^{-1}");
-	blurb->AddText("#sqrt{s} = 7 TeV");
+	
+	label.str("");
+	label << "#sqrt{s} = " << ENERGY << " TeV";
+	blurb->AddText(label.str().c_str());
 	//blurb->AddText("m_{HSCP} - m_{#tilde{#chi}^{0}} = 100 GeV/c^{2}");
 	//blurb->AddText("m_{#tilde{g}} = 300 GeV/c^{2}");
 	//blurb->AddText("m_{#tilde{#chi}^{0}} = 200 GeV/c^{2}");

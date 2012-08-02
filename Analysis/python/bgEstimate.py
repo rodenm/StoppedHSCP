@@ -84,21 +84,30 @@ res2011AB.append( [12] )
 #
 # 2012A
 # N-1 halo: 28
-livetime  = [ 97862, 23 ]
-cosmicNM1 = [ 143, sqrt(143) ]
-nHalo     = [ 0.40, 0.19 ]
+livetime  = [ 102132, 23 ]
+cosmicNM1 = [ 148, sqrt(148) ]
+nHalo     = [ 0.40, 0.187 ]
 print "Run2012A"
 res2012A = totalBackground( livetime, cosmicNM1, nHalo )
 res2012A.append( [2] ) # THIS IS nOBS
 
 # 2012B
-# N-1 halo: 15
-livetime  = [ 210786, 23 ]
-cosmicNM1 = [ 473, sqrt(473) ]
+# N-1 halo: 27
+livetime  = [ 211187, 23 ]
+cosmicNM1 = [ 475, sqrt(475) ]
 nHalo     = [ 0.39, 0.18 ]
-print "Run2012A"
+print "Run2012B"
 res2012B = totalBackground( livetime, cosmicNM1, nHalo )
 res2012B.append( [0] ) # THIS IS nOBS
+
+# 2012C (v1 + v2)
+# N-1 halo: 27
+livetime  = [ 71707, 23 ]
+cosmicNM1 = [ 169, sqrt(169) ]
+nHalo     = [ 0.386, 0.180 ]
+print "Run2012C"
+res2012C = totalBackground( livetime, cosmicNM1, nHalo )
+res2012C.append( [2] ) # THIS IS nOBS
 
 print "[TABLE border='1']"  
 print "Period | Noise         | Cosmic         | Halo          | Total         | NObs |-"
@@ -116,5 +125,7 @@ print '2011AB  | %.2f +/- %.2f |  %.2f +/- %.2f | %.2f +/- %.2f | %.2f +/- %.2f 
 print '2012A  | %.2f +/- %.2f |  %.2f +/- %.2f | %.2f +/- %.2f | %.2f +/- %.2f | %i   |-' % ( res2012A[0][0], res2012A[0][1], res2012A[1][0], res2012A[1][1], res2012A[2][0], res2012A[2][1], res2012A[3][0], res2012A[3][1], res2012A[4][0] )
 
 print '2012B  | %.2f +/- %.2f |  %.2f +/- %.2f | %.2f +/- %.2f | %.2f +/- %.2f | %i   |-' % ( res2012B[0][0], res2012B[0][1], res2012B[1][0], res2012B[1][1], res2012B[2][0], res2012B[2][1], res2012B[3][0], res2012B[3][1], res2012B[4][0] )
+
+print '2012C  | %.2f +/- %.2f |  %.2f +/- %.2f | %.2f +/- %.2f | %.2f +/- %.2f | %i   |-' % ( res2012C[0][0], res2012C[0][1], res2012C[1][0], res2012C[1][1], res2012C[2][0], res2012C[2][1], res2012C[3][0], res2012C[3][1], res2012C[4][0] )
 
 print "[/TABLE]"

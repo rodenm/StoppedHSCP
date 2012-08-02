@@ -10,6 +10,8 @@
 // (PeakInstLumi).  
 // Units are 10^30 cm^-2 s^-1
 #define MAXINSTLUMI 1300.
+// ENERGY is a string
+#define ENERGY "8"
 // ***********************************************
 
 
@@ -94,8 +96,9 @@ void stopMass(double lumi=-1., double maxInstLumi=-1.) {
   	label<<"L^{max}_{inst} = "<<peakInstLumi<<" x 10^{"<<exponent<<"} cm^{-2}s^{-1}";
   	blurb->AddText(label.str().c_str());
   	label.str("");
+	label << "#sqrt{s} = " << ENERGY << " TeV";
+	blurb->AddText(label.str().c_str());
 
-  	blurb->AddText("#sqrt{s} = 7 TeV");
   	//blurb->AddText("m_{#tilde{g}} - m_{#tilde{#chi}^{0}} = 100 GeV/c^{2}");
     blurb->AddText("m_{#tilde{t}} - m_{#tilde{#chi}^{0}} = 200 GeV/c^{2}");	
   	blurb->SetTextFont(42);
