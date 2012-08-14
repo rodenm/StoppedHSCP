@@ -101,13 +101,13 @@ res2012B = totalBackground( livetime, cosmicNM1, nHalo )
 res2012B.append( [0] ) # THIS IS nOBS
 
 # 2012C (v1 + v2)
-# N-1 halo: 50
-livetime  = [ 112018, 23 ]
-cosmicNM1 = [ 251, sqrt(251) ]
-nHalo     = [ 0.714, 0.333 ]
+# N-1 halo: 73
+livetime  = [ 158765, 23 ]
+cosmicNM1 = [ 363, sqrt(363) ]
+nHalo     = [ 1.095, 0.511 ]
 print "Run2012C"
 res2012C = totalBackground( livetime, cosmicNM1, nHalo )
-res2012C.append( [4] ) # THIS IS nOBS
+res2012C.append( [5] ) # THIS IS nOBS
 
 print "[TABLE border='1']"  
 print "Period | Noise         | Cosmic         | Halo          | Total         | NObs |-"
