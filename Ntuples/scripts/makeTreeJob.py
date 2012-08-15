@@ -54,45 +54,45 @@ def WriteCrabFile(scheduler, dataset,storage,
     server_type="#use_server = 1\n"
     if (scheduler=="condor"):  # condor must have use_server=0
         server_type="use_server = 0\n"
-    crabstring = "[CRAB]\n\
-jobtype = cmssw\n\
-scheduler = "+scheduler+"\n"+server_type+"\
-[CMSSW]\n\
-pset="+jobStr+"\n\
-output_file = "+output+"\n\
-datasetpath="+dataset+"\n\
-"+runStr+"\n\
-"+dbsStr+"\n\
-"+evtStr+"\n\
-[USER]\n\
-return_data = 0\n\
-copy_data = 1\n\
-storage_element = "+storage+"\n\
-user_remote_dir = "+dirStr+"\n\
-ui_working_dir  = "+dirStr+"\n\
-[GRID]\n\
-rb = CERN\n\
-proxy_server = myproxy.cern.ch"
-    
-    if (useCAFsettings):
-        crabstring += "\nqueue = cmscaf1nd"
-    else:
-        crabstring += "\n#se_black_list = \n\
-#se_white_list = \n\
-#ce_black_list = \n\
-#ce_white_list = heplnx206.pp.rl.ac.uk,heplnx207.pp.rl.ac.uk\n\
-        "
-        if whitelist <>None and not whitelist.startswith("#"):
-            crabstring=crabstring+"\nce_white_list = %s\n"%whitelist
+        crabstring = "[CRAB]\n\
+        jobtype = cmssw\n\
+        scheduler = "+scheduler+"\n"+server_type+"\
+        [CMSSW]\n\
+        pset="+jobStr+"\n\
+        output_file = "+output+"\n\
+        datasetpath="+dataset+"\n\
+        "+runStr+"\n\
+        "+dbsStr+"\n\
+        "+evtStr+"\n\
+        [USER]\n\
+        return_data = 0\n\
+        copy_data = 1\n\
+        storage_element = "+storage+"\n\
+        user_remote_dir = "+dirStr+"\n\
+        ui_working_dir  = "+dirStr+"\n\
+        [GRID]\n\
+        rb = CERN\n\
+        proxy_server = myproxy.cern.ch"
+        
+        if (useCAFsettings):
+            crabstring += "\nqueue = cmscaf1nd"
         else:
-            crabstring=crabstring+"\n"
-    # create CRAB file
+            crabstring += "\n#se_black_list = \n\
+            #se_white_list = \n\
+            #ce_black_list = \n\
+            #ce_white_list = heplnx206.pp.rl.ac.uk,heplnx207.pp.rl.ac.uk\n\
+            "
+            if whitelist <>None and not whitelist.startswith("#"):
+                crabstring=crabstring+"\nce_white_list = %s\n"%whitelist
+            else:
+                crabstring=crabstring+"\n"
+        # create CRAB file
     
-    crab = open(cfgname, 'w')
-    print "Writing file '%s'"%cfgname
-    crab.write(crabstring)
-    crab.close()
-    return
+        crab = open(cfgname, 'w')
+        print "Writing file '%s'"%cfgname
+        crab.write(crabstring)
+        crab.close()
+        return
 ###########################################
 
 def WritePyCfgFile(datatype,
@@ -108,16 +108,16 @@ def WritePyCfgFile(datatype,
     
     # create CMSSW variables
     cmsswStr="import FWCore.ParameterSet.Config as cms\n\
-\n\
-from StoppedHSCP.Ntuples.stoppedHSCPTree_"+datatype+"_"+trigger+"_cfg import *\n\
-\n\
-process.MessageLogger.cerr.threshold = ''\n\
-process.MessageLogger.cerr.FwkReport.reportEvery = 1000\n\
-process.GlobalTag.globaltag = '"+gtag+"'\n\
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )\n\
-readFiles.extend( [\n\
-] )\n\
-"
+    \n\
+    from StoppedHSCP.Ntuples.stoppedHSCPTree_"+datatype+"_"+trigger+"_cfg import *\n\
+    \n\
+    process.MessageLogger.cerr.threshold = ''\n\
+    process.MessageLogger.cerr.FwkReport.reportEvery = 1000\n\
+    process.GlobalTag.globaltag = '"+gtag+"'\n\
+    process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )\n\
+    readFiles.extend( [\n\
+    ] )\n\
+    "
     if datasetInfo<>None:
         keys=datasetInfo.InputInfo.keys()
         keys.sort()
@@ -244,7 +244,7 @@ def makeTreeJob(era,
                 write_output=True
                 ):
     ''' Make the .py and .cfg files necessary for generating ntuple trees.'''
-
+    
     # If not MC, Always check that fills.txt can be properly parsed
     if (datatype<>"MC"):
         fillfile=os.path.join(os.environ['CMSSW_BASE'],"src","StoppedHSCP","Ntuples","data","fills.txt")
@@ -286,11 +286,11 @@ def makeTreeJob(era,
     evtStr = ""
     if (useJSON):
         evtStr = "lumi_mask="+runjsonfile+"\n\
-total_number_of_lumis = 100000\n\
-lumis_per_job = 500\n"
+        total_number_of_lumis = 100000\n\
+        lumis_per_job = 500\n"
     else :
         evtStr = "total_number_of_events=-1\n\
-events_per_job=100000\n"
+        events_per_job=100000\n"
 
     if (useCAFsettings):
         scheduler = "caf"
