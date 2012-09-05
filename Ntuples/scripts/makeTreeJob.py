@@ -2,14 +2,10 @@
 
 # create CRAB config file for an ntuple job
 
-
 import sys, os, string
 import getopt
 import string
 from optparse import OptionParser
-
-
-
 
 # Get pyGetFillScheme from StoppedHSCP/Ntuples
 temp=os.path.join(os.environ['CMSSW_BASE'],"src","StoppedHSCP","Ntuples","scripts")
@@ -235,7 +231,7 @@ def makeTreeJob(era,
                 datatype,
                 HLTL3Tag="Default", # won't change from default tag
                 whitelist=None,
-                scheduler = "glite",
+                scheduler = "condor",
                 storage = "T2_UK_SGrid_RALPP",
                 useCAFsettings=False,
                 datasetInfo=None,
@@ -569,7 +565,7 @@ if __name__=="__main__":
                   datatype=datatype,
                   HLTL3Tag=HLTL3Tag,
                   whitelist=whitelist,  # add whitelist option at some point?
-                  scheduler = "glite",
+                  scheduler = "condor",
                   storage = opts.storage,
                   useCAFsettings=opts.useCAFsettings,
                   datasetInfo=thisdataset,
