@@ -83,31 +83,31 @@ res2011AB.append( [12] )
 # 2012 rates are calculated with: 1.5/105 * (current N-1)
 #
 # 2012A
-# N-1 halo: 28
-livetime  = [ 102132, 23 ]
-cosmicNM1 = [ 148, sqrt(148) ]
-nHalo     = [ 0.40, 0.187 ]
+# N-1 halo: 35
+livetime  = [ 140245, 23 ]
+cosmicNM1 = [ 211, sqrt(211) ]
+nHalo     = [ 0.50, 0.233 ]
 print "Run2012A"
 res2012A = totalBackground( livetime, cosmicNM1, nHalo )
 res2012A.append( [2] ) # THIS IS nOBS
 
 # 2012B
-# N-1 halo: 27
-livetime  = [ 211187, 23 ]
-cosmicNM1 = [ 475, sqrt(475) ]
-nHalo     = [ 0.39, 0.18 ]
+# N-1 halo: 28
+livetime  = [ 209936, 23 ]
+cosmicNM1 = [ 471, sqrt(471) ]
+nHalo     = [ 0.40, 0.187 ]
 print "Run2012B"
 res2012B = totalBackground( livetime, cosmicNM1, nHalo )
 res2012B.append( [0] ) # THIS IS nOBS
 
 # 2012C (v1 + v2)
-# N-1 halo: 73
-livetime  = [ 158765, 23 ]
-cosmicNM1 = [ 363, sqrt(363) ]
-nHalo     = [ 1.095, 0.511 ]
+# N-1 halo: 110
+livetime  = [ 238889, 23 ]
+cosmicNM1 = [ 534, sqrt(534) ]
+nHalo     = [ 1.57, 0.73 ]
 print "Run2012C"
 res2012C = totalBackground( livetime, cosmicNM1, nHalo )
-res2012C.append( [5] ) # THIS IS nOBS
+res2012C.append( [6] ) # THIS IS nOBS
 
 print "[TABLE border='1']"  
 print "Period | Noise         | Cosmic         | Halo          | Total         | NObs |-"

@@ -487,7 +487,7 @@ void HaloBackground::loop() {
   std::cout << "  HE sideband events.  CSC flags=" << hHESidebandHaloFlag_->GetBinContent(2) << "  Unflagged=" << hHESidebandHaloFlag_->GetBinContent(1) << std::endl;
   std::cout << std::endl;
   int tot = (matchFlags -sidebandFlags) + (matchNoflags - sidebandNoflags);
-  std::cout << "  CSC flag efficiency=" << (matchFlags-sidebandFlags)/(tot) << std::endl;
+  std::cout << "  CSC flag efficiency=" << 1.0*(matchFlags-sidebandFlags)/(tot) << std::endl;
 
   std::cout <<std::endl;
   std::cout << "N-2 (halo, muon) counts = " << nMinusTwoHaloMuon_ << std::endl;
