@@ -33,8 +33,8 @@ copySites={}
 copySites["RAL"]=["srm://heplnx204.pp.rl.ac.uk:8443/srm/managerv2?SFN=",
                   "/pnfs/pp.rl.ac.uk/data/cms/store/user/"]
 
-copySites["PUR"]=["srm://srm-dcache.rcac.purdue.edu:8443/srm/managerv2?SFN=",
-                  "/store/user/"]
+copySites["PUR"]=["srm://srm-dcache.rcac.purdue.edu:8443/srm/v2/server?SFN=",
+                  "/mnt/hadoop/store/user/"]
 copySites["CAF"]=["srm://srm-cms.cern.ch:8443/srm/managerv2?SFN=",
                   "/castor/cern.ch/cms/store/caf/user/"]
 copySites["UMD"]=["srm://hepcms-0.umd.edu:8443/srm/v2/server?SFN=",
