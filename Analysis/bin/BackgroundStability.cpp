@@ -248,7 +248,7 @@ void BackgroundStability::loop() {
     bool isNoise    = !event_->noiseFilterResult;
     bool isCosmic   = nmu > 0;
     bool isCosmic2  = ndt > 0;
-    bool isCosmic3  = nrpc > 0;
+    bool isCosmic3  = !cuts_.cosmicVeto3();
     bool isBeamHalo = ncsc > 0;
     bool isBeamHalo2 = bh;
     bool isBeamGas  = ntrk > 1;
@@ -272,14 +272,14 @@ void BackgroundStability::loop() {
 	jetN90NoiseByFill_.fill(fill, n90);
 	jetNTowNoiseByFill_.fill(fill, ntow);
       }
-      if (isCosmic && !isBeamHalo && !isBeamGas && !isVtx) {
+      if (isCosmic2 ){//&& !isBeamHalo && !isBeamGas && !isVtx) {
 	nCosmicByFill_.at(fill) += 1;
 	jetECosmicByFill_.fill(fill, e);
 	jetN60CosmicByFill_.fill(fill, n60);
 	jetN90CosmicByFill_.fill(fill, n90);
 	jetNTowCosmicByFill_.fill(fill, ntow);
       }
-      if (isCosmic2 && !isBeamHalo && !isBeamGas && !isVtx) {
+      if (isCosmic && !isBeamHalo && !isBeamGas && !isVtx &!isNoise) {
 	nCosmic2ByFill_.at(fill) += 1;
       }
       if (isCosmic3 && !isBeamHalo && !isBeamGas && !isVtx) {

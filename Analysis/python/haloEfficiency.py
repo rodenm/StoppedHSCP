@@ -19,7 +19,7 @@ parser.add_option("-t", "--trigger", action="store_true")
 (opts, args)=parser.parse_args()
 
 
-dataset=opts.dir
+dataset=str(opts.dir)
 
 
 # ROOT meh

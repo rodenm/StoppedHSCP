@@ -21,8 +21,8 @@ parser.add_option("-m", "--method", action="store", default="12")
 
 #type=opts.type
 #fillset=opts.era
-dataset=opts.dir
-control=opts.control
+dataset=str(opts.dir)
+control=str(opts.control)
 
 # ROOT meh
 sys.argv=[]

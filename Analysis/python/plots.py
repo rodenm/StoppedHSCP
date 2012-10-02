@@ -160,9 +160,13 @@ def multiPlot(hists,
               xmax=0.) :
 
 
-#    print xtitle, title
+    # print xtitle, title
     s = PlotStyle(style)
 
+    # fudge to normalize the cum cuts plot - MLR
+    #if xtitle=="cut":# or xtitle=="n_{60}" or xtitle=="n_{90}":
+    #    s.norm=true
+    
     canvas=TCanvas("canvas")
 
     # set log scale, or not
@@ -180,13 +184,15 @@ def multiPlot(hists,
         for h in hists:
             if s.norm and h.Integral()>0.:
                 max = 1.1*h.GetMaximum()/h.Integral()
+            elif s.log: # need to set max for logy plots
+                max = 5*(h.GetMaximum()+h.GetBinError(h.GetMaximumBin()))
             else:
                 max = 1.1*(h.GetMaximum()+h.GetBinError(h.GetMaximumBin()))
             if max > ymax:
                 ymax = max
 
     # set x range
-    if (not xmax==0. and not xmin==0.):
+    if (not xmax==0.or not xmin==0.):
         for h in hists:
             h.SetAxisRange(xmin, xmax)
 

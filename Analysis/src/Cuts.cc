@@ -173,8 +173,35 @@ bool Cuts::cosmicVeto() const {      // no cosmic muon
   return (event_->mu_N==0);
 }
 
-bool Cuts::cosmicVeto2() const {      // no cosmic muon
-  return (event_->mu_N==0 && event_->DTSegment_N < 3);
+bool Cuts::cosmicVeto2() const {      // Cosmic cut w/o RPCs
+  //return (event_->mu_N==0 && event_->DTSegment_N < 3);
+
+  // Sept2012 - this cut used to be the line above, but I'm changing
+  // it to look specifically for events which have cosmic-like
+  // signatures in the DTs and RPCs, removing the reco muon requirement
+  // so I can start to study separating the muon cut.
+  if (event_->DTSegment_N < 3) {
+    unsigned nCloseRPCPairs = 0;
+    for (unsigned irpc = 0; irpc < event_->rpcHit_N; irpc++) {
+      for (unsigned jrpc = irpc+1; jrpc < event_->rpcHit_N; jrpc++) {
+	double deltaZ = fabs(event_->rpcHitZ[irpc] - event_->rpcHitZ[jrpc]);
+	double deltaPhi = acos(cos(event_->rpcHitPhi[irpc] - event_->rpcHitPhi[jrpc]));
+	
+	// Require barrel hits to be localized in z, endcap hits to be localzied in phi
+	if (deltaZ < 40.0 && event_->rpcHitRegion[irpc] == 0 && event_->rpcHitRegion[jrpc] == 0) {
+	  nCloseRPCPairs++;
+	}
+	if (deltaPhi < 0.4 && abs(event_->rpcHitRegion[irpc]) == 1 && abs(event_->rpcHitRegion[jrpc]) == 1) {
+	  nCloseRPCPairs++;
+	}
+	//if (deltaZ < 100.0 and deltaPhi < 0.5) {
+	//  nCloseRPCPairs++;
+	//}
+      }
+    }
+    return (nCloseRPCPairs < 2);
+  }
+  return (false);
 }
 
 bool Cuts::cosmicVeto3() const {      // no cosmic muon

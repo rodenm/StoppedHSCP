@@ -157,6 +157,27 @@ class Histograms {
   TH1D* hNM1Test_;
   TH1D* hNM1Test2_;
 
+  // look at n60 and n90 distributions right before respective cuts are made
+  TH1D* hjetn60_e70cut_;
+  TH1D* hjetn90_e70cut_;
+  TH1D* hiphifrac_e70cut_;
+
+  TH1D* hjetn60_n60cut_;
+  TH1D* hjetn90_n60cut_;
+  TH1D* hiphifrac_n60cut_;
+
+  TH1D* hjetn60_n90cut_;
+  TH1D* hjetn90_n90cut_;
+  TH1D* hiphifrac_n90cut_;
+
+  TH1D* hjetn60_ntowiphicut_;
+  TH1D* hjetn90_ntowiphicut_;
+  TH1D* hiphifrac_ntowiphicut_;
+
+  TH1D* hjetn60_iphifraccut_;
+  TH1D* hjetn90_iphifraccut_;
+  TH1D* hiphifrac_iphifraccut_;
+
 };
 
 #endif

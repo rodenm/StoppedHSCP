@@ -95,6 +95,26 @@ void Histograms::book() {
   // special
   hbxup_ = new TH1D("hbxup", "BX (unpaired bunches)", 3564, 0., 3564.);
 
+  hjetn60_e70cut_ = new TH1D("hjetn60_e70cut", "Leading jet N60 at E70 cut (cum)", 25, 0., 25.);
+  hjetn90_e70cut_ = new TH1D("hjetn90_e70cut", "Leading jet N90 at E70 cut (cum)", 25, 0., 25.);
+  hiphifrac_e70cut_ = new TH1D("hiphifrac_e70cut", "Leading jet iPhiFrac at E70 cut (cum)", 200, 0., 1.0);
+  
+  hjetn60_n60cut_ = new TH1D("hjetn60_n60cut", "Leading jet N60 at N60 cut (cum)", 25, 0., 25.);
+  hjetn90_n60cut_ = new TH1D("hjetn90_n60cut", "Leading jet N90 at N60 cut (cum)", 25, 0., 25.);
+  hiphifrac_n60cut_ = new TH1D("hiphifrac_n60cut", "Leading jet iPhiFrac at N60 cut (cum)", 200, 0., 1.0);
+  
+  hjetn60_n90cut_ = new TH1D("hjetn60_n90cut", "Leading jet N60 at N90 cut (cum)", 25, 0., 25.);
+  hjetn90_n90cut_ = new TH1D("hjetn90_n90cut", "Leading jet N90 at N90 cut (cum)", 25, 0., 25.);
+  hiphifrac_n90cut_ = new TH1D("hiphifrac_n90cut", "Leading jet iPhiFrac at N90 cut (cum)", 200, 0., 1.0);
+  
+  hjetn60_ntowiphicut_ = new TH1D("hjetn60_ntowiphicut", "Leading jet N60 at ntowiphi cut (cum)", 25, 0., 25.);
+  hjetn90_ntowiphicut_ = new TH1D("hjetn90_ntowiphicut", "Leading jet N90 at ntowiphi cut (cum)", 25, 0., 25.);
+  hiphifrac_ntowiphicut_ = new TH1D("hiphifrac_ntowiphicut", "Leading jet iPhiFrac at ntowiphi cut (cum)", 200, 0., 1.0);
+  
+  hjetn60_iphifraccut_ = new TH1D("hjetn60_iphifraccut", "Leading jet N60 at iPhiFrac cut (cum)", 25, 0., 25.);
+  hjetn90_iphifraccut_ = new TH1D("hjetn90_iphifraccut", "Leading jet N90 at iPhiFrac cut (cum)", 25, 0., 25.);
+  hiphifrac_iphifraccut_ = new TH1D("hiphifrac_iphifraccut", "Leading jet iPhiFrac at iPhiFrac cut (cum)", 200, 0., 1.0);
+ 
   // cut counts
   hncutind_ = new TH1D("hncutind", "Cut counts", 20, 0., 20.);
   cutAxisLabels(hncutind_);
@@ -251,6 +271,33 @@ void Histograms::fill(StoppedHSCPEvent& event) {
       htowietaiphi_->Fill(event.towerIEta.at(0), event.towerIPhi.at(0));
     }
 
+  }
+
+  // plot N90 and N60 right before respective cuts are made
+  if (cuts_->allCutN(8)) {
+    hjetn60_e70cut_->Fill(event.jetN60.at(0));
+    hjetn90_e70cut_->Fill(event.jetN90.at(0));
+    hiphifrac_e70cut_->Fill(event.leadingIPhiFraction());
+  }
+  if (cuts_->allCutN(9)) {
+    hjetn60_n60cut_->Fill(event.jetN60.at(0));
+    hjetn90_n60cut_->Fill(event.jetN90.at(0));
+    hiphifrac_n60cut_->Fill(event.leadingIPhiFraction());
+  }
+  if (cuts_->allCutN(10)) {
+    hjetn60_n90cut_->Fill(event.jetN60.at(0));
+    hjetn90_n90cut_->Fill(event.jetN90.at(0));
+    hiphifrac_n90cut_->Fill(event.leadingIPhiFraction());
+  }
+  if (cuts_->allCutN(11)) {
+    hjetn60_ntowiphicut_->Fill(event.jetN60.at(0));
+    hjetn90_ntowiphicut_->Fill(event.jetN90.at(0));
+    hiphifrac_ntowiphicut_->Fill(event.leadingIPhiFraction());
+  }
+  if (cuts_->allCutN(12)) {
+    hjetn60_iphifraccut_->Fill(event.jetN60.at(0));
+    hjetn90_iphifraccut_->Fill(event.jetN90.at(0));
+    hiphifrac_iphifraccut_->Fill(event.leadingIPhiFraction());
   }
 
   // plots after jet and mu cuts
@@ -489,6 +536,26 @@ void Histograms::save() {
   hpkout_->Write("",TObject::kOverwrite);
 
   base_->cd("Cuts");
+
+  hjetn60_e70cut_->Write("",TObject::kOverwrite);
+  hjetn90_e70cut_->Write("",TObject::kOverwrite);
+  hiphifrac_e70cut_->Write("",TObject::kOverwrite);
+  
+  hjetn60_n60cut_->Write("",TObject::kOverwrite);
+  hjetn90_n60cut_->Write("",TObject::kOverwrite);
+  hiphifrac_n60cut_->Write("",TObject::kOverwrite);
+  
+  hjetn60_n90cut_->Write("",TObject::kOverwrite);
+  hjetn90_n90cut_->Write("",TObject::kOverwrite);
+  hiphifrac_n90cut_->Write("",TObject::kOverwrite);
+  
+  hjetn60_ntowiphicut_->Write("",TObject::kOverwrite);
+  hjetn90_ntowiphicut_->Write("",TObject::kOverwrite);
+  hiphifrac_ntowiphicut_->Write("",TObject::kOverwrite);
+  
+  hjetn60_iphifraccut_->Write("",TObject::kOverwrite);
+  hjetn90_iphifraccut_->Write("",TObject::kOverwrite);
+  hiphifrac_iphifraccut_->Write("",TObject::kOverwrite);
 
   hncutind_->Write("",TObject::kOverwrite);
   hncutcum_->Write("",TObject::kOverwrite);
