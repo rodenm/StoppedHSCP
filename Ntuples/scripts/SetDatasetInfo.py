@@ -213,6 +213,16 @@ def GetDatasets():
     datasets[name].InputInfo["l1JetNoBptxName"]='L1_SingleJetC20_NotBptxOR'
     datasets[name].InputInfo["l1JetNoBptxNoHaloName"]='L1_SingleJetC20_NotBptxOR'
     datasets[name].InputInfo["l1Jet32NoBptxNoHaloName"]='L1_SingleJetC32_NotBptxOR'
+                     
+    #/NoBPTX/Run2012C-24Aug2012-v1/RECO
+    name="/NoBPTX/Run2012C-24Aug2012-v1/RECO"
+    datasets[name]=DatasetInfo(name=name,
+                               trigger="2012",
+                               datatype="RECO")
+    datasets[name].InputInfo["hltL3Tag"]="hltStoppedHSCP1CaloJetEnergy50"
+    datasets[name].InputInfo["l1JetNoBptxName"]='L1_SingleJetC20_NotBptxOR'
+    datasets[name].InputInfo["l1JetNoBptxNoHaloName"]='L1_SingleJetC20_NotBptxOR'
+    datasets[name].InputInfo["l1Jet32NoBptxNoHaloName"]='L1_SingleJetC32_NotBptxOR'
                            
     #/NoBPTX/Run2012C-PromptReco-v2/RECO
     name="/NoBPTX/Run2012C-PromptReco-v2/RECO"
