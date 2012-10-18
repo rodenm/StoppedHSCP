@@ -1,8 +1,7 @@
 # Modify these variables to switch masses, input stopped points files, and flavor of RHadron
-STOPPED_POINTS_FILE='stoppedPoint_gluino500.txt'
-SPARTICLE_MASS=500
-NEUTRALINO_MASS=100
-OUTPUTFILE='stoppedHSCP_stage2_GEN-HLT_gluino' + str(SPARTICLE_MASS)+'_'+str(NEUTRALINO_MASS)+'.root'
+SPARTICLE_MASS=1000
+NEUTRALINO_MASS=894
+OUTPUTFILE='stoppedHSCP_stage2_HLT_gluino' + str(SPARTICLE_MASS)+'_'+str(NEUTRALINO_MASS)+'.root'
 
 import FWCore.ParameterSet.Config as cms
 
@@ -32,6 +31,10 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(20)
 )
 
+process.options = cms.untracked.PSet(
+	    SkipEvent = cms.untracked.vstring( 'g4SimHits','G4HadronicProcess' )
+)
+
 # Input source
 process.source = cms.Source ("PoolSource",
 			     fileNames=cms.untracked.vstring(
@@ -41,6 +44,10 @@ process.source = cms.Source ("PoolSource",
 
 # Output definition
 process.RAWSIMoutput = cms.OutputModule("PoolOutputModule",
+#    outputCommands = cms.untracked.vstring('drop *_*_*_SIM',
+#					   'keep *_*_Stopped*_SIM',
+#					   'keep *_generator_*_SIM',
+#					   'keep *_*_*_HLT'),
     splitLevel = cms.untracked.int32(0),
     eventAutoFlushCompressedSize = cms.untracked.int32(5242880),
     outputCommands = process.RAWSIMEventContent.outputCommands,
@@ -50,23 +57,42 @@ process.RAWSIMoutput = cms.OutputModule("PoolOutputModule",
         dataTier = cms.untracked.string('')
     ),
     SelectEvents = cms.untracked.PSet(
-        SelectEvents = cms.vstring('generation_step')
+        SelectEvents = cms.vstring('filter_step')
     )
+)
+
+process.RAWSIMoutput.outputCommands.append('drop *_*_*_SIM')
+process.RAWSIMoutput.outputCommands.append('keep *_*_Stopped*_SIM')
+process.RAWSIMoutput.outputCommands.append('keep *_generator_*_SIM')
+
+process.eventFilter = cms.EDFilter("MCStoppedEventFilter",
+#				   StoppedParticlesXLabel = cms.InputTag("StoppedParticlesX")
 )
 
 # Additional output definition
 
 # Other statements
-process.GlobalTag.globaltag = 'MC_42_V12::All'
+process.GlobalTag.globaltag = 'START53_V11::All'
 
 # Set parameters for the sparticle generation
 process.load('StoppedHSCP/Simulation/gluinoHSCPGun_cfi')
 process.generator.readFromFile = cms.untracked.bool(False)
+process.generator.PGunParameters = cms.PSet(
+	MinPhi = cms.double(-3.14159265359),
+	ParticleID = cms.vint32(11),
+	neutralinoMass = cms.double(NEUTRALINO_MASS),
+	MinEta = cms.double(-10),
+	sparticleMass = cms.double(SPARTICLE_MASS),
+	MaxEta = cms.double(10),
+	MaxPhi = cms.double(3.14159265359),
+	diJetGluino = cms.bool(False),
+	decayTable = cms.string('src/stage2ParticlesTable.txt')
+	)
 
 process.genParticles = cms.EDProducer("GenParticleProducer",
     saveBarCodes = cms.untracked.bool(True),
     src = cms.InputTag("generator"),
-    abortOnUnknownPDGCode = cms.untracked.bool(False)
+    abortOnUnknownPDGCode = cms.untracked.bool(False),
 )
 
 process.ProductionFilterSequence = cms.Sequence(process.generator)
@@ -83,6 +109,7 @@ process.g4SimHits.HCalSD.UseShowerLibrary = False
 # FR END Extra stuff
 
 # Path and EndPath definitions
+process.filter_step = cms.Path(process.eventFilter)
 process.generation_step = cms.Path(process.pgen)
 process.simulation_step = cms.Path(process.psim)
 process.digitisation_step = cms.Path(process.pdigi)
@@ -95,7 +122,7 @@ process.endjob_step = cms.EndPath(process.endOfProcess)
 process.RAWSIMoutput_step = cms.EndPath(process.RAWSIMoutput)
 
 # Schedule definition
-process.schedule = cms.Schedule(process.generation_step,process.genfiltersummary_step,process.simulation_step,process.digitisation_step,process.L1simulation_step,process.digi2raw_step)
+process.schedule = cms.Schedule(process.filter_step,process.generation_step,process.genfiltersummary_step,process.simulation_step,process.digitisation_step,process.L1simulation_step,process.digi2raw_step)
 process.schedule.extend(process.HLTSchedule)
 process.schedule.extend([process.raw2digi_step,process.L1Reco_step,process.endjob_step,process.RAWSIMoutput_step])
 # filter all path with the production filter sequence
