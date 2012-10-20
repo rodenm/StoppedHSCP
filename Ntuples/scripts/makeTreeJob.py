@@ -77,6 +77,7 @@ proxy_server = myproxy.cern.ch"
 #se_white_list = \n\
 #ce_black_list = \n\
 #ce_white_list = heplnx206.pp.rl.ac.uk,heplnx207.pp.rl.ac.uk\n\
+#ce_white_list = rossmann-osg.rcac.purdue.edu\n\
             "
         if whitelist <>None and not whitelist.startswith("#"):
             crabstring=crabstring+"\nce_white_list = %s\n"%whitelist
@@ -370,7 +371,12 @@ if __name__=="__main__":
                       dest="trigger2011",
                       action="store_true",
                       default=False,
-                      help="use 2011 trigger config (default)")
+                      help="use 2011 trigger config")
+    parser.add_option("--2012",
+                      dest="trigger2012",
+                      action="store_true",
+                      default=False,
+                      help="use 2012 trigger config (default)")
     parser.add_option("--raw","--RAW",
                       dest="rawdata",
                       action="store_true",
@@ -475,6 +481,12 @@ if __name__=="__main__":
             print "Warning!  Overwriting default trigger value of '%s' with new value of '2011'"%trigger
             print "**********"
         trigger = '2011'
+    elif opts.trigger2010==False and opts.trigger2011==False and opts.trigger2012==True:
+        if (trigger<>None and trigger<>"2012"):
+            print "**********"
+            print "Warning!  Overwriting default trigger value of '%s' with new value of '2012'"%trigger
+            print "**********"
+        trigger = '2012'
     # No trigger specified
     elif opts.trigger2010==False and opts.trigger2011==False:
         if trigger==None:

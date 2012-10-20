@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.35 2012/07/18 23:39:00 rodenm Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.36 2012/07/21 17:16:48 rodenm Exp $
 //
 //
 
@@ -1057,6 +1057,39 @@ void StoppedHSCPTreeProducer::doMC(const edm::Event& iEvent) {
 	event_->mcRhadronEta.push_back(eta);
 	event_->mcRhadronPhi.push_back(phi);
 	event_->mcRhadron_N++; 
+      }
+      // Store info about the first two neutralinos seen
+      // -- Assumes the first two r-hadrons we come across are the ones we want.
+      else if (partId == 1000022 && event_->mcRhadron_N < 2) {
+	math::XYZTLorentzVector momentum1(p->momentum().px(),
+					  p->momentum().py(),
+					  p->momentum().pz(),
+					  p->momentum().e());
+	Double_t phi = momentum1.phi();
+	Double_t pt = momentum1.pt();
+	Double_t e = momentum1.e();
+	Double_t eta = momentum1.eta();
+	Double_t mass = p->momentum().m();
+	Double_t charge = 999.0;
+	const HepPDT::ParticleData* PData = fPDGTable->particle(HepPDT::ParticleID(p->pdg_id()));
+	if(PData==0) {
+	  LogDebug ("StoppedHSCPTreeProducer") << "Error getting HepPDT data table for "
+					       << p->pdg_id() << ". Unable to fill charge "
+					       << "of neutralino." << std::endl;
+	} else {
+	  charge = PData->charge();
+	}
+	event_->mcNeutralinoId.push_back(p->pdg_id());
+	event_->mcNeutralinoMass.push_back(mass);
+	event_->mcNeutralinoCharge.push_back(charge);
+	event_->mcNeutralinoPx.push_back(momentum1.x());
+	event_->mcNeutralinoPy.push_back(momentum1.y());
+	event_->mcNeutralinoPz.push_back(momentum1.z());
+	event_->mcNeutralinoPt.push_back(pt);
+	event_->mcNeutralinoE.push_back(e);
+	event_->mcNeutralinoEta.push_back(eta);
+	event_->mcNeutralinoPhi.push_back(phi);
+	event_->mcNeutralino_N++; 
       }
     }  
   }

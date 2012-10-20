@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.21 2012/07/18 22:30:30 rodenm Exp $
+// $Id: StoppedHSCPEvent.h,v 1.22 2012/07/21 17:16:48 rodenm Exp $
 //
 //
 
@@ -305,6 +305,19 @@ class StoppedHSCPEvent : public TObject {
   std::vector<Double_t> mcRhadronE;
   std::vector<Double_t> mcRhadronPhi;
   std::vector<Double_t> mcRhadronEta;
+
+  // MC neutralino
+  unsigned mcNeutralino_N;
+  std::vector<UInt_t> mcNeutralinoId;
+  std::vector<Double_t> mcNeutralinoMass;
+  std::vector<Double_t> mcNeutralinoCharge; // Not currently filled
+  std::vector<Double_t> mcNeutralinoPx;
+  std::vector<Double_t> mcNeutralinoPy;
+  std::vector<Double_t> mcNeutralinoPz;
+  std::vector<Double_t> mcNeutralinoPt;
+  std::vector<Double_t> mcNeutralinoE;
+  std::vector<Double_t> mcNeutralinoPhi;
+  std::vector<Double_t> mcNeutralinoEta;
 
   // MC stopped points
   unsigned mcStoppedParticle_N;
