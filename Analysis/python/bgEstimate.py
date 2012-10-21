@@ -84,7 +84,7 @@ res2011AB.append( [12] )
 #
 # 2012A
 # N-1 halo: 35
-livetime  = [ 140245, 23 ]
+livetime  = [ 140012, 23 ]
 cosmicNM1 = [ 211, sqrt(211) ]
 nHalo     = [ 0.50, 0.233 ]
 print "Run2012A"
@@ -93,21 +93,40 @@ res2012A.append( [2] ) # THIS IS nOBS
 
 # 2012B
 # N-1 halo: 28
-livetime  = [ 209936, 23 ]
-cosmicNM1 = [ 471, sqrt(471) ]
+livetime  = [ 212487, 23 ]
+cosmicNM1 = [ 473, sqrt(473) ]
 nHalo     = [ 0.40, 0.187 ]
 print "Run2012B"
 res2012B = totalBackground( livetime, cosmicNM1, nHalo )
 res2012B.append( [0] ) # THIS IS nOBS
 
 # 2012C (v1 + v2)
-# N-1 halo: 114
-livetime  = [ 247531, 23 ]
-cosmicNM1 = [ 563, sqrt(563) ]
-nHalo     = [ 1.63, 0.76 ]
+# N-1 halo: 147
+livetime  = [ 351627, 23 ]
+cosmicNM1 = [ 765, sqrt(765) ]
+nHalo     = [ 2.1, 0.98 ]
 print "Run2012C"
 res2012C = totalBackground( livetime, cosmicNM1, nHalo )
 res2012C.append( [8] ) # THIS IS nOBS
+
+# 2012D
+# N-1 halo: 13
+livetime  = [ 53726, 23 ]
+cosmicNM1 = [ 119, sqrt(119) ]
+nHalo     = [ 0.19, 0.09 ]
+print "Run2012D"
+res2012D = totalBackground( livetime, cosmicNM1, nHalo )
+res2012D.append( [1] ) # THIS IS nOBS
+
+# 2012
+# N-1 halo: 223
+livetime  = [ 757853, 23 ]
+cosmicNM1 = [ 1568, sqrt(1568) ]
+nHalo     = [ 3.19, 1.49 ]
+print "Run2012 "
+res2012 = totalBackground( livetime, cosmicNM1, nHalo )
+res2012.append( [11] ) # THIS IS nOBS
+
 
 print "[TABLE border='1']"  
 print "Period | Noise         | Cosmic         | Halo          | Total         | NObs |-"
@@ -127,5 +146,9 @@ print '2012A  | %.2f +/- %.2f |  %.2f +/- %.2f | %.2f +/- %.2f | %.2f +/- %.2f |
 print '2012B  | %.2f +/- %.2f |  %.2f +/- %.2f | %.2f +/- %.2f | %.2f +/- %.2f | %i   |-' % ( res2012B[0][0], res2012B[0][1], res2012B[1][0], res2012B[1][1], res2012B[2][0], res2012B[2][1], res2012B[3][0], res2012B[3][1], res2012B[4][0] )
 
 print '2012C  | %.2f +/- %.2f |  %.2f +/- %.2f | %.2f +/- %.2f | %.2f +/- %.2f | %i   |-' % ( res2012C[0][0], res2012C[0][1], res2012C[1][0], res2012C[1][1], res2012C[2][0], res2012C[2][1], res2012C[3][0], res2012C[3][1], res2012C[4][0] )
+
+print '2012D  | %.2f +/- %.2f |  %.2f +/- %.2f | %.2f +/- %.2f | %.2f +/- %.2f | %i   |-' % ( res2012D[0][0], res2012D[0][1], res2012D[1][0], res2012D[1][1], res2012D[2][0], res2012D[2][1], res2012D[3][0], res2012D[3][1], res2012D[4][0] )
+
+print '2012  | %.2f +/- %.2f |  %.2f +/- %.2f | %.2f +/- %.2f | %.2f +/- %.2f | %i   |-' % ( res2012[0][0], res2012[0][1], res2012[1][0], res2012[1][1], res2012[2][0], res2012[2][1], res2012[3][0], res2012[3][1], res2012[4][0] )
 
 print "[/TABLE]"
