@@ -81,10 +81,10 @@ void stopMass(double lumi=-1., double maxInstLumi=-1.) {
   
   	// details
   	TPaveText* blurb = new TPaveText(305., 1.e1, 400., 4.5e2);
-  	blurb->AddText("CMS Preliminary 2011");
+  	blurb->AddText("CMS Preliminary 2012");
 
   	std::stringstream label;
-  	label<<"#int L dt = "<<lumi<<" pb^{-1}";
+  	label<<"#int L dt = "<<lumi<<" fb^{-1}";
   	blurb->AddText(label.str().c_str());
   	label.str("");
   	double peakInstLumi=maxInstLumi;
@@ -100,7 +100,7 @@ void stopMass(double lumi=-1., double maxInstLumi=-1.) {
 	blurb->AddText(label.str().c_str());
 
   	//blurb->AddText("m_{#tilde{g}} - m_{#tilde{#chi}^{0}} = 100 GeV/c^{2}");
-    blurb->AddText("m_{#tilde{t}} - m_{#tilde{#chi}^{0}} = 200 GeV/c^{2}");	
+    blurb->AddText("m_{#tilde{t}} - m_{#tilde{#chi}^{0}} = 180 GeV/c^{2}");	
   	blurb->SetTextFont(42);
   	blurb->SetBorderSize(0);
   	blurb->SetFillColor(0);

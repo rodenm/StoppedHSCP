@@ -64,9 +64,9 @@ void stopLimit(double lumi=-1., double maxInstLumi=-1.) {
 	h->SetTitle("Beamgap Expt;#tau_{#tilde{t}} [s]; #sigma(pp #rightarrow #tilde{t}#tilde{t}) #times BR(#tilde{t} #rightarrow t#tilde{#chi}^{0}) [pb]");
 
 	blurb = new TPaveText(2e-7, 9e0, 4e-3, 1.5e2);
-	blurb->AddText("CMS Preliminary 2011");
+	blurb->AddText("CMS Preliminary 2012");
   	std::stringstream label;
-  	label<<"#int L dt = "<<lumi<<" pb^{-1}";
+  	label<<"#int L dt = "<<lumi<<" fb^{-1}";
   	blurb->AddText(label.str().c_str());
   	label.str("");
   	double peakInstLumi=maxInstLumi;
@@ -81,7 +81,7 @@ void stopLimit(double lumi=-1., double maxInstLumi=-1.) {
 	label << "#sqrt{s} = " << ENERGY << " TeV";
 	blurb->AddText(label.str().c_str());
 
-	blurb->AddText("m_{#tilde{t}} - m_{#tilde{#chi}^{0}} = 200 GeV/c^{2}");
+	blurb->AddText("m_{#tilde{t}} - m_{#tilde{#chi}^{0}} = 180 GeV/c^{2}");
 	//blurb->AddText("m_{#tilde{g}} = 300 GeV/c^{2}");
 	//blurb->AddText("m_{#tilde{#chi}^{0}} = 200 GeV/c^{2}");
 	blurb->SetTextFont(42);

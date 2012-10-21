@@ -63,9 +63,9 @@ void gluinoLimit(double lumi=-1., double maxInstLumi=-1.) {
   h->SetTitle("Beamgap Expt;#tau_{#tilde{g}} [s]; #sigma(pp #rightarrow #tilde{g}#tilde{g}) #times BR(#tilde{g} #rightarrow g#tilde{#chi}^{0}) [pb]");
   
   blurb = new TPaveText(2e-7, 9e0, 4e-3, 1.5e2);
-  blurb->AddText("CMS Preliminary 2011");
+  blurb->AddText("CMS Preliminary 2012");
   std::stringstream label;
-  label<<"#int L dt = "<<lumi<<" pb^{-1}";
+  label<<"#int L dt = "<<lumi<<" fb^{-1}";
   blurb->AddText(label.str().c_str());
   label.str("");
   double peakInstLumi=maxInstLumi;

@@ -56,10 +56,10 @@ void modelIndLimit(double lumi=-1.,double maxInstLumi=-1.)
 	h->SetTitle("Beamgap Expt;#tau_{HSCP} [s]; Model Independent Cross-section [pb]");
 
 	TPaveText* blurb = new TPaveText(5e-7, 2e0, 1e-2, 2e1);
-	blurb->AddText("CMS Preliminary 2011");
+	blurb->AddText("CMS Preliminary 2012");
 
   	std::stringstream label;
-  	label<<"#int L dt = "<<lumi<<" pb^{-1}";
+  	label<<"#int L dt = "<<lumi<<" fb^{-1}";
   	blurb->AddText(label.str().c_str());
 
   	label.str("");
@@ -106,8 +106,8 @@ void modelIndLimit(double lumi=-1.,double maxInstLumi=-1.)
 	leg->SetBorderSize(0);
 	leg->SetTextFont(42);
 	leg->SetFillColor(0);
-	leg->AddEntry(g_gluino, "Gluino : m_{#tilde{g}}=500 GeV/c^{2}, m_{#tilde{#chi^{0}}}=400 GeV/c^{2}", "l");
-	leg->AddEntry(g_stop, "Stop  : m_{#tilde{t}}=300 GeV/c^{2}, m_{#tilde{#chi^{0}}}=100 GeV/c^{2}", "l");
+	leg->AddEntry(g_gluino, "Gluino : m_{#tilde{g}}=500 GeV/c^{2}, m_{#tilde{#chi^{0}}}=387 GeV/c^{2}", "l");
+	leg->AddEntry(g_stop, "Stop  : m_{#tilde{t}}=300 GeV/c^{2}, m_{#tilde{#chi^{0}}}=109 GeV/c^{2}", "l");
 	leg->Draw();
 
 	g_gluino->SetLineColor(2);

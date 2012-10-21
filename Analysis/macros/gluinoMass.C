@@ -81,10 +81,10 @@ void gluinoMass(double lumi=-1., double maxInstLumi=-1.) {
   
   	// details
   	TPaveText* blurb = new TPaveText(300., 1.e1, 400., 4.5e2);
-  	blurb->AddText("CMS Preliminary 2011");
+  	blurb->AddText("CMS Preliminary 2012");
 
   	std::stringstream label;
-  	label<<"#int L dt = "<<lumi<<" pb^{-1}";
+  	label<<"#int L dt = "<<lumi<<" fb^{-1}";
   	blurb->AddText(label.str().c_str());
   	label.str("");
   	double peakInstLumi=maxInstLumi;
