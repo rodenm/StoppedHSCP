@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.36 2012/07/21 17:16:48 rodenm Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.37 2012/10/20 23:54:39 rodenm Exp $
 //
 //
 
@@ -333,6 +333,7 @@ private:
   edm::InputTag mcTag_;
   std::string mcProducer_;
   edm::InputTag hepProducer_;
+  edm::InputTag hepDecayProducer_;
   std::string jetCorrectorServiceName_;
   edm::InputTag jetTag_;
   edm::InputTag jetAK5Tag_;
@@ -480,6 +481,7 @@ StoppedHSCPTreeProducer::StoppedHSCPTreeProducer(const edm::ParameterSet& iConfi
   mcTag_(iConfig.getUntrackedParameter<edm::InputTag>("mcTag",edm::InputTag("generator"))),
   mcProducer_ (iConfig.getUntrackedParameter<std::string>("producer", "g4SimHits")),
   hepProducer_ (iConfig.getUntrackedParameter<edm::InputTag>("hepMCProducerTag", edm::InputTag("generator", "", "SIM"))),
+  hepDecayProducer_ (iConfig.getUntrackedParameter<edm::InputTag>("hepMCDecayProducerTag", edm::InputTag("generator", "", "HLT"))),
   jetCorrectorServiceName_(iConfig.getUntrackedParameter<std::string>("jetCorrectorServiceName","ic5CaloL1L2L3Residual")),
   jetTag_(iConfig.getUntrackedParameter<edm::InputTag>("jetTag",edm::InputTag("iterativeCone5CaloJets"))),
   jetAK5Tag_(iConfig.getUntrackedParameter<edm::InputTag>("jetAK5Tag",edm::InputTag("ak5CaloJets"))),
@@ -1058,9 +1060,67 @@ void StoppedHSCPTreeProducer::doMC(const edm::Event& iEvent) {
 	event_->mcRhadronPhi.push_back(phi);
 	event_->mcRhadron_N++; 
       }
+    }  
+  }
+  // Search the stage 1 HepMC records for the initial SUSY particle (gluino, stop, stau...)
+  // and for the initial R-hadrons
+  edm::Handle<edm::HepMCProduct> hepMCDecayproduct;
+  iEvent.getByLabel(hepDecayProducer_, hepMCDecayproduct);
+  if (!hepMCDecayproduct.isValid()) {
+    edm::LogError ("MissingProduct") << "Stage 1 HepMC product not found. Branch "
+				     << "will not be filled." << std::endl;
+  } else {
+    const HepMC::GenEvent* mc = hepMCDecayproduct->GetEvent();
+    if( mc == 0 ) {
+      throw edm::Exception( edm::errors::InvalidReference ) << "HepMC has null pointer "
+							    << "to GenEvent" << std::endl;
+    }
+    // Uncomment this to print the full HepMC record for each event (for debugging or whatever)
+    mc->print( std::cout );
+    
+    // Iterate over the HepMC particles, look for the sparticles that produce r-hadrons,
+    for ( HepMC::GenEvent::particle_const_iterator piter  = mc->particles_begin();
+	  piter != mc->particles_end(); 
+	  ++piter ) {
+      HepMC::GenParticle* p = *piter;
+      int partId = fabs(p->pdg_id());
+      
+      // Save information about the daughter decay particles
+      int targetId = event_->mcSparticleId[0]%100;
+      if ((partId == targetId) && event_->mcDaughter_N < 1) {
+	math::XYZTLorentzVector momentum1(p->momentum().px(),
+					  p->momentum().py(),
+					  p->momentum().pz(),
+					  p->momentum().e());
+	Double_t phi = momentum1.phi();
+	Double_t pt = momentum1.pt();
+	Double_t e = momentum1.e();
+	Double_t eta = momentum1.eta();
+	Double_t mass = p->momentum().m();
+	Double_t charge = 999.0;
+	const HepPDT::ParticleData* PData = fPDGTable->particle(HepPDT::ParticleID(p->pdg_id()));
+	if(PData==0) {
+	  LogDebug ("StoppedHSCPTreeProducer") << "Error getting HepPDT data table for "
+					       << p->pdg_id() << ". Unable to fill charge "
+					       << "of particle." << std::endl;
+	} else {
+	  charge = PData->charge();
+	}
+	event_->mcDaughterId.push_back(p->pdg_id());
+	event_->mcDaughterMass.push_back(mass);
+	event_->mcDaughterCharge.push_back(charge);
+	event_->mcDaughterPx.push_back(momentum1.x());
+	event_->mcDaughterPy.push_back(momentum1.y());
+	event_->mcDaughterPz.push_back(momentum1.z());
+	event_->mcDaughterPt.push_back(pt);
+	event_->mcDaughterE.push_back(e);
+	event_->mcDaughterEta.push_back(eta);
+	event_->mcDaughterPhi.push_back(phi);
+	event_->mcDaughter_N++;
+      }
       // Store info about the first two neutralinos seen
-      // -- Assumes the first two r-hadrons we come across are the ones we want.
-      else if (partId == 1000022 && event_->mcRhadron_N < 2) {
+      // -- Assumes the first neutralino we come across is the ones we want.
+      else if (partId == 1000022 && event_->mcNeutralino_N < 1) {
 	math::XYZTLorentzVector momentum1(p->momentum().px(),
 					  p->momentum().py(),
 					  p->momentum().pz(),
