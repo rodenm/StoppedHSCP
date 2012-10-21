@@ -186,6 +186,9 @@ void Analyser::printCutValues(ostream& o) {
   if (event_->beamHalo_CSCTight) halo = "CSCTight";
   o << "  beamHalo       = " << halo << "\t" << cuts_.haloVeto() << std::endl;
   o << "  mu_N           = " << event_->mu_N << "\t\t" << cuts_.cosmicVeto() << std::endl;
+  o << "  cscSeg_N       = " << event_->cscSeg_N << "\t\t" << cuts_.cosmicVeto() << std::endl;
+  o << "  DTSegment_N    = " << event_->DTSegment_N << "\t\t" << cuts_.cosmicVeto2() << std::endl;
+  o << "  rpcHit_N       = " << event_->rpcHit_N << "\t\t" << cuts_.cosmicVeto3() << std::endl;
   std::string noise = (event_->noiseFilterResult ? "No" : "Yes");
   o << "  HCAL noise     = " << noise << "\t\t" << cuts_.hcalNoiseVeto() << std::endl;
   o << "  jetE[0]        = " << event_->jetE[0] << "\t" << cuts_.jetEnergyCut() << std::endl;
@@ -269,6 +272,9 @@ void Analyser::loop(ULong64_t maxEvents) {
     cosmicsHistos_.fill(*event_);
     noiseHistos_.fill(*event_);
     signalHistos_.fill(*event_);
+
+    // MLR - remove this line
+    // printCutValues(dumpFile_);
 
     // check if this is an event we're watching for and do something if so
     if (isWatchedEvent()) {
