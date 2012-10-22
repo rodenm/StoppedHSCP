@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.23 2012/10/20 23:54:39 rodenm Exp $
+// $Id: StoppedHSCPEvent.h,v 1.24 2012/10/21 22:44:58 rodenm Exp $
 //
 //
 
@@ -683,7 +683,7 @@ class StoppedHSCPEvent : public TObject {
   double top5DigiRPeak;
   double top5DigiROuter;
 
-  ClassDef(StoppedHSCPEvent,24); // version 24: includes new 2012 triggers
+  ClassDef(StoppedHSCPEvent,26); // version 26: includes new mc variables
 
 };
 
