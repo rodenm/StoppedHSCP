@@ -111,9 +111,9 @@ bool Cuts::triggerCut() const {      // require event passed main trigger
   // Skip bad fills and runs; uses method from BadRuns.cc
   if (isBadFillOrRun(event_->fill,event_->run)) return false;
 
-  //0) MC should use one of the 2011 triggers
+  //0) MC should use the main 2012 signal trigger
   if (isMC_)
-    trigger = event_->hltJetNoBptx3BXNoHalo;
+    trigger = event_->hltJetE50NoBptx3BXNoHalo;
 
   //1) in Run2010A, require hltJetNoBptx only
   else if (event_->fill<1711)

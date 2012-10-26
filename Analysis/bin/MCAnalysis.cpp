@@ -177,6 +177,10 @@ public:
     }
     intersect_count_ = 0;
     
+    trigger_ = 0;
+    eb_trigger_ = 0;
+    hb_trigger_ = 0;
+
     hb_count_ = 0;
     he_count_ = 0;
     eb_count_ = 0;
@@ -255,6 +259,10 @@ private:
 
   std::ifstream hscp_file_;
   std::ifstream stopped_file_;
+
+  int trigger_;
+  int hb_trigger_;
+  int eb_trigger_;
 
   int hb_count_;
   int he_count_;
@@ -340,6 +348,9 @@ void MCAnalysis::loop() {
     std::cout << "-------------------------------" << std::endl;
     std::cout << "Total count = " << total_count_ << std::endl;
     std::cout << "Total selected = " << selected_count_ << std::endl << std::endl;
+    std::cout << "Total trigger = " << trigger_ << std::endl;
+    std::cout << "Passed trigger (EB) = " << eb_trigger_ << std::endl;
+    std::cout << "Passed trigger (HB) = " << hb_trigger_ << std::endl<<std::endl;
 
     std::cout << "Tracker count = " << tracker_count_ << std::endl;
     std::cout << "EB count = " << eb_count_ << std::endl;
@@ -511,6 +522,7 @@ void MCAnalysis::efficiencyStudy() {
   total_count_++;
 
   if (cuts_.cut()) selected_count_++;
+  if (cuts_.triggerCut()) trigger_++;
   // Associate leading jet with stopped point
   // If no reconstructed jets, just use first stopped point.
   // TODO: The no-jet solution is kind of a cop-out.
@@ -553,6 +565,7 @@ void MCAnalysis::efficiencyStudy() {
   } else if (r>=131.0 && r<184.0 && fabs(z)<376.0 && fabs(particle_eta)<1.479) { // EB
     eb_count_++;
     if (cuts_.cut()) reco_eb_count_++;
+    if (cuts_.triggerCut()) eb_trigger_++;
     if (abs(pid) % 100000 < 90000 && flavor_ == "gluino") // Not an R-baryon
       not_rbaryon_inhbeb_count_++;
   } else if (fabs(z)<376.0 && fabs(z) >= 300.0 && fabs(particle_eta)>=1.479 && fabs(particle_eta)<3.0) { // EE
@@ -561,6 +574,7 @@ void MCAnalysis::efficiencyStudy() {
   } else if (r>=184.0 && r<295.0 && fabs(particle_eta)<1.3 && fabs(z)<500.0) { // HB
     hb_count_++;
     if (cuts_.cut()) reco_hb_count_++;
+    if (cuts_.triggerCut()) hb_trigger_++;
     if (abs(pid) % 100000 < 90000 && flavor_ == "gluino") // Not an R-baryon
       not_rbaryon_inhbeb_count_++;
   } else if (fabs(z)<560.0 && fabs(z)>=376.0 && fabs(particle_eta)>=1.3 && fabs(particle_eta)<3.0) { // HE
