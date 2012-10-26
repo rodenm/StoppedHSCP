@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.37 2012/10/20 23:54:39 rodenm Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.38 2012/10/21 22:44:58 rodenm Exp $
 //
 //
 
@@ -1087,6 +1087,9 @@ void StoppedHSCPTreeProducer::doMC(const edm::Event& iEvent) {
       
       // Save information about the daughter decay particles
       int targetId = event_->mcSparticleId[0]%100;
+      std::cout << "mcSparticleId[0] = " << event_->mcSparticleId[0] 
+		<< "\tdaughter = " << event_->mcSparticleId[0]%100 
+		<< std::endl;
       if ((partId == targetId) && event_->mcDaughter_N < 1) {
 	math::XYZTLorentzVector momentum1(p->momentum().px(),
 					  p->momentum().py(),
