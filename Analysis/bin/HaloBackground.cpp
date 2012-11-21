@@ -11,6 +11,8 @@
 #include "TChain.h"
 #include "TH1D.h"
 
+#include <set>
+
 using namespace std;
 
 class HaloBackground : public BasicAnalyser {
@@ -26,6 +28,16 @@ public:
   virtual void loop();
   
 private:
+
+  int chamberType(int iStation, int iRing) {
+    int i = 2*iStation + iRing;
+    if (iStation == 1) {
+      i = i - 1;
+      if (i>4) i = 1;
+    }
+    return i;
+  }
+		  
 
   // YOUR CODE HERE
   std::vector<unsigned long> fillList_;
@@ -103,6 +115,22 @@ private:
   unsigned nMinusTwoHaloMuon_;
   unsigned nMinusOneHalo_;
   unsigned nMinusOneMuon_;
+
+  // Fedor's second method
+  TH1D* hDphi_;
+  TH1D* hNhits_;
+  TH1D* hIncomingEta_;
+  TH1D* hOutgoingEta_;
+  TH1D* hBothEta_;
+  TH1D* hIncomingE_;
+  TH1D* hOutgoingE_;
+  TH1D* hBothE_;
+  TH1D* hIneffNum_;
+  TH1D* hIneffDen_;
+  TH1D* hIneffEta_;
+  TH1D* hIneffEta2_;
+  TH1D* hMinusOneHaloEta_ ;
+  TH1D* hSegmentLayer_;
 
 };
 
@@ -193,6 +221,21 @@ void HaloBackground::loop() {
   nMinusOneHalo_=0;
   nMinusOneMuon_=0;
 
+  // Fedor's second method
+  hDphi_ = new TH1D("hDphi","Dphi between all CSCSegments and leading jet", 36, 0, 1.6);
+  hNhits_ = new TH1D("hNCSCRechitsPerSeg","", 10, 0, 10);
+  hIncomingEta_ = new TH1D("hIncomingEta", "", 40, -2.0, 2.0);
+  hOutgoingEta_ = new TH1D("hOutgoingEta", "", 40, -2.0, 2.0);
+  hBothEta_     = new TH1D("hBothEta", "", 40, -2.0, 2.0);
+  hIncomingE_ = new TH1D("hIncomingE", "", 200, 0, 200.0);
+  hOutgoingE_ = new TH1D("hOutgoingE", "", 200, 0, 200.0);
+  hBothE_     = new TH1D("hBothE", "", 200, 0, 200.0);
+  hIneffNum_     = new TH1D("hIneffNum", "", 40, -2.0, 2.0);
+  hIneffDen_     = new TH1D("hIneffDen", "", 40, -2.0, 2.0);
+  hIneffEta_     = new TH1D("hIneffEta", "", 40, -2.0, 2.0);
+  hIneffEta2_     = new TH1D("hIneffEta2", "", 40, -2.0, 2.0);
+  hSegmentLayer_ = new TH1D("hSegmentLayer", "", 20, -10, 10);
+  hMinusOneHaloEta_ = new TH1D("hMinusOneHaloEta", "", 40, -2.0, 2.0);
   reset();
   nextEvent();
 
@@ -300,7 +343,7 @@ void HaloBackground::loop() {
       he_phi = event_->studyJetPhi[0];
     }
 
-    double he_dphi  = phi - he_phi;    
+    double he_dphi  = acos(cos(phi - he_phi));
     bool heMatch    = (fabs(he_dphi) < 0.15 && he_eta > 1.4);
     bool heSideband = (0.25 < fabs(he_dphi) && fabs(he_dphi) < 0.4);
 
@@ -315,7 +358,7 @@ void HaloBackground::loop() {
       }
     }
 
-    double csc_dphi  = phi - csc_phi;
+    double csc_dphi  = acos(cos(phi - csc_phi));
     bool cscMatch    = (fabs(csc_dphi) < 0.4);
     bool cscSideband = (0.5 < fabs(csc_dphi) && fabs(csc_dphi) < 0.9);
     
@@ -394,6 +437,67 @@ void HaloBackground::loop() {
 	cuts_.hpdRPeakCut() && 
 	cuts_.hpdROuterCut()) nMinusOneMuon_++;
 
+    // Fedor's second method (tag & probe based on incoming/outgoing CSCSegments)
+    bool haloSample = event_->hltJetE50NoBptx3BXNoHalo && event_->cscSeg_N > 0 && event_->jet_N > 0;
+
+    bool incoming = false;
+    bool outgoing = false;
+    int nIncoming = 0;
+    int nOutgoing = 0;
+    
+    // jet properties
+    double jete   = event_->jetE[0];
+    double jeteta = event_->jetEta[0];
+    double jetphi = event_->jetPhi[0];
+    
+    // Need eta distribution of halo events that pass all other cuts for final background count
+    //std::vector<unsigned> minuscuts = {4,5};
+    //if (cuts_.cutNMinusSome(minuscuts) && event_->cscSeg_N > 0) {
+    if (cuts_.cutNMinusOne(4) && event_->cscSeg_N > 0) {
+      hMinusOneHaloEta_->Fill(jeteta);
+    }
+    
+    set<int> nLayers;
+    for (unsigned iSeg = 0; iSeg < event_->cscSeg_N; iSeg++) {
+      double jetcsc_dPhi = acos(cos(jetphi - event_->cscSegPhi[iSeg]));
+      hDphi_->Fill(jetcsc_dPhi);
+
+      int chamber = chamberType(event_->cscSegStation[iSeg], event_->cscSegRing[iSeg]);
+      int endcap = (event_->cscSegZ[iSeg] > 0) ? 1 : -1;
+      int layer = chamber * endcap;
+      
+      if (fabs(jetcsc_dPhi) < 0.4) {
+	hSegmentLayer_->Fill(layer);
+	nLayers.insert(layer);
+	
+	if (event_->cscSegTime[iSeg] < -10) {
+	  incoming = true;
+	  nIncoming++;
+	} else {
+	  outgoing = true;
+	  nOutgoing++;
+	}
+      }
+    }
+    
+    // For events with halo segments in 3+ layers, we want to determine
+    // which of the incoming/outgoing legs are detected
+    bool threepluslayers = nLayers.size() >= 3; 
+    //std::cout<<nLayers.size()<<std::endl;
+    
+    if (haloSample & threepluslayers) {
+      if (nIncoming > 0 && nOutgoing == 0) {        //Incoming only
+	hIncomingEta_->Fill(jeteta);
+	hIncomingE_->Fill(jete);
+      } else if (nIncoming == 0 && nOutgoing > 0) { // Outgoing only
+	hOutgoingEta_->Fill(jeteta);
+	hOutgoingE_->Fill(jete);
+      } else if (nIncoming > 0 && nOutgoing > 0) {  // Both
+	hBothEta_->Fill(jeteta);
+	hBothE_->Fill(jete);
+      } 
+    }
+    
   }
 
   // estimate halo BG
@@ -417,6 +521,57 @@ void HaloBackground::loop() {
 
   }
 
+  // Finish Fedor's second method by calculating inefficiency by eta bin
+  hIncomingEta_->Sumw2();
+  hOutgoingEta_->Sumw2();
+  hBothEta_->Sumw2();
+  hIneffNum_->Multiply(hIncomingEta_, hOutgoingEta_, 1., 1.);
+  hIneffDen_->Multiply(hBothEta_, hBothEta_, 1., 1.);
+  hIneffNum_->Sumw2();
+  hIneffDen_->Sumw2();
+  hIneffEta_->Divide(hIneffNum_, hIneffDen_, 1., 1.);
+  hIneffEta_->Sumw2();
+  //hIneffEta_->Rebin(8);
+  //hMinusOneHaloEta_->Rebin(8);
+  hIneffEta2_->Multiply(hIneffEta_, hMinusOneHaloEta_, 1., 1.);
+  
+  double n_inc = hIncomingEta_->GetEntries();
+  double n_out = hOutgoingEta_->GetEntries();
+  double n_both = hBothEta_->GetEntries();
+  double eps = n_inc*n_out/(n_both*n_both);
+  double eps_err = eps*sqrt(1./n_inc + 1./n_out + 4./n_both);
+  std::cout<<  "";
+  //std::cout<<  "Events vetoed by delta-phi &/ 3+ layer requirement: " << nLayerVeto << std::endl;
+  std::cout<<  "" << std::endl;
+  std::cout<<  "       N_incoming * N_outgoing      " << n_inc << " * " << n_out << std::endl;
+  std::cout<<  " eps = -----------------------  =  ---------------- " << std::endl;
+  std::cout<<  "               N_both^2               (" << n_both << ")^2" << std::endl;
+  std::cout<<  "" << std::endl;
+  std::cout<<  " eps = " <<eps<< " +/- " << eps_err << std::endl;
+  std::cout<<  "" << std::endl;
+  Double_t error = 0;
+  Double_t integ = hIneffEta2_->IntegralAndError(0,40,error);
+  std::cout<<  " background = " << integ << " +/- " << error << std::endl;
+
+
+  // TODO: save histograms
+  ofile_->cd();
+  hDphi_->Write("",TObject::kOverwrite);
+  hNhits_->Write("",TObject::kOverwrite);
+  hIncomingEta_->Write("",TObject::kOverwrite);
+  hOutgoingEta_->Write("",TObject::kOverwrite);
+  hBothEta_->Write("",TObject::kOverwrite);
+  hIncomingE_->Write("",TObject::kOverwrite);
+  hOutgoingE_->Write("",TObject::kOverwrite);
+  hBothE_->Write("",TObject::kOverwrite);
+  hIneffNum_->Write("",TObject::kOverwrite);
+  hIneffDen_->Write("",TObject::kOverwrite);
+  hIneffEta_->Write("",TObject::kOverwrite);
+  hIneffEta2_->Write("",TObject::kOverwrite);
+  hMinusOneHaloEta_->Write("",TObject::kOverwrite);
+  hSegmentLayer_->Write("",TObject::kOverwrite);
+   
+  
 
   // SAVE HISTOGRAMS HERE
   ofile_->cd();

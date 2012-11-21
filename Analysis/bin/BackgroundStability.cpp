@@ -321,7 +321,9 @@ void BackgroundStability::loop() {
       
       // by run
       if (isNoise && !isCosmic && !isBeamHalo && !isBeamGas && !isVtx) nNoiseFlagByRun_.at(run) += 1;
+      // MLR - changing for Camilo
       if (isCosmic && !isBeamHalo && !isBeamGas && !isVtx) nCosmicByRun_.at(run) += 1;
+      //if (isCosmic2 && !isBeamHalo && !isBeamGas && !isVtx) nCosmicByRun_.at(run) += 1;
       if (isBeamHalo && !isBeamGas && !isVtx) nBeamHaloByRun_.at(run) += 1;
       if (isBeamGas && !isVtx) nBeamGasByRun_.at(run) += 1;
       if (isVtx) nVertexByRun_.at(run) += 1;
