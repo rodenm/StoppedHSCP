@@ -69,7 +69,7 @@ void gluinoMass(double lumi=-1., double maxInstLumi=-1.) {
   	canvas->SetLogy();
   
   	TH1 * h;
-  	h = canvas->DrawFrame(300., .1, 700., 5e2);
+  	h = canvas->DrawFrame(300., .02, 1000., 1e2);
   	//h->SetTitle("Beamgap Expt;m_{#tilde{g}} [GeV/c^{2}]; Stopped HSCP Cross Section #times BR [pb]");
   	h->SetTitle("Beamgap Expt;m_{#tilde{g}} [GeV/c^{2}]; #sigma(pp #rightarrow #tilde{g}#tilde{g}) #times BR(#tilde{g} #rightarrow g#tilde{#chi}^{0}) [pb]");
   
@@ -80,7 +80,7 @@ void gluinoMass(double lumi=-1., double maxInstLumi=-1.) {
   	//nc->Draw();
   
   	// details
-  	TPaveText* blurb = new TPaveText(300., 1.e1, 400., 4.5e2);
+  	TPaveText* blurb = new TPaveText(300., 2, 550., 1e2);
   	blurb->AddText("CMS Preliminary 2012");
 
   	std::stringstream label;
@@ -109,9 +109,9 @@ void gluinoMass(double lumi=-1., double maxInstLumi=-1.) {
 
   
   	// legend
-  	TBox *legbg = new TBox(440., 1.e1, 690., 4e2);
+  	TBox *legbg = new TBox(600., 2., 900., 1e2);
   	legbg->Draw();
-  	TLegend *leg = new TLegend(440., 1.e1, 690., 4e2,"95% C.L. Limits","");
+  	TLegend *leg = new TLegend(600., 2., 900., 1e2,"95% C.L. Limits","");
   	leg->SetTextSize(0.028);
   	leg->SetBorderSize(0);
   	leg->SetTextFont(42);
@@ -187,7 +187,7 @@ void gluinoMass(double lumi=-1., double maxInstLumi=-1.) {
 
 
   // theory line label
-  TLatex* th = new TLatex(480., 4., "NLO+NLL #tilde{g}");
+  TLatex* th = new TLatex(600., .3, "NLO+NLL #tilde{g}");
   th->SetTextColor(kBlue);
   th->SetTextFont(42);
   th->SetTextSize(0.035);

@@ -51,11 +51,11 @@ void modelIndLimit(double lumi=-1.,double maxInstLumi=-1.)
 	canvas->SetLogx();
 	canvas->SetLogy();
 
-	TH1* h = canvas->DrawFrame(7.5e-8, 3e-2, 1e6, 3e1);
+	TH1* h = canvas->DrawFrame(7.5e-8, 3e-3, 1e6, 10);
 //	h->SetTitle("Beamgap Expt;#tau_{#tilde{g}} [s]; #sigma(pp #rightarrow #tilde{g}#tilde{g}) #times BR(#tilde{g} #rightarrow g#tilde{#chi}^{0}) #times #varepsilon^{#tilde{g}#tilde{g}}_{stop} [pb]");
 	h->SetTitle("Beamgap Expt;#tau_{HSCP} [s]; Model Independent Cross-section [pb]");
 
-	TPaveText* blurb = new TPaveText(5e-7, 2e0, 1e-2, 2e1);
+	TPaveText* blurb = new TPaveText(5e-7, .5, 1e-2, 7);
 	blurb->AddText("CMS Preliminary 2012");
 
   	std::stringstream label;
@@ -101,7 +101,7 @@ void modelIndLimit(double lumi=-1.,double maxInstLumi=-1.)
 //	cms->Draw();
 
 
-	TLegend* leg = new TLegend(2e-2, 3e0 /*4e-30*/, 1e2, 1e1,"95% C.L. Limits:","");
+	TLegend* leg = new TLegend(2e-2, .5, 1e2, 7,"95% C.L. Limits:","");
 	leg->SetTextSize(0.030);
 	leg->SetBorderSize(0);
 	leg->SetTextFont(42);

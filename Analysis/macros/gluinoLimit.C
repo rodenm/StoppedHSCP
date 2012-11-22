@@ -58,11 +58,11 @@ void gluinoLimit(double lumi=-1., double maxInstLumi=-1.) {
   TH1 * h;
   TPaveText *blurb;
   
-  h = canvas->DrawFrame(7.5e-8, .05, 1e6, 2e2);
+  h = canvas->DrawFrame(7.5e-8, .03, 1e6, 1e2);
   // h->SetTitle("Beamgap Expt;#tau_{#tilde{g}} [s]; #sigma(pp #rightarrow #tilde{g}#tilde{g}) [cm^{2}]");
   h->SetTitle("Beamgap Expt;#tau_{#tilde{g}} [s]; #sigma(pp #rightarrow #tilde{g}#tilde{g}) #times BR(#tilde{g} #rightarrow g#tilde{#chi}^{0}) [pb]");
   
-  blurb = new TPaveText(2e-7, 9e0, 4e-3, 1.5e2);
+  blurb = new TPaveText(2e-7, 3, 4e-3, 80);
   blurb->AddText("CMS Preliminary 2012");
   std::stringstream label;
   label<<"#int L dt = "<<lumi<<" fb^{-1}";
@@ -90,7 +90,7 @@ void gluinoLimit(double lumi=-1., double maxInstLumi=-1.) {
   blurb->SetTextSize(0.033);
   blurb->Draw();
   
-  TLegend *leg = new TLegend(2e-2, 7e0 /*4e-30*/, 1e1, 1.5e2,"95% C.L. Limits:","");
+  TLegend *leg = new TLegend(2e-2, 3, 1e1, 80,"95% C.L. Limits:","");
   leg->SetTextSize(0.033);
   leg->SetBorderSize(0);
   leg->SetTextFont(42);
@@ -146,7 +146,8 @@ void gluinoLimit(double lumi=-1., double maxInstLumi=-1.) {
   }
   
   TLine *l;
-  l = new TLine(7.5e-8, 1.87, 1e6, 1.87); //500 GeV
+  l = new TLine(7.5e-8, 1.3, 1e6, 1.3); //600 GeV
+  //l = new TLine(7.5e-8, 1.87, 1e6, 1.87); //500 GeV
   //l = new TLine(7.5e-8, 8.98, 1e6, 8.98); //400 GeV
   //l = new TLine(7.5e-8, 57.2, 1e6, 57.2); //300 GeV
   //l = new TLine(7.5e-8, 606, 1e6, 606); //200 GeV
@@ -163,7 +164,7 @@ void gluinoLimit(double lumi=-1., double maxInstLumi=-1.) {
   
   TLatex *t1;
   //t1 = new TLatex(1.e2, 70., "NLO+NLL");
-  t1 = new TLatex(0.1, 2.5, "NLO+NLL (m_{#tilde{g}} = 500 GeV/c^{2})");
+  t1 = new TLatex(0.1, 1.6, "NLO+NLL (m_{#tilde{g}} = 600 GeV/c^{2})");
   t1->SetTextColor(kBlue);
   t1->SetTextFont(42);
   t1->SetTextSize(0.035);

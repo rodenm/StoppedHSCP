@@ -69,18 +69,18 @@ void stopMass(double lumi=-1., double maxInstLumi=-1.) {
   	canvas->SetLogy();
   
   	TH1 * h;
-  	h = canvas->DrawFrame(300., .1, 600., 5e2);
+  	h = canvas->DrawFrame(300., .03, 600., 1e2);
   	//h->SetTitle("Beamgap Expt;m_{HSCP} [GeV/c^{2}]; Stopped HSCP Cross Section #times BR [pb]");
   	h->SetTitle("Beamgap Expt;m_{#tilde{t}} [GeV/c^{2}]; #sigma(pp #rightarrow #tilde{t}#tilde{t}) #times BR(#tilde{t} #rightarrow t#tilde{#chi}^{0}) [pb]");
   
   	// not covered region
-  	TBox* nc = new TBox(100., .1, 150., 5e2);
+  	TBox* nc = new TBox(100., .1, 150., 1e2);
   	nc->SetFillStyle(3354);
   	nc->SetFillColor(kRed-4);
   	//nc->Draw();
   
   	// details
-  	TPaveText* blurb = new TPaveText(305., 1.e1, 400., 4.5e2);
+  	TPaveText* blurb = new TPaveText(305., 3, 400., 1e2);
   	blurb->AddText("CMS Preliminary 2012");
 
   	std::stringstream label;
@@ -110,9 +110,9 @@ void stopMass(double lumi=-1., double maxInstLumi=-1.) {
 
   
   	// legend
-  	TBox *legbg = new TBox(410., 1.e1, 590., 4e2);
+  	TBox *legbg = new TBox(410., 3, 590., 1e2);
   	legbg->Draw();
-  	TLegend *leg = new TLegend(410., 1.e1, 590., 4e2,"95% C.L. Limits","");
+  	TLegend *leg = new TLegend(410., 3, 590., 1e2,"95% C.L. Limits","");
   	leg->SetTextSize(0.028);
   	leg->SetBorderSize(0);
   	leg->SetTextFont(42);
@@ -194,7 +194,7 @@ void stopMass(double lumi=-1., double maxInstLumi=-1.) {
   th->SetTextSize(0.035);
   //th->Draw();
 
-  TLatex* ths = new TLatex(330., .2, "NLO+NLL #tilde{t}");
+  TLatex* ths = new TLatex(400., .5, "NLO+NLL #tilde{t}");
   ths->SetTextColor(kBlue);
   ths->SetTextFont(42);
   ths->SetTextSize(0.035);
