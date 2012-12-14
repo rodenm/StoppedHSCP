@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.38 2012/10/21 22:44:58 rodenm Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.39 2012/10/26 02:15:48 rodenm Exp $
 //
 //
 
@@ -1647,6 +1647,11 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent, const edm::EventS
 	 jet.eMaxHcalTow = it->maxEInHadTowers();
 	 jet.n60 = it->n60();
 	 jet.n90 = it->n90();
+	 jet.etaMean = it->etaPhiStatistics().etaMean;
+	 jet.phiMean = it->etaPhiStatistics().phiMean;
+	 jet.etaetaMoment = it->etaPhiStatistics().etaEtaMoment;
+	 jet.phiphiMoment = it->etaPhiStatistics().phiPhiMoment;
+	 jet.etaphiMoment = it->etaPhiStatistics().etaPhiMoment;
 
 	 // Add to default jet collection and/or to studyJet collection
 	 if ((fabs(it->eta()) < jetMaxEta_))
@@ -1735,6 +1740,7 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent, const edm::EventS
 	 jet.eMaxHcalTow = it->maxEInHadTowers();
 	 jet.n60 = it->n60();
 	 jet.n90 = it->n90();
+
 	 if (fabs(it->eta()) < jetMaxEta_)
 	   event_->addAK5Jet(jet);
 	 if (fabs(it->eta())>=studyJetMinEta_ && 
@@ -1742,10 +1748,7 @@ void StoppedHSCPTreeProducer::doJets(const edm::Event& iEvent, const edm::EventS
 	   event_->addAK5StudyJet(jet);
        }
      }
-
-   }
-
-  
+   }  
 }
 
 

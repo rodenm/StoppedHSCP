@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.24 2012/10/21 22:44:58 rodenm Exp $
+// $Id: StoppedHSCPEvent.h,v 1.25 2012/10/22 00:12:56 rodenm Exp $
 //
 //
 
@@ -57,7 +57,8 @@ namespace shscp {
 
   struct Jet {
     Jet() : e(0.),et(0.),eta(0.),phi(0.),eHad(0.),eEm(0.),eMaxEcalTow(0.),eMaxHcalTow(0.),n60(0),n90(0),n90Hits(0),fHPD(0.),
-	    r1(0.),r2(0.),rp(0.),ro(0.),r1_top5(0.),r2_top5(0.),rp_top5(0.),ro_top5(0.) { }
+	    r1(0.),r2(0.),rp(0.),ro(0.),r1_top5(0.),r2_top5(0.),rp_top5(0.),ro_top5(0.),etaMean(0.),phiMean(0.),
+	    etaetaMoment(0.),phiphiMoment(0.),etaphiMoment(0.) { }
     double e;
     double e_corr;
     double et;
@@ -80,6 +81,12 @@ namespace shscp {
     double r2_top5;
     double rp_top5;
     double ro_top5;
+    double etaMean;
+    double phiMean;
+    double etaetaMoment;
+    double phiphiMoment;
+    double etaphiMoment;
+
   };
   
   struct Muon {
@@ -430,6 +437,11 @@ class StoppedHSCPEvent : public TObject {
   std::vector<UInt_t> jetN90;
   std::vector<Double_t> jetFHPD;
   std::vector<UInt_t> jetN90Hits;
+  std::vector<Double_t> jetEtaMean;
+  std::vector<Double_t> jetPhiMean;
+  std::vector<Double_t> jetEtaetaMoment;
+  std::vector<Double_t> jetPhiphiMoment;
+  std::vector<Double_t> jetEtaphiMoment;
 
   // reco jets used for studies only
   unsigned studyJet_N;
@@ -683,7 +695,7 @@ class StoppedHSCPEvent : public TObject {
   double top5DigiRPeak;
   double top5DigiROuter;
 
-  ClassDef(StoppedHSCPEvent,26); // version 26: includes new mc variables
+  ClassDef(StoppedHSCPEvent,27); // version 27: includes new jet variables
 
 };
 
