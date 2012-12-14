@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.25 2012/10/22 00:12:56 rodenm Exp $
+// $Id: StoppedHSCPEvent.h,v 1.26 2012/12/14 17:55:29 rodenm Exp $
 //
 //
 
@@ -373,6 +373,10 @@ class StoppedHSCPEvent : public TObject {
   std::vector<Double_t> beam1Intensity; // in #protons
   std::vector<Double_t> beam2Intensity; // in #protons
   std::vector<Double_t> lumiByBx;       // in ub^-1 s^-1
+
+  // Given in Hz/ub
+  Double_t lsLuminosity;
+  Double_t lsLuminosityErr;
 
   // trigger
   ULong64_t gtAlgoWord0;

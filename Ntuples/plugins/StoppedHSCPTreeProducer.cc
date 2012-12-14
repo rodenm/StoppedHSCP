@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.39 2012/10/26 02:15:48 rodenm Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.40 2012/12/14 17:55:29 rodenm Exp $
 //
 //
 
@@ -36,6 +36,7 @@
 
 #include "DataFormats/Common/interface/ConditionsInEdm.h"
 #include "DataFormats/Luminosity/interface/LumiDetails.h"
+#include "DataFormats/Luminosity/interface/LumiSummary.h"
 
 // L1
 #include "CondFormats/L1TObjects/interface/L1GtTriggerMenu.h"
@@ -1297,6 +1298,9 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent) {
   // see also: https://twiki.cern.ch/twiki/bin/view/CMS/LumiCalc#LumiDetails
   edm::Handle<LumiDetails> lumiDetails;
   iEvent.getLuminosityBlock().getByLabel("lumiProducer",lumiDetails); 
+
+  edm::Handle<LumiSummary> lumiSummary;
+  iEvent.getLuminosityBlock().getByLabel("lumiSummary",lumiSummary); 
   
   if (!lumiDetails.isValid()) {
     edm::LogError("MissingProduct") << "Could not retreive LumiDetails collection for " 
@@ -1305,6 +1309,31 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent) {
     return; 
   } else if (!lumiDetails->isValid()) {
     edm::LogWarning("doEventInfo()") << "LumiDetails collection invalid (empty) for "
+						   << event_->run << ":" << event_->lb << ":" 
+						   << event_->id << std::endl;
+    return;
+  }
+
+
+  if (!lumiDetails.isValid()) {
+    edm::LogError("MissingProduct") << "Could not retreive LumiDetails collection for " 
+				    << event_->run << ":" << event_->lb << ":" << event_->id
+				    <<std::endl;
+    return; 
+  } else if (!lumiDetails->isValid()) {
+    edm::LogWarning("doEventInfo()") << "LumiDetails collection invalid (empty) for "
+						   << event_->run << ":" << event_->lb << ":" 
+						   << event_->id << std::endl;
+    return;
+  }
+
+  if (!lumiSummary.isValid()) {
+    edm::LogError("MissingProduct") << "Could not retreive LumiSummary collection for " 
+				    << event_->run << ":" << event_->lb << ":" << event_->id
+				    <<std::endl;
+    return; 
+  } else if (!lumiSummary->isValid()) {
+    edm::LogWarning("doEventInfo()") << "LumiSummary collection invalid (empty) for "
 						   << event_->run << ":" << event_->lb << ":" 
 						   << event_->id << std::endl;
     return;
@@ -1336,6 +1365,10 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent) {
     event_->lumiByBx.at(i+2) = lumiByBx;
     //std::cout << "...Saved details" << std::endl;    
   } 
+
+  // Get average instantaneous luminosity delivered for this LS
+  event_->lsLuminosity = lumiSummary->avgInsDelLumi();
+  event_->lsLuminosityErr = lumiSummary->avgInsDelLumiErr();
 
   if (debug) {
     std::cout<<std::endl;

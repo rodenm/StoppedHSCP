@@ -103,6 +103,8 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   beam1Intensity(5),
   beam2Intensity(5),
   lumiByBx(5),
+  lsLuminosity(0),
+  lsLuminosityErr(0),
   gtAlgoWord0(0),
   gtAlgoWord1(0),
   gtTechWord(0),
