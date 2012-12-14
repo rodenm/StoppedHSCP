@@ -199,6 +199,7 @@ void BasicAnalyser::printCutValues(ostream& o) {
   o << "  t since coll   = " << lifetime << "\t" << std::endl;
   o << "  orbit          = " << event_->orbit << "\t" << std::endl;
   o << " Cut values :" << std::endl;
+  o << "  BX wrt bunch   = " << event_->bxWrtBunch << "\t" << cuts_.bxVeto() << std::endl;
   o << "  BX wrt coll    = " << event_->bxWrtCollision << "\t" << cuts_.bxVeto() << std::endl;
   o << "  nVtx           = " << event_->nVtx << "\t" << cuts_.vertexVeto() << std::endl;
   std::string halo("None");
