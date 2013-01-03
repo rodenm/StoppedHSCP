@@ -418,7 +418,7 @@ if __name__=="__main__":
         print "\t%s"%d
 
     if options.verbose:
-        answer=raw_input("\nProceed with copy using the above values (y/n)? :  ")
+        answer=raw_input("\nProceed with delete using the above values (y/n)? :  ")
         if not (answer.upper()).startswith("Y"):
             sys.exit()
 
@@ -426,7 +426,7 @@ if __name__=="__main__":
         if (options.listfiles==True):
             print "Listing files in dataset '%s'"%d
         else:
-            print "Copying files in dataset '%s'"%d
+            print "Deleting files in dataset '%s'"%d
         x=DeleteFiles(user=options.user,
                     gridroot=options.gridroot,
                     gridloc=options.gridloc,
