@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.40 2012/12/14 17:55:29 rodenm Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.41 2012/12/14 20:31:54 rodenm Exp $
 //
 //
 
@@ -44,7 +44,6 @@
 #include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetupFwd.h"
 #include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetup.h"
 #include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
-
 #include "DataFormats/L1Trigger/interface/L1JetParticleFwd.h"
 #include "DataFormats/L1Trigger/interface/L1JetParticle.h"
 
@@ -1172,8 +1171,8 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent) {
   unsigned long run         = iEvent.id().run();
   unsigned long fill        = fills_.getFillFromRun(run);
 
-  double time               = iEvent.time().value();
-
+  double time               = iEvent.time().unixTime(); // .value() which is in units of I have no fucking clue.
+  std::cout << "Time: " << time <<std::endl;
 
   // calculate event time from run start + LS, orbit, BX
   ULong64_t bxSinceRunStart = (((lb * orbitsPerLB) + orbit) * bxPerOrbit) + bx;
