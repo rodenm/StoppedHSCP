@@ -462,6 +462,11 @@ void StoppedHSCPEvent::addJet(Jet j) {
     jetN90.push_back(j.n90);
     jetFHPD.push_back(j.fHPD);
     jetN90Hits.push_back(j.n90Hits);
+    jetEtaMean.push_back(j.etaMean);
+    jetPhiMean.push_back(j.phiMean);
+    jetEtaetaMoment.push_back(j.etaetaMoment);
+    jetPhiphiMoment.push_back(j.phiphiMoment);
+    jetEtaphiMoment.push_back(j.etaphiMoment);
     ++jet_N;
   }
 }
