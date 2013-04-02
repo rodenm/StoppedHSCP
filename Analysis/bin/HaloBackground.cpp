@@ -10,6 +10,7 @@
 #include "TMath.h"
 #include "TChain.h"
 #include "TH1D.h"
+#include "TH2D.h"
 
 #include <set>
 
@@ -29,6 +30,7 @@ public:
   
 private:
 
+  // Shamelessly stolen from DataFormats/MuonDetId/src/CSCDetId.cc#100
   int chamberType(int iStation, int iRing) {
     int i = 2*iStation + iRing;
     if (iStation == 1) {
@@ -37,91 +39,73 @@ private:
     }
     return i;
   }
+
+  // Standard CMS delta phi calculation. Robbed from DataFormats/Math/interface/deltaPhi.h
+  double deltaPhi(double phi1, double phi2) { 
+    double result = phi1 - phi2;
+    while (result > M_PI) result -= 2*M_PI;
+    while (result <= -M_PI) result += 2*M_PI;
+    return result;
+  }
 		  
 
   // YOUR CODE HERE
   std::vector<unsigned long> fillList_;
 
-  // control trigger
-  TH1D* hControlTrigJetE_;
-  TH1D* hControlTrigJetEta_;
-  TH1D* hControlTrigJetPhi_;
-  TH1D* hControlTrigTaggedJetE_;
-  TH1D* hControlTrigTaggedJetEta_;
-  TH1D* hControlTrigTaggedJetPhi_;
-
-  // control region : BX==-1, n_trk==0
-  TH1D* hControlJetE_;
-  TH1D* hControlJetEta_;
-  TH1D* hControlJetPhi_;
-
-  MultiHistogram1D hByFillControlJetE_;
-  MultiHistogram1D hByFillControlJetEta_;
-  MultiHistogram1D hByFillControlJetPhi_;
-
-  // tagged in control region
-  TH1D* hControlTaggedJetE_;
-  TH1D* hControlTaggedJetEta_;
-  TH1D* hControlTaggedJetPhi_;
-
-  MultiHistogram1D hByFillControlTaggedJetE_;
-  MultiHistogram1D hByFillControlTaggedJetEta_;
-  MultiHistogram1D hByFillControlTaggedJetPhi_;
-
-  // normalisation region : |BX|>2, halo ID, 50<E<70
-  TH1D* hNormTaggedJetE_;
-  TH1D* hNormTaggedJetEta_;
-  TH1D* hNormTaggedJetPhi_;
-
-  MultiHistogram1D hByFillNormTaggedJetE_;
-  MultiHistogram1D hByFillNormTaggedJetEta_;
-  MultiHistogram1D hByFillNormTaggedJetPhi_;
-
-  // signal region : |BX|>2, E>70
-  TH1D* hSignalTaggedJetE_;
-  TH1D* hSignalTaggedJetEta_;
-  TH1D* hSignalTaggedJetPhi_;
-  TH1D* hSignalTaggedNMu_;
-
-  MultiHistogram1D hByFillSignalTaggedJetE_;
-  MultiHistogram1D hByFillSignalTaggedJetEta_;
-  MultiHistogram1D hByFillSignalTaggedJetPhi_;
-
-  // unidentified halo histograms
-  TH1D* hExpJetE_;
-  TH1D* hExpJetEta_;
-  TH1D* hExpJetPhi_;
-
-  MultiHistogram1D hByFillExpJetE_;
-  MultiHistogram1D hByFillExpJetEta_;
-  MultiHistogram1D hByFillExpJetPhi_;
-
-
-  // Fedor's method
-  TH1D* hHBJetE_;
-  TH1D* hHEJetE_;
-  TH1D* hHEJetEta_;
-  TH1D* hHEJetPhi_;
-
-  TH1D* hHBHEdPhi_;
-  TH1D* hHBCSCdPhi_;
-  TH1D* hHECSCdPhi_;
-
-  TH1D* hHEMatchedHEJetE_;
-  TH1D* hHEMatchedHaloFlag_;
-
-  TH1D* hHESidebandHaloFlag_;
-
-  unsigned nMinusTwoHaloMuon_;
-  unsigned nMinusOneHalo_;
-  unsigned nMinusOneMuon_;
-
   // Fedor's second method
   TH1D* hDphi_;
-  TH1D* hNhits_;
+  TH1D* hAverageDphi_;
   TH1D* hIncomingEta_;
   TH1D* hOutgoingEta_;
   TH1D* hBothEta_;
+  TH1D* hHaloPlusZEta_;
+  TH1D* hHaloMinusZEta_;
+  TH1D* hSegmentLayer_;
+  TH1D* hSegmentDirection_;
+  TH1D* hSelectedJetPhi_;
+
+  // CSCSegment studies
+  TH1D* hSegmentTime_;
+  TH1D* hSegmentR_;
+  TH1D* hSegmentZ_;
+
+  TH2D* hSegmentZR_;
+  TH2D* hSegmentEtaR_;
+  TH2D* hSegmentZTime_;
+  TH2D* hSegmentRPhi_;
+  TH2D* hSegmentXY_;
+  TH2D* hSegmentXYzoom_;
+  TH2D* hSegmentThetaDir_;
+
+  TH2D* hSegmentLayersVRadius_;
+  TH2D* hSegmentLayersVPhi_;
+
+
+  // Calculate inefficiency binned by CSCSegmentR (avg)
+  TH1D* hAverageR_;
+  TH1D* hAverageErrR_;
+  TH1D* hIncomingR_;
+  TH1D* hOutgoingR_;
+  TH1D* hBothR_;
+  TH1D* hIneffNumR_;
+  TH1D* hIneffDenR_;
+  TH1D* hIneffFractionR_;
+  TH1D* hIneffCountR_;
+  TH1D* hMinusOneHaloR_;
+
+  // Calculate inefficiency binned by CSCSegmentPhi (avg)
+  TH1D* hAveragePhi_;
+  TH1D* hAverageErrPhi_;
+  TH1D* hIncomingPhi_;
+  TH1D* hOutgoingPhi_;
+  TH1D* hBothPhi_;
+  TH1D* hIneffNumPhi_;
+  TH1D* hIneffDenPhi_;
+  TH1D* hIneffFractionPhi_;
+  TH1D* hIneffCountPhi_;
+  TH1D* hMinusOneHaloPhi_;
+
+  // Calculate inefficiency binned by jetEta[0]
   TH1D* hIncomingE_;
   TH1D* hOutgoingE_;
   TH1D* hBothE_;
@@ -129,8 +113,18 @@ private:
   TH1D* hIneffDen_;
   TH1D* hIneffEta_;
   TH1D* hIneffEta2_;
+
+  TH1D* hPaperIncomingEta_;
+  TH1D* hPaperOutgoingEta_;
+  TH1D* hPaperBothEta_;
+  TH1D* hPaperIneffNum_;
+  TH1D* hPaperIneffDen_;
+  TH1D* hPaperIneffEta_;
+  TH1D* hPaperIneffEta2_;
+  TH1D* hPaperMinusOneHaloEta_ ;
+
   TH1D* hMinusOneHaloEta_ ;
-  TH1D* hSegmentLayer_;
+  TH1D* hMinusOneCscSegments_;
 
 };
 
@@ -142,91 +136,66 @@ void HaloBackground::loop() {
 
   // DO ANY SETUP HERE
 
-  // control trigger/region
-  ofile_->cd();
-  hControlTrigJetE_ = new TH1D("hControlTrigJetE", "Control E", 50, 0., 200.);
-  hControlTrigJetEta_ = new TH1D("hControlTrigJetEta", "Control #eta", 70, -3.5, 3.5);
-  hControlTrigJetPhi_ = new TH1D("hControlTrigJetPhi", "Control #phi", 72, -1 * TMath::Pi(),  TMath::Pi());
-  hControlTrigTaggedJetE_ = new TH1D("hControlTrigTaggedJetE", "Control (tagged) E", 50, 0., 200.);
-  hControlTrigTaggedJetEta_ = new TH1D("hControlTrigTaggedJetEta", "Control (tagged) #eta", 70, -3.5, 3.5);
-  hControlTrigTaggedJetPhi_ = new TH1D("hControlTrigTaggedJetPhi", "Control (tagged) #phi", 72, -1 * TMath::Pi(),  TMath::Pi());
-
-  // control region
-  ofile_->cd();
-  hControlJetE_ = new TH1D("hControlJetE", "Control E", 50, 0., 200.);
-  hControlJetEta_ = new TH1D("hControlJetEta", "Control #eta", 70, -3.5, 3.5);
-  hControlJetPhi_ = new TH1D("hControlJetPhi", "Control #phi", 72, -1 * TMath::Pi(),  TMath::Pi());
-  
-  hByFillControlJetE_.setup(ofile_, "ByFillControlJetE", "Control E", 50, 0., 200.);
-  hByFillControlJetEta_.setup(ofile_, "ByFillControlJetEta", "Control #eta", 70, -3.5, 3.5);
-  hByFillControlJetPhi_.setup(ofile_, "ByFillControlJetPhi", "Control #phi", 72, -1 * TMath::Pi(),  TMath::Pi());
-  
-  // control region, tagged
-  ofile_->cd();
-  hControlTaggedJetE_ = new TH1D("hControlTaggedJetE", "Control (tagged) E", 50, 0., 200.);
-  hControlTaggedJetEta_ = new TH1D("hControlTaggedJetEta", "Control (tagged) #eta", 70, -3.5, 3.5);
-  hControlTaggedJetPhi_ = new TH1D("hControlTaggedJetPhi", "Control (tagged) #phi", 72, -1 * TMath::Pi(),  TMath::Pi());
-  
-  hByFillControlTaggedJetE_.setup(ofile_, "ByFillControlTaggedJetE", "Control (tagged) E", 50, 0., 200.);
-  hByFillControlTaggedJetEta_.setup(ofile_, "ByFillControlTaggedJetEta", "Control (tagged) #eta", 70, -3.5, 3.5);
-  hByFillControlTaggedJetPhi_.setup(ofile_, "ByFillControlTaggedJetPhi", "Control (tagged) #phi", 72, -1 * TMath::Pi(),  TMath::Pi());
-
-  // normalisation region : |BX|>2, halo ID, 50<E<70
-  ofile_->cd();
-  hNormTaggedJetE_ = new TH1D("hNormTaggedJetE", "Norm (tagged) E", 50, 0., 200.);
-  hNormTaggedJetEta_ = new TH1D("hNormTaggedJetEta", "Norm (tagged) #eta", 70, -3.5, 3.5);
-  hNormTaggedJetPhi_ = new TH1D("hNormTaggedJetPhi", "Norm (tagged) #phi", 72, -1 * TMath::Pi(),  TMath::Pi());
-  
-  hByFillNormTaggedJetE_.setup(ofile_, "ByFillNormTaggedJetE", "Norm (tagged) E", 50, 0., 200.);
-  hByFillNormTaggedJetEta_.setup(ofile_, "ByFillNormTaggedJetEta", "Norm (tagged) #eta", 70, -3.5, 3.5);
-  hByFillNormTaggedJetPhi_.setup(ofile_, "ByFillNormTaggedJetPhi", "Norm (tagged) #phi", 72, -1 * TMath::Pi(),  TMath::Pi());
-  
-  // signal region : |BX|>2, E>70
-  ofile_->cd();
-  hSignalTaggedJetE_ = new TH1D("hSignalTaggedJetE", "Signal (tagged) E", 50, 0., 200.);
-  hSignalTaggedJetEta_ = new TH1D("hSignalTaggedJetEta", "Signal (tagged) #eta", 70, -3.5, 3.5);
-  hSignalTaggedJetPhi_ = new TH1D("hSignalTaggedJetPhi", "Signal (tagged) #phi", 72, -1 * TMath::Pi(),  TMath::Pi());
-  
-  hByFillSignalTaggedJetE_.setup(ofile_, "ByFillSignalTaggedJetE", "Signal (tagged) E", 50, 0., 200.);
-  hByFillSignalTaggedJetEta_.setup(ofile_, "ByFillSignalTaggedJetEta", "Signal (tagged) #eta", 70, -3.5, 3.5);
-  hByFillSignalTaggedJetPhi_.setup(ofile_, "ByFillSignalTaggedJetPhi", "Signal (tagged) #phi", 72, -1 * TMath::Pi(),  TMath::Pi());
-  
-  hSignalTaggedNMu_ = new TH1D("hSignalTaggedMu", "Signal (tagged) N_{#mu}", 5, 0, 5.);
-  
-  // prediction
-  ofile_->cd();
-  hExpJetE_ = new TH1D("hExpJetE", "Prediction E", 50, 0., 200.);
-  hExpJetEta_ = new TH1D("hExpJetEta", "Prediction #eta", 70, -3.5, 3.5);
-  hExpJetPhi_ = new TH1D("hExpJetPhi", "Prediction #phi", 72, -1 * TMath::Pi(),  TMath::Pi());
-  
-  hByFillExpJetE_.setup(ofile_, "ByFillExpJetE", "Prediction E", 50, 0., 200.);
-  hByFillExpJetEta_.setup(ofile_, "ByFillExpJetEta", "Prediction #eta", 70, -3.5, 3.5);
-  hByFillExpJetPhi_.setup(ofile_, "ByFillExpJetPhi", "Prediction #phi", 72, -1 * TMath::Pi(),  TMath::Pi());
-
-  // Fedor's method
-  hHBJetE_      = new TH1D("hHBJetE", "HE Jet E", 50, 0., 50.);
-  hHEJetE_      = new TH1D("hHEJetE", "HE Jet E", 50, 0., 50.);
-  hHEJetEta_    = new TH1D("hHEJetEta", "HE Jet #eta", 70, -3.5, 3.5);
-  hHEJetPhi_    = new TH1D("hHEJetPhi", "HE Jet #phi", 72, -1 * TMath::Pi(),  TMath::Pi());
-
-  hHBHEdPhi_   = new TH1D("hHBHEdPhi", "HB-HE d#phi", 72, -2 * TMath::Pi(),  2 * TMath::Pi());
-  hHBCSCdPhi_  = new TH1D("hHBCSCdPhi", "HB-CSC d#phi", 72, -2 * TMath::Pi(),  2 * TMath::Pi());
-  hHECSCdPhi_  = new TH1D("hHECSCdPhi", "HE-CSC d#phi", 72, -2 * TMath::Pi(),  2 * TMath::Pi());
-
-  hHEMatchedHEJetE_ = new TH1D("hMatchedHEJetE", "HE Matched E", 50, 0., 50.);
-  hHEMatchedHaloFlag_ = new TH1D("hHEMatchedHaloFlag", "HE matched halo flag", 2, -0.5, 1.5);
-  hHESidebandHaloFlag_ = new TH1D("hHESidebandHaloFlag", "HE matched halo flag", 2, -0.5, 1.5);
-
-  nMinusTwoHaloMuon_=0;
-  nMinusOneHalo_=0;
-  nMinusOneMuon_=0;
-
   // Fedor's second method
-  hDphi_ = new TH1D("hDphi","Dphi between all CSCSegments and leading jet", 36, 0, 1.6);
-  hNhits_ = new TH1D("hNCSCRechitsPerSeg","", 10, 0, 10);
+  ofile_->cd();
+  hDphi_             = new TH1D("hDphi","Dphi between all CSCSegments and leading jet", 160, -1.6, 1.6);
+  hAverageDphi_      = new TH1D("hAverageDphi","Average Dphi between all CSCSegments and leading jet, per event", 160, -1.6, 1.6);
+  //hNhits_ = new TH1D("hNCSCRechitsPerSeg","", 10, 0, 10);
+  hHaloPlusZEta_     = new TH1D("hHaloPlusZEta", "jetEta[0] for halo traveling in +Z direction", 40, -2.0, 2.0);  
+  hHaloMinusZEta_    = new TH1D("hHaloMinusZEta", "jetEta[0] for halo traveling in -Z direction", 40, -2.0, 2.0);  
+
+  hSegmentLayer_     = new TH1D("hSegmentLayer", "", 20, -10, 10);
+  hSegmentDirection_ = new TH1D("hSegmentDirection", ";;dir", 220, -1.1, 1.1);
+  hSegmentTime_      = new TH1D("hSegmentTime", ";t[ns];", 300, -150., 150.);
+  hSegmentR_         = new TH1D("hSegmentR", ";r [cm];", 800, 0., 800.);
+  hSegmentZ_         = new TH1D("hSegmentZ", ";z [cm];", 2200., -1100., 1100.);
+
+  // 2-D
+  hSegmentZR_        = new TH2D("hSegmentZR",";z [cm];r [cm]",2200,-1100.,1100.,800, 0.,800.);
+  hSegmentEtaR_      = new TH2D("hSegmentEtaR",";#eta;r [cm]",50, -2.5, 2.5,800,0.,800.);
+  hSegmentZTime_     = new TH2D("hSegmentZTime",";z [cm];t [ns]",550,-1100.,1100.,200, -100., 100.); 
+  hSegmentRPhi_      = new TH2D("hSegmentRPhi",";r [cm];#phi",800,0.,800.,63, -3.15, 3.15);
+  hSegmentXY_        = new TH2D("hSegmentXY",";x [cm]; y [cm]",800, -800., 800., 800, -800.,800.);
+  hSegmentXYzoom_    = new TH2D("hSegmentXYzoom",";x [cm]; y [cm]",300, -300., 300., 300, -300.,300.);
+  hSegmentThetaDir_  = new TH2D("hSegmentThetaDir",";#theta;dir",160,0.,3.2,11, -1.1, 1.1);
+
+  hSegmentLayersVRadius_ = new TH2D("hSegmentLayersVRadius","",15,0,15,800,0,800);
+  hSegmentLayersVPhi_    = new TH2D("hSegmentLayersVPhi","",20, 0, 20, 63, -3.15, 3.15);
+
+  hSelectedJetPhi_ = new TH1D("hSelectedJetPhi",";#phi;",63, -3.15, 3.15);;
+
+  // Inefficiency estimate from CSCSegmentR (avg)
+  hAverageR_         = new TH1D("hAverageR","",800,0,800);
+  hAverageErrR_      = new TH1D("hAverageErrR","",200,0,200);
+  hIncomingR_        = new TH1D("hIncomingR","",800,0,800);
+  hOutgoingR_        = new TH1D("hOutgoingR","",800,0,800);
+  hBothR_            = new TH1D("hBothR","",800,0,800);
+  hIneffNumR_        = new TH1D("hIneffNumR","",800,0,800);
+  hIneffDenR_        = new TH1D("hIneffDenR","",800,0,800);
+  hIneffFractionR_   = new TH1D("hIneffFractionR","",800,0,800);
+  hIneffCountR_      = new TH1D("hIneffCountR","",800,0,800);
+  hMinusOneHaloR_    = new TH1D("hMinusOneHaloR","",800,0,800);
+
+  // Inefficiency estimate from CSCSegmentPhi (avg)
+  hAveragePhi_       = new TH1D("hAveragePhi","",63, -3.15, 3.15);
+  hAverageErrPhi_    = new TH1D("hAverageErrPhi","",32, 0, 3.15);
+  hIncomingPhi_      = new TH1D("hIncomingPhi","",63, -3.15, 3.15);
+  hOutgoingPhi_      = new TH1D("hOutgoingPhi","",63, -3.15, 3.15);
+  hBothPhi_          = new TH1D("hBothPhi","",63, -3.15, 3.15);
+  hIneffNumPhi_      = new TH1D("hIneffNumPhi","",63, -3.15, 3.15);
+  hIneffDenPhi_      = new TH1D("hIneffDenPhi","",63, -3.15, 3.15);
+  hIneffFractionPhi_ = new TH1D("hIneffFractionPhi","",63, -3.15, 3.15);
+  hIneffCountPhi_    = new TH1D("hIneffCountPhi","",63, -3.15, 3.15);
+  hMinusOneHaloPhi_  = new TH1D("hMinusOneHaloPhi","",63, -3.15, 3.15);
+
+
+  // Inefficiency estimate from jetEta[0]
   hIncomingEta_ = new TH1D("hIncomingEta", "", 40, -2.0, 2.0);
   hOutgoingEta_ = new TH1D("hOutgoingEta", "", 40, -2.0, 2.0);
   hBothEta_     = new TH1D("hBothEta", "", 40, -2.0, 2.0);
+  hPaperIncomingEta_ = new TH1D("hPaperIncomingEta", "", 40, -2.0, 2.0);
+  hPaperOutgoingEta_ = new TH1D("hPaperOutgoingEta", "", 40, -2.0, 2.0);
+  hPaperBothEta_     = new TH1D("hPaperBothEta", "", 40, -2.0, 2.0);
   hIncomingE_ = new TH1D("hIncomingE", "", 200, 0, 200.0);
   hOutgoingE_ = new TH1D("hOutgoingE", "", 200, 0, 200.0);
   hBothE_     = new TH1D("hBothE", "", 200, 0, 200.0);
@@ -234,8 +203,15 @@ void HaloBackground::loop() {
   hIneffDen_     = new TH1D("hIneffDen", "", 40, -2.0, 2.0);
   hIneffEta_     = new TH1D("hIneffEta", "", 40, -2.0, 2.0);
   hIneffEta2_     = new TH1D("hIneffEta2", "", 40, -2.0, 2.0);
-  hSegmentLayer_ = new TH1D("hSegmentLayer", "", 20, -10, 10);
+
+  hPaperIneffNum_     = new TH1D("hPaperIneffNum", "", 40, -2.0, 2.0);
+  hPaperIneffDen_     = new TH1D("hPaperIneffDen", "", 40, -2.0, 2.0);
+  hPaperIneffEta_     = new TH1D("hPaperIneffEta", "", 40, -2.0, 2.0);
+  hPaperIneffEta2_     = new TH1D("hPaperIneffEta2", "", 40, -2.0, 2.0);
   hMinusOneHaloEta_ = new TH1D("hMinusOneHaloEta", "", 40, -2.0, 2.0);
+  hPaperMinusOneHaloEta_ = new TH1D("hPaperMinusOneHaloEta", "", 40, -2.0, 2.0);
+  hMinusOneCscSegments_ = new TH1D("hMinusOneCscSegments","", 20, -1.,19.);
+
   reset();
   nextEvent();
 
@@ -256,189 +232,11 @@ void HaloBackground::loop() {
     // check there is a jet
     if (event_->jet_N==0) continue;
 
-    // regions
-    bool control = (event_->bxWrtBunch==-1 && event_->vtx_N==0 && event_->track_N==0 && event_->noiseFilterResult);
-    bool norm    = (abs(event_->bxWrtBunch)>2 && event_->jetE[0]>50 && event_->jetE[0]<70);
-    bool signal  = (abs(event_->bxWrtBunch)>2 && event_->jetE[0]>70);
-
-    // triggers
-    bool conTrig = event_->hltJetNoBptx;
-
-    // tag
-    bool tag     = event_->beamHalo_CSCLoose;
-
-    // jet properties
-    double e   = event_->jetE[0];
-    double eta = event_->jetEta[0];
-    double phi = event_->jetPhi[0];
-
-    if (conTrig && control) {
-      hControlTrigJetE_->Fill(e);
-      hControlTrigJetEta_->Fill(eta);
-      hControlTrigJetPhi_->Fill(phi);
-    }
-
-    if (conTrig && control && tag) {
-      hControlTrigTaggedJetE_->Fill(e);
-      hControlTrigTaggedJetEta_->Fill(eta);
-      hControlTrigTaggedJetPhi_->Fill(phi);
-    }
-
-    if (control) {
-      hControlJetE_->Fill(e);
-      hControlJetEta_->Fill(eta);
-      hControlJetPhi_->Fill(phi);
-      hByFillControlJetE_.fill(fill, e, 1.);
-      hByFillControlJetEta_.fill(fill, eta, 1.);
-      hByFillControlJetPhi_.fill(fill, phi, 1.);
-
-      hExpJetE_->Fill(e);
-      hExpJetEta_->Fill(eta);
-      hExpJetPhi_->Fill(phi);
-      hByFillExpJetE_.fill(fill, e, 1.);
-      hByFillExpJetEta_.fill(fill, eta, 1.);
-      hByFillExpJetPhi_.fill(fill, phi, 1.);
-    }
-
-    if (control && tag) {
-      hControlTaggedJetE_->Fill(e);
-      hControlTaggedJetEta_->Fill(eta);
-      hControlTaggedJetPhi_->Fill(phi);
-      hByFillControlTaggedJetE_.fill(fill, e, 1.);
-      hByFillControlTaggedJetEta_.fill(fill, eta, 1.);
-      hByFillControlTaggedJetPhi_.fill(fill, phi, 1.);
-    }
-
-    if (norm && tag) {
-      hNormTaggedJetE_->Fill(e);
-      hNormTaggedJetEta_->Fill(eta);
-      hNormTaggedJetPhi_->Fill(phi);
-      hByFillNormTaggedJetE_.fill(fill, e, 1.);
-      hByFillNormTaggedJetEta_.fill(fill, eta, 1.);
-      hByFillNormTaggedJetPhi_.fill(fill, phi, 1.);
-    }
-
-    if (signal && tag) {
-      hSignalTaggedJetE_->Fill(e);
-      hSignalTaggedJetEta_->Fill(eta);
-      hSignalTaggedJetPhi_->Fill(phi);
-      hSignalTaggedNMu_->Fill(event_->mu_N);
-      hByFillSignalTaggedJetE_.fill(fill, e, 1.);
-      hByFillSignalTaggedJetEta_.fill(fill, eta, 1.);
-      hByFillSignalTaggedJetPhi_.fill(fill, phi, 1.);
-    }
-    // Fedor's method
-
-    // HB jet
-    bool isHB = (event_->bxWrtBunch>2 && e > 70.);
-    
-    // HE jet
-    bool isHE = (event_->studyJet_N > 0);
-    double he_e = 999.;
-    double he_eta = 999.;
-    double he_phi = 999.;
-    if (isHE) {
-      he_e = event_->studyJetE[0];
-      he_eta = event_->studyJetEta[0];
-      he_phi = event_->studyJetPhi[0];
-    }
-
-    double he_dphi  = acos(cos(phi - he_phi));
-    bool heMatch    = (fabs(he_dphi) < 0.15 && he_eta > 1.4);
-    bool heSideband = (0.25 < fabs(he_dphi) && fabs(he_dphi) < 0.4);
-
-    // CSC segment
-    double csc_z=999999.;
-    double csc_phi = 999.;
-    
-    for (unsigned i=0; i<event_->cscSeg_N; ++i) {
-      if (event_->cscSegZ[i] < csc_z) {
-	csc_z   = event_->cscSegZ[i];
-	csc_phi = event_->cscSegPhi[i];
-      }
-    }
-
-    double csc_dphi  = acos(cos(phi - csc_phi));
-    bool cscMatch    = (fabs(csc_dphi) < 0.4);
-    bool cscSideband = (0.5 < fabs(csc_dphi) && fabs(csc_dphi) < 0.9);
-    
-    int haloFlag = (event_->beamHalo_CSCLoose ? 1 : 0);
-
-    // there is a HB jet
-    if (isHB && isHE) {
-      hHBJetE_->Fill(e);
-      hHEJetE_->Fill(he_e);    
-      hHEJetEta_->Fill(he_eta);    
-      hHEJetPhi_->Fill(he_phi);    
-      hHBHEdPhi_->Fill(he_dphi);
-    }
-
-    if (isHB) {
-      hHBCSCdPhi_->Fill(csc_dphi);
-    }
-    
-    // there is a tag
-    if (isHB && isHE && heMatch) {
-      hHEMatchedHEJetE_->Fill(he_e);
-      hHEMatchedHaloFlag_->Fill(haloFlag);
-    }
-
-    // sidebands
-    if (isHB && isHE && heSideband) {
-      hHESidebandHaloFlag_->Fill(haloFlag);
-    }
-    
-    if (cuts_.triggerCut() &&
-	cuts_.bptxVeto() &&
-	cuts_.bxVeto() &&
-	cuts_.vertexVeto() &&
-	cuts_.hcalNoiseVeto() &&
-	cuts_.jetEnergyCut() &&
-	cuts_.jetN60Cut() &&
-	cuts_.jetN90Cut() &&
-	cuts_.towersIPhiCut() &&
-	cuts_.iPhiFractionCut() &&
-	cuts_.hpdR1Cut() &&
-	cuts_.hpdR2Cut() &&
-	cuts_.hpdRPeakCut() && 
-	cuts_.hpdROuterCut()) nMinusTwoHaloMuon_++;
-
-
-    if (cuts_.triggerCut() &&
-	cuts_.bptxVeto() &&
-	cuts_.bxVeto() &&
-	cuts_.vertexVeto() &&
-	cuts_.cosmicVeto() &&
-	cuts_.hcalNoiseVeto() &&
-	cuts_.jetEnergyCut() &&
-	cuts_.jetN60Cut() &&
-	cuts_.jetN90Cut() &&
-	cuts_.towersIPhiCut() &&
-	cuts_.iPhiFractionCut() &&
-	cuts_.hpdR1Cut() &&
-	cuts_.hpdR2Cut() &&
-	cuts_.hpdRPeakCut() && 
-	cuts_.hpdROuterCut()) nMinusOneHalo_++;
-
-
-    if (cuts_.triggerCut() &&
-	cuts_.bptxVeto() &&
-	cuts_.bxVeto() &&
-	cuts_.vertexVeto() &&
-	cuts_.haloVeto() &&
-	cuts_.hcalNoiseVeto() &&
-	cuts_.jetEnergyCut() &&
-	cuts_.jetN60Cut() &&
-	cuts_.jetN90Cut() &&
-	cuts_.towersIPhiCut() &&
-	cuts_.iPhiFractionCut() &&
-	cuts_.hpdR1Cut() &&
-	cuts_.hpdR2Cut() &&
-	cuts_.hpdRPeakCut() && 
-	cuts_.hpdROuterCut()) nMinusOneMuon_++;
 
     // Fedor's second method (tag & probe based on incoming/outgoing CSCSegments)
-    bool haloSample = event_->hltJetE50NoBptx3BXNoHalo && event_->cscSeg_N > 0 && event_->jet_N > 0;
+    // cscSeg_N and jetN cuts are probably redundant, but trigger requirement isn't
+    bool haloSample = cuts_.triggerCut() && event_->cscSeg_N > 0 && event_->jet_N > 0;
+    if (!haloSample) continue;
 
     bool incoming = false;
     bool outgoing = false;
@@ -449,24 +247,42 @@ void HaloBackground::loop() {
     double jete   = event_->jetE[0];
     double jeteta = event_->jetEta[0];
     double jetphi = event_->jetPhi[0];
-    
-    // Need eta distribution of halo events that pass all other cuts for final background count
-    //std::vector<unsigned> minuscuts = {4,5};
-    //if (cuts_.cutNMinusSome(minuscuts) && event_->cscSeg_N > 0) {
-    if (cuts_.cutNMinusOne(4) && event_->cscSeg_N > 0) {
-      hMinusOneHaloEta_->Fill(jeteta);
-    }
-    
+
     set<int> nLayers;
+    bool hasMatchingPhi = false;
+    double direction = 0.;
+    double allDphi = 0.;
+    TH1F hcscsegmentr("hcscsegmentr","",0,800,800);
+    TH1F hcscsegmentphi("hcscsegmentphi","",63,-3.15,3.15);
     for (unsigned iSeg = 0; iSeg < event_->cscSeg_N; iSeg++) {
-      double jetcsc_dPhi = acos(cos(jetphi - event_->cscSegPhi[iSeg]));
+      // First - make histogram of CSCSegment "direction" (Fig 14 in AN2012_002_v8)      
+      // Determine "direction" of each halo segment, average "direction" for whole event
+      //    @ direction == -1, +1 corresponds to travel in the +Z, -Z direction. Convention
+      //      set by Fedor for absolutely no reason at all.
+      double iDir = 0;
+      // This has a case of the dumbs, but I'm not feeling clever right now
+      if (event_->cscSegTime[iSeg] < -10. && event_->cscSegZ[iSeg] < 0) iDir = -1.0;  // +Z direction
+      if (event_->cscSegTime[iSeg] >= -10. && event_->cscSegZ[iSeg] > 0) iDir = -1.0;
+      if (event_->cscSegTime[iSeg] < -10. && event_->cscSegZ[iSeg] > 0) iDir = 1.0;   // -Z direction
+      if (event_->cscSegTime[iSeg] >= -10. && event_->cscSegZ[iSeg] < 0) iDir = 1.0;
+      direction += iDir;
+
+      //std::cout << "\t" << event_->cscSegZ[iSeg] << "\t" << event_->cscSegTime[iSeg] << "\t" << iDir << std::endl;
+
+
+      // Next - plot dPhi(CSCSegment,jet[0]), which was used to determine
+      //     the amount of non-halo contamination in the |dPhi| < 0.4 region.
+      double jetcsc_dPhi = deltaPhi(jetphi, event_->cscSegPhi[iSeg]);
+      allDphi += jetcsc_dPhi;
       hDphi_->Fill(jetcsc_dPhi);
 
       int chamber = chamberType(event_->cscSegStation[iSeg], event_->cscSegRing[iSeg]);
       int endcap = (event_->cscSegZ[iSeg] > 0) ? 1 : -1;
       int layer = chamber * endcap;
       
+      // Signal region
       if (fabs(jetcsc_dPhi) < 0.4) {
+	hasMatchingPhi = true;
 	hSegmentLayer_->Fill(layer);
 	nLayers.insert(layer);
 	
@@ -478,50 +294,158 @@ void HaloBackground::loop() {
 	  nOutgoing++;
 	}
       }
+
+      // Also - we want to look at the characteristics of the CSCSegments
+      //     tan(theta) = r/z
+      // pseudorapidity = -log( tan(theta/2) )
+      double cscr     = event_->cscSegR[iSeg];
+      double cscz     = event_->cscSegZ[iSeg];
+      double cscphi   = event_->cscSegPhi[iSeg];
+      double csctime  = event_->cscSegTime[iSeg];
+      double csctheta = event_->cscSegDirTheta[iSeg];
+      
+      double cscx     = cscr*cos(cscphi);
+      double cscy     = cscr*sin(cscphi);
+      double csceta   = -1.0*log(tan(atan(fabs(cscr/cscz))/ 2.));
+      if (cscz < 0) {
+	//std::cout << cscz << "\t" << csceta << std::endl;
+	csceta = -1.0*csceta;
+      }
+      hcscsegmentr.Fill(cscr);
+      hcscsegmentphi.Fill(cscphi);
+
+      // 1-D
+      hSegmentTime_->Fill(csctime);
+      hSegmentR_->Fill(cscr);
+      hSegmentZ_->Fill(cscz);
+
+      // 2-D
+      hSegmentZR_->Fill(cscz,cscr);
+      hSegmentEtaR_->Fill(csceta,cscr);
+      hSegmentZTime_->Fill(cscz,csctime);
+      hSegmentXY_->Fill(cscx,cscy);
+      hSegmentXYzoom_->Fill(cscx,cscy);
+
+      // phi = 0 is the +x axis
+      hSegmentRPhi_->Fill(cscr,cscphi);
+
+      // theta = 0 is the +z axis, theta = pi is the -z axis
+      // This plot is tricky. I really wish that we could use theta instead of
+      // this rough direction calculation. I'm trying to prove we can. The thing
+      // is that there are some segments that get the wrong direction so this
+      // plot isn't perfect. Maybe exclude segments that are likely tagged wrong?
+      //if (csctime < -10.0 || csctime > 0.)
+      hSegmentThetaDir_->Fill(csctheta,iDir); 
+
+
+      // TODO: it would be really nice to have a plot showing how the radius of the
+      // halo muon correlates with the number of CSCSegments in the event.
+      // Just neet to be clever about determining the halo radius (just use average?)
     }
+   
+    // Some helpful variables
+    double haloDirection = direction/(1.0*event_->cscSeg_N);
+    double eventR = hcscsegmentr.GetMean();
+    double eventPhi = hcscsegmentphi.GetMean();
     
+    // Only record summary quantities for events w/ dPhi < 0.4 for at least 1 CSCSegment
+    if (hasMatchingPhi) {
+
+      // Get the average & error of the CSCSegment r & phi for this event
+      // TODO: change this calculation to get the mode?
+      hAverageR_->Fill(hcscsegmentr.GetMean());
+      hAverageErrR_->Fill(hcscsegmentr.GetMeanError());
+      hAveragePhi_->Fill(hcscsegmentphi.GetMean());
+      hAverageErrPhi_->Fill(hcscsegmentphi.GetMeanError());
+    
+      hSegmentLayersVRadius_->Fill(nLayers.size(),eventR);
+      hSegmentLayersVPhi_->Fill(nLayers.size(),eventPhi);
+    
+
+      // std::cout << "hAverage = " << hcscsegmentr.GetMean() << " +/- " 
+      //          << hcscsegmentr.GetMeanError() << std::endl;
+      
+      // Fill dPhi histogram w/ average dPhi of all CSCSegments in this event
+      hAverageDphi_->Fill(allDphi/(1.0*event_->cscSeg_N));
+
+      // Fill segment direction histogram with average "direction" for event
+      hSegmentDirection_->Fill(haloDirection);
+    
+      // Plot jetEta[0] for halo traveling in each direction
+      if (haloDirection < 0)
+	hHaloPlusZEta_->Fill(jeteta);
+      if (haloDirection >= 0)
+	hHaloMinusZEta_->Fill(jeteta);
+    }
+
     // For events with halo segments in 3+ layers, we want to determine
     // which of the incoming/outgoing legs are detected
+    // NOTE: if you remove this requirement, be sure to replace hasMatchingPhi!
     bool threepluslayers = nLayers.size() >= 3; 
-    //std::cout<<nLayers.size()<<std::endl;
-    
-    if (haloSample & threepluslayers) {
+
+    // Fill histograms showing eta distribution of incoming, outgoing, and both
+    // halo "tracks". 
+    // Eta is flipped if halo muons are traveling in -Z direction
+    // ^ Only for hPaper*Eta plots because otherwise this messed up final N-1 multiplication
+    // (from Fig 17 of AN2012_002_v8)
+    double jetetaflipped = jeteta;
+    if (haloDirection > 0.) jetetaflipped = -jeteta; // +haloDirection == -Z direction
+    if (haloSample && threepluslayers && hasMatchingPhi) {
       if (nIncoming > 0 && nOutgoing == 0) {        //Incoming only
 	hIncomingEta_->Fill(jeteta);
 	hIncomingE_->Fill(jete);
+	hPaperIncomingEta_->Fill(jetetaflipped);
+	hIncomingR_->Fill(eventR);
+	hIncomingPhi_->Fill(eventPhi);
       } else if (nIncoming == 0 && nOutgoing > 0) { // Outgoing only
 	hOutgoingEta_->Fill(jeteta);
 	hOutgoingE_->Fill(jete);
+	hPaperOutgoingEta_->Fill(jetetaflipped);
+	hOutgoingR_->Fill(eventR);
+	hOutgoingPhi_->Fill(eventPhi);
       } else if (nIncoming > 0 && nOutgoing > 0) {  // Both
 	hBothEta_->Fill(jeteta);
 	hBothE_->Fill(jete);
+	hPaperBothEta_->Fill(jetetaflipped);
+	hBothR_->Fill(eventR);
+	hBothPhi_->Fill(eventPhi);
       } 
     }
-    
-  }
 
-  // estimate halo BG
-  for (std::vector<unsigned long>::const_iterator f=fillList_.begin(); f!=fillList_.end(); ++f) {
-
-    std::cout << "Estimating BG for fill " << (*f) << std::endl;
-
-    // get normalisation constant
-    double norm =0.;
-    if (hByFillNormTaggedJetE_.histogram(*f) == 0 || 
-	hByFillControlJetE_.histogram(*f) == 0)  continue;
-
-    norm = hByFillNormTaggedJetE_.histogram(*f)->Integral(14,18);
-    norm /= hByFillControlJetE_.histogram(*f)->Integral(14,18);
-    
-    if (hByFillExpJetE_.hist(*f) != 0) {
-      hByFillExpJetE_.hist(*f)->Scale(norm);
-      hByFillExpJetEta_.hist(*f)->Scale(norm);
-      hByFillExpJetPhi_.hist(*f)->Scale(norm);
+    // Need eta distribution of halo events that pass all other cuts for final background count
+    //std::vector<unsigned> minuscuts = {4,5};
+    //if (cuts_.cutNMinusSome(minuscuts) && event_->cscSeg_N > 0) {
+    if (cuts_.cutNMinusOne(4) && event_->cscSeg_N > 0) {
+      hMinusOneHaloEta_->Fill(jeteta);
+      hPaperMinusOneHaloEta_->Fill(jetetaflipped);
+      hMinusOneCscSegments_->Fill(event_->cscSeg_N);
+      hMinusOneHaloR_->Fill(eventR);
+      hMinusOneHaloPhi_->Fill(eventPhi);
     }
 
-  }
+    if (cuts_.cut()) {
+      hSelectedJetPhi_->Fill(event_->jetPhi[0]);
+    }
+    
+  } // END EVENT LOOP
 
+  // TODO: Encorporate sideband subtraction into results
+  // calculate the fraction of contamination in the signal region via sideband subtraction to remove 
+  // N_bkg,sig = (N_low + N_high)/2 * (width_sig/width_bkg)
+  double minusSideband = hDphi_->Integral(hDphi_->FindBin(-0.9),hDphi_->FindBin(-0.5));
+  double plusSideband = hDphi_->Integral(hDphi_->FindBin(0.5),hDphi_->FindBin(0.9));
+  double sidebandN = (minusSideband + plusSideband)/2.0;
+  double signalN = hDphi_->Integral(hDphi_->FindBin(-0.4),hDphi_->FindBin(0.4));
+  std::cout <<std::endl << "Data for sideband subrtraction for uncorrelated CSCSegments...(not used yet)" 
+	    << std::endl;
+  std::cout << "minus \t plus \t avg \t sig \t fraction" <<std::endl;
+  std::cout << minusSideband << "\t" << plusSideband <<"\t" << sidebandN << "\t"
+	    << signalN << "\t" << (signalN - sidebandN)/signalN
+	    << std::endl;
+
+    
   // Finish Fedor's second method by calculating inefficiency by eta bin
+  std::cout << std::endl << "Halo estimate - using original jetEta" <<std::endl;
   hIncomingEta_->Sumw2();
   hOutgoingEta_->Sumw2();
   hBothEta_->Sumw2();
@@ -531,10 +455,8 @@ void HaloBackground::loop() {
   hIneffDen_->Sumw2();
   hIneffEta_->Divide(hIneffNum_, hIneffDen_, 1., 1.);
   hIneffEta_->Sumw2();
-  //hIneffEta_->Rebin(8);
-  //hMinusOneHaloEta_->Rebin(8);
   hIneffEta2_->Multiply(hIneffEta_, hMinusOneHaloEta_, 1., 1.);
-  
+
   double n_inc = hIncomingEta_->GetEntries();
   double n_out = hOutgoingEta_->GetEntries();
   double n_both = hBothEta_->GetEntries();
@@ -548,16 +470,161 @@ void HaloBackground::loop() {
   std::cout<<  "               N_both^2               (" << n_both << ")^2" << std::endl;
   std::cout<<  "" << std::endl;
   std::cout<<  " eps = " <<eps<< " +/- " << eps_err << std::endl;
+  std::cout<<  " N_haloEvents = " << hMinusOneHaloEta_->Integral() << std::endl;
   std::cout<<  "" << std::endl;
   Double_t error = 0;
-  Double_t integ = hIneffEta2_->IntegralAndError(0,40,error);
+  Double_t integ = hIneffEta2_->IntegralAndError(1,hIneffEta2_->GetNbinsX(),error);
   std::cout<<  " background = " << integ << " +/- " << error << std::endl;
 
 
-  // TODO: save histograms
+
+  // Finish Fedor's second method by calculating inefficiency by eta bin - with eta flipped for -Z direction
+  std::cout << std::endl << "Halo estimate - jetEta flipped for -Z halo" <<std::endl;
+  hPaperIncomingEta_->Sumw2();
+  hPaperOutgoingEta_->Sumw2();
+  hPaperBothEta_->Sumw2();
+  hPaperIneffNum_->Multiply(hPaperIncomingEta_, hPaperOutgoingEta_, 1., 1.);
+  hPaperIneffDen_->Multiply(hPaperBothEta_, hPaperBothEta_, 1., 1.);
+  hPaperIneffNum_->Sumw2();
+  hPaperIneffDen_->Sumw2();
+  hPaperIneffEta_->Divide(hPaperIneffNum_, hPaperIneffDen_, 1., 1.);
+  hPaperIneffEta_->Sumw2();
+  hPaperIneffEta2_->Multiply(hPaperIneffEta_, hPaperMinusOneHaloEta_, 1., 1.);
+
+  double n_incP = hPaperIncomingEta_->GetEntries();
+  double n_outP = hPaperOutgoingEta_->GetEntries();
+  double n_bothP = hPaperBothEta_->GetEntries();
+  double epsP = n_incP*n_outP/(n_bothP*n_bothP);
+  double eps_errP = epsP*sqrt(1./n_incP + 1./n_outP + 4./n_bothP);
+  std::cout<<  "";
+  std::cout<<  "" << std::endl;
+  std::cout<<  "       N_incoming * N_outgoing      " << n_incP << " * " << n_outP << std::endl;
+  std::cout<<  " eps = -----------------------  =  ---------------- " << std::endl;
+  std::cout<<  "               N_both^2               (" << n_bothP << ")^2" << std::endl;
+  std::cout<<  "" << std::endl;
+  std::cout<<  " eps = " <<epsP<< " +/- " << eps_errP << std::endl;
+  std::cout<<  " N_haloEvents = " << hPaperMinusOneHaloEta_->Integral() << std::endl;
+  std::cout<<  "" << std::endl;
+  Double_t errorP = 0;
+  Double_t integP = hPaperIneffEta2_->IntegralAndError(1,hPaperIneffEta2_->GetNbinsX(),errorP);
+  std::cout<<  " background = " << integP << " +/- " << errorP << std::endl;
+
+
+  // Finish halo estimate using average radius of CSCSegments
+  std::cout << std::endl << "Halo estimate - using average CSCSegment radius" <<std::endl;
+  hIncomingR_->Sumw2();
+  hOutgoingR_->Sumw2();
+  hBothR_->Sumw2();
+  hIneffNumR_->Multiply(hIncomingR_, hOutgoingR_, 1., 1.);
+  hIneffDenR_->Multiply(hBothR_, hBothR_, 1., 1.);
+  hIneffNumR_->Sumw2();
+  hIneffDenR_->Sumw2();
+  hIneffFractionR_->Divide(hIneffNumR_, hIneffDenR_, 1., 1.);
+  hIneffFractionR_->Sumw2();
+  hIneffCountR_->Multiply(hIneffFractionR_, hMinusOneHaloR_, 1., 1.);
+
+  double n_incR   = hIncomingR_->GetEntries();
+  double n_outR   = hOutgoingR_->GetEntries();
+  double n_bothR  = hBothR_->GetEntries();
+  double epsR     = n_incR*n_outR/(n_bothR*n_bothR);
+  double eps_errR = epsR*sqrt(1./n_incR + 1./n_outR + 4./n_bothR);
+  std::cout<<  "";
+  std::cout<<  "" << std::endl;
+  std::cout<<  "       N_incoming * N_outgoing      " << n_incR << " * " << n_outR << std::endl;
+  std::cout<<  " eps = -----------------------  =  ---------------- " << std::endl;
+  std::cout<<  "               N_both^2               (" << n_bothR << ")^2" << std::endl;
+  std::cout<<  "" << std::endl;
+  std::cout<<  " eps = " << epsR << " +/- " << eps_errR << std::endl;
+  std::cout<<  " N_haloEvents = " << hMinusOneHaloR_->Integral() << std::endl;
+  std::cout<<  "" << std::endl;
+  Double_t errorR = 0;
+  Double_t integR = hIneffCountR_->IntegralAndError(1,hIneffCountR_->GetNbinsX(),errorR);
+  std::cout<<  " background = " << integR << " +/- " << errorR << std::endl;
+
+
+  // Finish halo estimate using average phi of CSCSegments
+  std::cout << std::endl << "Halo estimate - using average CSCSegment phi" <<std::endl;
+  hIncomingPhi_->Sumw2();
+  hOutgoingPhi_->Sumw2();
+  hBothPhi_->Sumw2();
+  hIneffNumPhi_->Multiply(hIncomingPhi_, hOutgoingPhi_, 1., 1.);
+  hIneffDenPhi_->Multiply(hBothPhi_, hBothPhi_, 1., 1.);
+  hIneffNumPhi_->Sumw2();
+  hIneffDenPhi_->Sumw2();
+  hIneffFractionPhi_->Divide(hIneffNumPhi_, hIneffDenPhi_, 1., 1.);
+  hIneffFractionPhi_->Sumw2();
+  hIneffCountPhi_->Multiply(hIneffFractionPhi_, hMinusOneHaloPhi_, 1., 1.);
+
+  double n_incPhi   = hIncomingPhi_->GetEntries();
+  double n_outPhi   = hOutgoingPhi_->GetEntries();
+  double n_bothPhi  = hBothPhi_->GetEntries();
+  double epsPhi     = n_incPhi*n_outPhi/(n_bothPhi*n_bothPhi);
+  double eps_errPhi = epsPhi*sqrt(1./n_incPhi + 1./n_outPhi + 4./n_bothPhi);
+  std::cout<<  "";
+  std::cout<<  "" << std::endl;
+  std::cout<<  "       N_incoming * N_outgoing      " << n_incPhi << " * " << n_outPhi << std::endl;
+  std::cout<<  " eps = -----------------------  =  ---------------- " << std::endl;
+  std::cout<<  "               N_both^2               (" << n_bothPhi << ")^2" << std::endl;
+  std::cout<<  "" << std::endl;
+  std::cout<<  " eps = " << epsPhi << " +/- " << eps_errPhi << std::endl;
+  std::cout<<  " N_haloEvents = " << hMinusOneHaloPhi_->Integral() << std::endl;
+  std::cout<<  "" << std::endl;
+  Double_t errorPhi = 0;
+  Double_t integPhi = hIneffCountPhi_->IntegralAndError(1,hIneffCountPhi_->GetNbinsX(),errorPhi);
+  std::cout<<  " background = " << integPhi << " +/- " << errorPhi << std::endl;
+
+  // SAVE HISTOGRAMS HERE
   ofile_->cd();
   hDphi_->Write("",TObject::kOverwrite);
-  hNhits_->Write("",TObject::kOverwrite);
+  hAverageDphi_->Write("",TObject::kOverwrite);
+  hHaloPlusZEta_->Write("",TObject::kOverwrite);
+  hHaloMinusZEta_->Write("",TObject::kOverwrite);
+  hSegmentLayer_->Write("",TObject::kOverwrite);
+  hSegmentDirection_->Write("",TObject::kOverwrite);
+  hSelectedJetPhi_->Write("",TObject::kOverwrite);
+  hSegmentLayersVRadius_->Write("",TObject::kOverwrite);
+  hSegmentLayersVPhi_->Write("",TObject::kOverwrite);
+
+  // CSCSegment studies
+  hSegmentTime_->Write("",TObject::kOverwrite);
+  hSegmentR_->Write("",TObject::kOverwrite);
+  hSegmentZ_->Write("",TObject::kOverwrite);
+
+  hSegmentZR_->Write("",TObject::kOverwrite);
+  hSegmentEtaR_->Write("",TObject::kOverwrite);
+  hSegmentZTime_->Write("",TObject::kOverwrite);
+  hSegmentRPhi_->Write("",TObject::kOverwrite);
+  hSegmentXY_->Write("",TObject::kOverwrite);
+  hSegmentXYzoom_->Write("",TObject::kOverwrite);
+  hSegmentThetaDir_->Write("",TObject::kOverwrite);
+
+  // CSC Efficiency - r
+  hAverageR_->Write("",TObject::kOverwrite);
+  hAverageErrR_->Write("",TObject::kOverwrite);
+  hIncomingR_->Write("",TObject::kOverwrite);
+  hOutgoingR_->Write("",TObject::kOverwrite);
+  hBothR_->Write("",TObject::kOverwrite);
+  hIneffNumR_->Write("",TObject::kOverwrite);
+  hIneffDenR_->Write("",TObject::kOverwrite);
+  hIneffFractionR_->Write("",TObject::kOverwrite);
+  hIneffCountR_->Write("",TObject::kOverwrite);
+  hMinusOneHaloR_->Write("",TObject::kOverwrite);
+
+  // CSC Efficiency - phi
+  hAveragePhi_->Write("",TObject::kOverwrite);
+  hAverageErrPhi_->Write("",TObject::kOverwrite);
+  hIncomingPhi_->Write("",TObject::kOverwrite);
+  hOutgoingPhi_->Write("",TObject::kOverwrite);
+  hBothPhi_->Write("",TObject::kOverwrite);
+  hIneffNumPhi_->Write("",TObject::kOverwrite);
+  hIneffDenPhi_->Write("",TObject::kOverwrite);
+  hIneffFractionPhi_->Write("",TObject::kOverwrite);
+  hIneffCountPhi_->Write("",TObject::kOverwrite);
+  hMinusOneHaloPhi_->Write("",TObject::kOverwrite);
+
+
+
+  // All jets, given eta
   hIncomingEta_->Write("",TObject::kOverwrite);
   hOutgoingEta_->Write("",TObject::kOverwrite);
   hBothEta_->Write("",TObject::kOverwrite);
@@ -568,100 +635,21 @@ void HaloBackground::loop() {
   hIneffDen_->Write("",TObject::kOverwrite);
   hIneffEta_->Write("",TObject::kOverwrite);
   hIneffEta2_->Write("",TObject::kOverwrite);
+
+  // All jets, sign of jetEta flipped for -z direction halo
   hMinusOneHaloEta_->Write("",TObject::kOverwrite);
-  hSegmentLayer_->Write("",TObject::kOverwrite);
-   
+  hMinusOneCscSegments_->Write("",TObject::kOverwrite);
+  hPaperIncomingEta_->Write("",TObject::kOverwrite);
+  hPaperOutgoingEta_->Write("",TObject::kOverwrite);
+  hPaperBothEta_->Write("",TObject::kOverwrite);
+  hPaperMinusOneHaloEta_->Write("",TObject::kOverwrite);
+  hPaperIneffNum_->Write("",TObject::kOverwrite);
+  hPaperIneffDen_->Write("",TObject::kOverwrite);
+  hPaperIneffEta_->Write("",TObject::kOverwrite);
+  hPaperIneffEta2_->Write("",TObject::kOverwrite);
   
-
-  // SAVE HISTOGRAMS HERE
-  ofile_->cd();
-  hControlTrigJetE_->Write("",TObject::kOverwrite);
-  hControlTrigJetEta_->Write("",TObject::kOverwrite);
-  hControlTrigJetPhi_->Write("",TObject::kOverwrite);
-  hControlTrigTaggedJetE_->Write("",TObject::kOverwrite);
-  hControlTrigTaggedJetEta_->Write("",TObject::kOverwrite);
-  hControlTrigTaggedJetPhi_->Write("",TObject::kOverwrite);
-
-  ofile_->cd();
-  hControlJetE_->Write("",TObject::kOverwrite);
-  hControlJetEta_->Write("",TObject::kOverwrite);
-  hControlJetPhi_->Write("",TObject::kOverwrite);
-  hByFillControlJetE_.save();
-  hByFillControlJetEta_.save();
-  hByFillControlJetPhi_.save();
-
-  ofile_->cd();
-  hControlTaggedJetE_->Write("",TObject::kOverwrite);
-  hControlTaggedJetEta_->Write("",TObject::kOverwrite);
-  hControlTaggedJetPhi_->Write("",TObject::kOverwrite);
-  hByFillControlTaggedJetE_.save();
-  hByFillControlTaggedJetEta_.save();
-  hByFillControlTaggedJetPhi_.save();
-
   
-  // normalisation region : |BX|>2, halo ID, 50<E<70
-  ofile_->cd();
-  hNormTaggedJetE_->Write("",TObject::kOverwrite);
-  hNormTaggedJetEta_->Write("",TObject::kOverwrite);
-  hNormTaggedJetPhi_->Write("",TObject::kOverwrite);
   
-  hByFillNormTaggedJetE_.save();
-  hByFillNormTaggedJetEta_.save();
-  hByFillNormTaggedJetPhi_.save();
-  
-  // signal region : |BX|>2, E>70
-  ofile_->cd();
-  hSignalTaggedJetE_->Write("",TObject::kOverwrite);
-  hSignalTaggedJetEta_->Write("",TObject::kOverwrite);
-  hSignalTaggedJetPhi_->Write("",TObject::kOverwrite);
-  hSignalTaggedNMu_->Write("",TObject::kOverwrite);
-  
-  hByFillSignalTaggedJetE_.save();
-  hByFillSignalTaggedJetEta_.save();
-  hByFillSignalTaggedJetPhi_.save();
- 
-  // nonID halo
-  ofile_->cd();
-  hExpJetE_->Write("",TObject::kOverwrite);
-  hExpJetEta_->Write("",TObject::kOverwrite);
-  hExpJetPhi_->Write("",TObject::kOverwrite);
-  
-  hByFillExpJetE_.save();
-  hByFillExpJetEta_.save();
-  hByFillExpJetPhi_.save();
-
-  // Fedor's method
-  int matchFlags = hHEMatchedHaloFlag_->GetBinContent(2);
-  int matchNoflags = hHEMatchedHaloFlag_->GetBinContent(1);
-  int sidebandFlags = hHESidebandHaloFlag_->GetBinContent(2);
-  int sidebandNoflags = hHESidebandHaloFlag_->GetBinContent(1);
-
-  std::cout << std::endl;
-  std::cout << "HE Tag&Probe results :" << std::endl;
-  std::cout << "  HE matched events.  CSC flags=" << hHEMatchedHaloFlag_->GetBinContent(2) << "  Unflagged=" << hHEMatchedHaloFlag_->GetBinContent(1) << std::endl;
-  std::cout << "  HE sideband events.  CSC flags=" << hHESidebandHaloFlag_->GetBinContent(2) << "  Unflagged=" << hHESidebandHaloFlag_->GetBinContent(1) << std::endl;
-  std::cout << std::endl;
-  int tot = (matchFlags -sidebandFlags) + (matchNoflags - sidebandNoflags);
-  std::cout << "  CSC flag efficiency=" << 1.0*(matchFlags-sidebandFlags)/(tot) << std::endl;
-
-  std::cout <<std::endl;
-  std::cout << "N-2 (halo, muon) counts = " << nMinusTwoHaloMuon_ << std::endl;
-  std::cout << "N-1 (halo) counts = " << nMinusOneHalo_ << std::endl;
-  std::cout << "N-1 (muon) counts = " << nMinusOneMuon_ << std::endl;
-  std::cout << "Estimated BG = " << nMinusTwoHaloMuon_ * matchNoflags/(matchNoflags+matchFlags) << std::endl;
-
-  ofile_->cd();
-  hHBJetE_->Write("",TObject::kOverwrite);
-  hHEJetE_->Write("",TObject::kOverwrite);
-  hHEJetEta_->Write("",TObject::kOverwrite);
-  hHEJetPhi_->Write("",TObject::kOverwrite);
-  hHBHEdPhi_->Write("",TObject::kOverwrite);
-  hHBCSCdPhi_->Write("",TObject::kOverwrite);
-  hHECSCdPhi_->Write("",TObject::kOverwrite);
-  hHEMatchedHEJetE_->Write("",TObject::kOverwrite);
-  hHEMatchedHaloFlag_->Write("",TObject::kOverwrite);
-  hHESidebandHaloFlag_->Write("",TObject::kOverwrite);
-
 }
 
 

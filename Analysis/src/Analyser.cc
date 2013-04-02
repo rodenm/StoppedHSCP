@@ -179,6 +179,7 @@ void Analyser::printCutValues(ostream& o) {
   o << "  t since coll   = " << lifetime << "\t" << std::endl;
   o << "  orbit          = " << event_->orbit << "\t" << std::endl;
   o << " Cut values :" << std::endl;
+  o << "  BX wrt bunch   = " << event_->bxWrtBunch << "\t" << cuts_.bxVeto() << std::endl;
   o << "  BX wrt coll    = " << event_->bxWrtCollision << "\t" << cuts_.bxVeto() << std::endl;
   o << "  nVtx           = " << event_->nVtx << "\t" << cuts_.vertexVeto() << std::endl;
   std::string halo("None");
@@ -186,18 +187,15 @@ void Analyser::printCutValues(ostream& o) {
   if (event_->beamHalo_CSCTight) halo = "CSCTight";
   o << "  beamHalo       = " << halo << "\t" << cuts_.haloVeto() << std::endl;
   o << "  mu_N           = " << event_->mu_N << "\t\t" << cuts_.cosmicVeto() << std::endl;
-  o << "  cscSeg_N       = " << event_->cscSeg_N << "\t\t" << cuts_.cosmicVeto() << std::endl;
-  o << "  DTSegment_N    = " << event_->DTSegment_N << "\t\t" << cuts_.cosmicVeto2() << std::endl;
-  o << "  rpcHit_N       = " << event_->rpcHit_N << "\t\t" << cuts_.cosmicVeto3() << std::endl;
   std::string noise = (event_->noiseFilterResult ? "No" : "Yes");
   o << "  HCAL noise     = " << noise << "\t\t" << cuts_.hcalNoiseVeto() << std::endl;
+  o << "  nTowerSameiPhi = " << event_->nTowerSameiPhi << "\t\t" << cuts_.towersIPhiCut() << std::endl;
   o << "  jetE[0]        = " << event_->jetE[0] << "\t" << cuts_.jetEnergyCut() << std::endl;
   o << "  jetEta[0]      = " << event_->jetEta[0] << "\t" << cuts_.jetEnergyCut() << std::endl;
+  o << "  jetPhi[0]      = " << event_->jetPhi[0] << "\t" << cuts_.hcalNoiseVeto() << std::endl;
   o << "  jetN60[0]      = " << event_->jetN60[0] << "\t\t" << cuts_.jetN60Cut() << std::endl;
   o << "  jetN90[0]      = " << event_->jetN90[0] << "\t\t" << cuts_.jetN90Cut() << std::endl;
   o << "  jetEMF[0]      = " << (event_->jetEEm[0] / event_->jetEHad[0]) << std::endl;
-  o << "  nTowerSameiPhi = " << event_->nTowerSameiPhi << "\t\t" << cuts_.towersIPhiCut() << std::endl;
-  o << "  iPhiFraction   = " << event_->leadingIPhiFraction() << "\t\t" << cuts_.iPhiFractionCut() << std::endl;
   o << "  topHPD5R1      = " << event_->topHPD5R1 << "\t" << cuts_.hpdR1Cut() << std::endl;
   o << "  topHPDR2       = " << event_->topHPD5R2 << "\t" << cuts_.hpdR2Cut() << std::endl;
   o << "  topHPD5RPeak   = " << event_->topHPD5RPeak << "\t" << cuts_.hpdRPeakCut() << std::endl;
@@ -208,6 +206,10 @@ void Analyser::printCutValues(ostream& o) {
   o << "  top5DigiROuter = " << event_->top5DigiROuter << "\t" << cuts_.digiROuterCut() << std::endl;
   o << "  time sample    = ";
   for (unsigned i=0; i<10; ++i) o << event_->top5DigiTimeSamples.at(i) << " ";
+  o << std::endl;
+  o << "  HPDs           = ";
+  for (unsigned i=0; i<event_->hpd_N ; i++)
+    o << event_->hpdId[i] << "  ";
   o << std::endl;
   o << std::endl;
 }
@@ -273,8 +275,8 @@ void Analyser::loop(ULong64_t maxEvents) {
     noiseHistos_.fill(*event_);
     signalHistos_.fill(*event_);
 
-    // MLR - remove this line
-    // printCutValues(dumpFile_);
+    // Uncomment this line to print all events during runAnalysis.py
+    //printCutValues(dumpFile_);
 
     // check if this is an event we're watching for and do something if so
     if (isWatchedEvent()) {

@@ -110,7 +110,6 @@ private:
 #endif
 
 void Search::printCutValues(ostream& o) {
-
   o << "Stopped HSCP Event" << std::endl;
   o << "  run            = " << event_->run << "\t" << std::endl;
   o << "  lb             = " << event_->lb << "\t" << std::endl;
@@ -120,6 +119,7 @@ void Search::printCutValues(ostream& o) {
   o << "  t since coll   = " << lifetime << "\t" << std::endl;
   o << "  orbit          = " << event_->orbit << "\t" << std::endl;
   o << " Cut values :" << std::endl;
+  o << "  BX wrt bunch   = " << event_->bxWrtBunch << "\t" << cuts_.bxVeto() << std::endl;
   o << "  BX wrt coll    = " << event_->bxWrtCollision << "\t" << cuts_.bxVeto() << std::endl;
   o << "  nVtx           = " << event_->nVtx << "\t" << cuts_.vertexVeto() << std::endl;
   std::string halo("None");
@@ -132,6 +132,7 @@ void Search::printCutValues(ostream& o) {
   o << "  nTowerSameiPhi = " << event_->nTowerSameiPhi << "\t\t" << cuts_.towersIPhiCut() << std::endl;
   o << "  jetE[0]        = " << event_->jetE[0] << "\t" << cuts_.jetEnergyCut() << std::endl;
   o << "  jetEta[0]      = " << event_->jetEta[0] << "\t" << cuts_.jetEnergyCut() << std::endl;
+  o << "  jetPhi[0]      = " << event_->jetPhi[0] << "\t" << cuts_.hcalNoiseVeto() << std::endl;
   o << "  jetN60[0]      = " << event_->jetN60[0] << "\t\t" << cuts_.jetN60Cut() << std::endl;
   o << "  jetN90[0]      = " << event_->jetN90[0] << "\t\t" << cuts_.jetN90Cut() << std::endl;
   o << "  jetEMF[0]      = " << (event_->jetEEm[0] / event_->jetEHad[0]) << std::endl;
@@ -145,6 +146,10 @@ void Search::printCutValues(ostream& o) {
   o << "  top5DigiROuter = " << event_->top5DigiROuter << "\t" << cuts_.digiROuterCut() << std::endl;
   o << "  time sample    = ";
   for (unsigned i=0; i<10; ++i) o << event_->top5DigiTimeSamples.at(i) << " ";
+  o << std::endl;
+  o << "  HPDs           = ";
+  for (unsigned i=0; i<event_->hpd_N ; i++)
+    o << event_->hpdId[i] << "  ";
   o << std::endl;
   o << std::endl;
 }

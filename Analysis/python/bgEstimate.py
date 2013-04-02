@@ -129,12 +129,12 @@ res2012.append( [11] ) # THIS IS nOBS
 
 # 2012BCD 
 # Using halo background estimate from HaloBackground.cpp
-livetime  = [ 813128, 23 ]
+livetime  = [ 989364, 23 ]
 cosmicNM1 = [ 1815, sqrt(1713) ]
 nHalo     = [ 0.132,0.009 ]
 #print "Run2012BCD"
 res2012BCD = totalBackground( livetime, cosmicNM1, nHalo )
-res2012BCD.append( [13] ) # THIS IS nOBS
+res2012BCD.append( [16] ) # THIS IS nOBS
 
 print "[TABLE border='1']"  
 print "Period | Noise         | Cosmic         | Halo          | Total         | NObs |-"

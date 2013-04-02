@@ -1,4 +1,4 @@
- #include "StoppedHSCP/Analysis/interface/Cuts.h"
+#include "StoppedHSCP/Analysis/interface/Cuts.h"
 
 #include "StoppedHSCP/Ntuples/interface/StoppedHSCPEvent.h"
 #include "StoppedHSCP/Ntuples/interface/LhcFills.h"
@@ -149,7 +149,11 @@ bool Cuts::bptxVeto() const {        // cut on time wrt BPTX signal
 
 bool Cuts::bxVeto() const {          // cut on BX wrt expected collisions
   //return isMC_ || !(fills_->getMaskFromRun(event_->run).at(event_->bx));
-  return isMC_ || abs(fills_->getBxWrtBunch(event_->fill, event_->bx)) > 2;
+  //return isMC_ || abs(fills_->getBxWrtBunch(event_->fill, event_->bx)) > 2;
+
+  return isMC_ || (abs(fills_->getBxWrtBunch(event_->fill, event_->bx)) > 1);
+
+
 }
 
 bool Cuts::vertexVeto() const {      // no vertex
@@ -206,7 +210,10 @@ bool Cuts::cosmicVeto2() const {      // Cosmic cut w/o RPCs
 
 bool Cuts::cosmicVeto3() const {      // no cosmic muon
   //  return (event_->mu_N==0 && event_->DTSegment_N < 3 && event_->rpcHit_N < 3);
-  if (event_->mu_N==0 && event_->DTSegment_N < 3) {
+
+  if (event_->cscSeg_N > 0) return true;// MLR - added cscSeg requirement so this only throws out events with barrel muons
+
+  if (event_->mu_N==0 && event_->DTSegment_N < 3) { 
     unsigned nCloseRPCPairs = 0;
     for (unsigned irpc = 0; irpc < event_->rpcHit_N; irpc++) {
       for (unsigned jrpc = irpc+1; jrpc < event_->rpcHit_N; jrpc++) {
@@ -232,7 +239,16 @@ bool Cuts::cosmicVeto3() const {      // no cosmic muon
 
 bool Cuts::hcalNoiseVeto() const {   // std HCAL noise veto
   //std::cout <<"TRIGDEC:"<<event_->run<<":"<<event_->lb<<":"<<event_->id<<":"<<event_->bx<<":"<<event_->noiseFilterResult<<std::endl;
-  return event_->noiseFilterResult;
+  
+  // veto events where the leading jet is contained in HPDs 52-55
+  bool pass = true;
+  if (event_->hpd_N > 0) {
+    for (unsigned i = 0; i<event_->hpd_N; i++) {
+      if (event_->hpdId[i]==52 || event_->hpdId[i]==53 || event_->hpdId[i]==54 || event_->hpdId[i]==55) pass = false;
+    }
+  }
+
+  return (event_->noiseFilterResult && pass);
 }
 
 bool Cuts::looseJetCut() const {     // low Et threshold
