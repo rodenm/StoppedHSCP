@@ -80,6 +80,30 @@ private:
   TH2D* hSegmentLayersVRadius_;
   TH2D* hSegmentLayersVPhi_;
 
+  // Calculate inefficiency binned by CSCSegmentR and CSCSegmentPhi (avg)
+  TH2D* hAverageRPhi_;
+  TH2D* hAverageErrRPhi_;
+  TH2D* hIncomingRPhi_;
+  TH2D* hOutgoingRPhi_;
+  TH2D* hBothRPhi_;
+  TH2D* hIneffNumRPhi_;
+  TH2D* hIneffDenRPhi_;
+  TH2D* hIneffFractionRPhi_;
+  TH2D* hIneffCountRPhi_;
+  TH2D* hMinusOneHaloRPhi_;
+
+  /**
+  hAverageRPhi_
+  hAverageErrRPhi_
+  hIncomingRPhi_
+  hOutgoingRPhi_
+  hBothRPhi_
+  hIneffNumRPhi_
+  hIneffDenRPhi_
+  hIneffFractionRPhi_
+  hIneffCountRPhi_
+  hMinusOneHaloRPhi_
+  */
 
   // Calculate inefficiency binned by CSCSegmentR (avg)
   TH1D* hAverageR_;
@@ -163,6 +187,18 @@ void HaloBackground::loop() {
   hSegmentLayersVPhi_    = new TH2D("hSegmentLayersVPhi","",20, 0, 20, 63, -3.15, 3.15);
 
   hSelectedJetPhi_ = new TH1D("hSelectedJetPhi",";#phi;",63, -3.15, 3.15);;
+
+  // 2D inefficiency with CSCSegmentR and CSCSegmentPhi (avg)
+  hAverageRPhi_         = new TH2D("hAverageRPhi","",800,0,800,63, -3.15, 3.15);
+  hAverageErrRPhi_      = new TH2D("hAverageErrRPhi","",200,0,200,63, -3.15, 3.15);
+  hIncomingRPhi_        = new TH2D("hIncomingRPhi","",800,0,800,63, -3.15, 3.15);
+  hOutgoingRPhi_        = new TH2D("hOutgoingRPhi","",800,0,800,63, -3.15, 3.15);
+  hBothRPhi_            = new TH2D("hBothRPhi","",800,0,800,63, -3.15, 3.15);
+  hIneffNumRPhi_        = new TH2D("hIneffNumRPhi","",800,0,800,63, -3.15, 3.15);
+  hIneffDenRPhi_        = new TH2D("hIneffDenRPhi","",800,0,800,63, -3.15, 3.15);
+  hIneffFractionRPhi_   = new TH2D("hIneffFractionRPhi","",800,0,800,63, -3.15, 3.15);
+  hIneffCountRPhi_      = new TH2D("hIneffCountRPhi","",800,0,800,63, -3.15, 3.15);
+  hMinusOneHaloRPhi_    = new TH2D("hMinusOneHaloRPhi","",800,0,800,63, -3.15, 3.15);
 
   // Inefficiency estimate from CSCSegmentR (avg)
   hAverageR_         = new TH1D("hAverageR","",800,0,800);
@@ -357,7 +393,9 @@ void HaloBackground::loop() {
       hAverageErrR_->Fill(hcscsegmentr.GetMeanError());
       hAveragePhi_->Fill(hcscsegmentphi.GetMean());
       hAverageErrPhi_->Fill(hcscsegmentphi.GetMeanError());
-    
+      hAverageRPhi_->Fill(hcscsegmentr.GetMean(),hcscsegmentphi.GetMean());
+      hAverageErrRPhi_->Fill(hcscsegmentr.GetMeanError(),hcscsegmentphi.GetMeanError());
+      
       hSegmentLayersVRadius_->Fill(nLayers.size(),eventR);
       hSegmentLayersVPhi_->Fill(nLayers.size(),eventPhi);
     
@@ -397,18 +435,21 @@ void HaloBackground::loop() {
 	hPaperIncomingEta_->Fill(jetetaflipped);
 	hIncomingR_->Fill(eventR);
 	hIncomingPhi_->Fill(eventPhi);
+	hIncomingRPhi_->Fill(eventR,eventPhi);
       } else if (nIncoming == 0 && nOutgoing > 0) { // Outgoing only
 	hOutgoingEta_->Fill(jeteta);
 	hOutgoingE_->Fill(jete);
 	hPaperOutgoingEta_->Fill(jetetaflipped);
 	hOutgoingR_->Fill(eventR);
 	hOutgoingPhi_->Fill(eventPhi);
+	hOutgoingRPhi_->Fill(eventR,eventPhi);
       } else if (nIncoming > 0 && nOutgoing > 0) {  // Both
 	hBothEta_->Fill(jeteta);
 	hBothE_->Fill(jete);
 	hPaperBothEta_->Fill(jetetaflipped);
 	hBothR_->Fill(eventR);
 	hBothPhi_->Fill(eventPhi);
+	hBothRPhi_->Fill(eventR,eventPhi);
       } 
     }
 
@@ -421,6 +462,7 @@ void HaloBackground::loop() {
       hMinusOneCscSegments_->Fill(event_->cscSeg_N);
       hMinusOneHaloR_->Fill(eventR);
       hMinusOneHaloPhi_->Fill(eventPhi);
+      hMinusOneHaloRPhi_->Fill(eventR,eventPhi);
     }
 
     if (cuts_.cut()) {
@@ -573,6 +615,42 @@ void HaloBackground::loop() {
   Double_t integPhi = hIneffCountPhi_->IntegralAndError(1,hIneffCountPhi_->GetNbinsX(),errorPhi);
   std::cout<<  " background = " << integPhi << " +/- " << errorPhi << std::endl;
 
+  // Finish halo estimate using average radius & phi of CSCSegments
+  std::cout << std::endl << "Halo estimate - using average CSCSegment radius & phi" <<std::endl;
+  hIncomingRPhi_->Sumw2();
+  hOutgoingRPhi_->Sumw2();
+  hBothRPhi_->Sumw2();
+  hIneffNumRPhi_->Multiply(hIncomingRPhi_, hOutgoingRPhi_, 1., 1.);
+  hIneffDenRPhi_->Multiply(hBothRPhi_, hBothRPhi_, 1., 1.);
+  hIneffNumRPhi_->Sumw2();
+  hIneffDenRPhi_->Sumw2();
+  hIneffFractionRPhi_->Divide(hIneffNumRPhi_, hIneffDenRPhi_, 1., 1.);
+  hIneffFractionRPhi_->Sumw2();
+  hIneffCountRPhi_->Multiply(hIneffFractionRPhi_, hMinusOneHaloRPhi_, 1., 1.);
+
+  double n_incRPhi   = hIncomingRPhi_->GetEntries();
+  double n_outRPhi   = hOutgoingRPhi_->GetEntries();
+  double n_bothRPhi  = hBothRPhi_->GetEntries();
+  double epsRPhi     = n_incRPhi*n_outRPhi/(n_bothRPhi*n_bothRPhi);
+  double eps_errRPhi = epsRPhi*sqrt(1./n_incRPhi + 1./n_outRPhi + 4./n_bothRPhi);
+  std::cout<<  "";
+  std::cout<<  "" << std::endl;
+  std::cout<<  "       N_incoming * N_outgoing      " << n_incRPhi << " * " << n_outRPhi << std::endl;
+  std::cout<<  " eps = -----------------------  =  ---------------- " << std::endl;
+  std::cout<<  "               N_both^2               (" << n_bothRPhi << ")^2" << std::endl;
+  std::cout<<  "" << std::endl;
+  std::cout<<  " eps = " << epsRPhi << " +/- " << eps_errRPhi << std::endl;
+  std::cout<<  " N_haloEvents = " << hMinusOneHaloRPhi_->Integral() << std::endl;
+  std::cout<<  "" << std::endl;
+
+  // IntegralAndError(Int_t binx1, Int_t binx2, Int_t biny1, Int_t biny2, Double_t& err, Option_t* option = "")
+  Double_t errorRPhi = 0;
+  Double_t integRPhi = hIneffCountRPhi_->IntegralAndError(1,hIneffCountRPhi_->GetNbinsX(),
+							  1,hIneffCountRPhi_->GetNbinsY(),
+							  errorRPhi);
+  std::cout<<  " background = " << integRPhi << " +/- " << errorRPhi << std::endl;
+
+
   // SAVE HISTOGRAMS HERE
   ofile_->cd();
   hDphi_->Write("",TObject::kOverwrite);
@@ -622,7 +700,17 @@ void HaloBackground::loop() {
   hIneffCountPhi_->Write("",TObject::kOverwrite);
   hMinusOneHaloPhi_->Write("",TObject::kOverwrite);
 
-
+  // CSC Efficiency - r-phi
+  hAverageRPhi_->Write("",TObject::kOverwrite);
+  hAverageErrRPhi_->Write("",TObject::kOverwrite);
+  hIncomingRPhi_->Write("",TObject::kOverwrite);
+  hOutgoingRPhi_->Write("",TObject::kOverwrite);
+  hBothRPhi_->Write("",TObject::kOverwrite);
+  hIneffNumRPhi_->Write("",TObject::kOverwrite);
+  hIneffDenRPhi_->Write("",TObject::kOverwrite);
+  hIneffFractionRPhi_->Write("",TObject::kOverwrite);
+  hIneffCountRPhi_->Write("",TObject::kOverwrite);
+  hMinusOneHaloRPhi_->Write("",TObject::kOverwrite);
 
   // All jets, given eta
   hIncomingEta_->Write("",TObject::kOverwrite);

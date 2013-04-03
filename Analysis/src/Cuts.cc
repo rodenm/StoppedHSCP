@@ -211,9 +211,12 @@ bool Cuts::cosmicVeto2() const {      // Cosmic cut w/o RPCs
 bool Cuts::cosmicVeto3() const {      // no cosmic muon
   //  return (event_->mu_N==0 && event_->DTSegment_N < 3 && event_->rpcHit_N < 3);
 
-  if (event_->cscSeg_N > 0) return true;// MLR - added cscSeg requirement so this only throws out events with barrel muons
+  // March 2013 - added cscSeg requirement so this only throws out events with barrel muons
+  //if (event_->cscSeg_N > 0) return true;
 
-  if (event_->mu_N==0 && event_->DTSegment_N < 3) { 
+  // April 2013 - Remove reconstructed muon cut because it's confusing and possibly unnecessary
+  //if (event_->mu_N==0 && event_->DTSegment_N < 3) { 
+  if (event_->DTSegment_N < 3) { 
     unsigned nCloseRPCPairs = 0;
     for (unsigned irpc = 0; irpc < event_->rpcHit_N; irpc++) {
       for (unsigned jrpc = irpc+1; jrpc < event_->rpcHit_N; jrpc++) {
