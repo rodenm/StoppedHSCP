@@ -50,6 +50,7 @@ private:
 
   // YOUR CODE HERE
   std::vector<unsigned long> fillList_;
+  std::ofstream dumpFile_;
 
   // Fedor's second method
   TH1D* hDphi_;
@@ -189,6 +190,13 @@ private:
 void HaloBackground::loop() {
 
   // DO ANY SETUP HERE
+
+  // setup log files
+  std::string fd(outdir_);
+  fd+="/HaloBackground.txt";
+  dumpFile_.open(fd.c_str());
+  dumpFile_ << "Output from haloBackground analysis" << std::endl << std::endl;
+  
 
   // Fedor's second method
   ofile_->cd();
@@ -578,16 +586,16 @@ void HaloBackground::loop() {
   double plusSideband = hDphi_->Integral(hDphi_->FindBin(0.5),hDphi_->FindBin(0.9));
   double sidebandN = (minusSideband + plusSideband)/2.0;
   double signalN = hDphi_->Integral(hDphi_->FindBin(-0.4),hDphi_->FindBin(0.4));
-  std::cout <<std::endl << "Data for sideband subrtraction for uncorrelated CSCSegments...(not used yet)" 
+  dumpFile_ <<std::endl << "Data for sideband subrtraction for uncorrelated CSCSegments...(not used yet)" 
 	    << std::endl;
-  std::cout << "minus \t plus \t avg \t sig \t fraction" <<std::endl;
-  std::cout << minusSideband << "\t" << plusSideband <<"\t" << sidebandN << "\t"
+  dumpFile_ << "minus \t plus \t avg \t sig \t fraction" <<std::endl;
+  dumpFile_ << minusSideband << "\t" << plusSideband <<"\t" << sidebandN << "\t"
 	    << signalN << "\t" << (signalN - sidebandN)/signalN
 	    << std::endl;
 
     
   // Finish Fedor's second method by calculating inefficiency by eta bin
-  std::cout << std::endl << "Halo estimate - using original jetEta" <<std::endl;
+  dumpFile_ << std::endl << "Halo estimate - using original jetEta" <<std::endl;
   hIncomingEta_->Sumw2();
   hOutgoingEta_->Sumw2();
   hBothEta_->Sumw2();
@@ -604,25 +612,25 @@ void HaloBackground::loop() {
   double n_both = hBothEta_->GetEntries();
   double eps = n_inc*n_out/(n_both*n_both);
   double eps_err = eps*sqrt(1./n_inc + 1./n_out + 4./n_both);
-  std::cout<<  "";
-  //std::cout<<  "Events vetoed by delta-phi &/ 3+ layer requirement: " << nLayerVeto << std::endl;
-  std::cout<<  "" << std::endl;
-  std::cout<<  "       N_incoming * N_outgoing      " << n_inc << " * " << n_out << std::endl;
-  std::cout<<  " eps = -----------------------  =  ---------------- " << std::endl;
-  std::cout<<  "               N_both^2               (" << n_both << ")^2" << std::endl;
-  std::cout<<  "" << std::endl;
-  std::cout<<  " eps = " <<eps<< " +/- " << eps_err << std::endl;
-  std::cout<<  " N_haloEvents = " << hMinusOneHaloEta_->Integral() << std::endl;
-  std::cout<<  "" << std::endl;
+  dumpFile_<<  "";
+  //dumpFile_<<  "Events vetoed by delta-phi &/ 3+ layer requirement: " << nLayerVeto << std::endl;
+  dumpFile_<<  "" << std::endl;
+  dumpFile_<<  "       N_incoming * N_outgoing      " << n_inc << " * " << n_out << std::endl;
+  dumpFile_<<  " eps = -----------------------  =  ---------------- " << std::endl;
+  dumpFile_<<  "               N_both^2               (" << n_both << ")^2" << std::endl;
+  dumpFile_<<  "" << std::endl;
+  dumpFile_<<  " eps = " <<eps<< " +/- " << eps_err << std::endl;
+  dumpFile_<<  " N_haloEvents = " << hMinusOneHaloEta_->Integral() << std::endl;
+  dumpFile_<<  "" << std::endl;
   Double_t error = 0;
   Double_t integ = hIneffEta2_->IntegralAndError(1,hIneffEta2_->GetNbinsX(),error);
-  std::cout<<  " background = " << integ << " +/- " << error << std::endl;
-  std::cout<< std::endl 
+  dumpFile_<<  " background = " << integ << " +/- " << error << std::endl;
+  dumpFile_<< std::endl 
 	   << "----------------------------------------------------------------"
 	   << std::endl;
 
   // Finish halo estimate using average radius of CSCSegments
-  std::cout << std::endl << "Halo estimate - using average CSCSegment radius" <<std::endl;
+  dumpFile_ << std::endl << "Halo estimate - using average CSCSegment radius" <<std::endl;
   hIncomingR_->Sumw2();
   hOutgoingR_->Sumw2();
   hBothR_->Sumw2();
@@ -639,25 +647,25 @@ void HaloBackground::loop() {
   double n_bothR  = hBothR_->GetEntries();
   double epsR     = n_incR*n_outR/(n_bothR*n_bothR);
   double eps_errR = epsR*sqrt(1./n_incR + 1./n_outR + 4./n_bothR);
-  std::cout<<  "";
-  std::cout<<  "" << std::endl;
-  std::cout<<  "       N_incoming * N_outgoing      " << n_incR << " * " << n_outR << std::endl;
-  std::cout<<  " eps = -----------------------  =  ---------------- " << std::endl;
-  std::cout<<  "               N_both^2               (" << n_bothR << ")^2" << std::endl;
-  std::cout<<  "" << std::endl;
-  std::cout<<  " eps = " << epsR << " +/- " << eps_errR << std::endl;
-  std::cout<<  " N_haloEvents = " << hMinusOneHaloR_->Integral() << std::endl;
-  std::cout<<  "" << std::endl;
+  dumpFile_<<  "";
+  dumpFile_<<  "" << std::endl;
+  dumpFile_<<  "       N_incoming * N_outgoing      " << n_incR << " * " << n_outR << std::endl;
+  dumpFile_<<  " eps = -----------------------  =  ---------------- " << std::endl;
+  dumpFile_<<  "               N_both^2               (" << n_bothR << ")^2" << std::endl;
+  dumpFile_<<  "" << std::endl;
+  dumpFile_<<  " eps = " << epsR << " +/- " << eps_errR << std::endl;
+  dumpFile_<<  " N_haloEvents = " << hMinusOneHaloR_->Integral() << std::endl;
+  dumpFile_<<  "" << std::endl;
   Double_t errorR = 0;
   Double_t integR = hIneffCountR_->IntegralAndError(1,hIneffCountR_->GetNbinsX(),errorR);
-  std::cout<<  " background = " << integR << " +/- " << errorR << std::endl;
-  std::cout<< std::endl 
+  dumpFile_<<  " background = " << integR << " +/- " << errorR << std::endl;
+  dumpFile_<< std::endl 
 	   << "----------------------------------------------------------------"
 	   << std::endl;
 
 
   // Finish halo estimate using average phi of CSCSegments
-  std::cout << std::endl << "Halo estimate - using average CSCSegment phi" <<std::endl;
+  dumpFile_ << std::endl << "Halo estimate - using average CSCSegment phi" <<std::endl;
   hIncomingPhi_->Sumw2();
   hOutgoingPhi_->Sumw2();
   hBothPhi_->Sumw2();
@@ -674,24 +682,24 @@ void HaloBackground::loop() {
   double n_bothPhi  = hBothPhi_->GetEntries();
   double epsPhi     = n_incPhi*n_outPhi/(n_bothPhi*n_bothPhi);
   double eps_errPhi = epsPhi*sqrt(1./n_incPhi + 1./n_outPhi + 4./n_bothPhi);
-  std::cout<<  "";
-  std::cout<<  "" << std::endl;
-  std::cout<<  "       N_incoming * N_outgoing      " << n_incPhi << " * " << n_outPhi << std::endl;
-  std::cout<<  " eps = -----------------------  =  ---------------- " << std::endl;
-  std::cout<<  "               N_both^2               (" << n_bothPhi << ")^2" << std::endl;
-  std::cout<<  "" << std::endl;
-  std::cout<<  " eps = " << epsPhi << " +/- " << eps_errPhi << std::endl;
-  std::cout<<  " N_haloEvents = " << hMinusOneHaloPhi_->Integral() << std::endl;
-  std::cout<<  "" << std::endl;
+  dumpFile_<<  "";
+  dumpFile_<<  "" << std::endl;
+  dumpFile_<<  "       N_incoming * N_outgoing      " << n_incPhi << " * " << n_outPhi << std::endl;
+  dumpFile_<<  " eps = -----------------------  =  ---------------- " << std::endl;
+  dumpFile_<<  "               N_both^2               (" << n_bothPhi << ")^2" << std::endl;
+  dumpFile_<<  "" << std::endl;
+  dumpFile_<<  " eps = " << epsPhi << " +/- " << eps_errPhi << std::endl;
+  dumpFile_<<  " N_haloEvents = " << hMinusOneHaloPhi_->Integral() << std::endl;
+  dumpFile_<<  "" << std::endl;
   Double_t errorPhi = 0;
   Double_t integPhi = hIneffCountPhi_->IntegralAndError(1,hIneffCountPhi_->GetNbinsX(),errorPhi);
-  std::cout<<  " background = " << integPhi << " +/- " << errorPhi << std::endl;
-  std::cout<< std::endl 
+  dumpFile_<<  " background = " << integPhi << " +/- " << errorPhi << std::endl;
+  dumpFile_<< std::endl 
 	   << "----------------------------------------------------------------"
 	   << std::endl;
 
   // Finish halo estimate using average radius & phi of CSCSegments
-  std::cout << std::endl << "Halo estimate - using average CSCSegment radius & phi" <<std::endl;
+  dumpFile_ << std::endl << "Halo estimate - using average CSCSegment radius & phi" <<std::endl;
   hIncomingRPhi_->Sumw2();
   hOutgoingRPhi_->Sumw2();
   hBothRPhi_->Sumw2();
@@ -708,28 +716,28 @@ void HaloBackground::loop() {
   double n_bothRPhi  = hBothRPhi_->GetEntries();
   double epsRPhi     = n_incRPhi*n_outRPhi/(n_bothRPhi*n_bothRPhi);
   double eps_errRPhi = epsRPhi*sqrt(1./n_incRPhi + 1./n_outRPhi + 4./n_bothRPhi);
-  std::cout<<  "";
-  std::cout<<  "" << std::endl;
-  std::cout<<  "       N_incoming * N_outgoing      " << n_incRPhi << " * " << n_outRPhi << std::endl;
-  std::cout<<  " eps = -----------------------  =  ---------------- " << std::endl;
-  std::cout<<  "               N_both^2               (" << n_bothRPhi << ")^2" << std::endl;
-  std::cout<<  "" << std::endl;
-  std::cout<<  " eps = " << epsRPhi << " +/- " << eps_errRPhi << std::endl;
-  std::cout<<  " N_haloEvents = " << hMinusOneHaloRPhi_->Integral() << std::endl;
-  std::cout<<  "" << std::endl;
+  dumpFile_<<  "";
+  dumpFile_<<  "" << std::endl;
+  dumpFile_<<  "       N_incoming * N_outgoing      " << n_incRPhi << " * " << n_outRPhi << std::endl;
+  dumpFile_<<  " eps = -----------------------  =  ---------------- " << std::endl;
+  dumpFile_<<  "               N_both^2               (" << n_bothRPhi << ")^2" << std::endl;
+  dumpFile_<<  "" << std::endl;
+  dumpFile_<<  " eps = " << epsRPhi << " +/- " << eps_errRPhi << std::endl;
+  dumpFile_<<  " N_haloEvents = " << hMinusOneHaloRPhi_->Integral() << std::endl;
+  dumpFile_<<  "" << std::endl;
   Double_t errorRPhi = 0;
   Double_t integRPhi = hIneffCountRPhi_->IntegralAndError(1,hIneffCountRPhi_->GetNbinsX(),
 							  1,hIneffCountRPhi_->GetNbinsY(),
 							  errorRPhi);
-  std::cout<<  " background = " << integRPhi << " +/- " << errorRPhi << std::endl;
+  dumpFile_<<  " background = " << integRPhi << " +/- " << errorRPhi << std::endl;
 
   /******************* Now with beams 1+2 separated *****************/
-  std::cout<< std::endl 
+  dumpFile_<< std::endl 
 	   << "****************************************************************"
 	   << std::endl;
 
   // Finish halo estimate using average radius & phi of CSCSegments - beam 1
-  std::cout << std::endl << "Halo estimate - using jetEta[0] - beam 1" 
+  dumpFile_ << std::endl << "Halo estimate - using jetEta[0] - beam 1" 
 	    << std::endl;
   hIncomingJetEta1_->Sumw2();
   hOutgoingJetEta1_->Sumw2();
@@ -747,27 +755,27 @@ void HaloBackground::loop() {
   double n_bothJetEta1  = hBothJetEta1_->GetEntries();
   double epsJetEta1     = n_incJetEta1*n_outJetEta1/(n_bothJetEta1*n_bothJetEta1);
   double eps_errJetEta1 = epsJetEta1*sqrt(1./n_incJetEta1 + 1./n_outJetEta1 + 4./n_bothJetEta1);
-  std::cout<<  "";
-  std::cout<<  "" << std::endl;
-  std::cout<<  "       N_incoming * N_outgoing      " 
+  dumpFile_<<  "";
+  dumpFile_<<  "" << std::endl;
+  dumpFile_<<  "       N_incoming * N_outgoing      " 
 	   << n_incJetEta1 << " * " << n_outJetEta1 
 	   << std::endl;
-  std::cout<<  " eps = -----------------------  =  ---------------- " << std::endl;
-  std::cout<<  "               N_both^2               (" << n_bothJetEta1 << ")^2" << std::endl;
-  std::cout<<  "" << std::endl;
-  std::cout<<  " eps = " << epsJetEta1 << " +/- " << eps_errJetEta1 << std::endl;
-  std::cout<<  " N_haloEvents = " << hMinusOneHaloJetEta1_->Integral() << std::endl;
-  std::cout<<  "" << std::endl;
+  dumpFile_<<  " eps = -----------------------  =  ---------------- " << std::endl;
+  dumpFile_<<  "               N_both^2               (" << n_bothJetEta1 << ")^2" << std::endl;
+  dumpFile_<<  "" << std::endl;
+  dumpFile_<<  " eps = " << epsJetEta1 << " +/- " << eps_errJetEta1 << std::endl;
+  dumpFile_<<  " N_haloEvents = " << hMinusOneHaloJetEta1_->Integral() << std::endl;
+  dumpFile_<<  "" << std::endl;
   Double_t errorJetEta1 = 0;
   Double_t integJetEta1 = hIneffCountJetEta1_->IntegralAndError(1,hIneffCountJetEta1_->GetNbinsX(),
 								errorJetEta1);
-  std::cout<<  " background = " << integJetEta1 << " +/- " << errorJetEta1 << std::endl;
-  std::cout<< std::endl 
+  dumpFile_<<  " background = " << integJetEta1 << " +/- " << errorJetEta1 << std::endl;
+  dumpFile_<< std::endl 
 	   << "----------------------------------------------------------------"
 	   << std::endl;
 
   // Finish halo estimate using average radius & phi of CSCSegments - beam 2
-  std::cout << std::endl << "Halo estimate - using jetEta[0] - beam 2" 
+  dumpFile_ << std::endl << "Halo estimate - using jetEta[0] - beam 2" 
 	    << std::endl;
   hIncomingJetEta2_->Sumw2();
   hOutgoingJetEta2_->Sumw2();
@@ -785,25 +793,25 @@ void HaloBackground::loop() {
   double n_bothJetEta2  = hBothJetEta2_->GetEntries();
   double epsJetEta2     = n_incJetEta2*n_outJetEta2/(n_bothJetEta2*n_bothJetEta2);
   double eps_errJetEta2 = epsJetEta2*sqrt(1./n_incJetEta2 + 1./n_outJetEta2 + 4./n_bothJetEta2);
-  std::cout<<  "";
-  std::cout<<  "" << std::endl;
-  std::cout<<  "       N_incoming * N_outgoing      " << n_incJetEta2 << " * " << n_outJetEta2 << std::endl;
-  std::cout<<  " eps = -----------------------  =  ---------------- " << std::endl;
-  std::cout<<  "               N_both^2               (" << n_bothJetEta2 << ")^2" << std::endl;
-  std::cout<<  "" << std::endl;
-  std::cout<<  " eps = " << epsJetEta2 << " +/- " << eps_errJetEta2 << std::endl;
-  std::cout<<  " N_haloEvents = " << hMinusOneHaloJetEta2_->Integral() << std::endl;
-  std::cout<<  "" << std::endl;
+  dumpFile_<<  "";
+  dumpFile_<<  "" << std::endl;
+  dumpFile_<<  "       N_incoming * N_outgoing      " << n_incJetEta2 << " * " << n_outJetEta2 << std::endl;
+  dumpFile_<<  " eps = -----------------------  =  ---------------- " << std::endl;
+  dumpFile_<<  "               N_both^2               (" << n_bothJetEta2 << ")^2" << std::endl;
+  dumpFile_<<  "" << std::endl;
+  dumpFile_<<  " eps = " << epsJetEta2 << " +/- " << eps_errJetEta2 << std::endl;
+  dumpFile_<<  " N_haloEvents = " << hMinusOneHaloJetEta2_->Integral() << std::endl;
+  dumpFile_<<  "" << std::endl;
   Double_t errorJetEta2 = 0;
   Double_t integJetEta2 = hIneffCountJetEta2_->IntegralAndError(1,hIneffCountJetEta2_->GetNbinsX(),
 								errorJetEta2);
-  std::cout<<  " background = " << integJetEta2 << " +/- " << errorJetEta2 << std::endl;
-  std::cout<< std::endl 
+  dumpFile_<<  " background = " << integJetEta2 << " +/- " << errorJetEta2 << std::endl;
+  dumpFile_<< std::endl 
 	   << "----------------------------------------------------------------"
 	   << std::endl;
 
   // Finish halo estimate using average radius & phi of CSCSegments - beam 1
-  std::cout << std::endl << "Halo estimate - using average CSCSegment radius & phi - beam 1" 
+  dumpFile_ << std::endl << "Halo estimate - using average CSCSegment radius & phi - beam 1" 
 	    << std::endl;
   hIncomingRPhi1_->Sumw2();
   hOutgoingRPhi1_->Sumw2();
@@ -821,26 +829,26 @@ void HaloBackground::loop() {
   double n_bothRPhi1  = hBothRPhi1_->GetEntries();
   double epsRPhi1     = n_incRPhi1*n_outRPhi1/(n_bothRPhi1*n_bothRPhi1);
   double eps_errRPhi1 = epsRPhi1*sqrt(1./n_incRPhi1 + 1./n_outRPhi1 + 4./n_bothRPhi1);
-  std::cout<<  "";
-  std::cout<<  "" << std::endl;
-  std::cout<<  "       N_incoming * N_outgoing      " << n_incRPhi1 << " * " << n_outRPhi1 << std::endl;
-  std::cout<<  " eps = -----------------------  =  ---------------- " << std::endl;
-  std::cout<<  "               N_both^2               (" << n_bothRPhi1 << ")^2" << std::endl;
-  std::cout<<  "" << std::endl;
-  std::cout<<  " eps = " << epsRPhi1 << " +/- " << eps_errRPhi1 << std::endl;
-  std::cout<<  " N_haloEvents = " << hMinusOneHaloRPhi1_->Integral() << std::endl;
-  std::cout<<  "" << std::endl;
+  dumpFile_<<  "";
+  dumpFile_<<  "" << std::endl;
+  dumpFile_<<  "       N_incoming * N_outgoing      " << n_incRPhi1 << " * " << n_outRPhi1 << std::endl;
+  dumpFile_<<  " eps = -----------------------  =  ---------------- " << std::endl;
+  dumpFile_<<  "               N_both^2               (" << n_bothRPhi1 << ")^2" << std::endl;
+  dumpFile_<<  "" << std::endl;
+  dumpFile_<<  " eps = " << epsRPhi1 << " +/- " << eps_errRPhi1 << std::endl;
+  dumpFile_<<  " N_haloEvents = " << hMinusOneHaloRPhi1_->Integral() << std::endl;
+  dumpFile_<<  "" << std::endl;
   Double_t errorRPhi1 = 0;
   Double_t integRPhi1 = hIneffCountRPhi1_->IntegralAndError(1,hIneffCountRPhi1_->GetNbinsX(),
 							    1,hIneffCountRPhi1_->GetNbinsY(),
 							    errorRPhi1);
-  std::cout<<  " background = " << integRPhi1 << " +/- " << errorRPhi1 << std::endl;
-  std::cout<< std::endl 
+  dumpFile_<<  " background = " << integRPhi1 << " +/- " << errorRPhi1 << std::endl;
+  dumpFile_<< std::endl 
 	   << "----------------------------------------------------------------"
 	   << std::endl;
 
   // Finish halo estimate using average radius & phi of CSCSegments - beam 2
-  std::cout << std::endl << "Halo estimate - using average CSCSegment radius & phi - beam 2" 
+  dumpFile_ << std::endl << "Halo estimate - using average CSCSegment radius & phi - beam 2" 
 	    << std::endl;
   hIncomingRPhi2_->Sumw2();
   hOutgoingRPhi2_->Sumw2();
@@ -858,21 +866,21 @@ void HaloBackground::loop() {
   double n_bothRPhi2  = hBothRPhi2_->GetEntries();
   double epsRPhi2     = n_incRPhi2*n_outRPhi2/(n_bothRPhi2*n_bothRPhi2);
   double eps_errRPhi2 = epsRPhi2*sqrt(1./n_incRPhi2 + 1./n_outRPhi2 + 4./n_bothRPhi2);
-  std::cout<<  "";
-  std::cout<<  "" << std::endl;
-  std::cout<<  "       N_incoming * N_outgoing      " << n_incRPhi2 << " * " << n_outRPhi2 << std::endl;
-  std::cout<<  " eps = -----------------------  =  ---------------- " << std::endl;
-  std::cout<<  "               N_both^2               (" << n_bothRPhi2 << ")^2" << std::endl;
-  std::cout<<  "" << std::endl;
-  std::cout<<  " eps = " << epsRPhi2 << " +/- " << eps_errRPhi2 << std::endl;
-  std::cout<<  " N_haloEvents = " << hMinusOneHaloRPhi2_->Integral() << std::endl;
-  std::cout<<  "" << std::endl;
+  dumpFile_<<  "";
+  dumpFile_<<  "" << std::endl;
+  dumpFile_<<  "       N_incoming * N_outgoing      " << n_incRPhi2 << " * " << n_outRPhi2 << std::endl;
+  dumpFile_<<  " eps = -----------------------  =  ---------------- " << std::endl;
+  dumpFile_<<  "               N_both^2               (" << n_bothRPhi2 << ")^2" << std::endl;
+  dumpFile_<<  "" << std::endl;
+  dumpFile_<<  " eps = " << epsRPhi2 << " +/- " << eps_errRPhi2 << std::endl;
+  dumpFile_<<  " N_haloEvents = " << hMinusOneHaloRPhi2_->Integral() << std::endl;
+  dumpFile_<<  "" << std::endl;
   Double_t errorRPhi2 = 0;
   Double_t integRPhi2 = hIneffCountRPhi2_->IntegralAndError(1,hIneffCountRPhi2_->GetNbinsX(),
 							    1,hIneffCountRPhi2_->GetNbinsY(),
 							    errorRPhi2);
-  std::cout<<  " background = " << integRPhi2 << " +/- " << errorRPhi2 << std::endl;
-  std::cout<< std::endl 
+  dumpFile_<<  " background = " << integRPhi2 << " +/- " << errorRPhi2 << std::endl;
+  dumpFile_<< std::endl 
 	   << "----------------------------------------------------------------"
 	   << std::endl;
   
