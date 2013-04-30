@@ -2,6 +2,16 @@
 
 from math import sqrt
 
+
+##################################################
+#
+# This is the list that is used for the final 2012 results
+#
+# inputs [ livetime, haloR, cosmicNM1, final, haloErr]
+##################################################
+input2012BCD = [ 987722, 14.8, 2089, 17, 6.5 ]  #haloErr=3.5(stat) + 8.2(sys)
+
+###### OTHER YEARS ######
 # inputs [ livetime, haloR, cosmicNM1, final, haloErr]
 input2010A  = [ 911594., 0.0023, 1201, 1, 0.0024]
 input2010B  = [ 300065., 7, 473, 4 ]
@@ -14,9 +24,6 @@ input2012B   = [ 212487, 0.0, 473, 0, 0.19 ]
 input2012Cv1 = [ 1, 0, 1, 0, 0 ]
 input2012Cv2 = [ 351627, 0.0, 765, 8, 0.98]
 input2012D   = [ 319376, 0.52, 740, 8,  0.05 ]
-
-# halo veto (N-1): 328
-input2012BCD = [ 987722, 0.37, 2089, 17,  0.02 ]
 
 # Not using this because we only consider Run2012BCD
 input2012    = [ 1, 0, 1, 0, 0 ]

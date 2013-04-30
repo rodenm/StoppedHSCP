@@ -81,6 +81,20 @@ private:
   TH2D* hSegmentLayersVRadius_;
   TH2D* hSegmentLayersVPhi_;
 
+  // Jet stuff
+  TH1D* hJetEtaMean_;
+  TH1D* hJetPhiMean_;
+  TH1D* hJetEtaEtaMoment_;
+  TH1D* hJetEtaPhiMoment_;
+  TH1D* hJetPhiPhiMoment_;
+  TH1D* hHaloJetEtaMean_;
+  TH1D* hHaloJetPhiMean_;
+  TH1D* hHaloJetEtaEtaMoment_;
+  TH1D* hHaloJetEtaPhiMoment_;
+  TH1D* hHaloJetPhiPhiMoment_;
+
+
+
   /** 
    ** Splitting the estimate out into beam 1 and beam 2 for both the
    ** 2D CSCSegment estimate and the jetEta[0] estimate
@@ -131,6 +145,30 @@ private:
   TH2D* hIneffFractionRPhi2_;
   TH2D* hIneffCountRPhi2_;
   TH2D* hMinusOneHaloRPhi2_;
+
+  // Calculate inefficiency binned by CSCSegmentXY (avg) - beam 1
+  TH2D* hAverageXY1_;
+  TH2D* hAverageErrXY1_;
+  TH2D* hIncomingXY1_;
+  TH2D* hOutgoingXY1_;
+  TH2D* hBothXY1_;
+  TH2D* hIneffNumXY1_;
+  TH2D* hIneffDenXY1_;
+  TH2D* hIneffFractionXY1_;
+  TH2D* hIneffCountXY1_;
+  TH2D* hMinusOneHaloXY1_;
+  
+  // Calculate inefficiency binned by CSCSegmentXY (avg) - beam2
+  TH2D* hAverageXY2_;
+  TH2D* hAverageErrXY2_;
+  TH2D* hIncomingXY2_;
+  TH2D* hOutgoingXY2_;
+  TH2D* hBothXY2_;
+  TH2D* hIneffNumXY2_;
+  TH2D* hIneffDenXY2_;
+  TH2D* hIneffFractionXY2_;
+  TH2D* hIneffCountXY2_;
+  TH2D* hMinusOneHaloXY2_;
 
   /** 
    ** Old 1D and beam 1+2 estimates 
@@ -226,30 +264,67 @@ void HaloBackground::loop() {
 
   hSelectedJetPhi_ = new TH1D("hSelectedJetPhi",";#phi;",63, -3.15, 3.15);;
 
+
+  hJetEtaMean_ = new TH1D("hJetEtaMean",";#eta_{jet};",100, -1.5, 1.5);
+  hJetPhiMean_ = new TH1D("hJetPhiMean",";#phi_{jet};",100, -3.6, 3.6);
+  hJetEtaEtaMoment_ = new TH1D("hJetEtaEtaMoment",";width of jet (#eta);",100, 0., 0.1);
+  hJetEtaPhiMoment_ = new TH1D("hJetPhiPhiMoment",";width of jet (#phi);",100, 0., 0.1);
+  hJetPhiPhiMoment_ = new TH1D("hJetEtaPhiMoment",";width of jet (#eta-#phi);",100, -0.03, 0.03);
+  hHaloJetEtaMean_ = new TH1D("hHaloJetEtaMean",";#eta_{jet};",100, -1.5, 1.5);
+  hHaloJetPhiMean_ = new TH1D("hHaloJetPhiMean",";#phi_{jet};",100, -3.6, 3.6);
+  hHaloJetEtaEtaMoment_ = new TH1D("hHaloJetEtaEtaMoment",";width of jet (#eta);",100, 0., 0.1);
+  hHaloJetEtaPhiMoment_ = new TH1D("hHaloJetPhiPhiMoment",";width of jet (#phi);",100, 0., 0.1);;
+  hHaloJetPhiPhiMoment_ = new TH1D("hHaloJetEtaPhiMoment",";width of jet (#eta-#phi);",100, -0.03, 0.03);;
+
+
   /************* Separated into beam1 and beam2 ******************/
   // 2D inefficiency with CSCSegmentR and CSCSegmentPhi (avg) - beam1
-  hAverageRPhi1_         = new TH2D("hAverageRPhi1","",800,0,800,63, -3.15, 3.15);
+  hAverageRPhi1_         = new TH2D("hAverageRPhi1","",200,0,800,63, -3.15, 3.15);
   hAverageErrRPhi1_      = new TH2D("hAverageErrRPhi1","",200,0,200,63, -3.15, 3.15);
-  hIncomingRPhi1_        = new TH2D("hIncomingRPhi1","",800,0,800,63, -3.15, 3.15);
-  hOutgoingRPhi1_        = new TH2D("hOutgoingRPhi1","",800,0,800,63, -3.15, 3.15);
-  hBothRPhi1_            = new TH2D("hBothRPhi1","",800,0,800,63, -3.15, 3.15);
-  hIneffNumRPhi1_        = new TH2D("hIneffNumRPhi1","",800,0,800,63, -3.15, 3.15);
-  hIneffDenRPhi1_        = new TH2D("hIneffDenRPhi1","",800,0,800,63, -3.15, 3.15);
-  hIneffFractionRPhi1_   = new TH2D("hIneffFractionRPhi1","",800,0,800,63, -3.15, 3.15);
-  hIneffCountRPhi1_      = new TH2D("hIneffCountRPhi1","",800,0,800,63, -3.15, 3.15);
-  hMinusOneHaloRPhi1_    = new TH2D("hMinusOneHaloRPhi1","",800,0,800,63, -3.15, 3.15);
+  hIncomingRPhi1_        = new TH2D("hIncomingRPhi1","", 200,0,800,63, -3.15, 3.15);
+  hOutgoingRPhi1_        = new TH2D("hOutgoingRPhi1","",200,0,800,63, -3.15, 3.15);
+  hBothRPhi1_            = new TH2D("hBothRPhi1","",200,0,800,63, -3.15, 3.15);
+  hIneffNumRPhi1_        = new TH2D("hIneffNumRPhi1","",200,0,800,63, -3.15, 3.15);
+  hIneffDenRPhi1_        = new TH2D("hIneffDenRPhi1","",200,0,800,63, -3.15, 3.15);
+  hIneffFractionRPhi1_   = new TH2D("hIneffFractionRPhi1","",200,0,800,63, -3.15, 3.15);
+  hIneffCountRPhi1_      = new TH2D("hIneffCountRPhi1","",200,0,800,63, -3.15, 3.15);
+  hMinusOneHaloRPhi1_    = new TH2D("hMinusOneHaloRPhi1","",200,0,800,63, -3.15, 3.15);
 
   // 2D inefficiency with CSCSegmentR and CSCSegmentPhi (avg) - beam2
-  hAverageRPhi2_         = new TH2D("hAverageRPhi2","",800,0,800,63, -3.15, 3.15);
+  hAverageRPhi2_         = new TH2D("hAverageRPhi2","",200,0,800,63, -3.15, 3.15);
   hAverageErrRPhi2_      = new TH2D("hAverageErrRPhi2","",200,0,200,63, -3.15, 3.15);
-  hIncomingRPhi2_        = new TH2D("hIncomingRPhi2","",800,0,800,63, -3.15, 3.15);
-  hOutgoingRPhi2_        = new TH2D("hOutgoingRPhi2","",800,0,800,63, -3.15, 3.15);
-  hBothRPhi2_            = new TH2D("hBothRPhi2","",800,0,800,63, -3.15, 3.15);
-  hIneffNumRPhi2_        = new TH2D("hIneffNumRPhi2","",800,0,800,63, -3.15, 3.15);
-  hIneffDenRPhi2_        = new TH2D("hIneffDenRPhi2","",800,0,800,63, -3.15, 3.15);
-  hIneffFractionRPhi2_   = new TH2D("hIneffFractionRPhi2","",800,0,800,63, -3.15, 3.15);
-  hIneffCountRPhi2_      = new TH2D("hIneffCountRPhi2","",800,0,800,63, -3.15, 3.15);
-  hMinusOneHaloRPhi2_    = new TH2D("hMinusOneHaloRPhi2","",800,0,800,63, -3.15, 3.15);
+  hIncomingRPhi2_        = new TH2D("hIncomingRPhi2","",200,0,800,63, -3.15, 3.15);
+  hOutgoingRPhi2_        = new TH2D("hOutgoingRPhi2","",200,0,800,63, -3.15, 3.15);
+  hBothRPhi2_            = new TH2D("hBothRPhi2","",200,0,800,63, -3.15, 3.15);
+  hIneffNumRPhi2_        = new TH2D("hIneffNumRPhi2","",200,0,800,63, -3.15, 3.15);
+  hIneffDenRPhi2_        = new TH2D("hIneffDenRPhi2","",200,0,800,63, -3.15, 3.15);
+  hIneffFractionRPhi2_   = new TH2D("hIneffFractionRPhi2","",200,0,800,63, -3.15, 3.15);
+  hIneffCountRPhi2_      = new TH2D("hIneffCountRPhi2","",200,0,800,63, -3.15, 3.15);
+  hMinusOneHaloRPhi2_    = new TH2D("hMinusOneHaloRPhi2","",200,0,800,63, -3.15, 3.15);
+
+  // 2D inefficiency with CSCSegmentXY (avg) - beam1
+  hAverageXY1_         = new TH2D("hAverageXY1",";x[cm];y[cm]",200,-800,800,200,-800,800);
+  hAverageErrXY1_      = new TH2D("hAverageErrXY1",";x[cm];y[cm]",200,-800,200,200,-800,800);
+  hIncomingXY1_        = new TH2D("hIncomingXY1",";x[cm];y[cm]",200,-800,800,200,-800,800);
+  hOutgoingXY1_        = new TH2D("hOutgoingXY1",";x[cm];y[cm]",200,-800,800,200,-800,800);
+  hBothXY1_            = new TH2D("hBothXY1",";x[cm];y[cm]",200,-800,800,200,-800,800);
+  hIneffNumXY1_        = new TH2D("hIneffNumXY1",";x[cm];y[cm]",200,-800,800,200,-800,800);
+  hIneffDenXY1_        = new TH2D("hIneffDenXY1",";x[cm];y[cm]",200,-800,800,200,-800,800);
+  hIneffFractionXY1_   = new TH2D("hIneffFractionXY1",";x[cm];y[cm]",200,-800,800,200,-800,800);
+  hIneffCountXY1_      = new TH2D("hIneffCountXY1",";x[cm];y[cm]",200,-800,800,200,-800,800);
+  hMinusOneHaloXY1_    = new TH2D("hMinusOneHaloXY1",";x[cm];y[cm]",200,-800,800,200,-800,800);
+
+  // 2D inefficiency with CSCSegmentXY (avg) - beam2
+  hAverageXY2_         = new TH2D("hAverageXY2",";x[cm];y[cm]",200,-800,800,200,-800,800);
+  hAverageErrXY2_      = new TH2D("hAverageErrXY2",";x[cm];y[cm]",200,-800,200,200,-800,800);
+  hIncomingXY2_        = new TH2D("hIncomingXY2",";x[cm];y[cm]",200,-800,800,200,-800,800);
+  hOutgoingXY2_        = new TH2D("hOutgoingXY2",";x[cm];y[cm]",200,-800,800,200,-800,800);
+  hBothXY2_            = new TH2D("hBothXY2",";x[cm];y[cm]",200,-800,800,200,-800,800);
+  hIneffNumXY2_        = new TH2D("hIneffNumXY2",";x[cm];y[cm]",200,-800,800,200,-800,800);
+  hIneffDenXY2_        = new TH2D("hIneffDenXY2",";x[cm];y[cm]",200,-800,800,200,-800,800);
+  hIneffFractionXY2_   = new TH2D("hIneffFractionXY2",";x[cm];y[cm]",200,-800,800,200,-800,800);
+  hIneffCountXY2_      = new TH2D("hIneffCountXY2",";x[cm];y[cm]",200,-800,800,200,-800,800);
+  hMinusOneHaloXY2_    = new TH2D("hMinusOneHaloXY2",";x[cm];y[cm]",200,-800,800,200,-800,800);
 
   // Calculate inefficiency binned by jetEta[0] - beam 1
   hIncomingJetEta1_      = new TH1D("hIncomingJetEta1", "", 40, -2.0, 2.0);
@@ -348,8 +423,8 @@ void HaloBackground::loop() {
 
     // Fedor's second method (tag & probe based on incoming/outgoing CSCSegments)
     // cscSeg_N and jetN cuts are probably redundant, but trigger requirement isn't
-    bool haloSample = cuts_.triggerCut() && event_->cscSeg_N > 0 && event_->jet_N > 0;
-    if (!haloSample) continue;
+    bool searchSample = cuts_.triggerCut() && event_->jet_N > 0;
+    if (!searchSample) continue;
 
     bool incoming = false;
     bool outgoing = false;
@@ -367,6 +442,8 @@ void HaloBackground::loop() {
     double allDphi = 0.;
     TH1F hcscsegmentr("hcscsegmentr","",0,800,800);
     TH1F hcscsegmentphi("hcscsegmentphi","",63,-3.15,3.15);
+    TH1F hcscsegmentx("hcscsegmentx","",0,800,800);
+    TH1F hcscsegmenty("hcscsegmenty","",0,800,800);
     for (unsigned iSeg = 0; iSeg < event_->cscSeg_N; iSeg++) {
       // First - make histogram of CSCSegment "direction" (Fig 14 in AN2012_002_v8)      
       // Determine "direction" of each halo segment, average "direction" for whole event
@@ -424,6 +501,8 @@ void HaloBackground::loop() {
 	//std::cout << cscz << "\t" << csceta << std::endl;
 	csceta = -1.0*csceta;
       }
+      hcscsegmentx.Fill(cscx);
+      hcscsegmenty.Fill(cscy);
       hcscsegmentr.Fill(cscr);
       hcscsegmentphi.Fill(cscphi);
 
@@ -458,6 +537,8 @@ void HaloBackground::loop() {
    
     // Some helpful variables
     double haloDirection = direction/(1.0*event_->cscSeg_N);
+    double eventX = hcscsegmentx.GetMean();
+    double eventY = hcscsegmenty.GetMean();
     double eventR = hcscsegmentr.GetMean();
     double eventPhi = hcscsegmentphi.GetMean();
     
@@ -476,10 +557,14 @@ void HaloBackground::loop() {
       if (haloDirection >= 0) { // Beam 1
       hAverageRPhi1_->Fill(hcscsegmentr.GetMean(),hcscsegmentphi.GetMean());
       hAverageErrRPhi1_->Fill(hcscsegmentr.GetMeanError(),hcscsegmentphi.GetMeanError());
+      hAverageXY1_->Fill(hcscsegmentx.GetMean(),hcscsegmenty.GetMean());
+      hAverageErrXY1_->Fill(hcscsegmentx.GetMeanError(),hcscsegmenty.GetMeanError());
       }
       if (haloDirection < 0) {  // Beam 2
 	hAverageRPhi2_->Fill(hcscsegmentr.GetMean(),hcscsegmentphi.GetMean());
 	hAverageErrRPhi2_->Fill(hcscsegmentr.GetMeanError(),hcscsegmentphi.GetMeanError());
+	hAverageXY2_->Fill(hcscsegmentx.GetMean(),hcscsegmenty.GetMean());
+	hAverageErrXY2_->Fill(hcscsegmentx.GetMeanError(),hcscsegmenty.GetMeanError());
       }
       hSegmentLayersVRadius_->Fill(nLayers.size(),eventR);
       hSegmentLayersVPhi_->Fill(nLayers.size(),eventPhi);
@@ -499,6 +584,15 @@ void HaloBackground::loop() {
 	hHaloPlusZEta_->Fill(jeteta);
       if (haloDirection >= 0)
 	hHaloMinusZEta_->Fill(jeteta);
+    
+      // No matching phi -> this is not a halo jet!
+      // But still require that it passes trigger cut and has > 0 jets (searchSample)
+    } else {
+      hJetEtaMean_->Fill(event_->jetEtaMean[0]);
+      hJetPhiMean_->Fill(event_->jetPhiMean[0]);
+      hJetEtaEtaMoment_->Fill(event_->jetEtaetaMoment[0]);
+      hJetEtaPhiMoment_->Fill(event_->jetPhiphiMoment[0]);
+      hJetPhiPhiMoment_->Fill(event_->jetEtaphiMoment[0]);
     }
 
     // For events with halo segments in 3+ layers, we want to determine
@@ -508,7 +602,15 @@ void HaloBackground::loop() {
 
     // Fill histograms showing eta distribution of incoming, outgoing, and both
     // halo "tracks". 
-    if (haloSample && threepluslayers && hasMatchingPhi) {
+    if (searchSample && threepluslayers && hasMatchingPhi) {
+
+      // The jet is associated with halo i.e. this event shows halo contamination
+      hHaloJetEtaMean_->Fill(event_->jetEtaMean[0]);
+      hHaloJetPhiMean_->Fill(event_->jetPhiMean[0]);
+      hHaloJetEtaEtaMoment_->Fill(event_->jetEtaetaMoment[0]);
+      hHaloJetEtaPhiMoment_->Fill(event_->jetPhiphiMoment[0]);
+      hHaloJetPhiPhiMoment_->Fill(event_->jetEtaphiMoment[0]);
+
       if (nIncoming > 0 && nOutgoing == 0) {        //Incoming only
 	hIncomingEta_->Fill(jeteta);
 	hIncomingE_->Fill(jete);
@@ -518,9 +620,11 @@ void HaloBackground::loop() {
 	if (haloDirection < 0) {  // Beam 2
 	  hIncomingJetEta2_->Fill(jeteta);
 	  hIncomingRPhi2_->Fill(eventR,eventPhi);
+	  hIncomingXY2_->Fill(eventX,eventY);
 	}
 	if (haloDirection >= 0) { // Beam 1
 	  hIncomingJetEta1_->Fill(jeteta);
+	  hIncomingXY1_->Fill(eventX,eventY);
 	  hIncomingRPhi1_->Fill(eventR,eventPhi);
 	}
       } else if (nIncoming == 0 && nOutgoing > 0) { // Outgoing only
@@ -532,10 +636,12 @@ void HaloBackground::loop() {
 	if (haloDirection < 0) {  // Beam 2
 	  hOutgoingJetEta2_->Fill(jeteta);
 	  hOutgoingRPhi2_->Fill(eventR,eventPhi);
+	  hOutgoingXY2_->Fill(eventX,eventY);
 	}
 	if (haloDirection >= 0) { // Beam 1
 	  hOutgoingJetEta1_->Fill(jeteta);
 	  hOutgoingRPhi1_->Fill(eventR,eventPhi);
+	  hOutgoingXY1_->Fill(eventX,eventY);
 	}
       } else if (nIncoming > 0 && nOutgoing > 0) {  // Both
 	hBothEta_->Fill(jeteta);
@@ -546,10 +652,12 @@ void HaloBackground::loop() {
 	if (haloDirection < 0) {  // Beam 2
 	  hBothJetEta2_->Fill(jeteta);
 	  hBothRPhi2_->Fill(eventR,eventPhi);
+	  hBothXY2_->Fill(eventX,eventY);
 	}
 	if (haloDirection >= 0) { // Beam 1
 	  hBothJetEta1_->Fill(jeteta);
 	  hBothRPhi1_->Fill(eventR,eventPhi);
+	  hBothXY1_->Fill(eventX,eventY);
 	}
       } 
     }
@@ -566,10 +674,12 @@ void HaloBackground::loop() {
       if (haloDirection < 0) {  // Beam 2
 	hMinusOneHaloJetEta2_->Fill(jeteta);
 	hMinusOneHaloRPhi2_->Fill(eventR,eventPhi);
+	hMinusOneHaloXY2_->Fill(eventX,eventY);
       }
       if (haloDirection >= 0) { // Beam 1
 	hMinusOneHaloJetEta1_->Fill(jeteta);
 	hMinusOneHaloRPhi1_->Fill(eventR,eventPhi);
+	hMinusOneHaloXY1_->Fill(eventX,eventY);
       }
     }
 
@@ -883,6 +993,81 @@ void HaloBackground::loop() {
   dumpFile_<< std::endl 
 	   << "----------------------------------------------------------------"
 	   << std::endl;
+
+
+  // Finish halo estimate using average x-y of CSCSegments - beam 1
+  dumpFile_ << std::endl << "Halo estimate - using average CSCSegment x-y - beam 1" 
+	    << std::endl;
+  hIncomingXY1_->Sumw2();
+  hOutgoingXY1_->Sumw2();
+  hBothXY1_->Sumw2();
+  hIneffNumXY1_->Multiply(hIncomingXY1_, hOutgoingXY1_, 1., 1.);
+  hIneffDenXY1_->Multiply(hBothXY1_, hBothXY1_, 1., 1.);
+  hIneffNumXY1_->Sumw2();
+  hIneffDenXY1_->Sumw2();
+  hIneffFractionXY1_->Divide(hIneffNumXY1_, hIneffDenXY1_, 1., 1.);
+  hIneffFractionXY1_->Sumw2();
+  hIneffCountXY1_->Multiply(hIneffFractionXY1_, hMinusOneHaloXY1_, 1., 1.);
+
+  double n_incXY1   = hIncomingXY1_->GetEntries();
+  double n_outXY1   = hOutgoingXY1_->GetEntries();
+  double n_bothXY1  = hBothXY1_->GetEntries();
+  double epsXY1     = n_incXY1*n_outXY1/(n_bothXY1*n_bothXY1);
+  double eps_errXY1 = epsXY1*sqrt(1./n_incXY1 + 1./n_outXY1 + 4./n_bothXY1);
+  dumpFile_<<  "";
+  dumpFile_<<  "" << std::endl;
+  dumpFile_<<  "       N_incoming * N_outgoing      " << n_incXY1 << " * " << n_outXY1 << std::endl;
+  dumpFile_<<  " eps = -----------------------  =  ---------------- " << std::endl;
+  dumpFile_<<  "               N_both^2               (" << n_bothXY1 << ")^2" << std::endl;
+  dumpFile_<<  "" << std::endl;
+  dumpFile_<<  " eps = " << epsXY1 << " +/- " << eps_errXY1 << std::endl;
+  dumpFile_<<  " N_haloEvents = " << hMinusOneHaloXY1_->Integral() << std::endl;
+  dumpFile_<<  "" << std::endl;
+  Double_t errorXY1 = 0;
+  Double_t integXY1 = hIneffCountXY1_->IntegralAndError(1,hIneffCountXY1_->GetNbinsX(),
+							    1,hIneffCountXY1_->GetNbinsY(),
+							    errorXY1);
+  dumpFile_<<  " background = " << integXY1 << " +/- " << errorXY1 << std::endl;
+  dumpFile_<< std::endl 
+	   << "----------------------------------------------------------------"
+	   << std::endl;
+
+  // Finish halo estimate using average x-y CSCSegments - beam 2
+  dumpFile_ << std::endl << "Halo estimate - using average CSCSegment x-y - beam 2" 
+	    << std::endl;
+  hIncomingXY2_->Sumw2();
+  hOutgoingXY2_->Sumw2();
+  hBothXY2_->Sumw2();
+  hIneffNumXY2_->Multiply(hIncomingXY2_, hOutgoingXY2_, 1., 1.);
+  hIneffDenXY2_->Multiply(hBothXY2_, hBothXY2_, 1., 1.);
+  hIneffNumXY2_->Sumw2();
+  hIneffDenXY2_->Sumw2();
+  hIneffFractionXY2_->Divide(hIneffNumXY2_, hIneffDenXY2_, 1., 1.);
+  hIneffFractionXY2_->Sumw2();
+  hIneffCountXY2_->Multiply(hIneffFractionXY2_, hMinusOneHaloXY2_, 1., 1.);
+
+  double n_incXY2   = hIncomingXY2_->GetEntries();
+  double n_outXY2   = hOutgoingXY2_->GetEntries();
+  double n_bothXY2  = hBothXY2_->GetEntries();
+  double epsXY2     = n_incXY2*n_outXY2/(n_bothXY2*n_bothXY2);
+  double eps_errXY2 = epsXY2*sqrt(1./n_incXY2 + 1./n_outXY2 + 4./n_bothXY2);
+  dumpFile_<<  "";
+  dumpFile_<<  "" << std::endl;
+  dumpFile_<<  "       N_incoming * N_outgoing      " << n_incXY2 << " * " << n_outXY2 << std::endl;
+  dumpFile_<<  " eps = -----------------------  =  ---------------- " << std::endl;
+  dumpFile_<<  "               N_both^2               (" << n_bothXY2 << ")^2" << std::endl;
+  dumpFile_<<  "" << std::endl;
+  dumpFile_<<  " eps = " << epsXY2 << " +/- " << eps_errXY2 << std::endl;
+  dumpFile_<<  " N_haloEvents = " << hMinusOneHaloXY2_->Integral() << std::endl;
+  dumpFile_<<  "" << std::endl;
+  Double_t errorXY2 = 0;
+  Double_t integXY2 = hIneffCountXY2_->IntegralAndError(1,hIneffCountXY2_->GetNbinsX(),
+							    1,hIneffCountXY2_->GetNbinsY(),
+							    errorXY2);
+  dumpFile_<<  " background = " << integXY2 << " +/- " << errorXY2 << std::endl;
+  dumpFile_<< std::endl 
+	   << "----------------------------------------------------------------"
+	   << std::endl;
   
 
   // SAVE HISTOGRAMS HERE
@@ -910,6 +1095,21 @@ void HaloBackground::loop() {
   hSegmentXY_->Write("",TObject::kOverwrite);
   hSegmentXYzoom_->Write("",TObject::kOverwrite);
   hSegmentThetaDir_->Write("",TObject::kOverwrite);
+
+  // jet stuff
+  hJetEtaMean_->Write("",TObject::kOverwrite);
+  hJetPhiMean_->Write("",TObject::kOverwrite);
+  hJetEtaEtaMoment_->Write("",TObject::kOverwrite);
+  hJetEtaPhiMoment_->Write("",TObject::kOverwrite);
+  hJetPhiPhiMoment_->Write("",TObject::kOverwrite);
+  hHaloJetEtaMean_->Write("",TObject::kOverwrite);
+  hHaloJetPhiMean_->Write("",TObject::kOverwrite);
+  hHaloJetEtaEtaMoment_->Write("",TObject::kOverwrite);
+  hHaloJetEtaPhiMoment_->Write("",TObject::kOverwrite);
+  hHaloJetPhiPhiMoment_->Write("",TObject::kOverwrite);
+
+
+
 
   /******* Estimates separated out by beam 1 and beam 2 *******/
 
@@ -956,6 +1156,30 @@ void HaloBackground::loop() {
   hIneffFractionRPhi2_->Write("",TObject::kOverwrite);
   hIneffCountRPhi2_->Write("",TObject::kOverwrite);
   hMinusOneHaloRPhi2_->Write("",TObject::kOverwrite);
+
+  // Calculate inefficiency binned by CSCSegmentXY (avg) - beam 1
+  hAverageXY1_->Write("",TObject::kOverwrite);
+  hAverageErrXY1_->Write("",TObject::kOverwrite);
+  hIncomingXY1_->Write("",TObject::kOverwrite);
+  hOutgoingXY1_->Write("",TObject::kOverwrite);
+  hBothXY1_->Write("",TObject::kOverwrite);
+  hIneffNumXY1_->Write("",TObject::kOverwrite);
+  hIneffDenXY1_->Write("",TObject::kOverwrite);
+  hIneffFractionXY1_->Write("",TObject::kOverwrite);
+  hIneffCountXY1_->Write("",TObject::kOverwrite);
+  hMinusOneHaloXY1_->Write("",TObject::kOverwrite);
+  
+  // Calculate inefficiency binned by CSCSegmentXY (avg) - beam2
+  hAverageXY2_->Write("",TObject::kOverwrite);
+  hAverageErrXY2_->Write("",TObject::kOverwrite);
+  hIncomingXY2_->Write("",TObject::kOverwrite);
+  hOutgoingXY2_->Write("",TObject::kOverwrite);
+  hBothXY2_->Write("",TObject::kOverwrite);
+  hIneffNumXY2_->Write("",TObject::kOverwrite);
+  hIneffDenXY2_->Write("",TObject::kOverwrite);
+  hIneffFractionXY2_->Write("",TObject::kOverwrite);
+  hIneffCountXY2_->Write("",TObject::kOverwrite);
+  hMinusOneHaloXY2_->Write("",TObject::kOverwrite);
 
 
   /******* Estimates with beams combined *******/
