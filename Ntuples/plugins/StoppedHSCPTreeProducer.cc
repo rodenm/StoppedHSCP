@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.41 2012/12/14 20:31:54 rodenm Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.42 2013/01/07 17:41:05 rodenm Exp $
 //
 //
 
@@ -1802,7 +1802,14 @@ void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent) {
       mu.hcalEta = 0.;  // TODO extrapolate GlobalMuon track to HCAL surface and store position!
       mu.hcalPhi = 0.;
       mu.type = (0xf & it->type());
-       event_->addMuon(mu);
+
+      mu.numChambers = it->numberOfChambers();
+      mu.numChambersNoRPC = it->numberOfChambersNoRPC();
+      mu.numMatches = it->numberOfMatches();
+      mu.numStations = it->numberOfMatchedStations();
+      mu.stationMask = it->stationMask();
+
+      event_->addMuon(mu);
     }
   }
   else {
@@ -1825,7 +1832,14 @@ void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent) {
       mu.hcalEta = 0.;  // TODO extrapolate GlobalMuon track to HCAL surface and store position!
       mu.hcalPhi = 0.;
       mu.type = (0xf & it->type())<<8;
-       event_->addMuon(mu);
+
+      mu.numChambers = it->numberOfChambers();
+      mu.numChambersNoRPC = it->numberOfChambersNoRPC();
+      mu.numMatches = it->numberOfMatches();
+      mu.numStations = it->numberOfMatchedStations();
+      mu.stationMask = it->stationMask();
+
+      event_->addMuon(mu);
     }
   }
   else {

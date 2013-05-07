@@ -213,6 +213,11 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   muPhi(0),
   muHcalEta(0),
   muHcalPhi(0),
+  muNumChambers(0),
+  muNumChambersNoRPC(0),
+  muNumMatches(0),
+  muNumMatchedStations(0),
+  muStationMask(0),
   nVtx(0),
   vtx_N(0),
   vtxNDOF(0),
@@ -539,6 +544,11 @@ void StoppedHSCPEvent::addMuon(Muon m) {
   muPhi.push_back(m.phi);
   muHcalEta.push_back(m.hcalEta);
   muHcalPhi.push_back(m.hcalPhi);
+  muNumChambers.push_back(m.numChambers);
+  muNumChambersNoRPC.push_back(m.numChambersNoRPC);
+  muNumMatches.push_back(m.numMatches);
+  muNumMatchedStations.push_back(m.numStations);
+  muStationMask.push_back(m.stationMask);
   ++mu_N;
 }
 

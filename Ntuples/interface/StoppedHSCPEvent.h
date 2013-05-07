@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.26 2012/12/14 17:55:29 rodenm Exp $
+// $Id: StoppedHSCPEvent.h,v 1.27 2012/12/14 20:31:54 rodenm Exp $
 //
 //
 
@@ -90,13 +90,19 @@ namespace shscp {
   };
   
   struct Muon {
-  Muon() : pt(0.),eta(0.),phi(0.),hcalEta(0.),hcalPhi(0.) { }
+    Muon() : pt(0.),eta(0.),phi(0.),hcalEta(0.),hcalPhi(0.),numChambers(0),
+	     numChambersNoRPC(0),numMatches(0),numStations(0),stationMask(0) { }
     unsigned type;        // type of muon (standalone/global/cosmic/regular)
     double pt;
     double eta;
     double phi;
     double hcalEta;     // track intersection with HCAL front-face (?)
     double hcalPhi;
+    int numChambers;
+    int numChambersNoRPC;
+    int numMatches;
+    int numStations;
+    unsigned stationMask;
   };  
 
   struct HPD {
@@ -508,6 +514,34 @@ class StoppedHSCPEvent : public TObject {
   std::vector<Double_t> muPhi;
   std::vector<Double_t> muHcalEta;     // track intersection with HCAL front-face (?)
   std::vector<Double_t> muHcalPhi;
+  std::vector<Int_t> muNumChambers; // number of chambers
+  std::vector<Int_t> muNumChambersNoRPC; // number of chambers not including RPC matches
+  std::vector<Int_t> muNumMatches; // get number of chambers with matched segments
+  std::vector<Int_t> muNumMatchedStations; // get number of stations with matched segments
+  // get bit map of stations with matched segments
+  // bits 0-1-2-3 = DT stations 1-2-3-4
+  // bits 4-5-6-7 = CSC stations 1-2-3-4
+  std::vector<UInt_t> muStationMask;
+  
+/** MLR - notes on new muon variables
+  /// number of chambers (MuonChamberMatches include RPC rolls)
+  int numberOfChambers() const { return muMatches_.size(); }
+
+  /// number of chambers not including RPC matches (MuonChamberMatches include RPC rolls)
+  int numberOfChambersNoRPC() const;
+
+  /// get number of chambers with matched segments
+  int numberOfMatches( ArbitrationType type = SegmentAndTrackArbitration ) const;
+
+  /// get number of stations with matched segments
+  /// just adds the bits returned by stationMask
+  int numberOfMatchedStations( ArbitrationType type = SegmentAndTrackArbitration ) const;
+
+  /// get bit map of stations with matched segments
+  /// bits 0-1-2-3 = DT stations 1-2-3-4
+  /// bits 4-5-6-7 = CSC stations 1-2-3-4
+  unsigned int stationMask( ArbitrationType type = SegmentAndTrackArbitration ) const;
+  */
 
   // vertices
   unsigned nVtx;
