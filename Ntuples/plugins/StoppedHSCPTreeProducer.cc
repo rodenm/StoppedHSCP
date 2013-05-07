@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.42 2013/01/07 17:41:05 rodenm Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.43 2013/05/07 06:15:44 rodenm Exp $
 //
 //
 
@@ -1801,7 +1801,7 @@ void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent) {
       mu.phi = it->phi();
       mu.hcalEta = 0.;  // TODO extrapolate GlobalMuon track to HCAL surface and store position!
       mu.hcalPhi = 0.;
-      mu.type = (0xf & it->type());
+      mu.type = (0xff & it->type());
 
       mu.numChambers = it->numberOfChambers();
       mu.numChambersNoRPC = it->numberOfChambersNoRPC();
@@ -1831,7 +1831,7 @@ void StoppedHSCPTreeProducer::doMuons(const edm::Event& iEvent) {
       mu.phi = it->phi();
       mu.hcalEta = 0.;  // TODO extrapolate GlobalMuon track to HCAL surface and store position!
       mu.hcalPhi = 0.;
-      mu.type = (0xf & it->type())<<8;
+      mu.type = (0xff & it->type())<<8;
 
       mu.numChambers = it->numberOfChambers();
       mu.numChambersNoRPC = it->numberOfChambersNoRPC();
