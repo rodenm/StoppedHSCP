@@ -127,6 +127,11 @@ public:
     BasicAnalyser(argc, argv), doOverlap_(false), doBX1_(false), doEfficiencies_(false){ 
     gROOT->ProcessLine(".X ~/.rootlogon.C");
  
+    // Save commandline to write out to dumpFile_ 
+    for (int i = 0; i < argc; i++)
+      commandLine_ += argv[i];
+    commandLine_ += "\n";
+
    // get options
     po::options_description desc("Custom options");
     po::positional_options_description poptd;
@@ -143,7 +148,7 @@ public:
     po::variables_map vm;
     po::store(po::command_line_parser(argc, argv).options(desc).allow_unregistered().run(), vm);
     po::notify(vm);
-    
+
     // get my custom option
     if (vm.count("hscp-eventlist")) {
       eventList_hscp_ = vm["hscp-eventlist"].as<std::string>();
@@ -298,13 +303,37 @@ private:
   // Can't get phi info for stopped events until we reach the event in loop(). This map
   // just stores if the event was selected or not. 
   map<EventInfo, int> stopped_map_;
+
+  // Output file 
+  std::ofstream dumpFile_;
+  std::string commandLine_;
 };
 
 #endif
 
 // this is the event loop
 void MCAnalysis::loop() {
-  
+
+  // setup log files
+  std::string fd(outdir_);
+  fd+="/MCAnalysis_" +flavor_ + sparticleE_ + "_";
+
+  if (doOverlap_) fd+="overlap.txt";
+  else if (doEfficiencies_) fd+="efficiencies.txt";
+  else fd+="other.txt";
+  dumpFile_.open(fd.c_str());
+  dumpFile_ << "Output from mcAnalysis" << std::endl << std::endl;
+  dumpFile_ << "Command line       : " << commandLine_.c_str();
+
+  // print input files
+  dumpFile_ << "Ntuple files       : " <<std::endl;
+  for (std::vector<std::string>::iterator file=ifiles_.begin(); file!=ifiles_.end(); ++file)
+    dumpFile_ << (*file) << std::endl;
+  dumpFile_ << "Number of events   : " << maxEvents_ << std::endl;
+  dumpFile_ << "Sparticle energy   : " << sparticleE_ << std::endl;
+  dumpFile_ << "Sparticle flavor   : " << flavor_ << std::endl;
+    
+
   // SETUP
   hbeta_all_               = new TH1D("hbeta_all", "", 100, 0., 1.);
   hbeta_hscp_              = new TH1D("hbeta_hscp", "", 100, 0., 1.);
@@ -319,8 +348,8 @@ void MCAnalysis::loop() {
   nextEvent();
   
   if (doOverlap_) {
-    std::cout << "\n*** Begining overlap study...\n" << std::endl;
-    std::cout << maxEvents_ << " events in ntuples." << std::endl;
+    dumpFile_ << "\n*** Begining overlap study...\n" << std::endl;
+    dumpFile_ << maxEvents_ << " events in ntuples." << std::endl;
     hscp_file_.open(eventList_hscp_.c_str());
     if (readHSCPEvents() != 0) {
       std::cout << "ERROR --- Could not open hscp_file_: " << eventList_hscp_ << std::endl;
@@ -332,12 +361,12 @@ void MCAnalysis::loop() {
   }
   
   if (doEfficiencies_) 
-    std::cout << "\n*** Begining calculate efficiencies...\n" << std::endl;
+    dumpFile_ << "\n*** Begining calculate efficiencies..." << std::endl;
 
   // EVENT LOOP
   for (unsigned long i=0; i<maxEvents_; ++i, nextEvent()) {
-    //if (i%20000==0 && i > 1)
-      //std::cout << "Processing " << i << "th event of " <<maxEvents_<< std::endl;
+    if (i%2000==0 && i > 1)
+      std::cout << "Processing " << i << "th event of " <<maxEvents_<< std::endl;
 
     if (doOverlap_) overlapStudy();
     else if (doEfficiencies_) efficiencyStudy();
@@ -345,42 +374,42 @@ void MCAnalysis::loop() {
 
   // POST-LOOP OUTPUT
   if (doEfficiencies_) {
-    std::cout << "-------------------------------" << std::endl;
-    std::cout << "Total count = " << total_count_ << std::endl;
-    std::cout << "Total selected = " << selected_count_ << std::endl << std::endl;
-    std::cout << "Total trigger = " << trigger_ << std::endl;
-    std::cout << "Passed trigger (EB) = " << eb_trigger_ << std::endl;
-    std::cout << "Passed trigger (HB) = " << hb_trigger_ << std::endl<<std::endl;
+    dumpFile_ << "-------------------------------" << std::endl;
+    dumpFile_ << "Total count = " << total_count_ << std::endl;
+    dumpFile_ << "Total selected = " << selected_count_ << std::endl << std::endl;
+    dumpFile_ << "Total trigger = " << trigger_ << std::endl;
+    dumpFile_ << "Passed trigger (EB) = " << eb_trigger_ << std::endl;
+    dumpFile_ << "Passed trigger (HB) = " << hb_trigger_ << std::endl<<std::endl;
 
-    std::cout << "Tracker count = " << tracker_count_ << std::endl;
-    std::cout << "EB count = " << eb_count_ << std::endl;
-    std::cout << "EE count = " << ee_count_ << std::endl;
-    std::cout << "HB count = " << hb_count_ << std::endl;
-    std::cout << "HE count = " << he_count_ << std::endl;
-    std::cout << "MB count = " << mb_count_ << std::endl;
-    std::cout << "ME count = " << me_count_ << std::endl << std::endl;
+    dumpFile_ << "Tracker count = " << tracker_count_ << std::endl;
+    dumpFile_ << "EB count = " << eb_count_ << std::endl;
+    dumpFile_ << "EE count = " << ee_count_ << std::endl;
+    dumpFile_ << "HB count = " << hb_count_ << std::endl;
+    dumpFile_ << "HE count = " << he_count_ << std::endl;
+    dumpFile_ << "MB count = " << mb_count_ << std::endl;
+    dumpFile_ << "ME count = " << me_count_ << std::endl << std::endl;
 
-    std::cout << "Tracker & selected count = " << reco_tracker_count_ << std::endl;
-    std::cout << "EB & selected count = " << reco_eb_count_ << std::endl;
-    std::cout << "EE & selected count = " << reco_ee_count_ << std::endl;
-    std::cout << "HB & selected count = " << reco_hb_count_ << std::endl;
-    std::cout << "HE & selected count = " << reco_he_count_ << std::endl;
-    std::cout << "MB & selected count = " << reco_mb_count_ << std::endl;
-    std::cout << "ME & selected count = " << reco_me_count_ << std::endl;
-    std::cout << "Detector & selected count = " << selected_indetector_count_ << std::endl << std::endl;;
+    dumpFile_ << "Tracker & selected count = " << reco_tracker_count_ << std::endl;
+    dumpFile_ << "EB & selected count = " << reco_eb_count_ << std::endl;
+    dumpFile_ << "EE & selected count = " << reco_ee_count_ << std::endl;
+    dumpFile_ << "HB & selected count = " << reco_hb_count_ << std::endl;
+    dumpFile_ << "HE & selected count = " << reco_he_count_ << std::endl;
+    dumpFile_ << "MB & selected count = " << reco_mb_count_ << std::endl;
+    dumpFile_ << "ME & selected count = " << reco_me_count_ << std::endl;
+    dumpFile_ << "Detector & selected count = " << selected_indetector_count_ << std::endl << std::endl;;
 
-    std::cout << "Other & selected count = " << reco_other_count_ << std::endl << std::endl;
+    dumpFile_ << "Other & selected count = " << reco_other_count_ << std::endl << std::endl;
  
-    std::cout << "detector_count = " << detector_count_ << std::endl;
-    std::cout << "cavern count = " << cavern_count_ << std::endl;
-    std::cout << "no r-baryon count = " << not_rbaryon_count_ << std::endl;
-    std::cout << "no r-baryon (stopped in EB+HB) count = " << not_rbaryon_inhbeb_count_ << std::endl;
-    std::cout << "glueball count = " << glueball_count_ << std::endl << std::endl;
+    dumpFile_ << "detector_count = " << detector_count_ << std::endl;
+    dumpFile_ << "cavern count = " << cavern_count_ << std::endl;
+    dumpFile_ << "no r-baryon count = " << not_rbaryon_count_ << std::endl;
+    dumpFile_ << "no r-baryon (stopped in EB+HB) count = " << not_rbaryon_inhbeb_count_ << std::endl;
+    dumpFile_ << "glueball count = " << glueball_count_ << std::endl << std::endl;
     
   }
 
   if (doOverlap_) {
-    std::cout << "Found " << intersect_count_ << " events present in both analyses." << std::endl;
+    dumpFile_ << "Found " << intersect_count_ << " events present in both analyses." << std::endl;
     hbeta_hscp_->SetLineColor(kGreen);
     hbeta_stopped_->SetLineColor(kBlue);
     hbeta_intersect_->SetLineColor(kRed);
@@ -591,7 +620,7 @@ void MCAnalysis::efficiencyStudy() {
     if (cuts_.cut()) reco_me_count_++;
   } else if (r<728.5 && fabs(z)<1080.0) { // other regions?
     if (cuts_.cut()) reco_other_count_++;
-    //std::cout << r << "\t" << z << "\t" << particle_eta << std::endl;
+    //dumpFile_ << r << "\t" << z << "\t" << particle_eta << std::endl;
   }
 
   if (r >= 728.5 || fabs(z) > 1080)

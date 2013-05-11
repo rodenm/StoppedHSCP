@@ -162,7 +162,19 @@ bool Cuts::vertexVeto() const {      // no vertex
 
 bool Cuts::haloVeto() const {        // no halo ID
   //return !(event_->beamHalo_CSCLoose) ;//&& geometryHaloCut();
-  return (event_->cscSeg_N == 0);// && geometryHaloCut());
+
+  // May 2013 - add Reco muon cut
+  /// bits 4-5-6-7 = CSC stations 1-2-3-4
+  bool hasCSCMuon = false;
+  for (unsigned i = 0; i < event_->mu_N; i++) {
+    if (((event_->muStationMask[i] & 0xf0)>> 4) > 0) hasCSCMuon = true;
+  }
+  //return (event_->cscSeg_N == 0 && !hasCSCMuon);
+  
+  // April 2013 - return to simple cut on CSCSegments
+  return (event_->cscSeg_N == 0);
+
+
 }
 
 bool Cuts::hfVeto() const {
@@ -216,7 +228,23 @@ bool Cuts::cosmicVeto3() const {      // no cosmic muon
 
   // April 2013 - Remove reconstructed muon cut because it's confusing and possibly unnecessary
   //if (event_->mu_N==0 && event_->DTSegment_N < 3) { 
-  if (event_->DTSegment_N < 3) { 
+
+  // May 2013 - add back in some reco muon requirements
+  bool hasMuon = event_->mu_N > 0;
+
+  bool hasDTMuon = false;
+  for (unsigned i = 0; i < event_->mu_N; i++) {
+    if ((event_->muStationMask[i] & 0x0f) > 0) hasDTMuon = true;
+  }
+
+  bool hasCSCMuon = false;
+  for (unsigned i = 0; i < event_->mu_N; i++) {
+    if (((event_->muStationMask[i] & 0xf0)>> 4) > 0) hasCSCMuon = true;
+  }
+
+
+  if ((event_->DTSegment_N < 3) && (!hasMuon || hasCSCMuon)) {
+  //if (event_->DTSegment_N < 3) {
     unsigned nCloseRPCPairs = 0;
     for (unsigned irpc = 0; irpc < event_->rpcHit_N; irpc++) {
       for (unsigned jrpc = irpc+1; jrpc < event_->rpcHit_N; jrpc++) {

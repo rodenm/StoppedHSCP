@@ -665,7 +665,8 @@ void HaloBackground::loop() {
     // Need eta distribution of halo events that pass all other cuts for final background count
     //std::vector<unsigned> minuscuts = {4,5};
     //if (cuts_.cutNMinusSome(minuscuts) && event_->cscSeg_N > 0) {
-    if (cuts_.cutNMinusOne(4) && event_->cscSeg_N > 0) {
+    //if (cuts_.cutNMinusOne(4) && event_->cscSeg_N > 0) {
+    if (cuts_.cutNMinusOne(4) && !cuts_.cutN(4)) {
       hMinusOneHaloEta_->Fill(jeteta);
       hMinusOneCscSegments_->Fill(event_->cscSeg_N);
       hMinusOneHaloR_->Fill(eventR);

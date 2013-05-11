@@ -9,7 +9,7 @@ from math import sqrt
 #
 # inputs [ livetime, haloR, cosmicNM1, final, haloErr]
 ##################################################
-input2012BCD = [ 987722, 14.8, 2089, 17, 6.5 ]  #haloErr=3.5(stat) + 8.2(sys)
+input2012BCD = [ 1011440, 7.8, 2096, 17, 1.4 ]  #haloErr=3.5(stat) + 8.2(sys)
 
 ###### OTHER YEARS ######
 # inputs [ livetime, haloR, cosmicNM1, final, haloErr]
