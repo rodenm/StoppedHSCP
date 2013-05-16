@@ -314,9 +314,24 @@ private:
 // this is the event loop
 void MCAnalysis::loop() {
 
+  // SETUP
+  hbeta_all_               = new TH1D("hbeta_all", "", 100, 0., 1.);
+  hbeta_hscp_              = new TH1D("hbeta_hscp", "", 100, 0., 1.);
+  hbeta_stopped_           = new TH1D("hbeta_stopped", "", 100, 0., 1.);
+  hbeta_intersect_         = new TH1D("hbeta_intersect", "", 100, 0., 1.);
+  hbeta_stopped_intersect_ = new TH1D("hbeta_stopped_intersect", "", 100, 0., 1.);
+  
+  // TODO: add general histogramer method
+  // dE, radial distribution, distribution of selected events, delta-phi between stopped points
+
+  reset();
+  nextEvent();
+
   // setup log files
+  std::ostringstream s;
+  s << event_->mcNeutralinoMass[0];
   std::string fd(outdir_);
-  fd+="/MCAnalysis_" +flavor_ + sparticleE_ + "_";
+  fd+="/MCAnalysis_" +flavor_ + sparticleE_ + "_neutralino" +s.str() + "_";
 
   if (doOverlap_) fd+="overlap.txt";
   else if (doEfficiencies_) fd+="efficiencies.txt";
@@ -332,21 +347,10 @@ void MCAnalysis::loop() {
   dumpFile_ << "Number of events   : " << maxEvents_ << std::endl;
   dumpFile_ << "Sparticle energy   : " << sparticleE_ << std::endl;
   dumpFile_ << "Sparticle flavor   : " << flavor_ << std::endl;
-    
-
-  // SETUP
-  hbeta_all_               = new TH1D("hbeta_all", "", 100, 0., 1.);
-  hbeta_hscp_              = new TH1D("hbeta_hscp", "", 100, 0., 1.);
-  hbeta_stopped_           = new TH1D("hbeta_stopped", "", 100, 0., 1.);
-  hbeta_intersect_         = new TH1D("hbeta_intersect", "", 100, 0., 1.);
-  hbeta_stopped_intersect_ = new TH1D("hbeta_stopped_intersect", "", 100, 0., 1.);
+  dumpFile_ << "Neutralino mass    : " << s.str() << std::endl;
   
-  // TODO: add general histogramer method
-  // dE, radial distribution, distribution of selected events, delta-phi between stopped points
 
-  reset();
-  nextEvent();
-  
+  // Begin analysis of the monte carlo events
   if (doOverlap_) {
     dumpFile_ << "\n*** Begining overlap study...\n" << std::endl;
     dumpFile_ << maxEvents_ << " events in ntuples." << std::endl;
