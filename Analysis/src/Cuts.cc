@@ -163,15 +163,6 @@ bool Cuts::vertexVeto() const {      // no vertex
 bool Cuts::haloVeto() const {        // no halo ID
   //return !(event_->beamHalo_CSCLoose) ;//&& geometryHaloCut();
 
-  // May 2013 - add Reco muon cut
-  /// bits 4-5-6-7 = CSC stations 1-2-3-4
-  bool hasCSCMuon = false;
-  for (unsigned i = 0; i < event_->mu_N; i++) {
-    if (((event_->muStationMask[i] & 0xf0)>> 4) > 0) hasCSCMuon = true;
-  }
-  //return (event_->cscSeg_N == 0 && !hasCSCMuon);
-  
-  // April 2013 - return to simple cut on CSCSegments
   return (event_->cscSeg_N == 0);
 
 
@@ -230,11 +221,11 @@ bool Cuts::cosmicVeto3() const {      // no cosmic muon
   //if (event_->mu_N==0 && event_->DTSegment_N < 3) { 
 
   // May 2013 - add back in some reco muon requirements
-  bool hasMuon = event_->mu_N > 0;
+  /**  bool hasMuon = event_->mu_N > 0;
 
   bool hasDTMuon = false;
   for (unsigned i = 0; i < event_->mu_N; i++) {
-    if ((event_->muStationMask[i] & 0x0f) > 0) hasDTMuon = true;
+  if ((event_->muStationMask[i] & 0x0f) > 0) hasDTMuon = true;
   }
 
   bool hasCSCMuon = false;
@@ -244,7 +235,8 @@ bool Cuts::cosmicVeto3() const {      // no cosmic muon
 
 
   if ((event_->DTSegment_N < 3) && (!hasMuon || hasCSCMuon)) {
-  //if (event_->DTSegment_N < 3) {
+  */  
+  if (event_->DTSegment_N < 3) { 
     unsigned nCloseRPCPairs = 0;
     for (unsigned irpc = 0; irpc < event_->rpcHit_N; irpc++) {
       for (unsigned jrpc = irpc+1; jrpc < event_->rpcHit_N; jrpc++) {
@@ -252,15 +244,18 @@ bool Cuts::cosmicVeto3() const {      // no cosmic muon
 	double deltaPhi = acos(cos(event_->rpcHitPhi[irpc] - event_->rpcHitPhi[jrpc]));
 	
 	// Require barrel hits to be localized in z, endcap hits to be localzied in phi
+	/**
 	if (deltaZ < 40.0 && event_->rpcHitRegion[irpc] == 0 && event_->rpcHitRegion[jrpc] == 0) {
 	  nCloseRPCPairs++;
 	}
 	if (deltaPhi < 0.4 && abs(event_->rpcHitRegion[irpc]) == 1 && abs(event_->rpcHitRegion[jrpc]) == 1) {
 	  nCloseRPCPairs++;
 	}
-	//if (deltaZ < 100.0 and deltaPhi < 0.5) {
-	//  nCloseRPCPairs++;
-	//}
+	
+	*/
+	if (deltaZ < 40.0 || deltaPhi < 0.2) {
+	  nCloseRPCPairs++;
+	}
       }
     }
     return (nCloseRPCPairs < 2);

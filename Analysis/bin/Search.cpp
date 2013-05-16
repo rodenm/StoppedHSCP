@@ -126,7 +126,10 @@ void Search::printCutValues(ostream& o) {
   if (event_->beamHalo_CSCLoose) halo = "CSCLoose";
   if (event_->beamHalo_CSCTight) halo = "CSCTight";
   o << "  beamHalo       = " << halo << "\t" << cuts_.haloVeto() << std::endl;
-  o << "  mu_N           = " << event_->mu_N << "\t\t" << cuts_.cosmicVeto() << std::endl;
+  o << "  mu_N           = " << event_->mu_N << "\t\t" << cuts_.cosmicVeto3() << std::endl;
+  o << "  cscSeg_N       = " << event_->cscSeg_N << "\t\t" << cuts_.haloVeto() << std::endl;
+  o << "  DTSegment_N    = " << event_->DTSegment_N << "\t\t" << cuts_.cosmicVeto3() << std::endl;
+  o << "  rpcHit_N       = " << event_->rpcHit_N << "\t\t" << cuts_.cosmicVeto3() << std::endl;
   std::string noise = (event_->noiseFilterResult ? "No" : "Yes");
   o << "  HCAL noise     = " << noise << "\t\t" << cuts_.hcalNoiseVeto() << std::endl;
   o << "  nTowerSameiPhi = " << event_->nTowerSameiPhi << "\t\t" << cuts_.towersIPhiCut() << std::endl;
