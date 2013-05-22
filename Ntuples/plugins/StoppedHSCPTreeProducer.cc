@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.43 2013/05/07 06:15:44 rodenm Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.44 2013/05/07 20:09:18 rodenm Exp $
 //
 //
 
@@ -972,7 +972,7 @@ void StoppedHSCPTreeProducer::doMC(const edm::Event& iEvent) {
   edm::Handle<edm::HepMCProduct> hepMCproduct;
   iEvent.getByLabel(hepProducer_, hepMCproduct);
   if (!hepMCproduct.isValid()) {
-    edm::LogError ("MissingProduct") << "Stage 1 HepMC product not found. Branch "
+    edm::LogError ("MissingProduct") << "Stage 1 HepMCproduct not found. Branch "
 				     << "will not be filled." << std::endl;
   } else {
     const HepMC::GenEvent* mc = hepMCproduct->GetEvent();
@@ -1067,7 +1067,7 @@ void StoppedHSCPTreeProducer::doMC(const edm::Event& iEvent) {
   edm::Handle<edm::HepMCProduct> hepMCDecayproduct;
   iEvent.getByLabel(hepDecayProducer_, hepMCDecayproduct);
   if (!hepMCDecayproduct.isValid()) {
-    edm::LogError ("MissingProduct") << "Stage 1 HepMC product not found. Branch "
+    edm::LogError ("MissingProduct") << "Stage 1 HepMC decay product not found. Branch "
 				     << "will not be filled." << std::endl;
   } else {
     const HepMC::GenEvent* mc = hepMCDecayproduct->GetEvent();
@@ -1086,10 +1086,16 @@ void StoppedHSCPTreeProducer::doMC(const edm::Event& iEvent) {
       int partId = fabs(p->pdg_id());
       
       // Save information about the daughter decay particles
-      int targetId = event_->mcSparticleId[0]%100;
-      std::cout << "mcSparticleId[0] = " << event_->mcSparticleId[0] 
-		<< "\tdaughter = " << event_->mcSparticleId[0]%100 
-		<< std::endl;
+      int targetId = 0;
+      if (event_->mcSparticle_N == 0) {
+	LogDebug ("StoppedHSCPTreeProducer") << "mcSparticle branch not filled. Cannot fill "
+					     << "mcDaughter branch."
+					     << std::endl;
+	continue;
+      } else {
+	targetId = event_->mcSparticleId[0]%100;
+      }
+
       if ((partId == targetId) && event_->mcDaughter_N < 1) {
 	math::XYZTLorentzVector momentum1(p->momentum().px(),
 					  p->momentum().py(),
