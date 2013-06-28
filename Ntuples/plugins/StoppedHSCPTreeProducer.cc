@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.44 2013/05/07 20:09:18 rodenm Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.45 2013/05/22 20:31:05 rodenm Exp $
 //
 //
 
@@ -928,12 +928,12 @@ void StoppedHSCPTreeProducer::doMC(const edm::Event& iEvent) {
   edm::Handle<std::vector<float> > times;
   iEvent.getByLabel (mcProducer_, "StoppedParticlesTime", times);
   if (!names.isValid() || !xs.isValid() || !ys.isValid() || !zs.isValid() || !times.isValid()){
-    edm::LogError ("MissingProduct") << "StoppedParticles* vectors not available. Branch "
-				     << "will not be filled." << std::endl;
+    edm::LogWarning ("MissingProduct") << "StoppedParticles* vectors not available. Branch "
+				       << "will not be filled." << std::endl;
   } else if (names->size() != xs->size() || xs->size() != ys->size() || ys->size() != zs->size()) {
-    edm::LogError ("StoppedHSCPTreeProducer") << "mismatch array sizes name/x/y/z:"
-					      << names->size() << '/' << xs->size() << '/' 
-					      << ys->size() << '/' << zs->size() << std::endl;
+    edm::LogWarning ("StoppedHSCPTreeProducer") << "mismatch array sizes name/x/y/z:"
+						<< names->size() << '/' << xs->size() << '/' 
+						<< ys->size() << '/' << zs->size() << std::endl;
   } else {
     if (names->size() > 0) {
       for (size_t i = 0; i < names->size(); ++i) {
@@ -972,7 +972,7 @@ void StoppedHSCPTreeProducer::doMC(const edm::Event& iEvent) {
   edm::Handle<edm::HepMCProduct> hepMCproduct;
   iEvent.getByLabel(hepProducer_, hepMCproduct);
   if (!hepMCproduct.isValid()) {
-    edm::LogError ("MissingProduct") << "Stage 1 HepMCproduct not found. Branch "
+    edm::LogWarning ("MissingProduct") << "Stage 1 HepMCproduct not found. Branch "
 				     << "will not be filled." << std::endl;
   } else {
     const HepMC::GenEvent* mc = hepMCproduct->GetEvent();
@@ -1067,7 +1067,7 @@ void StoppedHSCPTreeProducer::doMC(const edm::Event& iEvent) {
   edm::Handle<edm::HepMCProduct> hepMCDecayproduct;
   iEvent.getByLabel(hepDecayProducer_, hepMCDecayproduct);
   if (!hepMCDecayproduct.isValid()) {
-    edm::LogError ("MissingProduct") << "Stage 1 HepMC decay product not found. Branch "
+    edm::LogWarning ("MissingProduct") << "Stage 1 HepMC decay product not found. Branch "
 				     << "will not be filled." << std::endl;
   } else {
     const HepMC::GenEvent* mc = hepMCDecayproduct->GetEvent();
@@ -1076,7 +1076,7 @@ void StoppedHSCPTreeProducer::doMC(const edm::Event& iEvent) {
 							    << "to GenEvent" << std::endl;
     }
     // Uncomment this to print the full HepMC record for each event (for debugging or whatever)
-    mc->print( std::cout );
+    //mc->print( std::cout );
     
     // Iterate over the HepMC particles, look for the sparticles that produce r-hadrons,
     for ( HepMC::GenEvent::particle_const_iterator piter  = mc->particles_begin();
@@ -1308,7 +1308,7 @@ void StoppedHSCPTreeProducer::doEventInfo(const edm::Event& iEvent) {
   iEvent.getLuminosityBlock().getByLabel("lumiSummary",lumiSummary); 
   
   if (!lumiDetails.isValid()) {
-    edm::LogError("MissingProduct") << "Could not retreive LumiDetails collection for " 
+    edm::LogWarning("MissingProduct") << "Could not retreive LumiDetails collection for " 
 				    << event_->run << ":" << event_->lb << ":" << event_->id
 				    <<std::endl;
     return; 
@@ -1463,7 +1463,7 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
 							  errorCode);
   if (errorCode!=0) {
     event_->l1JetNoBptxPrescale=-999;
-    edm::LogError ("StoppedHSCPTreeProducer") << "Error retreiving l1JetNoBptxPrescale factor: " 
+    edm::LogWarning ("StoppedHSCPTreeProducer") << "Error retreiving l1JetNoBptxPrescale factor: " 
 					 << errorCode << std::endl;
   }
   
@@ -1472,7 +1472,7 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
 								errorCode);
   if (errorCode!=0) {
     event_->l1JetNoBptxNoHaloPrescale=-999;
-    edm::LogError ("StoppedHSCPTreeProducer") << "Error retreiving l1JetNoBptxNoHaloPrescale factor: " 
+    edm::LogWarning ("StoppedHSCPTreeProducer") << "Error retreiving l1JetNoBptxNoHaloPrescale factor: " 
 					 << errorCode << std::endl;
   }
 
@@ -1481,7 +1481,7 @@ void StoppedHSCPTreeProducer::doTrigger(const edm::Event& iEvent, const edm::Eve
 								  errorCode);
   if (errorCode!=0) {
     event_->l1Jet32NoBptxNoHaloPrescale=-999;
-    edm::LogError ("StoppedHSCPTreeProducer") << "Error retreiving l1Jet32NoBptxNoHaloPrescale factor: " 
+    edm::LogWarning ("StoppedHSCPTreeProducer") << "Error retreiving l1Jet32NoBptxNoHaloPrescale factor: " 
 					 << errorCode << std::endl;
   }
 
