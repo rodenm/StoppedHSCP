@@ -23,6 +23,8 @@
 
 <bin name="cosmics" file="Cosmics.cpp"/>
 
+<bin name="cosmicInefficiency" file="CosmicInefficiency.cpp"/>
+
 <bin name="search" file="Search.cpp"/>
 
 <bin name="noise" file="Noise.cpp"/>

@@ -4,6 +4,7 @@
 #include "StoppedHSCP/Ntuples/interface/LhcFills.h"
 #include "StoppedHSCP/Analysis/interface/BadRuns.h"
 
+#include "TMath.h"
 
 #include <iostream>
 #include <fstream>
@@ -253,9 +254,13 @@ bool Cuts::cosmicVeto3() const {      // no cosmic muon
 	}
 	
 	*/
-	if (deltaZ < 40.0 || deltaPhi < 0.2) {
+	
+	if (deltaZ < 40.0 || deltaPhi < 0.2 || deltaPhi > TMath::Pi()/2.)
 	  nCloseRPCPairs++;
-	}
+
+	//if (deltaZ < 40.0 || deltaPhi < 0.2) {
+	//nCloseRPCPairs++;
+	//}
       }
     }
     return (nCloseRPCPairs < 2);

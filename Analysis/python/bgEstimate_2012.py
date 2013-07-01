@@ -9,7 +9,7 @@ from math import sqrt
 #
 # inputs [ livetime, haloR, cosmicNM1, final, haloErr]
 ##################################################
-input2012BCD = [ 1011808, 12.8, 2096, 17, 2.5 ]  #haloErr=3.5(stat) + 8.2(sys)
+input2012BCD = [ 1011440, 9.25+0.28, 2096, 15, 1.67 ]  #haloErr=0.75(stat) + 0.92(sys)
 
 ###### OTHER YEARS ######
 # inputs [ livetime, haloR, cosmicNM1, final, haloErr]
@@ -29,7 +29,7 @@ input2012D   = [ 319376, 0.52, 740, 8,  0.05 ]
 input2012    = [ 1, 0, 1, 0, 0 ]
 
 # fixed numbers
-cosmicIneff = [ 0.00214, 0.00023 ]
+cosmicIneff = [ 0.00258, 0.00034 ]
 noiseRate   = [1.e-32/input2010A[0], 1./input2010A[0]]
 #noiseRate   = [ 1.e-32, 0. ]
 haloScaleFactor = [ 1.5/105, 0.7/105 ]
