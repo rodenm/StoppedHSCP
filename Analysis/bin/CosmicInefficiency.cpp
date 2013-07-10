@@ -112,7 +112,10 @@ void CosmicInefficiency::loop() {
       std::cout << "Processing " << i << "th event of " <<maxEvents_<< std::endl;
     }
 
-    if (event_->jet_N == 0) continue;
+    if (event_->cscSeg_N > 0 || event_->jet_N == 0 || event_->jetEta[0] > 1.0) {
+      nVetoed++;
+      continue;
+    }
 
     // Fill some histograms
     nJet_->Fill(event_->jet_N);
@@ -159,11 +162,7 @@ void CosmicInefficiency::loop() {
     //  1. cscSeg_N > 0
     //  2. jet_N == 0
     //  3. jetEta > 1.0
-    if (event_->cscSeg_N > 0 || event_->jet_N == 0 || event_->jetEta[0] > 1.0) {
-      nVetoed++;
-      continue;
-    }
-
+    
     if (cuts_.cutN(5)) b++;
     else a++;
   }

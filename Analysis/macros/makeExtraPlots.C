@@ -1,10 +1,11 @@
 
-void makeFinalPlots(double lumi=4560., double maxInstLumi=5000.)
+void makeExtraPlots(double lumi=4560., double maxInstLumi=5000.)
 {
   std::cout <<" Integrated lumi = "<<lumi<<"  max Inst. Lumi = "<<maxInstLumi<<std::endl;
   gROOT->ProcessLine(".X finalPlotStyle.C+");
-  gROOT->ProcessLine(".L LimitPlots.C+");
+  gROOT->ProcessLine(".L ExtraLimitPlots.C+");
   
+  /**
   gROOT->ProcessLine(".L modelIndLimit.C+");
   modelIndLimit(lumi,maxInstLumi);
   
@@ -22,12 +23,16 @@ void makeFinalPlots(double lumi=4560., double maxInstLumi=5000.)
 
   gROOT->ProcessLine(".L massPlot.C+");
   massPlot(lumi,maxInstLumi);
+  */
 
-  //  gROOT->ProcessLine(".L allInOneLifetime.C+");
-  //  allInOneLifetime(lumi,maxInstLumi);
+  gROOT->ProcessLine(".L allInOneLifetime.C+");
+  allInOneLifetime(lumi,maxInstLumi);
 
-  //  gROOT->ProcessLine(".L excludedRegion.C+");
-  //  excludedRegion(lumi,maxInstLumi);
+  gROOT->ProcessLine(".L gluinostopMassLifetime.C+");
+  gluinostopMassLifetime(lumi,maxInstLumi);
+
+  gROOT->ProcessLine(".L excludedRegion.C+");
+  excludedRegion(lumi,maxInstLumi);
 
 }
 

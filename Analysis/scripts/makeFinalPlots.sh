@@ -20,9 +20,14 @@ fi
 pwd=$PWD
 
 cp $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/makeFinalPlots.C $dataset/.
+cp $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/makeExtraPlots.C $dataset/.
 cp $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/finalPlotStyle.C $dataset/.
+
 cp $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/LimitPlots.h $dataset/.
 cp $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/LimitPlots.C $dataset/.
+cp $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/ExtraLimitPlots.h $dataset/.
+cp $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/ExtraLimitPlots.C $dataset/.
+
 cp $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/modelIndLimit.C $dataset/.
 cp $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/gluinoLimit.C $dataset/.
 cp $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/stopLimit.C $dataset/.
@@ -71,6 +76,9 @@ echo "lumi = "$lumi
 echo "maxInstLumi = "$maxInstLumi
 textcommand=makeFinalPlots.C"("$lumi,$maxInstLumi")"
 root -b -q -l $textcommand >& finalPlots.txt
+
+textcommand=makeExtraPlots.C"("$lumi,$maxInstLumi")"
+root -b -q -l $textcommand >& extraPlots.txt
 
 
 cd ..
