@@ -436,20 +436,31 @@ bool Cuts::cutNMinusSome(std::vector<unsigned int> some) const {
 
 
 // return result of a particular cut, after smearing for systematics
+// TRUE means the event passed the cuts, wasn't vetoed
 bool Cuts::cutNSyst(unsigned n, double smear) const 
 {
 
   switch (n) {
-  case 4:
-    if (event_->jet_N>0  && event_->jetEta[0]<1.3) {
+  case 7:
+    if (event_->jet_N>0  && fabs(event_->jetEta[0])<1.3) {
       double jetE_syst = event_->jetE[0] * smear;
       return jetE_syst>30.;
     }
     else return false;
-  case 5:
-    if (event_->jet_N>0  && event_->jetEta[0]<1.3) {
+  case 8:
+    if (event_->jet_N>0  && fabs(event_->jetEta[0])<1.0) {
       double jetE_syst = event_->jetE[0] * smear;
-      return jetE_syst>50.;
+      
+      //if (cutN(8) != (jetE_syst>70.) && smear > 1.0) {
+      //std::cout << names_.at(n).c_str() << "\t"
+      //	  << event_->jetE[0] << "\t" 
+      //	  << event_->jetEta[0] << "\t"
+      //	  << cutN(8) << "\t"
+      //	  << smear << "\t"
+      //	  << jetE_syst << "\t" 
+      //	  << (jetE_syst > 70.) << std::endl;
+      //}
+      return jetE_syst>70.;
     }
     else return false;
   default:

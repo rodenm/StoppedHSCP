@@ -226,6 +226,11 @@ void Search::loop() {
   std::ofstream lifetimeFile;
   lifetimeFile.open(lf.c_str());
 
+  std::string sf(outdir_);
+  sf+="/searchSummary.txt";
+  std::ofstream summaryFile;
+  summaryFile.open(sf.c_str());
+
   reset();
   nextEvent();
 
@@ -361,41 +366,41 @@ void Search::loop() {
   // SAVE HISTOGRAMS HERE
 
   // write logs
-  std::cout << "Runs analysed : " << std::endl;
+  summaryFile << "Runs analysed : " << std::endl;
   std::vector<unsigned long> runList = livetime_.runList();
   for (unsigned i=0; i!=runList.size(); ++i) {
-    std::cout << runList.at(i) << ",";
+    summaryFile << runList.at(i) << ",";
   }
-  std::cout << std::endl;
+  summaryFile << std::endl;
 
-  std::cout << "Fills analysed : " << std::endl;
+  summaryFile << "Fills analysed : " << std::endl;
   std::vector<unsigned long> fillList = livetime_.fillList();
   for (unsigned i=0; i!=fillList.size(); ++i) {
-    std::cout << fillList.at(i) << ",";
+    summaryFile << fillList.at(i) << ",";
   }
-  std::cout << std::endl;
+  summaryFile << std::endl;
 
-  std::cout << "Run\tLivetime " << std::endl;
+  summaryFile << "Run\tLivetime " << std::endl;
 
   for (unsigned i=0; i!=runList.size(); ++i) {
-    std::cout << runList.at(i) << "\t" << livetime_.getLivetimeByRun(runList.at(i)) << std::endl;
+    summaryFile << runList.at(i) << "\t" << livetime_.getLivetimeByRun(runList.at(i)) << std::endl;
   }
-  std::cout << std::endl;
+  summaryFile << std::endl;
 
   double livetime = livetime_.getTotalLivetime();
-  std::cout << "Total livetime : " << livetime << std::endl;
+  summaryFile << "Total livetime : " << livetime << std::endl;
 
-  std::cout << "Final rate : " << nSelected_/livetime
+  summaryFile << "Final rate : " << nSelected_/livetime
 	    << " +/- " << sqrt(nSelected_)/livetime
 	    << std::endl;
 
-  std::cout << std::endl;
+  summaryFile << std::endl;
 
   // write out cutflow
-  std::cout << "[TABLE border=1]" << std::endl;
+  summaryFile << "[TABLE border=1]" << std::endl;
   unsigned ntot = hncutcum_->GetBinContent(1);
-  if (isMC_) std::cout << "|Cut\t|N\t|cum %\t|N-1 % |-" << std::endl;
-  else std::cout << "|Cut\t|N\t|Rate (Hz) |N-1 % |N-1 (Hz)|-" << std::endl;
+  if (isMC_) summaryFile << "|Cut\t|N\t|cum %\t|N-1 % |-" << std::endl;
+  else summaryFile << "|Cut\t|N\t|Rate (Hz) |N-1 % |N-1 (Hz)|-" << std::endl;
   for (unsigned i=0; i<cuts_.nCuts(); ++i) {
     unsigned ncum = hncutcum_->GetBinContent(i+1);
     unsigned nind = hncutind_->GetBinContent(i+1);
@@ -410,9 +415,9 @@ void Search::loop() {
     else printf("|%i %s | %i | N/A | N/A | N/A |\n", i, label.c_str(), ncum);
     }
   }
-  std::cout << "[/TABLE]" << std::endl;
+  summaryFile << "[/TABLE]" << std::endl;
 
-  std::cout << std::endl;
+  summaryFile << std::endl;
 
 
   // save histograms

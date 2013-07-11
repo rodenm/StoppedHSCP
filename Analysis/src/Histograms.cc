@@ -385,14 +385,14 @@ void Histograms::fill(StoppedHSCPEvent& event) {
 
   // systematics
   fail=false;
-  double smear = 0.9;
+  double smear = 0.95;
   for (unsigned c=0; c<cuts_->nCuts(); c++) {
     if (!cuts_->cutNSyst(c, smear)) fail |= true;
     if (!fail) hncutsystlo_->Fill(c);
   }
 
   fail=false;
-  smear = 1.1;
+  smear = 1.05;
   for (unsigned c=0; c<cuts_->nCuts(); c++) {
     if (!cuts_->cutNSyst(c, smear)) fail |= true;
     if (!fail) hncutsysthi_->Fill(c);
@@ -564,6 +564,34 @@ void Histograms::save() {
   hncutsystlo_->Write("",TObject::kOverwrite);
   hncutsysthi_->Write("",TObject::kOverwrite);
   hncutsystg_->Write("",TObject::kOverwrite);
+
+  std::cout << "\n==================== JES uncertainty: LOW ======================" << std::endl;
+  unsigned ntot = hncutsystlo_->GetBinContent(1);
+  std::cout << "|Cut\t|N\t|cum %\t|N-1 |-" << std::endl;
+  for (unsigned i=0; i<cuts_->nCuts(); ++i) {
+    unsigned ncum = hncutsystlo_->GetBinContent(i+1);
+    std::string label = hncutsystlo_->GetXaxis()->GetBinLabel(i+1);
+    if (ntot>0) printf("|%i %s | %i | %.2e |\n", 
+		       i, label.c_str(), ncum, 100.*ncum/ntot);
+    
+  }
+
+  std::cout << "\n==================== JES uncertainty: HIGH ======================" << std::endl;
+  ntot = hncutsysthi_->GetBinContent(1);
+  std::cout << "|Cut\t|N\t|cum %\t|N-1 |-" << std::endl;
+  for (unsigned i=0; i<cuts_->nCuts(); ++i) {
+    unsigned ncum = hncutsysthi_->GetBinContent(i+1);
+    std::string label = hncutsysthi_->GetXaxis()->GetBinLabel(i+1);
+    if (ntot>0) printf("|%i %s | %i | %.2e |\n", 
+		       i, label.c_str(), ncum, 100.*ncum/ntot);
+    
+  }
+
+  //std::cout << "\n==================== JES uncertainty ======================" << std::endl;
+  //std::cout << "hncutsystlo_:\t" << hncutsystlo_->GetBinContent(16) << std::endl;
+  //std::cout << "hncutsysthi_:\t" << hncutsysthi_->GetBinContent(16) << std::endl;
+  //std::cout << "==================== JES uncertainty ======================" << std::endl;
+
 
   holdcutind_->Write("",TObject::kOverwrite);
   holdcutcum_->Write("",TObject::kOverwrite);
