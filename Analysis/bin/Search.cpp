@@ -318,14 +318,14 @@ void Search::loop() {
     
     // systematics
     fail=false;
-    double smear = 0.9;
+    double smear = 0.95;
     for (unsigned c=0; c<cuts_.nCuts(); c++) {
       if (!cuts_.cutNSyst(c, smear)) fail |= true;
       if (!fail) hncutsystlo_->Fill(c);
     }
     
     fail=false;
-    smear = 1.1;
+    smear = 1.05;
     for (unsigned c=0; c<cuts_.nCuts(); c++) {
       if (!cuts_.cutNSyst(c, smear)) fail |= true;
       if (!fail) hncutsysthi_->Fill(c);
@@ -366,59 +366,87 @@ void Search::loop() {
   // SAVE HISTOGRAMS HERE
 
   // write logs
-  summaryFile << "Runs analysed : " << std::endl;
+  std::cout << "Runs analysed : " << std::endl;
   std::vector<unsigned long> runList = livetime_.runList();
   for (unsigned i=0; i!=runList.size(); ++i) {
-    summaryFile << runList.at(i) << ",";
+    std::cout << runList.at(i) << ",";
   }
-  summaryFile << std::endl;
+  std::cout << std::endl;
 
-  summaryFile << "Fills analysed : " << std::endl;
+  std::cout << "Fills analysed : " << std::endl;
   std::vector<unsigned long> fillList = livetime_.fillList();
   for (unsigned i=0; i!=fillList.size(); ++i) {
-    summaryFile << fillList.at(i) << ",";
+    std::cout << fillList.at(i) << ",";
   }
-  summaryFile << std::endl;
+  std::cout << std::endl;
 
-  summaryFile << "Run\tLivetime " << std::endl;
+  std::cout << "Run\tLivetime " << std::endl;
 
   for (unsigned i=0; i!=runList.size(); ++i) {
-    summaryFile << runList.at(i) << "\t" << livetime_.getLivetimeByRun(runList.at(i)) << std::endl;
+    std::cout << runList.at(i) << "\t" << livetime_.getLivetimeByRun(runList.at(i)) << std::endl;
   }
-  summaryFile << std::endl;
+  std::cout << std::endl;
 
   double livetime = livetime_.getTotalLivetime();
-  summaryFile << "Total livetime : " << livetime << std::endl;
+  std::cout << "Total livetime : " << livetime << std::endl;
 
-  summaryFile << "Final rate : " << nSelected_/livetime
+  std::cout << "Final rate : " << nSelected_/livetime
 	    << " +/- " << sqrt(nSelected_)/livetime
 	    << std::endl;
 
-  summaryFile << std::endl;
+  std::cout << std::endl;
 
   // write out cutflow
-  summaryFile << "[TABLE border=1]" << std::endl;
+  std::cout << "[TABLE border=1]" << std::endl;
   unsigned ntot = hncutcum_->GetBinContent(1);
-  if (isMC_) summaryFile << "|Cut\t|N\t|cum %\t|N-1 % |-" << std::endl;
-  else summaryFile << "|Cut\t|N\t|Rate (Hz) |N-1 % |N-1 (Hz)|-" << std::endl;
+  if (isMC_) std::cout << "|Cut\t|N\t|cum %\t|N-1 % |-" << std::endl;
+  else std::cout << "|Cut\t|N\t|Rate (Hz) |N-1 % |N-1 (Hz)|-" << std::endl;
   for (unsigned i=0; i<cuts_.nCuts(); ++i) {
     unsigned ncum = hncutcum_->GetBinContent(i+1);
     unsigned nind = hncutind_->GetBinContent(i+1);
     unsigned nnmo = hnminus1cut_->GetBinContent(i+1);
     std::string label = hncutcum_->GetXaxis()->GetBinLabel(i+1);
     if (isMC_) {
-      if (ntot>0) printf("|%i %s | %i | %.2e | %.2e |\n", i, label.c_str(), ncum, 100.*ncum/ntot, 100.*nnmo/ntot);
-      else printf("|%i %s | %i | N/A | N/A |\n", i, label.c_str(), ncum);
+      if (ntot>0) 
+	std::cout << "| " << i << " " << label.c_str() << " | " 
+		  << ncum << " | " << 100.*ncum/ntot << " | " << 100.*nnmo/ntot << " |\n";
+      else 
+	std::cout << "| " << i << " " << label.c_str() << " | " 
+		  << ncum << " | N/A | N/A |\n";
     }
     else {
-      if (ntot>0) printf("|%i %s | %i | %.2e +/- %.2e | %i | %.2e +/- %.2e |-\n", i, label.c_str(), ncum, ncum/livetime, sqrt(ncum)/livetime, nnmo, nnmo/livetime, sqrt(nnmo)/livetime);
-    else printf("|%i %s | %i | N/A | N/A | N/A |\n", i, label.c_str(), ncum);
+      if (ntot>0) 
+	printf("|%i %s | %i | %.2e +/- %.2e | %i | %.2e +/- %.2e |-\n", 
+	       i, label.c_str(), ncum, ncum/livetime, sqrt(ncum)/livetime, nnmo, nnmo/livetime, sqrt(nnmo)/livetime);
+      else 
+	printf("|%i %s | %i | N/A | N/A | N/A |\n", i, label.c_str(), ncum);
     }
   }
-  summaryFile << "[/TABLE]" << std::endl;
+  std::cout << "[/TABLE]" << std::endl;
 
-  summaryFile << std::endl;
+  std::cout << std::endl;
 
+  std::cout << "\n==================== JES uncertainty: LOW ======================" << std::endl;
+   ntot = hncutsystlo_->GetBinContent(1);
+  std::cout << "|Cut\t|N\t|cum %\t|N-1 |-" << std::endl;
+  for (unsigned i=0; i<cuts_.nCuts(); ++i) {
+    unsigned ncum = hncutsystlo_->GetBinContent(i+1);
+    std::string label = hncutsystlo_->GetXaxis()->GetBinLabel(i+1);
+    if (ntot>0) printf( "|%i %s | %i | %.2e |\n",
+                       i, label.c_str(), ncum, 100.*ncum/ntot);
+
+  }
+
+  std::cout << "\n==================== JES uncertainty: HIGH ======================" << std::endl;
+  ntot = hncutsysthi_->GetBinContent(1);
+  std::cout << "|Cut\t|N\t|cum %\t|N-1 |-" << std::endl;
+  for (unsigned i=0; i<cuts_.nCuts(); ++i) {
+    unsigned ncum = hncutsysthi_->GetBinContent(i+1);
+    std::string label = hncutsysthi_->GetXaxis()->GetBinLabel(i+1);
+    if (ntot>0) printf("|%i %s | %i | %.2e |\n",
+                       i, label.c_str(), ncum, 100.*ncum/ntot);
+
+  }
 
   // save histograms
   hncutind_->Write("",TObject::kOverwrite);
@@ -517,6 +545,7 @@ void Search::loop() {
   pickFile.close();
   dumpFile.close();
   lifetimeFile.close();
+  summaryFile.close();
   //  paramFile.close();
 
 

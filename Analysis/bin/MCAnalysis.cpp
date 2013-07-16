@@ -143,7 +143,8 @@ public:
       ("hscp-eventlist,e", po::value<std::string>(), "Text file with list of selected events from HSCP analysis")
       ("stopped-eventlist,f", po::value<std::string>(), "Text file with list of selected events from stopped HSCP analysis")
       ("energy", po::value<std::string>(), "Energy of the gluino/stop/stau")
-      ("flavor", po::value<std::string>(), "Flavor of the sparticle (gluino/stop/stau)");
+      ("flavor", po::value<std::string>(), "Flavor of the sparticle (gluino/stop/stau)")
+      ("nStage1", po::value<unsigned>(), "Number of stage 1 events (usually 50000)");
 
     po::variables_map vm;
     po::store(po::command_line_parser(argc, argv).options(desc).allow_unregistered().run(), vm);
@@ -180,6 +181,13 @@ public:
     if (vm.count("doEfficiencies")) {
       doEfficiencies_ = true;
     }
+    if (vm.count("nStage1")) {
+      nStage1_ = vm["nStage1"].as<unsigned>();
+    } else {
+      std::cout << "Must provide number of stage 1 events with --nStage1" <<std::endl;
+      exit(3);
+    }
+
     intersect_count_ = 0;
     
     trigger_ = 0;
@@ -212,18 +220,20 @@ public:
     glueball_count_ = 0;
     selected_count_ = 0;
     selected_indetector_count_ = 0;
+
   
-    // TODO: obviously this is not the best way.But it is ok that the options are xor:
-    //       since the different options take different input files, they can't
-    //       be run at the same time.
-    if (doOverlap_)
-      ofilename_ = "MCAnalysis_" +flavor_ + sparticleE_ + "_Overlaphists.root"; 
-    else if (doEfficiencies_)
-      ofilename_ = "MCAnalysis_" +flavor_ + sparticleE_ + "_Efficiencyhists.root"; 
-    else
-      ofilename_ = "MCAnalysis_" +flavor_ + sparticleE_ + "_hists.root";
+  // TODO: obviously this is not the best way.But it is ok that the options are xor:
+  //       since the different options take different input files, they can't
+  //       be run at the same time.
+  if (doOverlap_)
+    ofilename_ = "MCAnalysis_" +flavor_ + sparticleE_  + "_overlapHists.root"; 
+  else if (doEfficiencies_) 
+    ofilename_ = "MCAnalysis_" +flavor_ + sparticleE_ + "_efficiencyHists.root"; 
+  else
+    ofilename_ = "MCAnalysis_" +flavor_ + sparticleE_ + "_hists.root";
 
   }
+     
   
   ~MCAnalysis() { };
   
@@ -258,6 +268,7 @@ private:
 
   std::string sparticleE_;
   std::string flavor_;
+  int nStage1_;
 
   std::string eventList_hscp_;
   std::string eventList_stopped_;
@@ -306,7 +317,10 @@ private:
 
   // Output file 
   std::ofstream dumpFile_;
+  std::ofstream tableFile_;
+
   std::string commandLine_;
+  std::ostringstream neutralinoMass_;
 };
 
 #endif
@@ -327,15 +341,24 @@ void MCAnalysis::loop() {
   reset();
   nextEvent();
 
-  // setup log files
-  std::ostringstream s;
-  s << event_->mcNeutralinoMass[0];
-  std::string fd(outdir_);
-  fd+="/MCAnalysis_" +flavor_ + sparticleE_ + "_neutralino" +s.str() + "_";
+  neutralinoMass_ << event_->mcNeutralinoMass[0];
 
-  if (doOverlap_) fd+="overlap.txt";
-  else if (doEfficiencies_) fd+="efficiencies.txt";
-  else fd+="other.txt";
+  // setup log files
+  std::string fd(outdir_);
+  std::string td(outdir_);
+  fd+="/MCAnalysis_" +flavor_ + sparticleE_ + "_neutralino" +neutralinoMass_.str() + "_";
+  td+="/MCAnalysis_" +flavor_ + sparticleE_ + "_neutralino" +neutralinoMass_.str() + "_";
+
+  if (doOverlap_) 
+    fd+="overlap.txt";
+  else if (doEfficiencies_) {
+    fd+="efficiencies.txt";
+    td+="efficiencyTable.txt";
+    tableFile_.open(td.c_str());
+  }
+  else 
+    fd+="other.txt";
+
   dumpFile_.open(fd.c_str());
   dumpFile_ << "Output from mcAnalysis" << std::endl << std::endl;
   dumpFile_ << "Command line       : " << commandLine_.c_str();
@@ -347,7 +370,7 @@ void MCAnalysis::loop() {
   dumpFile_ << "Number of events   : " << maxEvents_ << std::endl;
   dumpFile_ << "Sparticle energy   : " << sparticleE_ << std::endl;
   dumpFile_ << "Sparticle flavor   : " << flavor_ << std::endl;
-  dumpFile_ << "Neutralino mass    : " << s.str() << std::endl;
+  dumpFile_ << "Neutralino mass    : " << neutralinoMass_.str() << std::endl;
   
 
   // Begin analysis of the monte carlo events
@@ -410,6 +433,11 @@ void MCAnalysis::loop() {
     dumpFile_ << "no r-baryon (stopped in EB+HB) count = " << not_rbaryon_inhbeb_count_ << std::endl;
     dumpFile_ << "glueball count = " << glueball_count_ << std::endl << std::endl;
     
+    tableFile_ << flavor_ << " " << sparticleE_ << "\t" << neutralinoMass_.str() << "\t"
+	       << eb_count_+hb_count_ << "\t" << reco_eb_count_+reco_hb_count_ << "\t"
+	       << 1.0*(eb_count_+hb_count_)/nStage1_ << "\t" 
+	       << 1.0*(reco_eb_count_+reco_hb_count_)/(eb_count_+hb_count_)
+	       << std::endl;
   }
 
   if (doOverlap_) {
