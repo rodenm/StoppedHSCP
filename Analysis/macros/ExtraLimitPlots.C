@@ -1,19 +1,16 @@
-
-
 #include "ExtraLimitPlots.h"
 
 
 ExtraLimitPlots::ExtraLimitPlots(double tpLumi) :
-  tpLumi_(tpLumi)
-{
-
-	readToyFile(std::string("toymc.txt"));
-	readTimeProfileFile(std::string("time_profile.txt"));
-
-	readGluinoData(std::string("mcGluino.txt"));
-  	readStopData(std::string("mcStop.txt"));
-	readStauData(std::string("mcStau.txt"));
-
+  tpLumi_(tpLumi) {
+  
+  readToyFile(std::string("toymc.txt"));
+  readTimeProfileFile(std::string("time_profile.txt"));
+  
+  readGluinoData(std::string("mcGluino.txt"));
+  readStopData(std::string("mcStop.txt"));
+  readStauData(std::string("mcStau.txt"));
+  
 }
 
 ExtraLimitPlots::~ExtraLimitPlots() {
@@ -223,10 +220,10 @@ void ExtraLimitPlots::calculateCrossSections(unsigned gluinoIndex,
 	    << " recoEff=" << stopEffReco[stopIndex] << std::endl;
 
   std::cout << "Using stau mass point " << stauIndex << std::endl;
-  std::cout << "  mstau=" << stauMass[stauIndex] 
-	    << " mchi0=" << stauChi0Mass[stauIndex] 
-	    << " stopEff=" << stauEffStop[stauIndex]
-	    << " recoEff=" << stauEffReco[stauIndex] << std::endl;
+    std::cout << "  mstau=" << stauMass[stauIndex] 
+	      << " mchi0=" << stauChi0Mass[stauIndex] 
+	      << " stopEff=" << stauEffStop[stauIndex]
+	      << " recoEff=" << stauEffReco[stauIndex] << std::endl;
   
   std::cout << "Lifetime,XSlimit,ExpLimit,-1sigma,+1sigma,-2sigma,+2sigma" << std::endl;
 
@@ -271,7 +268,8 @@ void ExtraLimitPlots::calculateCrossSections(unsigned gluinoIndex,
     xsProdExpLimitLo2SigToyStop.push_back( (toyExpLimit[l]-toyExpLimitLo2Sig[l]) / (toyEffLumi[l] * stopEffStopCM[stopIndex] * stopEffReco[stopIndex]) );
     xsProdExpLimitHi2SigToyStop.push_back( (toyExpLimitHi2Sig[l]-toyExpLimit[l]) / (toyEffLumi[l] * stopEffStopCM[stopIndex] * stopEffReco[stopIndex]) );
     
-    // expected limit and bands - stau
+    // expected limit and bands - stau 
+    
     xsProdExpLimitToyStau.push_back( toyExpLimit[l] / (toyEffLumi[l] * stauEffStop[stauIndex] * stauEffReco[stauIndex]) );
     xsProdExpLimitLo1SigToyStau.push_back( (toyExpLimit[l]-toyExpLimitLo1Sig[l]) / (toyEffLumi[l] * stauEffStop[stauIndex] * stauEffReco[stauIndex]) );
     xsProdExpLimitHi1SigToyStau.push_back( (toyExpLimitHi1Sig[l]-toyExpLimit[l]) / (toyEffLumi[l] * stauEffStop[stauIndex] * stauEffReco[stauIndex]) );

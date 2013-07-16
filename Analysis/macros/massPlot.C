@@ -65,7 +65,7 @@ void massPlot(double lumi=-1., double maxInstLumi=-1.) {
   	canvas->SetLogy();
   
   	TH1 * h;
-  	h = canvas->DrawFrame(300., .1, 1000., 5e2);
+  	h = canvas->DrawFrame(300., .01, 1000., 1e2);
   	h->SetTitle("Beamgap Expt;m_{HSCP} [GeV/c^{2}]; Stopped HSCP Cross Section #times BR [pb]");
   	//h->SetTitle("Beamgap Expt;m_{#tilde{g}} [GeV/c^{2}]; #sigma(pp #rightarrow #tilde{g}#tilde{g}) #times BR(#tilde{g} #rightarrow g#tilde{#chi}^{0}) [pb]");
   

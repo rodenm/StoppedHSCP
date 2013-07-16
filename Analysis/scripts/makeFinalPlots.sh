@@ -36,6 +36,11 @@ cp $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/gluinoMass.C $dataset/.
 cp $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/stopMass.C   $dataset/.
 cp $CMSSW_BASE/src/StoppedHSCP/Analysis/data/mcGluino.txt $dataset/.
 cp $CMSSW_BASE/src/StoppedHSCP/Analysis/data/mcStop.txt $dataset/.
+cp $CMSSW_BASE/src/StoppedHSCP/Analysis/data/mcStau.txt $dataset/.
+
+cp $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/allInOneLifetime.C $dataset/.
+cp $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/gluinostopMassLifetime.C $dataset/.
+cp $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/excludedRegion.C $dataset/.
 
 cp $dataset/toymc/summary.txt $dataset/toymc.txt
 
@@ -48,6 +53,9 @@ sed s/=MAXINSTLUMI/=$maxInstLumi/ <modelIndLimit.C > modelIndLimitTEMP.C
 sed s/=MAXINSTLUMI/=$maxInstLumi/ <massPlot.C > massPlotTEMP.C
 sed s/=MAXINSTLUMI/=$maxInstLumi/ <gluinoMass.C > gluinoMassTEMP.C
 sed s/=MAXINSTLUMI/=$maxInstLumi/ <stopMass.C > stopMassTEMP.C
+sed s/=MAXINSTLUMI/=$maxInstLumi/ <allInOneLifetime.C > allInOneLifetimeTEMP.C
+sed s/=MAXINSTLUMI/=$maxInstLumi/ <gluinostopMassLifetime.C > gluinostopMassLifetimeTEMP.C
+sed s/=MAXINSTLUMI/=$maxInstLumi/ <excludedRegion.C > excludedRegionTEMP.C
 
 mv stopLimitTEMP.C stopLimit.C
 mv gluinoLimitTEMP.C gluinoLimit.C
@@ -55,6 +63,9 @@ mv modelIndLimitTEMP.C modelIndLimit.C
 mv massPlotTEMP.C massPlot.C
 mv gluinoMassTEMP.C gluinoMass.C
 mv stopMassTEMP.C stopMass.C
+mv allInOneLifetimeTEMP.C allInOneLifetime.C
+mv gluinostopMassLifetimeTEMP.C gluinostopMassLifetime.C
+mv excludedRegionTEMP.C excludedRegion.C
 
 
 # Replace LUMI in various files
@@ -64,6 +75,9 @@ sed s/=LUMI/=$lumi/ <modelIndLimit.C > modelIndLimitTEMP.C
 sed s/=LUMI/=$lumi/ <massPlot.C > massPlotTEMP.C
 sed s/=LUMI/=$lumi/ <gluinoMass.C > gluinoMassTEMP.C
 sed s/=LUMI/=$lumi/ <stopMass.C > stopMassTEMP.C
+sed s/=LUMI/=$lumi/ <allInOneLifetime.C > allInOneLifetimeTEMP.C
+sed s/=LUMI/=$lumi/ <gluinostopMassLifetime.C > gluinostopMassLifetimeTEMP.C
+sed s/=LUMI/=$lumi/ <excludedRegion.C > excludedRegionTEMP.C
 
 mv stopLimitTEMP.C stopLimit.C
 mv gluinoLimitTEMP.C gluinoLimit.C
@@ -71,6 +85,9 @@ mv modelIndLimitTEMP.C modelIndLimit.C
 mv massPlotTEMP.C massPlot.C
 mv gluinoMassTEMP.C gluinoMass.C
 mv stopMassTEMP.C stopMass.C
+mv allInOneLifetimeTEMP.C allInOneLifetime.C
+mv gluinostopMassLifetimeTEMP.C gluinostopMassLifetime.C
+mv excludedRegionTEMP.C excludedRegion.C
 
 echo "lumi = "$lumi
 echo "maxInstLumi = "$maxInstLumi
