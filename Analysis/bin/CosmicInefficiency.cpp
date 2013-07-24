@@ -91,7 +91,7 @@ void CosmicInefficiency::loop() {
   nDTSegments_ = new TH1D("nDTSegments", "DTSegments/event", 25, 0, 25);
   nRPCHits_ = new TH1D("nRPCHits", "RPCHits/event", 20, 0, 20);
   rpcDeltaPhi_ = new TH1D("rpcDeltaPhi", "RPC #delta(#phi)", 32, 0, 3.2);
-  rpcDeltaZ_ = new TH1D("rpcDetlaZ", "RPC #Delta(z)", 100, 0, 1000);
+  rpcDeltaZ_ = new TH1D("rpcDetlaZ", "RPC #Delta(z)", 10, 0, 1000);
   rpcDeltaZ_Min_ = new TH1D("rpcDetlaZ_Min", "Min RPC #Delta(z)", 100, 0, 1000);
   rpcNClosePairs_ = new TH1D("rpcNClosePairs", "N(close RPC pairs)", 25, 0, 25); 
   
@@ -142,8 +142,10 @@ void CosmicInefficiency::loop() {
 	   }
 	   
 	*/
-	rpcDeltaPhi_->Fill(deltaPhi);
-	rpcDeltaZ_->Fill(deltaZ);
+	if (event_->rpcHit_N > 2 && event_->DTSegment_N < 3) { // only plot these values if event passes all other cuts but RPC
+	  rpcDeltaPhi_->Fill(deltaPhi);
+	  rpcDeltaZ_->Fill(deltaZ);
+	}
 	
 	if (deltaZ < 40.0 || deltaPhi < 0.2) {
 	  nCloseRPCPairs++;
@@ -155,7 +157,8 @@ void CosmicInefficiency::loop() {
       }
     }
     rpcNClosePairs_->Fill(nCloseRPCPairs);
-    rpcDeltaZ_Min_->Fill(minDeltaZ);
+    if (event_->rpcHit_N > 2 && event_->DTSegment_N < 3)
+      rpcDeltaZ_Min_->Fill(minDeltaZ);
 
     // Using a "lose" N-1 requirement because of low statistics. 
     // Exclude events with OR of:
