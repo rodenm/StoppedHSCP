@@ -54,7 +54,14 @@ file = open(os.environ['CMSSW_BASE']+'/src/StoppedHSCP/ToyMC/data/lifetimes.txt'
 for line in file:
     lifetimes.append(float(line))
 file.close()
-file = open(ddir+'/lifetimes.txt')
+
+try:
+    file = open(ddir+'/lifetimes.txt')
+except IOError:
+    file = open(ddir+"searchLifetimes.txt")
+else:
+    file = open(ddir+"searchLifetimes.txt")
+    
 for line in file:
     if (float(line)>7.5e-8):
         lifetimes.append(float(line))
