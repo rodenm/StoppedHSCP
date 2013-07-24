@@ -142,7 +142,7 @@ public:
       ("doEfficiencies", "Print info needed to calculate efficiencies")
       ("hscp-eventlist,e", po::value<std::string>(), "Text file with list of selected events from HSCP analysis")
       ("stopped-eventlist,f", po::value<std::string>(), "Text file with list of selected events from stopped HSCP analysis")
-      ("energy", po::value<std::string>(), "Energy of the gluino/stop/stau")
+      ("mass", po::value<std::string>(), "Mass of the gluino/stop/stau")
       ("flavor", po::value<std::string>(), "Flavor of the sparticle (gluino/stop/stau)")
       ("nStage1", po::value<unsigned>(), "Number of stage 1 events (usually 50000)");
 
@@ -160,13 +160,13 @@ public:
       std::cout << "Stopped event list : " << eventList_stopped_ << std::endl;
     }
 
-    // TODO: set sparticleE_ & flavor_ by reading the ntuples
+    // TODO: set sparticleM_ & flavor_ by reading the ntuples
     // TODO: for now, need to require these fields are filled before proceeding
-    //sparticleE_ = "700";
+    //sparticleM_ = "700";
     //flavor_ = std::string("gluino");
     if (vm.count("energy")) {
-      sparticleE_ = vm["energy"].as<std::string>();
-      std::cout << "Sparticle energy   : " << sparticleE_ << std::endl;
+      sparticleM_ = vm["energy"].as<std::string>();
+      std::cout << "Sparticle mass   : " << sparticleM_ << std::endl;
     }
     if (vm.count("flavor")) {
       flavor_ = vm["flavor"].as<std::string>();
@@ -221,16 +221,22 @@ public:
     selected_count_ = 0;
     selected_indetector_count_ = 0;
 
+    selected_systhi_ = 0;
+    selected_systlo_ = 0;
+    jes_hi_ = 1.05;
+    jes_lo_ = 0.95;
+
+
   
   // TODO: obviously this is not the best way.But it is ok that the options are xor:
   //       since the different options take different input files, they can't
   //       be run at the same time.
   if (doOverlap_)
-    ofilename_ = "MCAnalysis_" +flavor_ + sparticleE_  + "_overlapHists.root"; 
+    ofilename_ = "MCAnalysis_" +flavor_ + sparticleM_  + "_overlapHists.root"; 
   else if (doEfficiencies_) 
-    ofilename_ = "MCAnalysis_" +flavor_ + sparticleE_ + "_efficiencyHists.root"; 
+    ofilename_ = "MCAnalysis_" +flavor_ + sparticleM_ + "_efficiencyHists.root"; 
   else
-    ofilename_ = "MCAnalysis_" +flavor_ + sparticleE_ + "_hists.root";
+    ofilename_ = "MCAnalysis_" +flavor_ + sparticleM_ + "_hists.root";
 
   }
      
@@ -266,7 +272,7 @@ private:
 
   int intersect_count_;
 
-  std::string sparticleE_;
+  std::string sparticleM_;
   std::string flavor_;
   int nStage1_;
 
@@ -307,6 +313,12 @@ private:
   int selected_count_;
   int selected_indetector_count_;
 
+  // For JES systematic uncertainties
+  int selected_systlo_;
+  int selected_systhi_;
+  int jes_lo_;
+  int jes_hi_;
+
   // TODO: find a way to handle the situation where hscp has more than one gluino listed. 
   // Stupid option: add a second map/make the second arg an array (for both maps)
   map<EventInfo, double> hscp_phimap_;
@@ -346,8 +358,8 @@ void MCAnalysis::loop() {
   // setup log files
   std::string fd(outdir_);
   std::string td(outdir_);
-  fd+="/MCAnalysis_" +flavor_ + sparticleE_ + "_neutralino" +neutralinoMass_.str() + "_";
-  td+="/MCAnalysis_" +flavor_ + sparticleE_ + "_neutralino" +neutralinoMass_.str() + "_";
+  fd+="/MCAnalysis_" +flavor_ + sparticleM_ + "_neutralino" +neutralinoMass_.str() + "_";
+  td+="/MCAnalysis_" +flavor_ + sparticleM_ + "_neutralino" +neutralinoMass_.str() + "_";
 
   if (doOverlap_) 
     fd+="overlap.txt";
@@ -368,9 +380,11 @@ void MCAnalysis::loop() {
   for (std::vector<std::string>::iterator file=ifiles_.begin(); file!=ifiles_.end(); ++file)
     dumpFile_ << (*file) << std::endl;
   dumpFile_ << "Number of events   : " << maxEvents_ << std::endl;
-  dumpFile_ << "Sparticle energy   : " << sparticleE_ << std::endl;
+  dumpFile_ << "Sparticle energy   : " << sparticleM_ << std::endl;
   dumpFile_ << "Sparticle flavor   : " << flavor_ << std::endl;
-  dumpFile_ << "Neutralino mass    : " << neutralinoMass_.str() << std::endl;
+  dumpFile_ << "Neutralino mass    : " << neutralinoMass_.str() << std::endl << std::endl;
+
+  dumpFile_ << "Output files       : \n\t" << fd.c_str() << "\n\t" << td.c_str() << std::endl;
   
 
   // Begin analysis of the monte carlo events
@@ -397,6 +411,7 @@ void MCAnalysis::loop() {
 
     if (doOverlap_) overlapStudy();
     else if (doEfficiencies_) efficiencyStudy();
+
   }
 
   // POST-LOOP OUTPUT
@@ -433,10 +448,12 @@ void MCAnalysis::loop() {
     dumpFile_ << "no r-baryon (stopped in EB+HB) count = " << not_rbaryon_inhbeb_count_ << std::endl;
     dumpFile_ << "glueball count = " << glueball_count_ << std::endl << std::endl;
     
-    tableFile_ << flavor_ << " " << sparticleE_ << "\t" << neutralinoMass_.str() << "\t"
+    tableFile_ << flavor_ << " " << sparticleM_ << "\t" << neutralinoMass_.str() << "\t"
 	       << eb_count_+hb_count_ << "\t" << reco_eb_count_+reco_hb_count_ << "\t"
 	       << 1.0*(eb_count_+hb_count_)/nStage1_ << "\t" 
 	       << 1.0*(reco_eb_count_+reco_hb_count_)/(eb_count_+hb_count_)
+	       << selected_systlo_*1.0/(reco_eb_count_+reco_hb_count_) << "\t" 
+	       << selected_systhi_*1.0/(reco_eb_count_+reco_hb_count_)
 	       << std::endl;
   }
 
@@ -480,7 +497,7 @@ void MCAnalysis::loop() {
     leg->SetHeader("CMS Simulation");
     leg->SetFillColor(kWhite);
     leg->Draw();
-    std::string pdfname = "MCAnalysis_" +flavor_ + sparticleE_ + "_overlaphists.pdf";
+    std::string pdfname = "MCAnalysis_" +flavor_ + sparticleM_ + "_overlaphists.pdf";
     c2.SaveAs(pdfname.c_str());
   }
   
@@ -629,6 +646,11 @@ void MCAnalysis::efficiencyStudy() {
     if (cuts_.triggerCut()) eb_trigger_++;
     if (abs(pid) % 100000 < 90000 && flavor_ == "gluino") // Not an R-baryon
       not_rbaryon_inhbeb_count_++;
+    // calculate change in selection efficiency corresponding to JES uncertainty - EB
+    if (cuts_.cutNMinusOne(8) && event_->jetEta[0]<1.0) {
+      if (event_->jetE[0]*jes_lo_ > 200.) selected_systlo_++;
+      if (event_->jetE[0]*jes_hi_ > 200.) selected_systhi_++;
+    }
   } else if (fabs(z)<376.0 && fabs(z) >= 300.0 && fabs(particle_eta)>=1.479 && fabs(particle_eta)<3.0) { // EE
     ee_count_++;
     if (cuts_.cut()) reco_ee_count_++;
@@ -638,6 +660,11 @@ void MCAnalysis::efficiencyStudy() {
     if (cuts_.triggerCut()) hb_trigger_++;
     if (abs(pid) % 100000 < 90000 && flavor_ == "gluino") // Not an R-baryon
       not_rbaryon_inhbeb_count_++;
+    // calculate change in selection efficiency corresponding to JES uncertainty - HB
+    if (cuts_.cutNMinusOne(8) && event_->jetEta[0]<1.0) {
+      if (event_->jetE[0]*jes_lo_ > 200.) selected_systlo_++;
+      if (event_->jetE[0]*jes_hi_ > 200.) selected_systhi_++;
+    }
   } else if (fabs(z)<560.0 && fabs(z)>=376.0 && fabs(particle_eta)>=1.3 && fabs(particle_eta)<3.0) { // HE
     he_count_++;
     if (cuts_.cut()) reco_he_count_++;
