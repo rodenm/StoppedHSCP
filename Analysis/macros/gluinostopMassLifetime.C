@@ -72,7 +72,7 @@ public:
 void gluinostopMassLifetime(double lumi=4560., double maxInstLumi=5000.) {
 
   ExtraLimitPlots plots(lumi);
-  plots.calculateCrossSections(12,3,3,39,9);
+  plots.calculateCrossSections(7,4,3,39,9);
 
   // xsecs as extracted from nllfast http://web.physik.rwth-aachen.de/service/wiki/bin/view/Main/SquarksandGluinos
   // gluino (m_squark=m_gluino):  "nllfast gg mstw <mass> <mass>"

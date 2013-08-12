@@ -66,7 +66,7 @@ ExtraAxis anotherScale (const TH1* refHist, double scale, int color, const char*
 void allInOneLifetime(double lumi=4560., double maxInstLumi=5000.) {
 
   ExtraLimitPlots plots(lumi);
-  plots.calculateCrossSections(12,3,3,39,9);
+  plots.calculateCrossSections(7,4,3,39,9);
   
   // graphs - observed
   TGraph* g_obs      = plots.getObsLimit();

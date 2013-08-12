@@ -14,23 +14,15 @@ input2012BCD = [ 1011440, 9.25+0.28, 2096, 15, 1.67 ]  #haloErr=0.75(stat) + 0.9
 ###### OTHER YEARS ######
 # inputs [ livetime, haloR, cosmicNM1, final, haloErr]
 input2010A  = [ 911594., 0.0023, 1201, 1, 0.0024]
-input2010B  = [ 300065., 7, 473, 4 ]
-input2011A  = [ 724767., 60, 2243, 9 ]
-input2011B  = [ 159283., 45, 423, 3 ]
 input2011AB = [ 884051., 105, 2666, 12 ]
 
-input2012A   = [ 140012, 0.0, 211, 2, 0.233 ]
-input2012B   = [ 212487, 0.0, 473, 0, 0.19 ]
-input2012Cv1 = [ 1, 0, 1, 0, 0 ]
-input2012Cv2 = [ 351627, 0.0, 765, 8, 0.98]
-input2012D   = [ 319376, 0.52, 740, 8,  0.05 ]
 
 # Not using this because we only consider Run2012BCD
 input2012    = [ 1, 0, 1, 0, 0 ]
 
 # fixed numbers
 cosmicIneff = [ 0.00258, 0.00034 ]
-noiseRate   = [1.e-32/input2010A[0], 1./input2010A[0]]
+noiseRate   = [1.e-32/input2010A[0], 1.45/input2010A[0]]
 #noiseRate   = [ 1.e-32, 0. ]
 haloScaleFactor = [ 1.5/105, 0.7/105 ]
 
@@ -74,7 +66,7 @@ def totalBackground2012( livetime, cosmicNM1, haloR, haloErr ):
     r1 = livetime[1]/livetime[0]
     r2 = cosmicNM1[1]/cosmicNM1[0]
     
-    rn = 1e32 #noiseRate[1]/noiseRate[0]
+    rn = noiseRate[1]/noiseRate[0]
     rc = cosmicIneff[1]/cosmicIneff[0]
     
     nHalo = [ ]
@@ -84,7 +76,7 @@ def totalBackground2012( livetime, cosmicNM1, haloR, haloErr ):
     nNoise = [ ]
     nNoise.append( livetime[0]*noiseRate[0] )
     nNoise.append( nNoise[0]*sqrt(r1*r1 + rn*rn) )
-    #ra = nNoise[1]/nNoise[0]
+    ra = nNoise[1]/nNoise[0]
     
     nCosmic = [ ]
     nCosmic.append( cosmicIneff[0]*cosmicNM1[0] )
@@ -125,30 +117,6 @@ res2010A = totalBackground( livetime, cosmicNM1, haloNM1 )
 res2010A.append( [input2010A[3]] )
 
 
-# 2010B
-livetime  = [ input2010B[0], 23 ]
-haloNM1   = [ input2010B[1], sqrt(input2010B[1]) ]
-cosmicNM1 = [ input2010B[2], sqrt(input2010B[2]) ]
-print "Run2010B"
-res2010B = totalBackground( livetime, cosmicNM1, haloNM1 )
-res2010B.append( [input2010B[3]] )
-
-# 2011A
-livetime  = [ input2011A[0], 23 ]
-haloNM1   = [ input2011A[1], sqrt(input2011A[1]) ]
-cosmicNM1 = [ input2011A[2], sqrt(input2011A[2]) ]
-print "Run2011A"
-res2011A = totalBackground( livetime, cosmicNM1, haloNM1 )
-res2011A.append( [input2011A[3]] )
-
-# 2011B
-livetime  = [ input2011B[0], 23 ]
-haloNM1   = [ input2011B[1], sqrt(input2011B[1]) ]
-cosmicNM1 = [ input2011B[2], sqrt(input2011B[2]) ]
-print "Run2011B"
-res2011B = totalBackground( livetime, cosmicNM1, haloNM1 )
-res2011B.append( [input2011B[3]] )
-
 # 2011AB
 livetime  = [ input2011AB[0], 23 ]
 haloNM1   = [ input2011AB[1], sqrt(input2011AB[1]) ]
@@ -159,46 +127,6 @@ res2011AB.append( [input2011AB[3]] )
 
 # (livetime, cosmicNM1, haloR, haloErr ):
 
-# 2012A
-livetime  = [ input2012A[0], 23 ]
-#haloNM1   = [ input2012A[1], sqrt(input2012A[1]) ]
-cosmicNM1 = [ input2012A[2], sqrt(input2012A[2]) ]
-print "Run2012A"
-res2012A = totalBackground2012( livetime, cosmicNM1, input2012A[1], input2012A[4] )
-res2012A.append( [input2012A[3]] )
-
-#2012B
-livetime  = [ input2012B[0], 23 ]
-#haloNM1   = [ input2012B[1], sqrt(input2012B[1]) ]
-cosmicNM1 = [ input2012B[2], sqrt(input2012B[2]) ]
-print "Run2012B"
-res2012B = totalBackground2012( livetime, cosmicNM1, input2012B[1], input2012B[4] )
-res2012B.append( [input2012B[3]] )
-
-#2012C-v1
-livetime  = [ input2012Cv1[0], 23 ]
-#haloNM1   = [ input2012Cv1[1], sqrt(input2012Cv1[1]) ]
-cosmicNM1 = [ input2012Cv1[2], sqrt(input2012Cv1[2]) ]
-print "Run2012Cv1"
-res2012Cv1 = totalBackground2012( livetime, cosmicNM1,  input2012Cv1[1], input2012Cv1[4] )
-res2012Cv1.append( [input2012Cv1[3]] )
-
-#2012C-v2
-livetime  = [ input2012Cv2[0], 23 ]
-#haloNM1   = [ input2012Cv2[1], sqrt(input2012Cv2[1]) ]
-cosmicNM1 = [ input2012Cv2[2], sqrt(input2012Cv2[2]) ]
-print "Run2012Cv2"
-res2012Cv2 = totalBackground2012( livetime, cosmicNM1,  input2012Cv2[1], input2012Cv2[4] )
-res2012Cv2.append( [input2012Cv2[3]] )
-
-#2012D
-livetime  = [ input2012D[0], 23 ]
-#haloNM1   = [ input2012D[1], sqrt(input2012D[1]) ]
-cosmicNM1 = [ input2012D[2], sqrt(input2012D[2]) ]
-print "Run2012D"
-res2012D = totalBackground2012( livetime, cosmicNM1,  input2012D[1], input2012D[4] )
-res2012D.append( [input2012D[3]] )
-
 #2012BCD
 livetime  = [ input2012BCD[0], 23 ]
 #haloNM1   = [ input2012BCD[1], sqrt(input2012BCD[1]) ]
@@ -207,39 +135,21 @@ print "Run2012BCD"
 res2012BCD = totalBackground2012( livetime, cosmicNM1,  input2012BCD[1], input2012BCD[4] )
 res2012BCD.append( [input2012BCD[3]] )
 
-#2012
-livetime  = [ input2012[0], 23 ]
-#haloNM1   = [ input2012[1], sqrt(input2012[1]) ]
-cosmicNM1 = [ input2012[2], sqrt(input2012[2]) ]
-print "Run2012"
-res2012 = totalBackground2012( livetime, cosmicNM1,  input2012[1], input2012[4] )
-res2012.append( [input2012[3]] )
-
 
 print "[TABLE border='1']"
-print "Period | Noise         | Cosmic         | Halo          | Total         | NObs |-"
+print "Period   | Noise         | Cosmic         | Halo          | Total         | NObs |-"
 
-print '2010A  | %.2f +/- %.2f |  %.2f +/- %.2f | %.2f +/- %.2f | %.2f +/- %.2f | %i   |-' % ( res2010A[0][0], res2010A[0][1], res2010A[1][0], res2010A[1][1], res2010A[2][0], res2010A[2][1], res2010A[3][0], res2010A[3][1], res2010A[4][0] )
-
-print '2010B  | %.2f +/- %.2f |  %.2f +/- %.2f | %.2f +/- %.2f | %.2f +/- %.2f | %i   |-' % ( res2010B[0][0], res2010B[0][1], res2010B[1][0], res2010B[1][1], res2010B[2][0], res2010B[2][1], res2010B[3][0], res2010B[3][1], res2010B[4][0] )
-
-print '2011AB  | %.2f +/- %.2f |  %.2f +/- %.2f | %.2f +/- %.2f | %.2f +/- %.2f | %i   |-' % ( res2011AB[0][0], res2011AB[0][1], res2011AB[1][0], res2011AB[1][1], res2011AB[2][0], res2011AB[2][1], res2011AB[3][0], res2011AB[3][1], res2011AB[4][0] )
+print '2010A    | %.2f +/- %.2f |  %.2f +/- %.2f | %.2f +/- %.2f | %.2f +/- %.2f | %i   |-' % ( res2010A[0][0], res2010A[0][1], res2010A[1][0], res2010A[1][1], res2010A[2][0], res2010A[2][1], res2010A[3][0], res2010A[3][1], res2010A[4][0] )
 
 print '---------------------------------------------------------------------------------'
 
-print '2012A    | %.2f +/- %.2f |  %.2f +/- %.2f | %.2f +/- %.2f | %.2f +/- %.2f | %i   |-' % ( res2012A[0][0], res2012A[0][1], res2012A[1][0], res2012A[1][1], res2012A[2][0], res2012A[2][1], res2012A[3][0], res2012A[3][1], res2012A[4][0] )
+print '2011AB   | %.2f +/- %.2f |  %.2f +/- %.2f | %.2f +/- %.2f | %.2f +/- %.2f | %i   |-' % ( res2011AB[0][0], res2011AB[0][1], res2011AB[1][0], res2011AB[1][1], res2011AB[2][0], res2011AB[2][1], res2011AB[3][0], res2011AB[3][1], res2011AB[4][0] )
 
-print '2012B    | %.2f +/- %.2f |  %.2f +/- %.2f | %.2f +/- %.2f | %.2f +/- %.2f | %i   |-' % ( res2012B[0][0], res2012B[0][1], res2012B[1][0], res2012B[1][1], res2012B[2][0], res2012B[2][1], res2012B[3][0], res2012B[3][1], res2012B[4][0] )
+print '---------------------------------------------------------------------------------'
 
-print '2012Cv1  | %.2f +/- %.2f |  %.2f +/- %.2f | %.2f +/- %.2f | %.2f +/- %.2f | %i   |-' % ( res2012Cv1[0][0], res2012Cv1[0][1], res2012Cv1[1][0], res2012Cv1[1][1], res2012Cv1[2][0], res2012Cv1[2][1], res2012Cv1[3][0], res2012Cv1[3][1], res2012Cv1[4][0] )
+print '2012BCD  | %.10f +/- %.10f |  %.2f +/- %.2f | %.2f +/- %.2f | %.2f +/- %.2f | %i   |-' % ( res2012BCD[0][0], res2012BCD[0][1], res2012BCD[1][0], res2012BCD[1][1], res2012BCD[2][0], res2012BCD[2][1], res2012BCD[3][0], res2012BCD[3][1], res2012BCD[4][0] )
 
-print '2012Cv2  | %.2f +/- %.2f |  %.2f +/- %.2f | %.2f +/- %.2f | %.2f +/- %.2f | %i   |-' % ( res2012Cv2[0][0], res2012Cv2[0][1], res2012Cv2[1][0], res2012Cv2[1][1], res2012Cv2[2][0], res2012Cv2[2][1], res2012Cv2[3][0], res2012Cv2[3][1], res2012Cv2[4][0] )
 
-print '2012D    | %.2f +/- %.2f |  %.2f +/- %.2f | %.2f +/- %.2f | %.2f +/- %.2f | %i   |-' % ( res2012D[0][0], res2012D[0][1], res2012D[1][0], res2012D[1][1], res2012D[2][0], res2012D[2][1], res2012D[3][0], res2012D[3][1], res2012D[4][0] )
-
-print '2012BCD  | %.2f +/- %.2f |  %.2f +/- %.2f | %.2f +/- %.2f | %.2f +/- %.2f | %i   |-' % ( res2012BCD[0][0], res2012BCD[0][1], res2012BCD[1][0], res2012BCD[1][1], res2012BCD[2][0], res2012BCD[2][1], res2012BCD[3][0], res2012BCD[3][1], res2012BCD[4][0] )
-
-print '2012     | %.2f +/- %.2f |  %.2f +/- %.2f | %.2f +/- %.2f | %.2f +/- %.2f | %i   |-' % ( res2012[0][0], res2012[0][1], res2012[1][0], res2012[1][1], res2012[2][0], res2012[2][1], res2012[3][0], res2012[3][1], res2012[4][0] )
 
 
 print "[/TABLE]"

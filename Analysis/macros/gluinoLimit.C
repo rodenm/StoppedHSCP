@@ -38,7 +38,7 @@ void gluinoLimit(double lumi=-1., double maxInstLumi=-1.) {
     maxInstLumi=MAXINSTLUMI;
   LimitPlots plots(lumi);
 
-  plots.calculateCrossSections(4,3,39,9);
+  plots.calculateCrossSections(7,4,39,9);
   
   // graphs - observed
   TGraph* g_obs     = plots.getLimitGluino();

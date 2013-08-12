@@ -39,7 +39,7 @@ void stopLimit(double lumi=-1., double maxInstLumi=-1.) {
   LimitPlots plots(lumi);
   
 
-	plots.calculateCrossSections(4,3,39,9);
+  plots.calculateCrossSections(7,4,39,9);
 	
   	// graphs - observed
   	TGraph* g_obs     = plots.getLimitStop();

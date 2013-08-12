@@ -181,9 +181,41 @@ bool Cuts::cosmicVeto() const {      // no cosmic muon
   return (event_->mu_N==0);
 }
 
-bool Cuts::cosmicVeto2() const {      // Cosmic cut w/o RPCs
-  return (event_->DTSegment_N < 3);
+bool Cuts::cosmicVeto2() const {      // Cosmic cut from 2011 analysis
+  if (event_->mu_N > 0) 
+    return false;
+  
+  if (event_->DTSegment_N < 3) { 
+    unsigned nCloseRPCPairs = 0;
+    for (unsigned irpc = 0; irpc < event_->rpcHit_N; irpc++) {
+      for (unsigned jrpc = irpc+1; jrpc < event_->rpcHit_N; jrpc++) {
+	double deltaZ = fabs(event_->rpcHitZ[irpc] - event_->rpcHitZ[jrpc]);
+	double deltaPhi = acos(cos(event_->rpcHitPhi[irpc] - event_->rpcHitPhi[jrpc]));
+	
+	// Require barrel hits to be localized in z, endcap hits to be localzied in phi
+	/**
+	if (deltaZ < 40.0 && event_->rpcHitRegion[irpc] == 0 && event_->rpcHitRegion[jrpc] == 0) {
+	  nCloseRPCPairs++;
+	}
+	if (deltaPhi < 0.4 && abs(event_->rpcHitRegion[irpc]) == 1 && abs(event_->rpcHitRegion[jrpc]) == 1) {
+	  nCloseRPCPairs++;
+	}
+	
+	*/
+	
+	//if (deltaZ < 40.0 || deltaPhi < 0.2 || deltaPhi > TMath::Pi()/2.)
+	//nCloseRPCPairs++;
+
+	if (deltaZ < 40.0 || deltaPhi < 0.4) {
+	nCloseRPCPairs++;
+	}
+      }
+    }
+    return (nCloseRPCPairs < 2);
+  }
+  return (false);
 }
+
 
 bool Cuts::cosmicVeto3() const {      // no cosmic muon
   if (event_->DTSegment_N < 3) { 
@@ -204,12 +236,12 @@ bool Cuts::cosmicVeto3() const {      // no cosmic muon
 	
 	*/
 	
-	if (deltaZ < 40.0 || deltaPhi < 0.2 || deltaPhi > TMath::Pi()/2.)
-	  nCloseRPCPairs++;
-
-	//if (deltaZ < 40.0 || deltaPhi < 0.2) {
+	//if (deltaZ < 40.0 || deltaPhi < 0.2 || deltaPhi > TMath::Pi()/2.)
 	//nCloseRPCPairs++;
-	//}
+
+	if (deltaZ < 40.0 || deltaPhi < 0.2) {
+	nCloseRPCPairs++;
+	}
       }
     }
     return (nCloseRPCPairs < 2);

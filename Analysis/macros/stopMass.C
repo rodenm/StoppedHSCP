@@ -45,7 +45,7 @@ void stopMass(double lumi=-1., double maxInstLumi=-1.) {
     maxInstLumi=1300.;
   LimitPlots plots(lumi);
 
-	plots.calculateCrossSections(4,3,39,9);
+  plots.calculateCrossSections(7,4,39,9);
   
   	// expected limit (1 and 2 sigma bands)
 	TGraph* g_exp = plots.getExpMassLimitStop();
