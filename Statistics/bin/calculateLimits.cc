@@ -248,8 +248,8 @@ int main () {
 	      << std::endl;
     
     // get limit
-    CountingExperiment* ce = useCLs ? static_cast<CountingExperiment*> (new CLsCountingExperiment (expectedBackground, sigmaBackground, 1, 0.13)) 
-      : static_cast<CountingExperiment*> (new CL95CMSCountingExperiment (expectedBackground, sigmaBackground, 1, 0.13));
+    CountingExperiment* ce = useCLs ? static_cast<CountingExperiment*> (new CLsCountingExperiment (expectedBackground, sigmaBackground, 1, 0.083)) 
+      : static_cast<CountingExperiment*> (new CL95CMSCountingExperiment (expectedBackground, sigmaBackground, 1, 0.083));
     double limit = ce->cl95limit (nObserved);
     std::vector<double>  expectedLimit = ce->cl95ExpectedLimit ();
     delete ce; ce = 0;

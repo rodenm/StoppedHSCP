@@ -19,26 +19,29 @@ using namespace std;
 
 namespace {
 
-double upperLimitCountingCLS (double signal, int nObserved, double bkgMean, double bkgSigma, double scaleSigma) {
-  // Cousins-Highland approach
-  TRandom2 rndm;
-  int nToys = 1000;
-  double nGeObserved = 0;
-  double CLb = 0;
-  double CLsb = 0;
-  for (int iToy = 0; iToy < nToys; ++iToy) {
-    double bkg = rndm.Gaus (bkgMean, bkgSigma);
-    while (bkg < 0) bkg = rndm.Gaus (bkgMean, bkgSigma);
-    double scale = rndm.Gaus (1., scaleSigma);
-    while (scale <= 0) scale = rndm.Gaus (1., scaleSigma);
-    CLb += ROOT::Math::poisson_cdf (nObserved, bkg);
-    CLsb += ROOT::Math::poisson_cdf (nObserved, bkg + signal * scale);
-  }
-//   cout << "upperLimitCountingCLS-> " << signal<<'/'<<bkgMean<<'/'
-//        <<CLb/nToys<<'/'<<CLsb/nToys<<'/'<<1-CLsb/CLb<<endl;
-  return 1-CLsb/CLb;
-}
+  double upperLimitCountingCLS (double signal, int nObserved, double bkgMean, double bkgSigma, double scaleSigma) {
+    // Cousins-Highland approach
+    TRandom2 rndm;
+    int nToys = 1000;
+    //double nGeObserved = 0;
+    double CLb = 0;
+    double CLsb = 0;
+    for (int iToy = 0; iToy < nToys; ++iToy) {
+      double bkg = rndm.Gaus (bkgMean, bkgSigma);
+      while (bkg < 0) bkg = rndm.Gaus (bkgMean, bkgSigma);
+      double scale = rndm.Gaus (1., scaleSigma);
+      while (scale <= 0) scale = rndm.Gaus (1., scaleSigma);
+      CLb += ROOT::Math::poisson_cdf (nObserved, bkg); // poisson_cdf(x, lambda) - (15,14.2)
+      CLsb += ROOT::Math::poisson_cdf (nObserved, bkg + signal * scale); // poisson_cdf(x, lambda) = (15,14.2+37.5+1)
+    }
+  //cout << "upperLimitCountingCLS-> " << signal<<'/'<<bkgMean<<'/'
+  //     <<CLb/nToys<<'/'<<CLsb/nToys<<'/'<<1-CLsb/CLb<<endl;
 
+    return 1-CLsb/CLb;
+
+    //return 1-CLsb/nToys;
+  }
+  
 }
 
 
@@ -49,14 +52,18 @@ CLsCountingExperiment::CLsCountingExperiment (double fBackground, double fBackgr
 CLsCountingExperiment::~CLsCountingExperiment() {}
 
 double CLsCountingExperiment::cl95limit (int nObserved, bool fPlot) {
+  //std::cout << "======================================" << std::endl;
   double targetCL = 0.95;  
   double sMin = 0;
   double sMax = nObserved > 0 ? 2.5*nObserved : 2.5;
   while (1) {
     double cls = upperLimitCountingCLS (sMax, nObserved, background(), backgroundSigma(), scaleSigma()/scale());
+    
     if (cls > targetCL) break;
     sMax *=2;
   }
+
+  //std::cout << "Finished setting sMax: " << sMax << std::endl;
   vector<double>* signalIterations = fPlot ? new vector<double> : 0;
   vector<double>* cl95Iterations = fPlot ? new vector<double> : 0;
   
@@ -64,7 +71,7 @@ double CLsCountingExperiment::cl95limit (int nObserved, bool fPlot) {
   while (1) {
     sThis = 0.5*(sMin+sMax);
     double cls = upperLimitCountingCLS (sThis, nObserved, background(), backgroundSigma(), scaleSigma()/scale());
-    //      std::cout << "upperLimitCountingCLS95-> min/max/sThis: " << sMin << '/' << sMax << '/' << sThis 
+    //std::cout << "upperLimitCountingCLS95-> min/max/sThis: " << sMin << '/' << sMax << '/' << sThis 
     //  	      << " CLS:" << cls << std::endl; 
     if ((fabs(cls - targetCL) < 1e-5) || (0.5*(sMax-sMin)/(sMax+sMin) < 1e-4)) break;
     if (cls > targetCL) sMax = sThis;
@@ -74,6 +81,8 @@ double CLsCountingExperiment::cl95limit (int nObserved, bool fPlot) {
       cl95Iterations->push_back(cls);
     }
   }
+  //std::cout << "Finished setting sMin & sMax: " << sMin << "    " << sMax << std::endl;
+
   if (fPlot) { // draw graph
     const int maxIterations = 20;
     double iSignal [maxIterations];

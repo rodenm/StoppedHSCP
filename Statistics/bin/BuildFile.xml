@@ -1,3 +1,13 @@
 <use name="StoppedHSCP/Statistics"/>
+<use name="StoppedHSCP/ToyMC"/>
+<use name="root"/>
+<use name="rootcore"/>
+<use name="roofit"/>
+<use name="rootrflx"/>
+<use name="roostats"/>
+<use name="boost_program_options"/>
+<use name="boost"/>
+<use name="boost_filesystem"/>
 
 <bin name="calculateLimits" file="calculateLimits.cc"/>
+<bin name="limitsDemo" file="CalculateLimitsDemo.cpp"/>
