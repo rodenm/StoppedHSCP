@@ -164,8 +164,8 @@ public:
     // TODO: for now, need to require these fields are filled before proceeding
     //sparticleM_ = "700";
     //flavor_ = std::string("gluino");
-    if (vm.count("energy")) {
-      sparticleM_ = vm["energy"].as<std::string>();
+    if (vm.count("mass")) {
+      sparticleM_ = vm["mass"].as<std::string>();
       std::cout << "Sparticle mass   : " << sparticleM_ << std::endl;
     }
     if (vm.count("flavor")) {
@@ -225,7 +225,7 @@ public:
     selected_systlo_ = 0;
     jes_hi_ = 1.05;
     jes_lo_ = 0.95;
-
+    jetCut_ = 70.;
 
   
   // TODO: obviously this is not the best way.But it is ok that the options are xor:
@@ -316,8 +316,9 @@ private:
   // For JES systematic uncertainties
   int selected_systlo_;
   int selected_systhi_;
-  int jes_lo_;
-  int jes_hi_;
+  double jes_lo_;
+  double jes_hi_;
+  double jetCut_;
 
   // TODO: find a way to handle the situation where hscp has more than one gluino listed. 
   // Stupid option: add a second map/make the second arg an array (for both maps)
@@ -449,11 +450,13 @@ void MCAnalysis::loop() {
     dumpFile_ << "glueball count = " << glueball_count_ << std::endl << std::endl;
     
     tableFile_ << flavor_ << " " << sparticleM_ << "\t" << neutralinoMass_.str() << "\t"
-	       << eb_count_+hb_count_ << "\t" << reco_eb_count_+reco_hb_count_ << "\t"
-	       << 1.0*(eb_count_+hb_count_)/nStage1_ << "\t" 
-	       << 1.0*(reco_eb_count_+reco_hb_count_)/(eb_count_+hb_count_)
-	       << selected_systlo_*1.0/(reco_eb_count_+reco_hb_count_) << "\t" 
-	       << selected_systhi_*1.0/(reco_eb_count_+reco_hb_count_)
+	       << eb_count_+hb_count_ << "\t" << reco_eb_count_+reco_hb_count_ << "\t" // stopped count; selected count
+	       << 1.0*(eb_count_+hb_count_)/nStage1_ << "\t"                           // stopping eff
+	       << 1.0*(reco_eb_count_+reco_hb_count_)/(eb_count_+hb_count_)<< "\t"     // reco eff
+	       << selected_systlo_<< "\t"
+	       << selected_systhi_<< "\t"
+	       << fabs((reco_eb_count_+reco_hb_count_)-selected_systlo_)*1.0/(reco_eb_count_+reco_hb_count_) << "\t"         // low JES uncertainty
+	       << fabs((reco_eb_count_+reco_hb_count_)-selected_systhi_)*1.0/(reco_eb_count_+reco_hb_count_)                 // hi JES uncertainty
 	       << std::endl;
   }
 
@@ -511,6 +514,7 @@ void MCAnalysis::loop() {
     
     hscp_file_.close();
     stopped_file_.close();
+    tableFile_.close();
   }
  }
   
@@ -642,14 +646,17 @@ void MCAnalysis::efficiencyStudy() {
     if (cuts_.cut()) reco_tracker_count_++;
   } else if (r>=131.0 && r<184.0 && fabs(z)<376.0 && fabs(particle_eta)<1.479) { // EB
     eb_count_++;
-    if (cuts_.cut()) reco_eb_count_++;
+    if (cuts_.cut()) {
+      reco_eb_count_++;
+    }
     if (cuts_.triggerCut()) eb_trigger_++;
     if (abs(pid) % 100000 < 90000 && flavor_ == "gluino") // Not an R-baryon
       not_rbaryon_inhbeb_count_++;
     // calculate change in selection efficiency corresponding to JES uncertainty - EB
-    if (cuts_.cutNMinusOne(8) && event_->jetEta[0]<1.0) {
-      if (event_->jetE[0]*jes_lo_ > 200.) selected_systlo_++;
-      if (event_->jetE[0]*jes_hi_ > 200.) selected_systhi_++;
+    if (cuts_.cutNMinusOne(8) && fabs(event_->jetEta[0])<1.0) {
+      //if (event_->jetE[0]> jetCut_) reco_eb_count_++;
+      if (event_->jetE[0]*jes_lo_ > jetCut_) selected_systlo_++;
+      if (event_->jetE[0]*jes_hi_ > jetCut_) selected_systhi_++;
     }
   } else if (fabs(z)<376.0 && fabs(z) >= 300.0 && fabs(particle_eta)>=1.479 && fabs(particle_eta)<3.0) { // EE
     ee_count_++;
@@ -661,9 +668,10 @@ void MCAnalysis::efficiencyStudy() {
     if (abs(pid) % 100000 < 90000 && flavor_ == "gluino") // Not an R-baryon
       not_rbaryon_inhbeb_count_++;
     // calculate change in selection efficiency corresponding to JES uncertainty - HB
-    if (cuts_.cutNMinusOne(8) && event_->jetEta[0]<1.0) {
-      if (event_->jetE[0]*jes_lo_ > 200.) selected_systlo_++;
-      if (event_->jetE[0]*jes_hi_ > 200.) selected_systhi_++;
+    if (cuts_.cutNMinusOne(8) && fabs(event_->jetEta[0])<1.0) {
+      //if (event_->jetE[0] > jetCut_) reco_hb_count_++;
+      if (event_->jetE[0]*jes_lo_ > jetCut_) selected_systlo_++;
+      if (event_->jetE[0]*jes_hi_ > jetCut_) selected_systhi_++;
     }
   } else if (fabs(z)<560.0 && fabs(z)>=376.0 && fabs(particle_eta)>=1.3 && fabs(particle_eta)<3.0) { // HE
     he_count_++;
