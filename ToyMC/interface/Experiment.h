@@ -37,8 +37,8 @@ public:
   std::string eventsFile;
 
   // Toy parameters
-  unsigned nTrialsSignal;
-  unsigned nTrialsBackground;
+  unsigned nTrialsSignal;        // usually 100
+  unsigned nTrialsBackground;    // usually 100
   bool simulateExpt;
   std::string fillScheme;
   double beamOnTime;
@@ -46,15 +46,15 @@ public:
   double instLumi;
   double runningTime;
 
-  //outputs
-  double livetime;
-  double effLumi;
+  //outputs from Simulator.cc
+  double livetime;                // trigger livetime in seconds
+  double effLumi;                 // lumi with live trigger
   double effLumi_e;
-  double expSignal;
+  double expSignal;               // calculated with signal toy MC: nObs/nDecays*efficiency, usually 0
   double expSignal_e;
-  double expBackground;
+  double expBackground;           // expected background scaled by lifetime hyposthesis
   double expBackground_e;
-  unsigned nObserved;
+  unsigned nObserved;             // analysis count (15 for 2012) scaled by lifetime hypothesis
   
   // Toy results
   unsigned nDecays_MC;
@@ -62,9 +62,9 @@ public:
   unsigned nSig_MC;
   unsigned nBG_MC;
   
-  // limits
-  double limit95cl;
-  double expLimit;
+  // limits from CLsCountingExperiment, calculated in Simulator::calculateLimits()
+  double limit95cl;               // observed limit - with 95% prob we could have seen this # of events
+  double expLimit;                // expected limit - with 95% prob we expected to see this # of events
   double expLim1SigLo;
   double expLim1SigHi;
   double expLim2SigLo;

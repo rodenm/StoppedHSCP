@@ -130,7 +130,7 @@ void Simulator::simulateSignal(unsigned firstFill, unsigned lastFill) {
     // generate some decays
     for (unsigned d=0; d<expt_->nTrialsSignal; ++d) {
 
-      // assign production BX and orbit
+      /** assign production BX and orbit **/
       // ie. assume productions are evenly distributed within LS
       unsigned rndColl = random_.Integer(fills_.getCollisionsFromRun(prodRun).size());
       unsigned prodBX = 0;
