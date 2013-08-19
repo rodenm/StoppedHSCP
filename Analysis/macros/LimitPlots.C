@@ -204,6 +204,7 @@ void LimitPlots::readStauData(std::string filename) {
 }
 
 
+// toyIndex is not used because it should vary with different threshold hypotheses 
 void LimitPlots::calculateCrossSections(unsigned gluinoIndex, unsigned stopIndex, unsigned toyIndex, unsigned tpIndex) {
 
   std::cout << "Using gluino mass point " << gluinoIndex << std::endl;
@@ -213,6 +214,12 @@ void LimitPlots::calculateCrossSections(unsigned gluinoIndex, unsigned stopIndex
   std::cout << "Lifetime,XSlimit,ExpLimit,-1sigma,+1sigma,-2sigma,+2sigma" << std::endl;
   for (int l=0; l<nToyLifetime; ++l) {
 	
+    // Pick toyIndex to correspond to 1 sec lifetime hypothesis to assure that mass limits
+    // are taken from the middle/stable part of the lifetime distribution
+    if (toyLifetime[l] > 0.5 && toyLifetime[l] < 1.5)
+      toyIndex = l;
+
+
     // basic limit
     xsLimitToyGluino.push_back( toyObsLimit[l] / (toyEffLumi[l] * gluinoEffReco[gluinoIndex]) );
     xsLimitToyStop.push_back( toyObsLimit[l] / (toyEffLumi[l] * stopEffReco[stopIndex]) );
@@ -254,7 +261,7 @@ void LimitPlots::calculateCrossSections(unsigned gluinoIndex, unsigned stopIndex
     std::cout << tpLifetime[i] << "," << xsProdLimitTPGluino[i] << std::endl;
   }
 
-  std::cout << "Using toy MC lifetime point " << toyLifetime[toyIndex] << std::endl;
+  std::cout << "Using toy MC lifetime point " << toyLifetime[toyIndex] << " sec" << std::endl;
   if (tpLifetime.size()>tpIndex)
     std::cout << "Using time profile lifetime point " << tpLifetime[tpIndex] << std::endl;
   else

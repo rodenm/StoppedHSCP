@@ -29,7 +29,7 @@ class LimitPlots {
   
   void calculateCrossSections(unsigned gluinoIndex,
 			      unsigned stopIndex,
-			      unsigned toyIndex,
+			      unsigned toyIndex,     // toyIndex resets to index of 1 sec data point
 			      unsigned tpIndex);
   
   void calculateIntercepts();
