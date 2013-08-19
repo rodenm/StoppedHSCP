@@ -202,10 +202,10 @@ void ExtraLimitPlots::readStauData(std::string filename) {
 
 
 void ExtraLimitPlots::calculateCrossSections(unsigned gluinoIndex, 
-					unsigned stopIndex, 
-					unsigned stauIndex, 
-					unsigned toyIndex, 
-					unsigned tpIndex) {
+					     unsigned stopIndex, 
+					     unsigned stauIndex, 
+					     unsigned toyIndex, 
+					     unsigned tpIndex) {
 
   std::cout << "Using gluino mass point " << gluinoIndex << std::endl;
   std::cout << "  mg=" << gluinoMass[gluinoIndex] 

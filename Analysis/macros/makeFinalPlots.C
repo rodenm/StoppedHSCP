@@ -8,6 +8,9 @@ void makeFinalPlots(double lumi=4560., double maxInstLumi=5000.)
   gROOT->ProcessLine(".L modelIndLimit.C+");
   modelIndLimit(lumi,maxInstLumi);
   
+  //gROOT->ProcessLine(".L massVSxs.C+");
+  //massVSxs(lumi,maxInstLumi);
+
   gROOT->ProcessLine(".L gluinoLimit.C+");
   gluinoLimit(lumi,maxInstLumi);
   
@@ -22,12 +25,6 @@ void makeFinalPlots(double lumi=4560., double maxInstLumi=5000.)
 
   gROOT->ProcessLine(".L massPlot.C+");
   massPlot(lumi,maxInstLumi);
-
-  //  gROOT->ProcessLine(".L allInOneLifetime.C+");
-  //  allInOneLifetime(lumi,maxInstLumi);
-
-  //  gROOT->ProcessLine(".L excludedRegion.C+");
-  //  excludedRegion(lumi,maxInstLumi);
 
 }
 

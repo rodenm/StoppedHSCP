@@ -7,11 +7,11 @@ LimitPlots::LimitPlots(double tpLumi) :
   tpLumi_(tpLumi)
 {
 
-	readToyFile(std::string("toymc.txt"));
-	readTimeProfileFile(std::string("time_profile.txt"));
+  readToyFile(std::string("toymc.txt"));
+  readTimeProfileFile(std::string("time_profile.txt"));
 
-	readGluinoData(std::string("mcGluino.txt"));
-  	readStopData(std::string("mcStop.txt"));
+  readGluinoData(std::string("mcGluino.txt"));
+  readStopData(std::string("mcStop.txt"));
   //  readStauData(cmssw+std::string("/src/StoppedHSCP/Analysis/data/mcStau.txt");
 
 }
@@ -102,7 +102,7 @@ void LimitPlots::readGluinoData(std::string filename) {
   
   while (file >> m >> mchi >> escm >> esnb >> esem >> er >> xst) {
     
-	//std::cout << "gluino mass " << m << std::endl;
+    //std::cout << "gluino mass " << m << std::endl;
 
     gluinoMass.push_back(m);
     gluinoChi0Mass.push_back(mchi);
@@ -206,108 +206,108 @@ void LimitPlots::readStauData(std::string filename) {
 
 void LimitPlots::calculateCrossSections(unsigned gluinoIndex, unsigned stopIndex, unsigned toyIndex, unsigned tpIndex) {
 
-	std::cout << "Using gluino mass point " << gluinoIndex << std::endl;
-	std::cout << "  mg=" << gluinoMass[gluinoIndex] << " mchi0=" << gluinoChi0Mass[gluinoIndex] 
-		<< " stopEff=" << gluinoEffStopCM[gluinoIndex] << " recoEff=" << gluinoEffReco[gluinoIndex] << std::endl;
+  std::cout << "Using gluino mass point " << gluinoIndex << std::endl;
+  std::cout << "  mg=" << gluinoMass[gluinoIndex] << " mchi0=" << gluinoChi0Mass[gluinoIndex] 
+	    << " stopEff=" << gluinoEffStopCM[gluinoIndex] << " recoEff=" << gluinoEffReco[gluinoIndex] << std::endl;
 
-  	std::cout << "Lifetime,XSlimit,ExpLimit,-1sigma,+1sigma,-2sigma,+2sigma" << std::endl;
-  	for (int l=0; l<nToyLifetime; ++l) {
+  std::cout << "Lifetime,XSlimit,ExpLimit,-1sigma,+1sigma,-2sigma,+2sigma" << std::endl;
+  for (int l=0; l<nToyLifetime; ++l) {
 	
-		// basic limit
-		xsLimitToyGluino.push_back( toyObsLimit[l] / (toyEffLumi[l] * gluinoEffReco[gluinoIndex]) );
-		xsLimitToyStop.push_back( toyObsLimit[l] / (toyEffLumi[l] * stopEffReco[stopIndex]) );
+    // basic limit
+    xsLimitToyGluino.push_back( toyObsLimit[l] / (toyEffLumi[l] * gluinoEffReco[gluinoIndex]) );
+    xsLimitToyStop.push_back( toyObsLimit[l] / (toyEffLumi[l] * stopEffReco[stopIndex]) );
 	
-    	// observed limits
-    	xsProdLimitToyGluino.push_back( toyObsLimit[l] / (toyEffLumi[l] * gluinoEffStopCM[gluinoIndex] * gluinoEffReco[gluinoIndex]) );
-    	xsProdLimitToyGluinoNB.push_back( toyObsLimit[l] / (toyEffLumi[l] * gluinoEffStopNB[gluinoIndex] * gluinoEffReco[gluinoIndex]) );
-    	xsProdLimitToyGluinoEM.push_back( toyObsLimit[l] / (toyEffLumi[l] * gluinoEffStopEM[gluinoIndex] * gluinoEffReco[gluinoIndex]) );
+    // observed limits
+    xsProdLimitToyGluino.push_back( toyObsLimit[l] / (toyEffLumi[l] * gluinoEffStopCM[gluinoIndex] * gluinoEffReco[gluinoIndex]) );
+    xsProdLimitToyGluinoNB.push_back( toyObsLimit[l] / (toyEffLumi[l] * gluinoEffStopNB[gluinoIndex] * gluinoEffReco[gluinoIndex]) );
+    xsProdLimitToyGluinoEM.push_back( toyObsLimit[l] / (toyEffLumi[l] * gluinoEffStopEM[gluinoIndex] * gluinoEffReco[gluinoIndex]) );
 
-		// observed limits stop
-    	xsProdLimitToyStop.push_back( toyObsLimit[l] / (toyEffLumi[l] * stopEffStopCM[stopIndex] * stopEffReco[stopIndex]) );
-    	xsProdLimitToyStopNB.push_back( toyObsLimit[l] / (toyEffLumi[l] * stopEffStopNB[stopIndex] * stopEffReco[stopIndex]) );
-    	xsProdLimitToyStopEM.push_back( toyObsLimit[l] / (toyEffLumi[l] * stopEffStopEM[stopIndex] * stopEffReco[stopIndex]) );
+    // observed limits stop
+    xsProdLimitToyStop.push_back( toyObsLimit[l] / (toyEffLumi[l] * stopEffStopCM[stopIndex] * stopEffReco[stopIndex]) );
+    xsProdLimitToyStopNB.push_back( toyObsLimit[l] / (toyEffLumi[l] * stopEffStopNB[stopIndex] * stopEffReco[stopIndex]) );
+    xsProdLimitToyStopEM.push_back( toyObsLimit[l] / (toyEffLumi[l] * stopEffStopEM[stopIndex] * stopEffReco[stopIndex]) );
 
-    	// expected limit and bands
-    	xsProdExpLimitToyGluino.push_back( toyExpLimit[l] / (toyEffLumi[l] * gluinoEffStopCM[gluinoIndex] * gluinoEffReco[gluinoIndex]) );
-    	xsProdExpLimitLo1SigToyGluino.push_back( (toyExpLimit[l]-toyExpLimitLo1Sig[l]) / (toyEffLumi[l] * gluinoEffStopCM[gluinoIndex] * gluinoEffReco[gluinoIndex]) );
-    	xsProdExpLimitHi1SigToyGluino.push_back( (toyExpLimitHi1Sig[l]-toyExpLimit[l]) / (toyEffLumi[l] * gluinoEffStopCM[gluinoIndex] * gluinoEffReco[gluinoIndex]) );
-    	xsProdExpLimitLo2SigToyGluino.push_back( (toyExpLimit[l]-toyExpLimitLo2Sig[l]) / (toyEffLumi[l] * gluinoEffStopCM[gluinoIndex] * gluinoEffReco[gluinoIndex]) );
-    	xsProdExpLimitHi2SigToyGluino.push_back( (toyExpLimitHi2Sig[l]-toyExpLimit[l]) / (toyEffLumi[l] * gluinoEffStopCM[gluinoIndex] * gluinoEffReco[gluinoIndex]) );
+    // expected limit and bands
+    xsProdExpLimitToyGluino.push_back( toyExpLimit[l] / (toyEffLumi[l] * gluinoEffStopCM[gluinoIndex] * gluinoEffReco[gluinoIndex]) );
+    xsProdExpLimitLo1SigToyGluino.push_back( (toyExpLimit[l]-toyExpLimitLo1Sig[l]) / (toyEffLumi[l] * gluinoEffStopCM[gluinoIndex] * gluinoEffReco[gluinoIndex]) );
+    xsProdExpLimitHi1SigToyGluino.push_back( (toyExpLimitHi1Sig[l]-toyExpLimit[l]) / (toyEffLumi[l] * gluinoEffStopCM[gluinoIndex] * gluinoEffReco[gluinoIndex]) );
+    xsProdExpLimitLo2SigToyGluino.push_back( (toyExpLimit[l]-toyExpLimitLo2Sig[l]) / (toyEffLumi[l] * gluinoEffStopCM[gluinoIndex] * gluinoEffReco[gluinoIndex]) );
+    xsProdExpLimitHi2SigToyGluino.push_back( (toyExpLimitHi2Sig[l]-toyExpLimit[l]) / (toyEffLumi[l] * gluinoEffStopCM[gluinoIndex] * gluinoEffReco[gluinoIndex]) );
 
-    	// expected limit and bands - stop
-    	xsProdExpLimitToyStop.push_back( toyExpLimit[l] / (toyEffLumi[l] * stopEffStopCM[stopIndex] * stopEffReco[stopIndex]) );
-    	xsProdExpLimitLo1SigToyStop.push_back( (toyExpLimit[l]-toyExpLimitLo1Sig[l]) / (toyEffLumi[l] * stopEffStopCM[stopIndex] * stopEffReco[stopIndex]) );
-    	xsProdExpLimitHi1SigToyStop.push_back( (toyExpLimitHi1Sig[l]-toyExpLimit[l]) / (toyEffLumi[l] * stopEffStopCM[stopIndex] * stopEffReco[stopIndex]) );
-    	xsProdExpLimitLo2SigToyStop.push_back( (toyExpLimit[l]-toyExpLimitLo2Sig[l]) / (toyEffLumi[l] * stopEffStopCM[stopIndex] * stopEffReco[stopIndex]) );
-    	xsProdExpLimitHi2SigToyStop.push_back( (toyExpLimitHi2Sig[l]-toyExpLimit[l]) / (toyEffLumi[l] * stopEffStopCM[stopIndex] * stopEffReco[stopIndex]) );
+    // expected limit and bands - stop
+    xsProdExpLimitToyStop.push_back( toyExpLimit[l] / (toyEffLumi[l] * stopEffStopCM[stopIndex] * stopEffReco[stopIndex]) );
+    xsProdExpLimitLo1SigToyStop.push_back( (toyExpLimit[l]-toyExpLimitLo1Sig[l]) / (toyEffLumi[l] * stopEffStopCM[stopIndex] * stopEffReco[stopIndex]) );
+    xsProdExpLimitHi1SigToyStop.push_back( (toyExpLimitHi1Sig[l]-toyExpLimit[l]) / (toyEffLumi[l] * stopEffStopCM[stopIndex] * stopEffReco[stopIndex]) );
+    xsProdExpLimitLo2SigToyStop.push_back( (toyExpLimit[l]-toyExpLimitLo2Sig[l]) / (toyEffLumi[l] * stopEffStopCM[stopIndex] * stopEffReco[stopIndex]) );
+    xsProdExpLimitHi2SigToyStop.push_back( (toyExpLimitHi2Sig[l]-toyExpLimit[l]) / (toyEffLumi[l] * stopEffStopCM[stopIndex] * stopEffReco[stopIndex]) );
 
-    	// print out
-    	std::cout << toyLifetime[l] << "," << xsProdLimitToyGluino[l] << "," << xsProdExpLimitToyGluino[l] << "," << xsProdExpLimitLo1SigToyGluino[l] << "," << xsProdExpLimitHi1SigToyGluino[l] << "," << xsProdExpLimitLo2SigToyGluino[l] << "," << xsProdExpLimitHi2SigToyGluino[l] << std::endl;
-  	}
-  	std::cout << std::endl;
+    // print out
+    std::cout << toyLifetime[l] << "," << xsProdLimitToyGluino[l] << "," << xsProdExpLimitToyGluino[l] << "," << xsProdExpLimitLo1SigToyGluino[l] << "," << xsProdExpLimitHi1SigToyGluino[l] << "," << xsProdExpLimitLo2SigToyGluino[l] << "," << xsProdExpLimitHi2SigToyGluino[l] << std::endl;
+  }
+  std::cout << std::endl;
 
-  	// time profile XS
-  	std::cout << "Lifetime, time profile limit" << std::endl;
-  	for (int i=0; i<nTPLifetime; ++i) {
-    	xsProdLimitTPGluino.push_back( tpObsLimit[i] / (tpLumi_ * gluinoEffStopCM[gluinoIndex] * gluinoEffReco[gluinoIndex]) );
-    	xsProdLimitTPStop.push_back( tpObsLimit[i] / (tpLumi_ * stopEffStopCM[stopIndex] * stopEffReco[stopIndex]) );
-    	std::cout << tpLifetime[i] << "," << xsProdLimitTPGluino[i] << std::endl;
-  	}
+  // time profile XS
+  std::cout << "Lifetime, time profile limit" << std::endl;
+  for (int i=0; i<nTPLifetime; ++i) {
+    xsProdLimitTPGluino.push_back( tpObsLimit[i] / (tpLumi_ * gluinoEffStopCM[gluinoIndex] * gluinoEffReco[gluinoIndex]) );
+    xsProdLimitTPStop.push_back( tpObsLimit[i] / (tpLumi_ * stopEffStopCM[stopIndex] * stopEffReco[stopIndex]) );
+    std::cout << tpLifetime[i] << "," << xsProdLimitTPGluino[i] << std::endl;
+  }
 
-	std::cout << "Using toy MC lifetime point " << toyLifetime[toyIndex] << std::endl;
-	if (tpLifetime.size()>tpIndex)
-	  std::cout << "Using time profile lifetime point " << tpLifetime[tpIndex] << std::endl;
-	else
-	  std::cout <<" Time Profile size is < "<<tpIndex<<".  Is time profile txt file provided?"<<std::endl;
-	for (unsigned i=0; i<gluinoMass.size(); ++i) {
+  std::cout << "Using toy MC lifetime point " << toyLifetime[toyIndex] << std::endl;
+  if (tpLifetime.size()>tpIndex)
+    std::cout << "Using time profile lifetime point " << tpLifetime[tpIndex] << std::endl;
+  else
+    std::cout <<" Time Profile size is < "<<tpIndex<<".  Is time profile txt file provided?"<<std::endl;
+  for (unsigned i=0; i<gluinoMass.size(); ++i) {
 		
-		if (gluinoEffStopCM[i] * gluinoEffReco[i] > 0.) {
-			massGluino.push_back(gluinoMass[i]);
+    if (gluinoEffStopCM[i] * gluinoEffReco[i] > 0.) {
+      massGluino.push_back(gluinoMass[i]);
 
-			//observed
-			xsProdMassGluino.push_back( toyObsLimit[toyIndex] / (toyEffLumi[toyIndex] * gluinoEffStopCM[i] * gluinoEffReco[i]) );
-			if (tpLifetime.size()>tpIndex)
+      //observed
+      xsProdMassGluino.push_back( toyObsLimit[toyIndex] / (toyEffLumi[toyIndex] * gluinoEffStopCM[i] * gluinoEffReco[i]) );
+      if (tpLifetime.size()>tpIndex)
 			  
-			  xsProdMassTPGluino.push_back( tpObsLimit[tpIndex] / (tpLumi_ * gluinoEffStopCM[i] * gluinoEffReco[i]) );
+	xsProdMassTPGluino.push_back( tpObsLimit[tpIndex] / (tpLumi_ * gluinoEffStopCM[i] * gluinoEffReco[i]) );
 
-			//expected gluino
-			xsProdExpMassGluino.push_back( toyExpLimit[toyIndex] / (toyEffLumi[toyIndex] * gluinoEffStopCM[i] * gluinoEffReco[i]) );
-			xsProdExpLo1SigMassGluino.push_back( (toyExpLimit[toyIndex]-toyExpLimitLo1Sig[toyIndex]) / (toyEffLumi[toyIndex] * gluinoEffStopCM[i] * gluinoEffReco[i]) );
-			xsProdExpHi1SigMassGluino.push_back( (toyExpLimitHi1Sig[toyIndex]-toyExpLimit[toyIndex]) / (toyEffLumi[toyIndex] * gluinoEffStopCM[i] * gluinoEffReco[i]) );
-			xsProdExpLo2SigMassGluino.push_back( (toyExpLimit[toyIndex]-toyExpLimitLo2Sig[toyIndex]) / (toyEffLumi[toyIndex] * gluinoEffStopCM[i] * gluinoEffReco[i]) );
-			xsProdExpHi2SigMassGluino.push_back( (toyExpLimitHi2Sig[toyIndex]-toyExpLimit[toyIndex]) / (toyEffLumi[toyIndex] * gluinoEffStopCM[i] * gluinoEffReco[i]) );
+      //expected gluino
+      xsProdExpMassGluino.push_back( toyExpLimit[toyIndex] / (toyEffLumi[toyIndex] * gluinoEffStopCM[i] * gluinoEffReco[i]) );
+      xsProdExpLo1SigMassGluino.push_back( (toyExpLimit[toyIndex]-toyExpLimitLo1Sig[toyIndex]) / (toyEffLumi[toyIndex] * gluinoEffStopCM[i] * gluinoEffReco[i]) );
+      xsProdExpHi1SigMassGluino.push_back( (toyExpLimitHi1Sig[toyIndex]-toyExpLimit[toyIndex]) / (toyEffLumi[toyIndex] * gluinoEffStopCM[i] * gluinoEffReco[i]) );
+      xsProdExpLo2SigMassGluino.push_back( (toyExpLimit[toyIndex]-toyExpLimitLo2Sig[toyIndex]) / (toyEffLumi[toyIndex] * gluinoEffStopCM[i] * gluinoEffReco[i]) );
+      xsProdExpHi2SigMassGluino.push_back( (toyExpLimitHi2Sig[toyIndex]-toyExpLimit[toyIndex]) / (toyEffLumi[toyIndex] * gluinoEffStopCM[i] * gluinoEffReco[i]) );
 
-			std::cout << " mass=" << gluinoMass.at(i) << " stopEff=" << gluinoEffStopCM[i] << " recoEff=" << gluinoEffReco[i] << std::endl;
+      std::cout << " mass=" << gluinoMass.at(i) << " stopEff=" << gluinoEffStopCM[i] << " recoEff=" << gluinoEffReco[i] << std::endl;
 
-		}
+    }
 
 
-	}
+  }
 	
-	for (unsigned i=0; i<stopMass.size(); ++i) {
+  for (unsigned i=0; i<stopMass.size(); ++i) {
 	
-		if (stopEffStopCM[i] * stopEffReco[i] > 0.) {
+    if (stopEffStopCM[i] * stopEffReco[i] > 0.) {
 			
-			massStop.push_back( stopMass[i] );
+      massStop.push_back( stopMass[i] );
 
-			// observed stop
-			xsProdMassStop.push_back( toyObsLimit[toyIndex] / (toyEffLumi[toyIndex] * stopEffStopCM[i] * stopEffReco[i]) );
-			if (tpLifetime.size()>tpIndex)
+      // observed stop
+      xsProdMassStop.push_back( toyObsLimit[toyIndex] / (toyEffLumi[toyIndex] * stopEffStopCM[i] * stopEffReco[i]) );
+      if (tpLifetime.size()>tpIndex)
 			  
-			  xsProdMassTPStop.push_back( tpObsLimit[tpIndex] / (tpLumi_ * stopEffStopCM[i] * stopEffReco[i]) );
+	xsProdMassTPStop.push_back( tpObsLimit[tpIndex] / (tpLumi_ * stopEffStopCM[i] * stopEffReco[i]) );
 		
-			// expected stop
-			xsProdExpMassStop.push_back( toyExpLimit[toyIndex] / (toyEffLumi[toyIndex] * stopEffStopCM[i] * stopEffReco[i]) );
-			xsProdExpLo1SigMassStop.push_back( (toyExpLimit[toyIndex]-toyExpLimitLo1Sig[toyIndex]) / (toyEffLumi[toyIndex] * stopEffStopCM[i] * stopEffReco[i]) );
-			xsProdExpHi1SigMassStop.push_back( (toyExpLimitHi1Sig[toyIndex]-toyExpLimit[toyIndex]) / (toyEffLumi[toyIndex] * stopEffStopCM[i] * stopEffReco[i]) );
-			xsProdExpLo2SigMassStop.push_back( (toyExpLimit[toyIndex]-toyExpLimitLo2Sig[toyIndex]) / (toyEffLumi[toyIndex] * stopEffStopCM[i] * stopEffReco[i]) );
-			xsProdExpHi2SigMassStop.push_back( (toyExpLimitHi2Sig[toyIndex]-toyExpLimit[toyIndex]) / (toyEffLumi[toyIndex] * stopEffStopCM[i] * stopEffReco[i]) );
+      // expected stop
+      xsProdExpMassStop.push_back( toyExpLimit[toyIndex] / (toyEffLumi[toyIndex] * stopEffStopCM[i] * stopEffReco[i]) );
+      xsProdExpLo1SigMassStop.push_back( (toyExpLimit[toyIndex]-toyExpLimitLo1Sig[toyIndex]) / (toyEffLumi[toyIndex] * stopEffStopCM[i] * stopEffReco[i]) );
+      xsProdExpHi1SigMassStop.push_back( (toyExpLimitHi1Sig[toyIndex]-toyExpLimit[toyIndex]) / (toyEffLumi[toyIndex] * stopEffStopCM[i] * stopEffReco[i]) );
+      xsProdExpLo2SigMassStop.push_back( (toyExpLimit[toyIndex]-toyExpLimitLo2Sig[toyIndex]) / (toyEffLumi[toyIndex] * stopEffStopCM[i] * stopEffReco[i]) );
+      xsProdExpHi2SigMassStop.push_back( (toyExpLimitHi2Sig[toyIndex]-toyExpLimit[toyIndex]) / (toyEffLumi[toyIndex] * stopEffStopCM[i] * stopEffReco[i]) );
 		
-			std::cout << " mass=" << stopMass.at(i) << std::endl;
+      std::cout << " mass=" << stopMass.at(i) << std::endl;
 
-		}
+    }
 		
-	}
+  }
 
 
 }
