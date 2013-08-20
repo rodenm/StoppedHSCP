@@ -147,7 +147,7 @@ void CosmicInefficiency::loop() {
 	  rpcDeltaZ_->Fill(deltaZ);
 	}
 	
-	if (deltaZ < 40.0 || deltaPhi < 0.2) {
+	if (deltaZ < 40.0 || deltaPhi < 0.2 || deltaPhi > TMath::Pi()/2.) {
 	  nCloseRPCPairs++;
 
 	if (deltaZ < minDeltaZ) 
