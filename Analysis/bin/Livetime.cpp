@@ -147,6 +147,8 @@ void Livetime::loop(ULong64_t maxEvents) {
     hlivetime->Fill(fillstr.c_str(), livetime);
     
 
+    std::cout << fill << ":   " << lhcFills_->getLiveFraction(fill) << std::endl;
+
     // final counts
     unsigned long nfin = nFin_.at(fill);
     hnfin->Fill(fillstr.c_str(), nfin);

@@ -9,7 +9,7 @@ from math import sqrt
 #
 # inputs [ livetime, haloR, cosmicNM1, final, haloErr]
 ##################################################
-input2012BCD = [ 1011440, 9.25+0.28, 2096, 15, 1.67 ]  #haloErr=0.75(stat) + 0.92(sys)
+input2012BCD = [ 1011440, 8.34+0.26, 2096, 15, 1.67 ]  #haloErr=0.59(stat) + 0.93(sys)
 
 ###### OTHER YEARS ######
 # inputs [ livetime, haloR, cosmicNM1, final, haloErr]
@@ -168,7 +168,7 @@ print "bgRate                  ", res2012BCD[3][0]/input2012BCD[0]
 print "bgRate_e                ", res2012BCD[3][1]/input2012BCD[0]
 print "scaleUncert              0.083" # lumi + JES uncertainty added in quadrature
 print "optimizeTimeCut          1"
-print "histFile                 /home/rodenm/stop_gluino/CMSSW_5_3_10/src/[INSERT OUTPUT DIRECTORY]histograms.root"
+print "histFile                 /home/rodenm/stop_gluino/CMSSW_5_3_10/src/AllRun2012_5310_V28_May_week_final/Search.root"
 print "lumiFile                 /home/rodenm/stop_gluino/CMSSW_5_3_10/src/StoppedHSCP/Analysis/data/lumi_all.csv"
 print "jsonFile                 0"
 print "lumiFirstRun             190645"

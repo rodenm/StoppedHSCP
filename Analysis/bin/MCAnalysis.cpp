@@ -167,7 +167,12 @@ public:
     if (vm.count("mass")) {
       sparticleM_ = vm["mass"].as<std::string>();
       std::cout << "Sparticle mass   : " << sparticleM_ << std::endl;
+    
+    } else {
+      std::cout << "Must provide sparticle mass with --mass" <<std::endl;
+      exit(3);
     }
+
     if (vm.count("flavor")) {
       flavor_ = vm["flavor"].as<std::string>();
       std::cout << "Sparticle flavor   : " << flavor_ << std::endl;
@@ -270,6 +275,9 @@ private:
   TH1D* hbeta_intersect_;
   TH1D* hbeta_stopped_intersect_;
 
+  // histogram used to calculate daughter particle energy (particularly for tops)
+  TH1D* hdaughter_E_;
+
   int intersect_count_;
 
   std::string sparticleM_;
@@ -347,6 +355,8 @@ void MCAnalysis::loop() {
   hbeta_stopped_           = new TH1D("hbeta_stopped", "", 100, 0., 1.);
   hbeta_intersect_         = new TH1D("hbeta_intersect", "", 100, 0., 1.);
   hbeta_stopped_intersect_ = new TH1D("hbeta_stopped_intersect", "", 100, 0., 1.);
+
+  hdaughter_E_             = new TH1D("hdaughter_E", "", 6000, 0., 600.);
   
   // TODO: add general histogramer method
   // dE, radial distribution, distribution of selected events, delta-phi between stopped points
@@ -449,14 +459,20 @@ void MCAnalysis::loop() {
     dumpFile_ << "no r-baryon (stopped in EB+HB) count = " << not_rbaryon_inhbeb_count_ << std::endl;
     dumpFile_ << "glueball count = " << glueball_count_ << std::endl << std::endl;
     
-    tableFile_ << flavor_ << " " << sparticleM_ << "\t" << neutralinoMass_.str() << "\t"
-	       << eb_count_+hb_count_ << "\t" << reco_eb_count_+reco_hb_count_ << "\t" // stopped count; selected count
-	       << 1.0*(eb_count_+hb_count_)/nStage1_ << "\t"                           // stopping eff
-	       << 1.0*(reco_eb_count_+reco_hb_count_)/(eb_count_+hb_count_)<< "\t"     // reco eff
+    cout.precision(5);
+    tableFile_ << flavor_ << " " 
+	       << sparticleM_ << "\t" 
+	       << fixed << hdaughter_E_->GetMean() << "\t"
+	       << fixed << hdaughter_E_->GetMeanError() << "\t"
+	       << neutralinoMass_.str() << "\t"
+	       << eb_count_+hb_count_ << "\t" 
+	       << reco_eb_count_+reco_hb_count_ << "\t" // stopped count; selected count
+	       << fixed << 1.0*(eb_count_+hb_count_)/nStage1_ << "\t"// stopping eff
+	       << fixed << 1.0*(reco_eb_count_+reco_hb_count_)/(eb_count_+hb_count_)<< "\t"     // reco eff
 	       << selected_systlo_<< "\t"
 	       << selected_systhi_<< "\t"
-	       << fabs((reco_eb_count_+reco_hb_count_)-selected_systlo_)*1.0/(reco_eb_count_+reco_hb_count_) << "\t"         // low JES uncertainty
-	       << fabs((reco_eb_count_+reco_hb_count_)-selected_systhi_)*1.0/(reco_eb_count_+reco_hb_count_)                 // hi JES uncertainty
+	       << fixed << fabs((reco_eb_count_+reco_hb_count_)-selected_systlo_)*1.0/(reco_eb_count_+reco_hb_count_) << "\t"         // low JES uncertainty
+	       << fixed << fabs((reco_eb_count_+reco_hb_count_)-selected_systhi_)*1.0/(reco_eb_count_+reco_hb_count_)                 // hi JES uncertainty
 	       << std::endl;
   }
 
@@ -602,6 +618,8 @@ int MCAnalysis::overlapStudy() {
  */
 void MCAnalysis::efficiencyStudy() {
   total_count_++;
+
+  hdaughter_E_->Fill(event_->mcDaughterE[0]);
 
   if (cuts_.cut()) selected_count_++;
   if (cuts_.triggerCut()) trigger_++;
