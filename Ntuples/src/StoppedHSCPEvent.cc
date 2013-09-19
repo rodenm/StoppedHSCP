@@ -354,11 +354,17 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   DTSegSector(0),
   DTSegLocalX(0),
   DTSegLocalY(0),
+  DTSegX(0),
+  DTSegY(0),
+  DTSegR(0),
   DTSegZ(0),
   DTSegRho(0),
   DTSegPhi(0),
   //DTSegTime(0),
   rpcHit_N(0),
+  rpcHitX(0),
+  rpcHitY(0),
+  rpcHitR(0),
   rpcHitZ(0),
   rpcHitRho(0),
   rpcHitPhi(0),
@@ -691,6 +697,9 @@ void StoppedHSCPEvent::addDTSegment(DTSegment dt)
   DTSegSector.push_back(dt.sector);
   DTSegLocalX.push_back(dt.localX);
   DTSegLocalY.push_back(dt.localY);
+  DTSegX.push_back(dt.x);
+  DTSegY.push_back(dt.y);
+  DTSegR.push_back(dt.r);
   DTSegZ.push_back(dt.z);
   DTSegRho.push_back(dt.rho);
   DTSegPhi.push_back(dt.phi);
@@ -700,6 +709,9 @@ void StoppedHSCPEvent::addDTSegment(DTSegment dt)
 
 void StoppedHSCPEvent::addRpcHit(RpcHit h)
 {
+  rpcHitX.push_back(h.x);
+  rpcHitY.push_back(h.y);
+  rpcHitR.push_back(h.r);
   rpcHitZ.push_back(h.z);
   rpcHitRho.push_back(h.rho);
   rpcHitPhi.push_back(h.phi);

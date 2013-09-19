@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.27 2012/12/14 20:31:54 rodenm Exp $
+// $Id: StoppedHSCPEvent.h,v 1.28 2013/05/07 06:15:42 rodenm Exp $
 //
 //
 
@@ -176,12 +176,16 @@ namespace shscp {
   struct DTSegment{
     DTSegment(): wheel(0),station(0),sector(0),
 		 localX(0.),localY(0.),
+		 x(0), y(0), r(0),
 		 z(0.),rho(0.),phi(0.){}
     int wheel;
     int station;
     int sector;
     double localX; 
     double localY;
+    double x;
+    double y;
+    double r;
     double z;
     double rho;
     double phi;
@@ -189,7 +193,10 @@ namespace shscp {
   
   
   struct RpcHit {
-    RpcHit(): z(0), rho(0), phi(0), region(0){}
+    RpcHit(): x(0), y(0), r(0), z(0), rho(0), phi(0), region(0){}
+    double x;
+    double y;
+    double r;
     double z;
     double rho; 
     double phi;
@@ -693,12 +700,18 @@ class StoppedHSCPEvent : public TObject {
   std::vector<Int_t> DTSegSector;
   std::vector<Double_t> DTSegLocalX;
   std::vector<Double_t> DTSegLocalY;
+  std::vector<Double_t> DTSegX;
+  std::vector<Double_t> DTSegY;
+  std::vector<Double_t> DTSegR;
   std::vector<Double_t> DTSegZ;
   std::vector<Double_t> DTSegRho;
   std::vector<Double_t> DTSegPhi;
 
   // RPC hits
   unsigned rpcHit_N;
+  std::vector<Double_t> rpcHitX;
+  std::vector<Double_t> rpcHitY;
+  std::vector<Double_t> rpcHitR;
   std::vector<Double_t> rpcHitZ;
   std::vector<Double_t> rpcHitRho;
   std::vector<Double_t> rpcHitPhi;
@@ -733,7 +746,7 @@ class StoppedHSCPEvent : public TObject {
   double top5DigiRPeak;
   double top5DigiROuter;
 
-  ClassDef(StoppedHSCPEvent,27); // version 27: includes new jet variables
+  ClassDef(StoppedHSCPEvent,29); // version 27: includes new jet variables
 
 };
 

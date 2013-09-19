@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.45 2013/05/22 20:31:05 rodenm Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.46 2013/06/28 15:49:16 rodenm Exp $
 //
 //
 
@@ -1993,7 +1993,10 @@ void StoppedHSCPTreeProducer::doMuonDTs(const edm::Event& iEvent,const edm::Even
 	  LocalPoint segmentLocal = (*segment4D).localPosition();
 	  GlobalPoint segmentGlobal = DTSurface.toGlobal(segmentLocal);
 
+	  LocalVector segmentLocalDir   = (*segment4D).localDirection();
+	  GlobalVector segmentGlobalDir = DTSurface.toGlobal(segmentLocalDir);
 
+	  // TODO: add DTSegment direction variables.
 
 
 	  shscp::DTSegment dt;
@@ -2002,6 +2005,9 @@ void StoppedHSCPTreeProducer::doMuonDTs(const edm::Event& iEvent,const edm::Even
 	  dt.sector=(chamber->id()).sector();
 	  dt.localX=segmentLocal.x();
 	  dt.localY=segmentLocal.y();
+	  dt.x=segmentGlobal.x();
+	  dt.y=segmentGlobal.y();
+	  dt.r=sqrt(segmentGlobal.x()*segmentGlobal.x() + segmentGlobal.y()*segmentGlobal.y());
 	  dt.z=segmentGlobal.z();
 	  dt.rho=segmentGlobal.perp();
 	  dt.phi=segmentGlobal.phi();
@@ -2032,6 +2038,9 @@ void StoppedHSCPTreeProducer::doMuonRPCs(const edm::Event& iEvent,const edm::Eve
     const GlobalPoint rhitglobal = roll->toGlobal(rpcIter->localPosition());
 
     shscp::RpcHit h;
+    h.x = rhitglobal.x();
+    h.y = rhitglobal.y();
+    h.r = sqrt(rhitglobal.x()*rhitglobal.x() + rhitglobal.y()*rhitglobal.y());
     h.z = rhitglobal.z();
     h.rho = rhitglobal.perp();
     h.phi = rhitglobal.phi();
