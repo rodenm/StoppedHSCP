@@ -13,7 +13,7 @@
 //
 // Original Author:  Jim Brooke
 //         Created:  
-// $Id: StoppedHSCPTreeProducer.cc,v 1.46 2013/06/28 15:49:16 rodenm Exp $
+// $Id: StoppedHSCPTreeProducer.cc,v 1.47 2013/09/19 20:07:58 rodenm Exp $
 //
 //
 
@@ -2011,6 +2011,10 @@ void StoppedHSCPTreeProducer::doMuonDTs(const edm::Event& iEvent,const edm::Even
 	  dt.z=segmentGlobal.z();
 	  dt.rho=segmentGlobal.perp();
 	  dt.phi=segmentGlobal.phi();
+	  dt.xdir=segmentGlobalDir.x();
+	  dt.ydir=segmentGlobalDir.y();
+	  dt.phidir=segmentGlobalDir.phi();
+	  dt.zdir=segmentGlobalDir.z();
 	  event_->addDTSegment(dt);
 	}
       nsegments+=nchamberseg;

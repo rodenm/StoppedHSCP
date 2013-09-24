@@ -360,6 +360,10 @@ StoppedHSCPEvent::StoppedHSCPEvent() :
   DTSegZ(0),
   DTSegRho(0),
   DTSegPhi(0),
+  DTSegXDir(0),
+  DTSegYDir(0),
+  DTSegPhiDir(0),
+  DTSegZDir(0),
   //DTSegTime(0),
   rpcHit_N(0),
   rpcHitX(0),
@@ -703,6 +707,10 @@ void StoppedHSCPEvent::addDTSegment(DTSegment dt)
   DTSegZ.push_back(dt.z);
   DTSegRho.push_back(dt.rho);
   DTSegPhi.push_back(dt.phi);
+  DTSegXDir.push_back(dt.xdir);
+  DTSegYDir.push_back(dt.ydir);
+  DTSegPhiDir.push_back(dt.phidir);
+  DTSegZDir.push_back(dt.zdir);
   //DTSegTime.push_back(dt.time);
   ++DTSegment_N;
 }

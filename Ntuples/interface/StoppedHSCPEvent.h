@@ -15,7 +15,7 @@
 */
 //
 // Original Author:  Jim Brooke
-// $Id: StoppedHSCPEvent.h,v 1.28 2013/05/07 06:15:42 rodenm Exp $
+// $Id: StoppedHSCPEvent.h,v 1.29 2013/09/19 20:07:58 rodenm Exp $
 //
 //
 
@@ -177,7 +177,8 @@ namespace shscp {
     DTSegment(): wheel(0),station(0),sector(0),
 		 localX(0.),localY(0.),
 		 x(0), y(0), r(0),
-		 z(0.),rho(0.),phi(0.){}
+		 z(0.),rho(0.),phi(0.),
+		 xdir(0),ydir(0),phidir(0),zdir(0){}
     int wheel;
     int station;
     int sector;
@@ -189,6 +190,10 @@ namespace shscp {
     double z;
     double rho;
     double phi;
+    double xdir;
+    double ydir;
+    double phidir;
+    double zdir;
   }; // DTSegment
   
   
@@ -706,6 +711,11 @@ class StoppedHSCPEvent : public TObject {
   std::vector<Double_t> DTSegZ;
   std::vector<Double_t> DTSegRho;
   std::vector<Double_t> DTSegPhi;
+  std::vector<Double_t> DTSegXDir;
+  std::vector<Double_t> DTSegYDir;
+  std::vector<Double_t> DTSegPhiDir;
+  std::vector<Double_t> DTSegZDir;
+
 
   // RPC hits
   unsigned rpcHit_N;
