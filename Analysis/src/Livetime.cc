@@ -30,8 +30,8 @@ Livetime::~Livetime() {
 void Livetime::newEvent(unsigned long fill, unsigned long run, unsigned long lb) {
 
   if (fill<1 || fill>9999 || run<1 || run > 999999) {
-    std::cerr << "ERROR : weird fill/run/lumi numbers" << std::endl;
-    std::cout << fill << " : " << run << " : " << lb << std::endl;
+    //std::cerr << "ERROR : weird fill/run/lumi numbers" << std::endl;
+    //std::cout << fill << " : " << run << " : " << lb << std::endl;
     return;
   }
 

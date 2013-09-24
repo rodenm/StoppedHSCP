@@ -103,6 +103,8 @@ void CosmicInefficiency::loop() {
   unsigned a = 0; // tagged cosmic
   unsigned b = 0; // not tagged cosmic
   unsigned nVetoed = 0;
+  unsigned nminusone = 0;
+  unsigned selected = 0;
 
   // EVENT LOOP
   for (unsigned long i=0; i<maxEvents_; ++i, nextEvent()) {
@@ -111,6 +113,9 @@ void CosmicInefficiency::loop() {
     if (i%10000==0) {
       std::cout << "Processing " << i << "th event of " <<maxEvents_<< std::endl;
     }
+
+    if (cuts_.cutNMinusOne(5)) nminusone++;
+    if (cuts_.cut()) selected++;
 
     if (event_->cscSeg_N > 0 || event_->jet_N == 0 || event_->jetEta[0] > 1.0) {
       nVetoed++;
@@ -174,13 +179,15 @@ void CosmicInefficiency::loop() {
   double ineff = 1.0*b/(1.0*(a+b));
   double sigma = sqrt((ineff*(1-ineff))/(a+b));
   //dumpFile_ << std::endl;
-  dumpFile_ << "Total events: " << maxEvents_ << std::endl;
-  dumpFile_ << "N events vetoed: " << nVetoed << std::endl;
+  dumpFile_ << "Total events:      " << maxEvents_ << std::endl;
+  dumpFile_ << "N events vetoed:   " << nVetoed << std::endl;
+  dumpFile_ << "N-1 cosmic events: " << nminusone << std::endl;
+  dumpFile_ << "Selected events:   " << selected << std::endl;
   dumpFile_ << "----------------------------" << std::endl;
   dumpFile_ << "a: " << a <<std::endl;
   dumpFile_ << "b: " << b <<std::endl;
   dumpFile_ << "----------------------------" << std::endl;
-  dumpFile_ << "b/(a+b)" << ineff << " +/- " << sigma << std::endl;
+  dumpFile_ << "b/(a+b) = " << ineff << " +/- " << sigma << std::endl;
   dumpFile_ << std::endl;
   
   // SAVE HISTOGRAMS HERE

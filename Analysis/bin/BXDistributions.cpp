@@ -160,6 +160,8 @@ void BXDistributions::loop() {
 
       }
 
+      std::cout << fill << ":   " << lhcFills_.getLiveFraction(fill) << std::endl;
+
       fillList_.push_back(fill);
       nFills++;
 

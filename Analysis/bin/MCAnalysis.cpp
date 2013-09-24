@@ -339,6 +339,7 @@ private:
   // Output file 
   std::ofstream dumpFile_;
   std::ofstream tableFile_;
+  std::ofstream eventListFile_;
 
   std::string commandLine_;
   std::ostringstream neutralinoMass_;
@@ -369,15 +370,19 @@ void MCAnalysis::loop() {
   // setup log files
   std::string fd(outdir_);
   std::string td(outdir_);
+  std::string ed(outdir_);
   fd+="/MCAnalysis_" +flavor_ + sparticleM_ + "_neutralino" +neutralinoMass_.str() + "_";
   td+="/MCAnalysis_" +flavor_ + sparticleM_ + "_neutralino" +neutralinoMass_.str() + "_";
+  ed+="/MCAnalysis_" +flavor_ + sparticleM_ + "_neutralino" +neutralinoMass_.str() + "_";
 
   if (doOverlap_) 
     fd+="overlap.txt";
   else if (doEfficiencies_) {
     fd+="efficiencies.txt";
     td+="efficiencyTable.txt";
+    ed+="eventList.txt";
     tableFile_.open(td.c_str());
+    eventListFile_.open(ed.c_str());
   }
   else 
     fd+="other.txt";
@@ -465,10 +470,12 @@ void MCAnalysis::loop() {
 	       << fixed << hdaughter_E_->GetMean() << "\t"
 	       << fixed << hdaughter_E_->GetMeanError() << "\t"
 	       << neutralinoMass_.str() << "\t"
+	       << eb_trigger_+hb_trigger_ << "\t"
 	       << eb_count_+hb_count_ << "\t" 
 	       << reco_eb_count_+reco_hb_count_ << "\t" // stopped count; selected count
 	       << fixed << 1.0*(eb_count_+hb_count_)/nStage1_ << "\t"// stopping eff
 	       << fixed << 1.0*(reco_eb_count_+reco_hb_count_)/(eb_count_+hb_count_)<< "\t"     // reco eff
+	       << fixed << 1.0*(eb_trigger_+hb_trigger_)/(eb_count_+hb_count_)<< "\t" // trigger eff
 	       << selected_systlo_<< "\t"
 	       << selected_systhi_<< "\t"
 	       << fixed << fabs((reco_eb_count_+reco_hb_count_)-selected_systlo_)*1.0/(reco_eb_count_+reco_hb_count_) << "\t"         // low JES uncertainty
@@ -531,6 +538,7 @@ void MCAnalysis::loop() {
     hscp_file_.close();
     stopped_file_.close();
     tableFile_.close();
+    eventListFile_.close();
   }
  }
   
@@ -620,8 +628,53 @@ void MCAnalysis::efficiencyStudy() {
   total_count_++;
 
   hdaughter_E_->Fill(event_->mcDaughterE[0]);
+  
+  if (cuts_.cut()) 
+    selected_count_++;
+  
+// count # of DTs outside the innermost DT cylinder                                                                                                                             
+  double outerDT = 0.000001; // avoid divide by zero                                                                                                                              
+  int innerDT = 0;
 
-  if (cuts_.cut()) selected_count_++;
+  double testPhi;
+  double maxDeltaPhi = -1.;
+  for (unsigned idt = 0; idt<event_->DTSegment_N; idt++){
+    if (idt == 0) {
+      testPhi = event_->DTSegPhi[0];
+      //std::cout << testPhi << "   ";
+    } else {
+      //std::cout << event_->DTSegPhi[idt] << "   ";
+      double deltaphi = acos(cos(event_->DTSegPhi[idt] - testPhi));
+      if (deltaphi > maxDeltaPhi) maxDeltaPhi = deltaphi;
+    }
+    if (event_->DTSegR[idt] > 480) outerDT++;
+    else innerDT++;
+  }
+
+  unsigned nCloseRPCPairs = 0;
+  double frac = 1.0*innerDT/outerDT;
+  if ( outerDT < 3 ) {
+    for (unsigned irpc = 0; irpc < event_->rpcHit_N; irpc++) {
+      if (event_->rpcHitR[irpc] < 670) continue;              
+      for (unsigned jrpc = irpc+1; jrpc < event_->rpcHit_N; jrpc++) {
+        if (event_->rpcHitR[jrpc] < 670) continue;                   
+        double deltaZ = fabs(event_->rpcHitZ[irpc] - event_->rpcHitZ[jrpc]);
+        double deltaPhi = acos(cos(event_->rpcHitPhi[irpc] - event_->rpcHitPhi[jrpc]));
+
+	// Require hits to be localized in z or in phi
+        if (deltaZ < 40.0 || deltaPhi > TMath::Pi()/2.) { //  || deltaPhi < 0.2
+	  nCloseRPCPairs++;
+        }
+      }
+    }
+  }
+  if (cuts_.cutNMinusOne(5) && !cuts_.cutN(5))
+      eventListFile_ << event_->run << "\t" << event_->lb << "\t" << event_->id << "\t"
+		     << event_->DTSegment_N << "\t" << event_->rpcHit_N << "\t"
+		     << maxDeltaPhi << "\t" << frac << "\t" << nCloseRPCPairs 
+		     << std::endl;;
+  
+
   if (cuts_.triggerCut()) trigger_++;
   // Associate leading jet with stopped point
   // If no reconstructed jets, just use first stopped point.

@@ -34,7 +34,7 @@ Cuts::Cuts(StoppedHSCPEvent* event,
     addCut(&Cuts::bxVeto, "BX veto");          // 2
     addCut(&Cuts::vertexVeto, "Vertex veto");  // 3
     addCut(&Cuts::haloVeto, "Halo veto");      // 4
-    addCut(&Cuts::cosmicVeto3, "Cosmic veto");  // 5
+    addCut(&Cuts::cosmicVeto2, "Cosmic veto");  // 5
     addCut(&Cuts::hcalNoiseVeto, "Noise veto");// 6
     addCut(&Cuts::looseJetCut, "E30");         // 7
     addCut(&Cuts::jetEnergyCut, "E70");        // 8
@@ -55,7 +55,7 @@ Cuts::Cuts(StoppedHSCPEvent* event,
     addCut(&Cuts::bxVeto, "BX veto");
     addCut(&Cuts::vertexVeto, "Vertex veto");
     addCut(&Cuts::haloVeto, "Halo veto");
-    addCut(&Cuts::cosmicVeto, "Cosmic veto");
+    addCut(&Cuts::cosmicVeto3, "Cosmic veto");
     addCut(&Cuts::hcalNoiseVeto, "Noise veto");
     addCut(&Cuts::looseJetCut, "E30");
     addCut(&Cuts::jetEnergyCut, "E70");
@@ -179,41 +179,134 @@ bool Cuts::trackVeto() const {
 
 bool Cuts::cosmicVeto() const {      // no cosmic muon
   return (event_->mu_N==0);
+  //return true;
+  /**
+  unsigned nCloseRPCPairs = 0;
+  for (unsigned irpc = 0; irpc < event_->rpcHit_N; irpc++) {
+    for (unsigned jrpc = irpc+1; jrpc < event_->rpcHit_N; jrpc++) {
+      double deltaZ = fabs(event_->rpcHitZ[irpc] - event_->rpcHitZ[jrpc]);
+      double deltaPhi = acos(cos(event_->rpcHitPhi[irpc] - event_->rpcHitPhi[jrpc]));
+      
+      // Require hits to be localized in z or in phi
+      if (deltaZ < 40.0 || deltaPhi < 0.2 || deltaPhi > TMath::Pi()/2.) {
+	nCloseRPCPairs++;
+      }
+    }
+  }
+  return (nCloseRPCPairs < 2);
+  */
 }
 
 bool Cuts::cosmicVeto2() const {      // Cosmic cut from 2011 analysis
-  if (event_->mu_N > 0) 
-    return false;
+  //return (event_->DTSegment_N < 3);
   
-  if (event_->DTSegment_N < 3) { 
-    unsigned nCloseRPCPairs = 0;
-    for (unsigned irpc = 0; irpc < event_->rpcHit_N; irpc++) {
-      for (unsigned jrpc = irpc+1; jrpc < event_->rpcHit_N; jrpc++) {
-	double deltaZ = fabs(event_->rpcHitZ[irpc] - event_->rpcHitZ[jrpc]);
-	double deltaPhi = acos(cos(event_->rpcHitPhi[irpc] - event_->rpcHitPhi[jrpc]));
-	
-	// Require barrel hits to be localized in z, endcap hits to be localzied in phi
-	/**
-	if (deltaZ < 40.0 && event_->rpcHitRegion[irpc] == 0 && event_->rpcHitRegion[jrpc] == 0) {
-	  nCloseRPCPairs++;
-	}
-	if (deltaPhi < 0.4 && abs(event_->rpcHitRegion[irpc]) == 1 && abs(event_->rpcHitRegion[jrpc]) == 1) {
-	  nCloseRPCPairs++;
-	}
-	
-	*/
-	
-	//if (deltaZ < 40.0 || deltaPhi < 0.2 || deltaPhi > TMath::Pi()/2.)
-	//nCloseRPCPairs++;
+  // TODO: calculate relevant variables first, and then write cuts succinctly 
 
-	if (deltaZ < 40.0 || deltaPhi < 0.4) {
+  // count # of DTs outside the innermost DT cylinder
+  double outerDT = 0.000001; // avoid divide by zero
+  int innerDT = 0;
+
+  double testPhi;
+  double maxDeltaPhi = -1.;
+  double maxDeltaJetPhi = -1.;
+  for (unsigned idt = 0; idt<event_->DTSegment_N; idt++){
+    if (idt == 0) {
+      testPhi = event_->DTSegPhi[0];
+      //std::cout <<"dts...";
+    } else {
+      double deltaphi = acos(cos(event_->DTSegPhi[idt] - testPhi));
+      if (deltaphi > maxDeltaPhi) maxDeltaPhi = deltaphi;
+    }
+    if (event_->DTSegR[idt] > 560) outerDT++;
+    else innerDT++;
+    if (event_->jet_N > 0) {
+      double deltajetphi = acos(cos(event_->DTSegPhi[idt] - event_->jetPhi[0]));
+      if (deltajetphi > maxDeltaJetPhi) maxDeltaJetPhi = deltajetphi;
+    }
+  }
+  //std::cout << "frac...";
+
+  double frac = innerDT/outerDT;
+  //std::cout << "rpcs...";
+
+  double outerRPC = 0.00000001;
+  double innerRPC = 0;
+  double maxRPCDeltaPhi = -1.;
+  double maxRPCDeltaJetPhi = -1.;
+  unsigned nCloseRPCPairs = 0;
+  for (unsigned irpc = 0; irpc < event_->rpcHit_N; irpc++) {
+    if (irpc == 0) {
+      testPhi = event_->rpcHitPhi[0];
+      //std::cout <<"test rpc...";
+    } else {
+      double deltaphi = acos(cos(event_->rpcHitPhi[irpc] - testPhi));
+      if (deltaphi > maxRPCDeltaPhi) maxRPCDeltaPhi = deltaphi;
+      //std::cout << "compare rpcs...";
+    }
+    if (event_->jet_N > 0) {
+      double deltajetphi = acos(cos(event_->rpcHitPhi[irpc] - event_->jetPhi[0]));
+      if (deltajetphi > maxRPCDeltaJetPhi) maxRPCDeltaJetPhi = deltajetphi;
+    }
+    if (event_->rpcHitR[irpc] > 560) outerRPC++;
+    else innerRPC++;
+  
+  
+    //std::cout << "logic..." << std::endl;
+  
+    if (event_->rpcHitR[irpc] < 385) continue;
+    for (unsigned jrpc = irpc+1; jrpc < event_->rpcHit_N; jrpc++) {
+      if (event_->rpcHitR[jrpc] < 385) continue;
+      double deltaZ = fabs(event_->rpcHitZ[irpc] - event_->rpcHitZ[jrpc]);
+      double deltaPhi = acos(cos(event_->rpcHitPhi[irpc] - event_->rpcHitPhi[jrpc]));
+      
+      // Require hits to be localized in z or in phi
+      if (deltaPhi > TMath::Pi()/2.) { //  || deltaPhi < 0.2
 	nCloseRPCPairs++;
-	}
       }
     }
-    return (nCloseRPCPairs < 2);
   }
-  return (false);
+  
+  //******************* Cut logic starts here *******************/
+  /**
+  if (event_->DTSegment_N > 1 || event_->rpcHit_N > 2) { // require min muon activity
+    // cosmic if DT hits are separated in phi
+    if (maxDeltaPhi > TMath::Pi()/2.|| maxDeltaJetPhi > 1.1)
+      return false;
+
+    // Cosmic if more activity in outer barrel than inner barrel
+    return (frac < 2);
+
+    // Cosmic if lots of activity in outer barrel
+    if ( outerDT > 3) return false; 
+  }
+
+  return true;
+  */
+
+  /** Energy dependent:
+      - delta(jet, DT)
+      - delta (DT, DT)
+
+      There is always at least 1 outer DT hit for cosmic MC events
+  */
+ 
+ /******************* Option #2 ******************************/
+  
+  // cosmic if DT hits are separated in phi
+  if (maxDeltaPhi > TMath::Pi()/2. || maxDeltaJetPhi > 1.0)
+    return false;
+
+  //if (nCloseRPCPairs > 2.)
+  //  return false;
+
+  if (maxRPCDeltaPhi > 2.)
+    return false;
+    
+    // Cosmic if more activity in outer barrel than inner barrel
+  if (outerDT >= 1 || outerRPC >= 2)// && frac < 4 )
+    return false;
+
+  return true;
 }
 
 
@@ -238,7 +331,7 @@ bool Cuts::cosmicVeto3() const {      // no cosmic muon
 
 bool Cuts::hcalNoiseVeto() const {   // std HCAL noise veto
   //std::cout <<"TRIGDEC:"<<event_->run<<":"<<event_->lb<<":"<<event_->id<<":"<<event_->bx<<":"<<event_->noiseFilterResult<<std::endl;
-  
+    
   // veto events where the leading jet is contained in HPDs 52-55
   bool pass = true;
   if (event_->hpd_N > 0) {
@@ -248,6 +341,8 @@ bool Cuts::hcalNoiseVeto() const {   // std HCAL noise veto
   }
 
   return (event_->noiseFilterResult && pass);
+  
+  //return true;
 }
 
 bool Cuts::looseJetCut() const {     // low Et threshold
@@ -269,8 +364,10 @@ bool Cuts::jetEnergyCorrCut() const {    // require jet above Et threshold
 }
 
 bool Cuts::jetN60Cut() const {       // jet n60
-  return event_->jet_N>0 && event_->jetN60[0]<6;
+  //return event_->jet_N>0;// && event_->jetN60[0]<6;
+  return true;
 }
+
 bool Cuts::jetN90Cut() const {       // jet n90
   return event_->jet_N>0 && event_->jetN90[0]>3;
 }

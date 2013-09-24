@@ -28,6 +28,8 @@ public:
   }
   
   ~Backgrounds() { };
+
+  void cutAxisLabels(TH1D* h);
   
   virtual void loop();
   
@@ -161,11 +163,59 @@ private:
 
   TH2D* overlap_;
 
+  // Cut values - plots of values used in cuts for all events passing trigger
+  TH1D* hnvertex_;
+  TH1D* hncsc_;
+  TH1D* hnmu_;
+  TH1D* hndt_;
+  TH1D* hnrpc_;
+  TH1D* hnoise_;
+  TH1D* hjete_;
+  TH1D* hn60_;
+  TH1D* hn90_;
+  TH1D* hntowiphi_;
+  TH1D* hiphifrac_;
+  TH1D* hr1_;
+  TH1D* hr2_;
+  TH1D* hrpeak_;
+  TH1D* hrouter_;
+  TH1D* hncutcum_;
+  TH1D* hnminus1_;
+  TH1D* hncutind_;
 
-};
+  TH1D* hremainingDTR_;
+  TH1D* hremainingRPCR_;
+  TH1D* hDTdeltaphi_;
+  TH1D* hDTdeltajetphi_;
+  TH1D* hRPCdeltaphi_;
+  TH1D* hRPCdeltajetphi_;
+  TH1D* hDTinnerouterfrac_;
+  TH1D* hRPCinnerouterfrac_;
+  TH1D* hNRPCpairs_;
+  TH1D* hDTouter_;
+  TH1D* hRPCouter_;
+  TH1D* hcosmiccum_;
+
+  int ncosmic;
+  int ncut1;
+  int ncut2;
+  int ncut3;
+  int ncut4;
+  int ncut5;
+  int ncut6;
+  int ncut7;
+  int ncut8;
+}; 
 
 #endif
 
+void Backgrounds::cutAxisLabels(TH1D* h) {
+
+  for (unsigned i=0; i<cuts_.nCuts(); ++i) {
+    h->GetXaxis()->SetBinLabel(i+1, cuts_.cutName(i).c_str());
+  }
+
+}
 
 // this is the event loop
 void Backgrounds::loop() {
@@ -309,14 +359,68 @@ void Backgrounds::loop() {
   overlap_->GetXaxis()->SetBinLabel(7,"Un ID");
   overlap_->GetYaxis()->SetBinLabel(7,"Un ID");
 
+  hnvertex_ = new TH1D("nvertex", "", 10, 0, 10);
+  hncsc_ = new TH1D("ncsc", "", 20, 0, 20);
+  hnmu_ = new TH1D("nmu", "", 10, 0, 10);
+  hndt_ = new TH1D("ndt", "", 20, 0, 20); 
+  hnrpc_ = new TH1D("nrpc", "", 20, 0, 20); 
+
+  hnoise_ = new TH1D("noise", "", 2, -0.5, 1.5);
+  hnoise_->GetXaxis()->SetBinLabel(1,"true");
+  hnoise_->GetXaxis()->SetBinLabel(2,"false");
+  hnoise_->SetMinimum(0);
+
+  hjete_ = new TH1D("jete", "", 70, 0, 700);
+  hn60_ = new TH1D("n60", "", 15, 0, 15);
+  hn90_ = new TH1D("n90", "", 15, 0, 15);
+  hntowiphi_ = new TH1D("ntowiphi", "", 10, 0, 10);
+  hiphifrac_ = new TH1D("iphifrac", "",20, 0, 1.0); 
+  hr1_ = new TH1D("r1", "", 20, 0, 1.0);
+  hr2_ = new TH1D("r2", "",20, 0, 1.0);
+  hrpeak_ = new TH1D("rpeak", "",20, 0, 1.0);
+  hrouter_ = new TH1D("router", "",20, 0, 1.0);
+
+  hncutcum_ = new TH1D("ncutcum", "", 20, 0., 20.);
+  cutAxisLabels(hncutcum_);
+  hnminus1_ = new TH1D("nminus1", "", 20, 0., 20.);
+  cutAxisLabels(hnminus1_);
+  hncutind_ = new TH1D("ncutind", "", 20, 0., 20.);
+  cutAxisLabels(hncutind_);
+
+  hremainingDTR_ = new TH1D("remainingDTR", "r of DTSegements for events passing N-1(cosmic);r [cm]", 200, 0, 800);
+  hremainingRPCR_ = new TH1D("remaininRPCR", "r of rpcHits for events passing N-1(cosmic); r [cm]", 200, 0, 800);
+
+  hDTdeltaphi_ = new TH1D("DTdeltaphi", "", 20, 0., TMath::Pi());
+  hDTdeltajetphi_ = new TH1D("DTdeltajetphi", "", 20, 0., TMath::Pi());
+  hRPCdeltaphi_ = new TH1D("RPCdeltaphi", "", 20, 0., TMath::Pi());
+  hRPCdeltajetphi_ = new TH1D("RPCdeltajetphi", "", 20, 0., TMath::Pi());
+
+  hDTinnerouterfrac_ = new TH1D("DTinnerouterfrac", "", 30, 0., 10.);
+  hRPCinnerouterfrac_ = new TH1D("RPCinnerouterfrac", "", 30, 0., 10.);
+  hNRPCpairs_ = new TH1D("NRPCpairs", "", 20, 0., 20.);
+
+  hDTouter_ = new TH1D("DTouter", "", 20, 0., 20.);
+  hRPCouter_ = new TH1D("RPCouter", "", 20, 0., 20.);
+
+  hcosmiccum_ = new TH1D("cosmiccum", "", 8, -0.5, 7.5);
 
   reset();
   nextEvent();
 
+  ncosmic = 0;
+  ncut1 = 0;
+  ncut2 = 0;
+  ncut3 = 0;
+  ncut4 = 0;
+  ncut5 = 0;
+  ncut6 = 0;
+  ncut7 = 0;
+  ncut8 = 0;
+
   for (unsigned long i=0; i<maxEvents_; ++i, nextEvent()) {
 
     // occasional print out
-    if (i%100000==0) {
+    if (i%10000==0) {
       std::cout << "Processing " << i << "th event of " <<maxEvents_<< std::endl;
     }
 
@@ -376,6 +480,162 @@ void Backgrounds::loop() {
     bool isUnid     = (!isNoise && !isCosmic && !isBeamHalo && !isBeamGas && !isVtx);
 
     unsigned overlap = 0;
+
+    // Create histograms showing distribution of cut values for all events passing the trigger.
+    if (trig) {
+      hnvertex_->Fill(nvtx);
+      hncsc_->Fill(ncsc);
+      hnmu_->Fill(nmu);
+      hndt_->Fill(event_->DTSegment_N);
+      hnrpc_->Fill(event_->rpcHit_N);
+      int setNoise = isNoise? 0 : 1;
+      hnoise_->Fill(setNoise);
+      //hnoise_->GetXaxis()->SetBinLabel(1,"true");
+      //hnoise_->GetXaxis()->SetBinLabel(2,"false");
+      
+      hjete_->Fill(e);
+      hn60_->Fill(n60);
+      hn90_->Fill(n90);
+      hntowiphi_->Fill(ntow);
+      hiphifrac_->Fill(fiphi);
+      hr1_->Fill(r1);
+      hr2_->Fill(r2);
+      hrpeak_->Fill(rp);
+      hrouter_->Fill(ro);
+    }
+    /**
+    if (cuts_.cut()) {
+      for (i=0; i<event_->DTSegment_N; i++) {
+	hremainingDTR_->Fill(event_->DTSegR[i]);
+      }
+      for (i=0; i<event_->rpcHit_N; i++) {
+	hremainingRPCR_->Fill(event_->rpcHitR[i]);
+      }
+    }
+    */
+    if (cuts_.cutNMinusOne(5)){
+      hcosmiccum_->Fill(0);
+
+      double innerDT = 0;
+      double outerDT = 0.0000001; // protect against divide by 0
+
+      double innerRPC = 0; 
+      double outerRPC = 0.000001; // protect against divide by 0
+      
+      //std::cout << "Testing DTs...";
+
+      double testPhi;
+      double maxDeltaPhi = -1;
+      double maxDeltaJetPhi = -1.;
+      for (unsigned idt = 0; idt<event_->DTSegment_N; idt++) {
+	
+	if (idt == 0)
+	  testPhi = event_->DTSegPhi[0];
+	else {
+	  double deltaPhi = acos(cos(event_->DTSegPhi[idt] - testPhi));
+	  if (deltaPhi > maxDeltaPhi) maxDeltaPhi = deltaPhi;
+	}
+	double deltajetphi = acos(cos(event_->DTSegPhi[idt] - event_->jetPhi[0]));
+	if (deltajetphi > maxDeltaJetPhi) maxDeltaJetPhi = deltajetphi;
+
+	if (event_->DTSegR[idt] > 560) outerDT++;
+	else innerDT++;
+      }
+      hDTdeltajetphi_->Fill(maxDeltaJetPhi); 
+      hDTdeltaphi_->Fill(maxDeltaPhi);
+
+      //std::cout << "testing dt frac...";
+      double frac = innerDT/outerDT;
+      hDTinnerouterfrac_->Fill(frac);
+      hDTouter_->Fill(outerDT);
+
+
+      //std::cout << "testing RPCs...";
+      double maxRPCDeltaJetPhi = -1.;
+      double maxRPCDeltaPhi = -1.;
+      for (unsigned irpc = 0; irpc<event_->rpcHit_N; irpc++) {
+	if (irpc == 0)
+	  testPhi = event_->rpcHitPhi[0];
+	else {
+	  double deltaPhi = acos(cos(event_->rpcHitPhi[irpc] - testPhi));
+	  if (deltaPhi > maxRPCDeltaPhi) maxRPCDeltaPhi = deltaPhi;
+	}
+	double deltajetphi = acos(cos(event_->rpcHitPhi[irpc] - event_->jetPhi[0]));
+	if (deltajetphi > maxRPCDeltaJetPhi) maxRPCDeltaJetPhi = deltajetphi;
+
+	if (event_->rpcHitR[irpc] > 560) outerRPC++;
+	else innerRPC++;
+      }
+      hRPCdeltajetphi_->Fill(maxRPCDeltaJetPhi); 
+      hRPCdeltaphi_->Fill(maxRPCDeltaPhi);
+
+      hRPCinnerouterfrac_->Fill(1.*innerRPC/outerRPC);
+      hRPCouter_->Fill(outerRPC);      
+      
+
+      //std::cout << "testing RPC pairs...";
+      unsigned nCloseRPCPairs = 0;
+      for (unsigned irpc = 0; irpc < event_->rpcHit_N; irpc++) {
+	if (event_->rpcHitR[irpc] < 385) continue;
+	for (unsigned jrpc = irpc+1; jrpc < event_->rpcHit_N; jrpc++) {
+	  if (event_->rpcHitR[jrpc] < 385) continue;
+	  double deltaZ = fabs(event_->rpcHitZ[irpc] - event_->rpcHitZ[jrpc]);
+	  double deltaPhi = acos(cos(event_->rpcHitPhi[irpc] - event_->rpcHitPhi[jrpc]));
+	  
+	  // Require hits to be localized in z or in phi
+	  if (deltaZ < 40.0 || deltaPhi > TMath::Pi()/2.) { //  || deltaPhi < 0.2
+	    nCloseRPCPairs++;
+	  }
+	}
+      }
+      hNRPCpairs_->Fill(nCloseRPCPairs);
+
+
+      // Calculate cutflow for each condition
+      if (maxDeltaPhi > TMath::Pi()/2.) {
+	hcosmiccum_->Fill(1);
+	if (maxDeltaJetPhi > 1.0) {
+	  hcosmiccum_->Fill(2);
+	  // cosmic if DT hits are separated in phi
+	  if (maxRPCDeltaPhi > TMath::Pi()/2.) {
+	    hcosmiccum_->Fill(3);
+	    if (outerDT >= 1) {
+	      hcosmiccum_->Fill(4);
+	      if (outerRPC >= 2) {
+		hcosmiccum_->Fill(5);
+	      }
+	    }
+	  }
+	}
+      } else {
+      	hcosmiccum_->Fill(6);
+      }
+      //ncut 7++;
+      
+    }
+    
+
+    // loop over cuts
+    bool fail=false;
+    for (unsigned c=0; c<cuts_.nCuts(); c++) {
+
+      // N-1
+      if (cuts_.cutNMinusOne(c)) {
+	hnminus1_->Fill(c);
+      }
+      // passes this cut
+      if (cuts_.cutN(c)) {
+	hncutind_->Fill(c);
+      }
+      else fail |= true;
+      
+      // vetoed by this or a previous cut
+      if (!fail) {
+	hncutcum_->Fill(c);
+      }
+    }
+
+
 
     // only consider events passing main trigger with jet in barrel
     if ( !(trig && e>50. && fabs(eta)<1.3) ) continue;
@@ -589,6 +849,52 @@ void Backgrounds::loop() {
 
   // SAVE HISTOGRAMS
   ofile_->cd();
+  hnvertex_->Write("",TObject::kOverwrite);
+  hncsc_->Write("",TObject::kOverwrite);
+  hnmu_->Write("",TObject::kOverwrite);
+  hndt_->Write("",TObject::kOverwrite);
+  hnrpc_->Write("",TObject::kOverwrite);
+  hnoise_->Write("",TObject::kOverwrite);
+  hjete_->Write("",TObject::kOverwrite);
+  hn60_->Write("",TObject::kOverwrite);
+  hn90_->Write("",TObject::kOverwrite);
+  hntowiphi_->Write("",TObject::kOverwrite);
+  hiphifrac_->Write("",TObject::kOverwrite);
+  hr1_->Write("",TObject::kOverwrite);
+  hr2_->Write("",TObject::kOverwrite);
+  hrpeak_->Write("",TObject::kOverwrite);
+  hrouter_->Write("",TObject::kOverwrite);
+  hncutcum_->Write("",TObject::kOverwrite);
+  hnminus1_->Write("",TObject::kOverwrite);
+  hncutind_->Write("",TObject::kOverwrite);
+
+  hremainingDTR_->Write("",TObject::kOverwrite);
+  hremainingRPCR_->Write("",TObject::kOverwrite);
+
+  hDTdeltaphi_->Write("",TObject::kOverwrite);
+  hDTdeltajetphi_->Write("",TObject::kOverwrite);
+  hRPCdeltaphi_->Write("",TObject::kOverwrite);
+  hRPCdeltajetphi_->Write("",TObject::kOverwrite);
+  hDTinnerouterfrac_->Write("",TObject::kOverwrite);
+  hRPCinnerouterfrac_->Write("",TObject::kOverwrite);
+  hNRPCpairs_->Write("",TObject::kOverwrite);
+  hDTouter_->Write("",TObject::kOverwrite);
+  hRPCouter_->Write("",TObject::kOverwrite);
+
+  /**
+  // Show individual results for cosmic conditions
+  hcosmiccum_->Fill(1,ncosmic);
+  hcosmiccum_->Fill(2,ncut1);
+  hcosmiccum_->Fill(3,ncut2);
+  hcosmiccum_->Fill(4,ncut3);
+  hcosmiccum_->Fill(5,ncut4);
+  hcosmiccum_->Fill(6,ncut5);
+  hcosmiccum_->Fill(7,ncut6);
+  hcosmiccum_->Fill(8,ncut7);
+  */
+  hcosmiccum_->Write("",TObject::kOverwrite);
+
+
   noiseJetE_->Write("",TObject::kOverwrite);
   noiseJetEta_->Write("",TObject::kOverwrite);
   noiseJetPhi_->Write("",TObject::kOverwrite);
