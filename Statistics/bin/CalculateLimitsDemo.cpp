@@ -33,32 +33,7 @@
 
 using namespace std;
 namespace po = boost::program_options;
-/**
-namespace ROOT{
-  namespace Math {
-    double pValue68limit(double n, double b) {
-      double sMax = 1000;
-      double sMin = 0;
-      while(1) {
-	double sTest = 0.5*(sMax+sMin);
-	double pval = poissonPValue(n,b,sTest);
-	if (pval < .681 && pval > 0.680)
-	  return sTest;
-	
-      }
-      
-      return 1;
-    }
 
-    // returns probability of 
-    double poissonPValue(double n, double b, double s) {
-      return (1- inc_gamma(1+n,b+s)/inc_gamma(1+n,b));
-      //return 1;
-    }
-  }
-}
-
-*/
 class CalculateLimitsDemo {
 
 public:
@@ -175,35 +150,14 @@ int main(int argc, char* argv[]) {
   std::cout << "\n" << std::endl;
 
   //CLsCountingExperiment (double fBackground, double fBackgroundSigma, double fScale, double fScaleSigma)
-  double expBackground    = 3.12;    // bkgd estimate from python script
-  double expBackground_e  = 0.36;
-  double scaleUncert      = 0.044;
-  int nObserved = 1;
+  double expBackground    = 39.;    // bkgd estimate from python script
+  double expBackground_e  = 7.8;
+  double scaleUncert      = 0.14;
+  int nObserved = 10;
   CLsCountingExperiment ce (expBackground, expBackground_e, 1, scaleUncert);
 
   double limit68cl = ce.cl95limit(nObserved,true);
-  /**
-  std::vector<double>  expectedLimit = ce.cl95ExpectedLimit ();
-  double expLimit     = expectedLimit[5];
-  double expLim1SigLo = expectedLimit[1];
-  double expLim1SigHi = expectedLimit[2];
-  double expLim2SigLo = expectedLimit[3];
-  double expLim2SigHi = expectedLimit[4];
 
-
-  //std::cout << "\n--------------"<<std::endl;
-  
-  std::cout << "\nlimit95cl\texpLimit\texpLim1SigLo\texpLim1SigHi\texpLim2SigLo\texpLim2SigHi" <<std::endl;
-  
-  std::cout << limit95cl      << "\t\t"
-	    << expLimit       << "\t\t"
-	    << expLim1SigLo << "\t\t"
-	    << expLim1SigHi << "\t\t"
-	    << expLim2SigLo << "\t\t"
-	    << expLim2SigHi << "\t\n"
-	    << std::endl; 
-  return 0;
-  */
   std::cout << "nlimit68cl" << std::endl;
   std::cout << limit68cl << std::endl;
   return 0;
