@@ -10,6 +10,7 @@
 #include "TFile.h"
 #include "TChain.h"
 #include "TH1D.h"
+#include "TH2D.h"
 
 #include <cmath>
 #include <boost/program_options.hpp>
@@ -52,6 +53,7 @@ private:
 
   // YOUR CODE HERE
   std::ofstream dumpFile_;
+  std::ofstream eventsFile_;
 
   // histograms
   TH1D* nJet_;
@@ -64,6 +66,16 @@ private:
   TH1D* rpcDeltaZ_;
   TH1D* rpcDeltaZ_Min_;
   TH1D* rpcNClosePairs_;
+
+  TH2D* taggedDTbyRPC_;
+  TH2D* untaggedDTbyRPC_;
+  TH2D* totalDTbyRPC_;
+  TH1D* taggedFrac_;
+  TH1D* untaggedFrac_;
+  TH1D* totalFrac_;
+
+  TH2D* inefficiencyDTbyRPC_;
+  TH1D* inefficiencyFrac_;
 };
 
 #endif
@@ -72,7 +84,12 @@ private:
 // this is the event loop
 void CosmicInefficiency::loop() {
 
-  // setup log files                                                                                 
+  // set up events file
+  std::string ed(outdir_);
+  ed+="/CosmicInefficiency_untaggedEvents.txt";
+  eventsFile_.open(ed.c_str());
+
+  // setup log file
   std::string fd(outdir_);
   fd+="/CosmicInefficiency.txt";
   dumpFile_.open(fd.c_str());
@@ -94,6 +111,17 @@ void CosmicInefficiency::loop() {
   rpcDeltaZ_ = new TH1D("rpcDetlaZ", "RPC #Delta(z)", 10, 0, 1000);
   rpcDeltaZ_Min_ = new TH1D("rpcDetlaZ_Min", "Min RPC #Delta(z)", 100, 0, 1000);
   rpcNClosePairs_ = new TH1D("rpcNClosePairs", "N(close RPC pairs)", 25, 0, 25); 
+
+  taggedDTbyRPC_ = new TH2D("taggedDTbyRPC","tagged cosmic;nDT;nRPC", 150, 0, 30, 15, 0, 30);
+  untaggedDTbyRPC_ = new TH2D("untaggedDTbyRPC","untagged cosmic;nDT;nRPC", 15, 0, 30, 15, 0, 30);
+  totalDTbyRPC_ = new TH2D("totalDTbyRPC","total cosmic;nDT;nRPC", 15, 0, 30, 15, 0, 30);
+
+  taggedFrac_ = new TH1D("taggedFrac","tagged cosmic;inner/outer DT hits;", 20, 0, 10);
+  untaggedFrac_ = new TH1D("untaggedFrac","untagged cosmic;inner/outer DT hits;", 20, 0, 10);
+  totalFrac_ = new TH1D("totalFrac","total cosmic;inner/outer DT hits;", 20, 0, 10);
+
+  inefficiencyDTbyRPC_ = new TH2D("ineffciencyDTbyRPC", "inefficiency", 15, 0, 30, 15, 0, 30);
+  inefficiencyFrac_ = new TH1D("ineffciencyFrac", "inefficiency", 20, 0, 20);
   
   reset();
   nextEvent();
@@ -114,6 +142,13 @@ void CosmicInefficiency::loop() {
       std::cout << "Processing " << i << "th event of " <<maxEvents_<< std::endl;
     }
 
+    unsigned nRPC = event_->rpcHit_N;
+    unsigned nDT  = event_->DTSegment_N;
+
+    /************* REMOVE THIS LINE IN REAL ANALYSIS ***************/
+    //if ((nRPC < 5 || nRPC > 15) || (nDT < 5 || nDT > 17)) continue;
+    /************* REMOVE THIS LINE IN REAL ANALYSIS ***************/
+
     if (cuts_.cutNMinusOne(5)) nminusone++;
     if (cuts_.cut()) selected++;
 
@@ -132,7 +167,15 @@ void CosmicInefficiency::loop() {
 
     unsigned nCloseRPCPairs = 0;
     double minDeltaZ = 2000.;
+    unsigned outerRPC = 0;
+    unsigned innerRPC = 0;
     for (unsigned irpc = 0; irpc < event_->rpcHit_N; irpc++) {
+
+      if (event_->rpcHitPhi[irpc] > 560)
+	outerRPC++;
+      else
+	innerRPC++;
+
       for (unsigned jrpc = irpc+1; jrpc < event_->rpcHit_N; jrpc++) {
 	double deltaZ = fabs(event_->rpcHitZ[irpc] - event_->rpcHitZ[jrpc]);
 	double deltaPhi = acos(cos(event_->rpcHitPhi[irpc] - event_->rpcHitPhi[jrpc]));
@@ -152,7 +195,7 @@ void CosmicInefficiency::loop() {
 	  rpcDeltaZ_->Fill(deltaZ);
 	}
 	
-	if (deltaZ < 40.0 || deltaPhi < 0.2 || deltaPhi > TMath::Pi()/2.) {
+	if (deltaPhi > TMath::Pi()/2.) {
 	  nCloseRPCPairs++;
 
 	if (deltaZ < minDeltaZ) 
@@ -165,20 +208,72 @@ void CosmicInefficiency::loop() {
     if (event_->rpcHit_N > 2 && event_->DTSegment_N < 3)
       rpcDeltaZ_Min_->Fill(minDeltaZ);
 
-    // Using a "lose" N-1 requirement because of low statistics. 
+    // Calculte the fraction of inner and outer DT hits
+    float outerDT = 0.0000001;
+    float innerDT = 0;
+    for (unsigned idt = 0; idt<event_->DTSegment_N; idt++) {
+      if (event_->DTSegR[idt] > 560) outerDT++;
+      else innerDT++;
+    }
+    double frac = innerDT/outerDT;
+
+    // Using a "loose" N-1 requirement because of low statistics. 
     // Exclude events with OR of:
     //  1. cscSeg_N > 0
     //  2. jet_N == 0
     //  3. jetEta > 1.0
-    
-    if (cuts_.cutN(5)) b++;
-    else a++;
-  }
+    // ********************
+    // Nevermind, just require a jet
+    if (event_->jet_N > 0) {
+      if (cuts_.cutN(5)) b++;
+      else a++;
+    }
+
+    // Binned version of the b/a+b calculation    
+    //if (cuts_.triggerCut()) {
+    if (event_->jet_N > 0) {
+      if (cuts_.cutN(5)) {
+	untaggedDTbyRPC_->Fill(event_->DTSegment_N, event_->rpcHit_N);
+	untaggedFrac_->Fill(frac);
+	eventsFile_ << event_->run << ":" << event_->lb << ":" << event_->id << std::endl;
+	
+	/**std::cout.precision(4);
+	std::cout << event_->run << "\t"
+		  << event_->id << "\t"
+		  << event_->DTSegment_N << "   "
+		  << event_->rpcHit_N << "   "
+		  << nCloseRPCPairs << "   "
+		  << std::fixed << outerDT << "\t   "
+		  << std::fixed << outerRPC << "   "
+		  << std::fixed << frac << "   "
+	  //<< std::fixed << maxDeltaPhi << "   "
+	  //<< std::fixed << maxDeltaJetPhi << "   "
+	  //<< std::fixed << maxRPCDeltaPhi << "   "
+		  << std::endl;
+	std::cout << "\t\t" << std::fixed << event_->jetPhi[0] << "\t\t";
+	for (unsigned i = 0; i < event_->DTSegment_N; i++) 
+	  std::cout << std::fixed << event_->DTSegPhi[i] << "  ";
+	std::cout << "\t\t";
+	for (unsigned i = 0; i < event_->rpcHit_N; i++) 
+	  std::cout << std::fixed << event_->rpcHitPhi[i] << "  ";
+	std::cout << std::endl;
+	*/
+      } else {
+	taggedDTbyRPC_->Fill(event_->DTSegment_N, event_->rpcHit_N);
+	taggedFrac_->Fill(frac);
+      }
+      totalDTbyRPC_->Fill(event_->DTSegment_N, event_->rpcHit_N);
+      totalFrac_->Fill(frac);
+    }
+
+  } // END EVENT LOOP
   
   // PRINT OUT
   double ineff = 1.0*b/(1.0*(a+b));
   double sigma = sqrt((ineff*(1-ineff))/(a+b));
   //dumpFile_ << std::endl;
+  dumpFile_ << "Inefficiency calculation using unbinned values" << std::endl;
+  dumpFile_ << "----------------------------------------------" << std::endl;
   dumpFile_ << "Total events:      " << maxEvents_ << std::endl;
   dumpFile_ << "N events vetoed:   " << nVetoed << std::endl;
   dumpFile_ << "N-1 cosmic events: " << nminusone << std::endl;
@@ -189,8 +284,50 @@ void CosmicInefficiency::loop() {
   dumpFile_ << "----------------------------" << std::endl;
   dumpFile_ << "b/(a+b) = " << ineff << " +/- " << sigma << std::endl;
   dumpFile_ << std::endl;
+  dumpFile_ << std::endl;
   
+  dumpFile_ << "Inefficiency calculation using integrated binned values" << std::endl;
+  dumpFile_ << "----------------------------------------------" << std::endl;
+  dumpFile_ << "ineff (DT/RPC) = " << untaggedDTbyRPC_->Integral() << "/" << totalDTbyRPC_->Integral() << std::endl;
+   dumpFile_ << "               = " << untaggedDTbyRPC_->Integral()/totalDTbyRPC_->Integral() << std::endl;
+  dumpFile_ << "----------------------------" << std::endl;
+  dumpFile_ << "ineff (frac)   = " << untaggedFrac_->Integral() << "/" << totalFrac_->Integral() << std::endl;
+  dumpFile_ << "               = " << untaggedFrac_->Integral()/totalFrac_->Integral() << std::endl;
+  dumpFile_ << std::endl;
+  dumpFile_ << std::endl;
+  
+
+  // Now calculate using binned values
+  // Binned version of the b/a+b calculation                                                                                                             
+  taggedDTbyRPC_->Sumw2();
+  taggedFrac_->Sumw2();
+  untaggedDTbyRPC_->Sumw2();
+  untaggedFrac_->Sumw2();
+  totalDTbyRPC_->Sumw2();
+  totalFrac_->Sumw2();
+
+  inefficiencyDTbyRPC_->Divide(untaggedDTbyRPC_, totalDTbyRPC_);
+  inefficiencyFrac_->Divide(untaggedFrac_, totalFrac_);
+
+  double errorDR = 0;
+  double integralDR = inefficiencyDTbyRPC_->IntegralAndError(1,inefficiencyDTbyRPC_->GetNbinsX(),
+							     1,inefficiencyDTbyRPC_->GetNbinsY(),
+							     errorDR);
+  double errorFrac = 0;
+  double integralFrac = inefficiencyFrac_->IntegralAndError(1,inefficiencyFrac_->GetNbinsX(),errorFrac);
+  
+  dumpFile_ << "Inefficiency calculation binned in nDT and nRPC" << std::endl;
+  dumpFile_ << "-----------------------------------------------" << std::endl;
+  dumpFile_ << "ineff (binned by DT & RPC) : " << integralDR << " +/- " << errorDR << std::endl;
+  dumpFile_ << "ineff (binned by Frac) : " << integralFrac << " +/- " << errorFrac << std::endl;
+  dumpFile_ << std::endl;
+  
+
+
+
   // SAVE HISTOGRAMS HERE
+  //ofilename_.Write("",TObject::kOverwrite);
+  
   nJet_->Write("",TObject::kOverwrite);
   jetEta_->Write("",TObject::kOverwrite);
   nMuon_->Write("",TObject::kOverwrite);
@@ -202,6 +339,16 @@ void CosmicInefficiency::loop() {
   rpcDeltaZ_Min_->Write("",TObject::kOverwrite);
   rpcNClosePairs_->Write("",TObject::kOverwrite);
   
+  taggedDTbyRPC_->Write("",TObject::kOverwrite);
+  untaggedDTbyRPC_->Write("",TObject::kOverwrite);
+  totalDTbyRPC_->Write("",TObject::kOverwrite);
+  inefficiencyDTbyRPC_->Write("",TObject::kOverwrite);
+
+  taggedFrac_->Write("",TObject::kOverwrite);
+  untaggedFrac_->Write("",TObject::kOverwrite);
+  totalFrac_->Write("",TObject::kOverwrite);  
+  inefficiencyFrac_->Write("",TObject::kOverwrite);
+
 }
 
 

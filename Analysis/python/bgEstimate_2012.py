@@ -7,13 +7,17 @@ from math import sqrt
 #
 # This is the list that is used for the final 2012 results
 #
-# inputs [ livetime, haloR, cosmicNM1, final, haloErr]
+# inputs [ livetime, haloR, cosmicR, final, haloErr, cosmicErr]
 ##################################################
-input2012BCD = [ 1011440, 8.34+0.26, 2096, 15, 1.67 ]  #haloErr=0.59(stat) + 0.93(sys)
+input2012BCD = [ 1011440, 11.398+.528, 6.70, 11, 1.74,  #haloErr=0.83(stat) + 0.90(sys) AllRun2012_5310_V29_Sept_week4_noN60_noInnerCosmic2
+                 3.30+(8.74-6.70)] 
+
+#6.70377 +/- 3.30459
+#Frac background: 8.74016 +/-2.59282
 
 ###### OTHER YEARS ######
 # inputs [ livetime, haloR, cosmicNM1, final, haloErr]
-input2010A  = [ 911594., 0.0023, 1201, 1, 0.0024]
+input2010A  = [ 911594., 0.0023, 1209, 2, 0.0024]
 input2011AB = [ 884051., 105, 2666, 12 ]
 
 
@@ -21,7 +25,7 @@ input2011AB = [ 884051., 105, 2666, 12 ]
 input2012    = [ 1, 0, 1, 0, 0 ]
 
 # fixed numbers
-cosmicIneff = [ 0.00258, 0.00034 ]
+cosmicIneff = [ 0.0070, 0.0006 ]
 noiseRate   = [1.e-32/input2010A[0], 1.45/input2010A[0]]
 #noiseRate   = [ 1.e-32, 0. ]
 haloScaleFactor = [ 1.5/105, 0.7/105 ]
@@ -61,7 +65,7 @@ def totalBackground( livetime, cosmicNM1, haloR):
     
     return [nNoise, nCosmic, nHalo, nTot]
 
-def totalBackground2012( livetime, cosmicNM1, haloR, haloErr ):
+def totalBackground2012( livetime, cosmicR, cosmicErr, haloR, haloErr ):
     
     r1 = livetime[1]/livetime[0]
     r2 = cosmicNM1[1]/cosmicNM1[0]
@@ -78,10 +82,14 @@ def totalBackground2012( livetime, cosmicNM1, haloR, haloErr ):
     nNoise.append( nNoise[0]*sqrt(r1*r1 + rn*rn) )
     ra = nNoise[1]/nNoise[0]
     
-    nCosmic = [ ]
-    nCosmic.append( cosmicIneff[0]*cosmicNM1[0] )
-    nCosmic.append( nCosmic[0]*sqrt(r2*r2 + rc*rc) )
-    rb = nCosmic[1]/nCosmic[0]
+    #nCosmic = [ ]
+    #nCosmic.append( cosmicIneff[0]*cosmicNM1[0] )
+    #nCosmic.append( nCosmic[0]*sqrt(r2*r2 + rc*rc) )
+    #rb = nCosmic[1]/nCosmic[0]
+
+    nCosmic = []
+    nCosmic.append( cosmicR )
+    nCosmic.append( cosmicErr )
     
     nTot = [ ]
     nTot.append( nHalo[0] + nNoise[0] + nCosmic[0] )
@@ -132,7 +140,7 @@ livetime  = [ input2012BCD[0], 23 ]
 #haloNM1   = [ input2012BCD[1], sqrt(input2012BCD[1]) ]
 cosmicNM1 = [ input2012BCD[2], sqrt(input2012BCD[2]) ]
 print "Run2012BCD"
-res2012BCD = totalBackground2012( livetime, cosmicNM1,  input2012BCD[1], input2012BCD[4] )
+res2012BCD = totalBackground2012( livetime, input2012BCD[2], input2012BCD[5],  input2012BCD[1], input2012BCD[4])
 res2012BCD.append( [input2012BCD[3]] )
 
 
@@ -166,15 +174,15 @@ print "signalEff                0.033652"
 print "signalEff_e              0.0"
 print "bgRate                  ", res2012BCD[3][0]/input2012BCD[0]
 print "bgRate_e                ", res2012BCD[3][1]/input2012BCD[0]
-print "scaleUncert              0.083" # lumi + JES uncertainty added in quadrature
+print "scaleUncert              0.116" # lumi + JES + Sig Eff uncertainty added in quadrature
 print "optimizeTimeCut          1"
-print "histFile                 /home/rodenm/stop_gluino/CMSSW_5_3_10/src/AllRun2012_5310_V28_May_week_final/Search.root"
+print "histFile                 /home/rodenm/stop_gluino/CMSSW_5_3_10/src/AllRun2012_5310_V29_Sept_week4_noN60_noInnerCosmic/Search.root"
 print "lumiFile                 /home/rodenm/stop_gluino/CMSSW_5_3_10/src/StoppedHSCP/Analysis/data/lumi_all.csv"
 print "jsonFile                 0"
 print "lumiFirstRun             190645"
 print "lumiLastRun              208686"
 print "fills                    2605,2616,2617,2621,2623,2624,2627,2628,2629,2630,2632,2634,2635,2644,2645,2646,2648,2649,2651,2653,2657,2658,2660,2663,2669,2670,2671,2673,2675,2683,2686,2691,2692,2698,2700,2701,2710,2711,2712,2713,2714,2717,2718,2719,2720,2723,2724,2726,2728,2729,2732,2733,2734,2736,2737,2739,2797,2798,2805,2806,2807,2810,2812,2816,2819,2840,2842,2843,2847,2848,2858,2861,2870,2871,2872,2873,2875,2880,2882,2883,2884,2886,2887,2888,2891,2892,2893,2896,2898,2900,2902,2905,2908,2911,2912,2918,2920,2926,2927,2928,2929,2932,2934,2974,2975,2976,2978,2980,2981,2983,2984,2987,2991,2995,2996,2997,2998,3000,3002,3003,3005,3006,3007,3009,3011,3016,3018,3019,3020,3021,3023,3025,3027,3029,3032,3033,3034,3036,3039,3045,3047,3067,3071,3113,3114,3121,3124,3126,3128,3129,3131,3133,3134,3135,3138,3169,3178,3182,3185,3188,3191,3192,3194,3200,3201,3203,3204,3207,3208,3209,3210,3212,3214,3220,3223,3226,3229,3231,3232,3236,3238,3240,3242,3244,3249,3250,3252,3253,3259,3261,3262,3264,3265,3266,3269,3272,3273,3279,3285,3286,3287,3288,3292,3293,3296,3297,3298,3299,3300,3318,3319,3322,3323,3347,3350,3351,3360,3363,3370,3374,3375,3378"
-print "eventsFile               /home/rodenm/stop_gluino/CMSSW_5_3_10/src/[INSERT OUTPUT DIRECTORY]/eventList.log"
+print "eventsFile               /home/rodenm/stop_gluino/CMSSW_5_3_10/src/AllRun2012_5310_V29_Sept_week4_noN60_noInnerCosmic/eventList.log"
 print "nTrialsSignal            100"
 print "nTrialsBackground        100"
 print "simulateExpt             0"

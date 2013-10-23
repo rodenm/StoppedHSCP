@@ -185,6 +185,9 @@ private:
 
   TH1D* hremainingDTR_;
   TH1D* hremainingRPCR_;
+
+  TH1D* hDTphidirection_;
+
   TH1D* hDTdeltaphi_;
   TH1D* hDTdeltajetphi_;
   TH1D* hRPCdeltaphi_;
@@ -390,10 +393,12 @@ void Backgrounds::loop() {
   hremainingDTR_ = new TH1D("remainingDTR", "r of DTSegements for events passing N-1(cosmic);r [cm]", 200, 0, 800);
   hremainingRPCR_ = new TH1D("remaininRPCR", "r of rpcHits for events passing N-1(cosmic); r [cm]", 200, 0, 800);
 
-  hDTdeltaphi_ = new TH1D("DTdeltaphi", "", 20, 0., TMath::Pi());
-  hDTdeltajetphi_ = new TH1D("DTdeltajetphi", "", 20, 0., TMath::Pi());
-  hRPCdeltaphi_ = new TH1D("RPCdeltaphi", "", 20, 0., TMath::Pi());
-  hRPCdeltajetphi_ = new TH1D("RPCdeltajetphi", "", 20, 0., TMath::Pi());
+  hDTdeltaphi_ = new TH1D("DTdeltaphi", "", 32, 0., TMath::Pi());
+  hDTdeltajetphi_ = new TH1D("DTdeltajetphi", "", 32, 0., TMath::Pi());
+  hRPCdeltaphi_ = new TH1D("RPCdeltaphi", "", 32, 0., TMath::Pi());
+  hRPCdeltajetphi_ = new TH1D("RPCdeltajetphi", "", 32, 0., TMath::Pi());
+
+  hDTphidirection_ = new TH1D("DTphidirection", "", 63, -TMath::Pi(), TMath::Pi());
 
   hDTinnerouterfrac_ = new TH1D("DTinnerouterfrac", "", 30, 0., 10.);
   hRPCinnerouterfrac_ = new TH1D("RPCinnerouterfrac", "", 30, 0., 10.);
@@ -420,7 +425,7 @@ void Backgrounds::loop() {
   for (unsigned long i=0; i<maxEvents_; ++i, nextEvent()) {
 
     // occasional print out
-    if (i%10000==0) {
+    if (i%50000==0) {
       std::cout << "Processing " << i << "th event of " <<maxEvents_<< std::endl;
     }
 
@@ -482,7 +487,10 @@ void Backgrounds::loop() {
     unsigned overlap = 0;
 
     // Create histograms showing distribution of cut values for all events passing the trigger.
-    if (trig) {
+    //if (trig) {
+    // Nevermind, look at these quantities for cosmic-like events
+
+    if (trig && e>70 && ncsc==0 && event_->noiseFilterResult){
       hnvertex_->Fill(nvtx);
       hncsc_->Fill(ncsc);
       hnmu_->Fill(nmu);
@@ -513,7 +521,13 @@ void Backgrounds::loop() {
       }
     }
     */
-    if (cuts_.cutNMinusOne(5)){
+
+    // Look at distributions for candidate cosmic events
+    //
+    // NOTE: MAKE SURE TO EDIT THE PRINTLINE AT LINE 1040 IF
+    //       YOU CHANGE THE CONDITION HERE.
+    //
+    if(trig && e>70 && !isBeamHalo && event_->noiseFilterResult){
       hcosmiccum_->Fill(0);
 
       double innerDT = 0;
@@ -537,6 +551,14 @@ void Backgrounds::loop() {
 	}
 	double deltajetphi = acos(cos(event_->DTSegPhi[idt] - event_->jetPhi[0]));
 	if (deltajetphi > maxDeltaJetPhi) maxDeltaJetPhi = deltajetphi;
+
+	/**
+	if (event_->DTSegY[idt] > -100000) { //only upper hits will differ in direction
+	  //double phidir = acos(cos(event_->DTSegPhi[idt] - event_->DTSegPhiDir[idt]));
+	  //hDTphidirection_->Fill(phidir);
+	  hDTphidirection_->Fill(event_->DTSegYDir[idt]);
+	}
+	*/
 
 	if (event_->DTSegR[idt] > 560) outerDT++;
 	else innerDT++;
@@ -871,6 +893,8 @@ void Backgrounds::loop() {
   hremainingDTR_->Write("",TObject::kOverwrite);
   hremainingRPCR_->Write("",TObject::kOverwrite);
 
+  hDTphidirection_->Write("",TObject::kOverwrite);
+
   hDTdeltaphi_->Write("",TObject::kOverwrite);
   hDTdeltajetphi_->Write("",TObject::kOverwrite);
   hRPCdeltaphi_->Write("",TObject::kOverwrite);
@@ -1015,6 +1039,11 @@ void Backgrounds::loop() {
   unidRO_->Write("",TObject::kOverwrite);
 
   overlap_->Write("",TObject::kOverwrite);
+
+  std::cout << "\n------------------- Cuts for plots ------------------------" << std::endl;
+  std::cout << "    trig && e>70 && ncsc==0 && event_->noiseFilterResult" << std::endl;
+  std::cout << "-----------------------------------------------------------\n" << std::endl;
+  
 
 }
 

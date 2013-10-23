@@ -25,6 +25,8 @@
 
 <bin name="cosmicInefficiency" file="CosmicInefficiency.cpp"/>
 
+<bin name="cosmicBackground" file="CosmicBackground.cpp"/>
+
 <bin name="search" file="Search.cpp"/>
 
 <bin name="noise" file="Noise.cpp"/>

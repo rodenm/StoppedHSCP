@@ -632,8 +632,8 @@ void MCAnalysis::efficiencyStudy() {
   if (cuts_.cut()) 
     selected_count_++;
   
-// count # of DTs outside the innermost DT cylinder                                                                                                                             
-  double outerDT = 0.000001; // avoid divide by zero                                                                                                                              
+// count # of DTs outside the innermost DT cylinder
+  double outerDT = 0.000001; // avoid divide by zero
   int innerDT = 0;
 
   double testPhi;
