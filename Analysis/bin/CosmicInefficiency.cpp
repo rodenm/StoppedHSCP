@@ -112,7 +112,7 @@ void CosmicInefficiency::loop() {
   rpcDeltaZ_Min_ = new TH1D("rpcDetlaZ_Min", "Min RPC #Delta(z)", 100, 0, 1000);
   rpcNClosePairs_ = new TH1D("rpcNClosePairs", "N(close RPC pairs)", 25, 0, 25); 
 
-  taggedDTbyRPC_ = new TH2D("taggedDTbyRPC","tagged cosmic;nDT;nRPC", 150, 0, 30, 15, 0, 30);
+  taggedDTbyRPC_ = new TH2D("taggedDTbyRPC","tagged cosmic;nDT;nRPC", 15, 0, 30, 15, 0, 30);
   untaggedDTbyRPC_ = new TH2D("untaggedDTbyRPC","untagged cosmic;nDT;nRPC", 15, 0, 30, 15, 0, 30);
   totalDTbyRPC_ = new TH2D("totalDTbyRPC","total cosmic;nDT;nRPC", 15, 0, 30, 15, 0, 30);
 
@@ -121,7 +121,7 @@ void CosmicInefficiency::loop() {
   totalFrac_ = new TH1D("totalFrac","total cosmic;inner/outer DT hits;", 20, 0, 10);
 
   inefficiencyDTbyRPC_ = new TH2D("ineffciencyDTbyRPC", "inefficiency", 15, 0, 30, 15, 0, 30);
-  inefficiencyFrac_ = new TH1D("ineffciencyFrac", "inefficiency", 20, 0, 20);
+  inefficiencyFrac_ = new TH1D("ineffciencyFrac", "inefficiency", 20, 0, 10);
   
   reset();
   nextEvent();
