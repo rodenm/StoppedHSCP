@@ -114,6 +114,8 @@ void CosmicBackground::loop() {
   hBackground_DTRPC_->Multiply(hIneff_DTRPC, hNMinusOne_DTRPC_);
   hBackground_frac_->Multiply(hIneff_frac, hNMinusOne_frac_);
 
+  std::cout << hBackground_DTRPC_->GetNbinsX() << "  "<< hBackground_DTRPC_->GetNbinsY() <<std::endl;
+  std::cout << hBackground_frac_->GetNbinsX() << std::endl;
   double errorDT = 0;
   double ineffDT = hBackground_DTRPC_->IntegralAndError(1,hBackground_DTRPC_->GetNbinsX(),
 							1,hBackground_DTRPC_->GetNbinsY(),
