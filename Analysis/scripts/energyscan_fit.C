@@ -172,10 +172,10 @@
   TGraphErrors *gluinoMinus = new TGraphErrors(nG400points+nG1200points, bothxG, 
 					       bothyGminus1, NULL, NULL);
 
-  gluino->SetTitle("gluino400 stopping efficiency;E_{gluon}(E_{top}) [GeV];#varepsilon_{detection}");
-  gluino400->SetTitle("gluino400 stopping efficiency;E_{gluon}(E_{top}) [GeV];#varepsilon_{detection}");
-  gluino700->SetTitle("gluino700 stopping efficiency;E_{gluon}(E_{top}) [GeV];#varepsilon_{detection}");
-  gluino1200->SetTitle("gluino1200 stopping efficiency;E_{gluon}(E_{top}) [GeV];#varepsilon_{detection}");
+  gluino->SetTitle("gluino400 stopping efficiency;E_{gluon}(E_{top}) [GeV];#varepsilon_{RECO}");
+  gluino400->SetTitle("gluino400 stopping efficiency;E_{gluon}(E_{top}) [GeV];#varepsilon_{RECO}");
+  gluino700->SetTitle("gluino700 stopping efficiency;E_{gluon}(E_{top}) [GeV];#varepsilon_{RECO}");
+  gluino1200->SetTitle("gluino1200 stopping efficiency;E_{gluon}(E_{top}) [GeV];#varepsilon_{RECO}");
 
   gluino->SetMarkerSize(0.1);
   gluino->SetMarkerColor(kWhite);
@@ -200,7 +200,7 @@
   gluino1200->SetLineWidth(2);
 
   gluino->SetMaximum(0.53);
-  gluino->GetXaxis()->SetLimits(40,370); // HOW WE SET THE X RANGE ON THE PLOT
+  gluino->GetXaxis()->SetLimits(40,390); // HOW WE SET THE X RANGE ON THE PLOT
   gluino->Draw("AP"); //AP 
   gluinoPlus->Draw("P same");
   gluinoMinus->Draw("P same");
@@ -236,13 +236,16 @@
 	    << gmax
 	    <<"=================" << std::endl;
 
-  double gavg =0,;
+  double gavg =0;
+  double gsystematic = 0;
   for (int i = 8; i<nGtotalpoints; i++) {
     std::cout << bothyG[i] << " - " << gmax << " = " << fabs(bothyG[i] - gmax) <<std::endl;
     gavg += fabs(bothyG[i] - gmax);
+    if (fabs(bothyG[i] - gmax) > gsystematic)
+      gsystematic = fabs(bothyG[i] - gmax);
   }
   gavg /= (nGtotalpoints-8);
-  std::cout << "Systematic error on det eff: " << gavg << std::endl << std::endl;
+  std::cout << "Systematic error on det eff: " << gsystematic/gmax << std::endl << std::endl;
   
   
   /****** REPEAT FOR STOP ********/
@@ -255,8 +258,8 @@
 
   // selected EB+HB
   Double_t countBothS[nSallpoints] = {589,
-				      665,
 				      721,
+				      665,
 				      589,
 				      750,
 				      854,
@@ -267,10 +270,10 @@
 				      833,
 				      917,
 				      954,
-				      1507,
 				      868,
-				      855,
+				      1507,
 				      1420,
+				      855,
 				      1452,
 				      1404,
 				      1383,
@@ -279,8 +282,8 @@
 
   // stopped EB+HB
   Double_t totalBothS[nSallpoints] = {3218,
-				      2861,
 				      3217,
+				      2861,
 				      2519,
 				      2857,
 				      3144,
@@ -291,10 +294,10 @@
 				      2502,
 				      2865,
 				      2859,
-				      4322,
 				      2515,
-				      2514,
 				      4322,
+				      4322,
+				      2514,
 				      4418,
 				      4421,
 				      4317,
@@ -315,9 +318,9 @@
 				  210,
 				  231,
 				  250,
-				  251,
-				  299,
+				  250,
 				  300,
+				  317,
 				  351,
 				  400,
 				  450,
@@ -441,11 +444,11 @@
   TGraphErrors *stopMinus = new TGraphErrors(nSallpoints, bothxS, 
 					     bothySminus1, NULL, NULL);
 
-  stop300->SetTitle("stop300 stopping efficiency;E_{gluon|top} [GeV];#varepsilon_{detection}");
-  stop400->SetTitle("stop400 stopping efficiency;E_{gluon|top} [GeV];#varepsilon_{detection}");
-  stop600->SetTitle("stop600 stopping efficiency;E_{gluon|top} [GeV];#varepsilon_{detection}");
-  stop1000->SetTitle("stop1000 stopping efficiency;E_{gluon|top} [GeV];#varepsilon_{detection}");
-  stop->SetTitle("stopping efficiency;E_{gluon|top} [GeV];#varepsilon_{detection}");
+  stop300->SetTitle("stop300 stopping efficiency;E_{gluon|top} [GeV];#varepsilon_{RECO}");
+  stop400->SetTitle("stop400 stopping efficiency;E_{gluon|top} [GeV];#varepsilon_{RECO}");
+  stop600->SetTitle("stop600 stopping efficiency;E_{gluon|top} [GeV];#varepsilon_{RECO}");
+  stop1000->SetTitle("stop1000 stopping efficiency;E_{gluon|top} [GeV];#varepsilon_{RECO}");
+  stop->SetTitle("stopping efficiency;E_{gluon|top} [GeV];#varepsilon_{RECO}");
 
   stop->SetMarkerSize(0.0);
   stop->SetMarkerColor(kWhite);
@@ -532,13 +535,15 @@
 	    <<"=================" << std::endl;
 
   double savg =0;
-  for (int i = 4; i<nSallpoints; i++) {
+  double ssystematic = 0;
+  for (int i = 6; i<nSallpoints; i++) {
     std::cout << bothyS[i] << " - " << smax << " = " << fabs(bothyS[i] - smax) <<std::endl;
     savg += fabs(bothyS[i] - smax);
+    if (fabs(bothyS[i] - smax) > ssystematic)
+      ssystematic = fabs(bothyS[i] - smax);
   }
-  savg /= (nSallpoints-4);
-  std::cout << "Systematic error on det eff: " << savg << std::endl << std::endl;
-  
+  gavg /= (nGtotalpoints-8);
+  std::cout << "Systematic error on det eff: " << ssystematic/smax << std::endl << std::endl;
 
 
   /****** LEGEND ********/
