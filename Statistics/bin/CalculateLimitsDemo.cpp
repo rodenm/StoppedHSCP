@@ -18,6 +18,8 @@
 #include "TFile.h"
 #include "TChain.h"
 #include "TH1D.h"
+#include "TRandom2.h"
+#include "TCanvas.h"
 
 #include <math.h>
 #include "Math/ProbFuncMathCore.h"
@@ -25,13 +27,53 @@
 #include "Math/QuantFuncMathCore.h"
 #include "Math/SpecFuncMathCore.h"
 
-#include "StoppedHSCP/ToyMC/interface/Simulator.h"
-#include "StoppedHSCP/ToyMC/interface/Experiment.h"
-#include "StoppedHSCP/Statistics/interface/CLsCountingExperiment.h"
-#include "StoppedHSCP/Statistics/interface/CL95CMSCountingExperiment.h"
-
+//#include "StoppedHSCP/ToyMC/interface/Simulator.h"
+//#include "StoppedHSCP/ToyMC/interface/Experiment.h"
+//#include "StoppedHSCP/Statistics/interface/CLsCountingExperiment.h"
+//#include "StoppedHSCP/Statistics/interface/CL95CMSCountingExperiment.h"
 
 using namespace std;
+
+namespace {
+  
+   // Cousins-Highland approach
+  double upperLimitCountingCL (double signal, int nObserved, double bkgMean, double bkgSigma, double scaleSigma) {
+
+    TH1D hCLb = TH1D("hCLb", ";nEvents", 20, 0., 1.);
+    TH1D hCLsb = TH1D("hCLsb", ";nEvents", 20, 0., 1.);
+
+    TRandom2 rndm;
+    int nToys = 1000;
+    double CLb = 0;
+    double CLsb = 0;
+    for (int iToy = 0; iToy < nToys; ++iToy) {
+      double bkg = rndm.Gaus (bkgMean, bkgSigma);
+      while (bkg < 0) bkg = rndm.Gaus (bkgMean, bkgSigma);
+      double scale = rndm.Gaus (1., scaleSigma);
+      while (scale <= 0) scale = rndm.Gaus (1., scaleSigma);
+      double tCLb = ROOT::Math::poisson_cdf (nObserved, bkg); 
+      double tCLsb = ROOT::Math::poisson_cdf (nObserved, bkg + signal * scale);
+
+      hCLb.Fill(tCLb);
+      hCLsb.Fill(tCLsb);
+      
+      CLb  += tCLb;
+      CLsb += tCLsb;
+    }
+
+    TCanvas c1("c1");
+    hCLb.Draw();
+    hCLb.SetStats(0);
+    hCLsb.SetLineColor(kRed);
+    hCLsb.Draw("same");
+    c1.SaveAs("68clLimit.pdf");
+    
+    //std::cout  << "\n\nlimit = " << 1-CLsb/CLb << "\n" << std::endl;
+
+    return 1-CLsb/CLb;
+  }
+}
+
 namespace po = boost::program_options;
 
 class CalculateLimitsDemo {
@@ -110,7 +152,9 @@ private:
 
 
   // YOUR CODE HERE
-  TH1D* myHistogram_;
+  TH1D* hbkg_;
+  TH1D* hsig_;
+  TH1D* hnoise_;
 
 };
 
@@ -121,17 +165,67 @@ private:
 void CalculateLimitsDemo::run() {
 
   // DO ANY SETUP HERE
-  myHistogram_ = new TH1D("test", "", 10, 0., 10.);
+  hbkg_ = new TH1D("bkg", ";nEvents", 20, -10., 10.);
+  hsig_ = new TH1D("sig", ";nEvents", 20, -10., 10.);
+  hnoise_ = new TH1D("noise", ";nEvents", 20, -10., 10.);
 
-  // YOUR CODE HERE
-  myHistogram_->Fill(1);
 
-    
-  std::cout << "Hello world!" << std::endl;
+  // SET PARAMETERS
+  double targetCL = 0.68;  
+  double expBackground   = 0.96961;    // bkgd estimate from python script
+  double expBackground_e = 0.5591;
+  double scaleUncert     = 0.116;
+  int nObserved = 2;
+
+  // CALCULATE CENTRAL VALUE
+  double sMin = 0;
+  double sMax = nObserved > 0 ? 2.5*nObserved : 2.5;
+  while (1) {
+    double cls = upperLimitCountingCL(sMax, nObserved, expBackground, expBackground_e, scaleUncert);   
+    if (cls > targetCL) break;
+    sMax *=2;
+  }
+  
+  // CALCULATE LIMIT
+  double sThis = 0;
+  while (1) {
+    sThis = 0.5*(sMin+sMax);
+    double cls = upperLimitCountingCL(sThis, nObserved, expBackground, expBackground_e, scaleUncert);
+    //std::cout << "upperLimitCountingCLS95-> min/max/sThis: " << sMin << '/' << sMax << '/' << sThis 
+    //  	      << " CLS:" << cls << std::endl; 
+    if ((fabs(cls - targetCL) < 1e-5) || (0.5*(sMax-sMin)/(sMax+sMin) < 1e-4)) break;
+    if (cls > targetCL) sMax = sThis;
+    else sMin = sThis;
+  }
+
+  std::cout << "68% limit value: " << sThis << std::endl;
+
+  // Make plots
+  TRandom2 rndm;
+  for (int iToy = 0; iToy < 10000; ++iToy) {
+    double bkg = rndm.PoissonD(rndm.Gaus(expBackground, expBackground_e));
+    double sig = rndm.PoissonD(nObserved);
+    double noise = sig - bkg;
+
+    hbkg_->Fill(bkg);
+    hsig_->Fill(sig);
+    hnoise_->Fill(noise);
+  }
+
+  TCanvas c1("c1");
+  hsig_->Draw();
+  hbkg_->SetStats(0);
+  hbkg_->SetLineColor(kRed);
+  hbkg_->Draw("same");
+  hnoise_->SetLineColor(kBlack);
+  hnoise_->Draw("same");
+  c1.SaveAs("cosmicNoiseDist.pdf");
 
   // SAVE HISTOGRAMS HERE
   ofile_->cd();
-  myHistogram_->Write("",TObject::kOverwrite);
+  hbkg_->Write("",TObject::kOverwrite);
+  hsig_->Write("",TObject::kOverwrite);
+  hnoise_->Write("",TObject::kOverwrite);
 
 }
 
@@ -140,26 +234,23 @@ void CalculateLimitsDemo::run() {
 // this is the main program, no need to do anything here
 int main(int argc, char* argv[]) {
 
-  // sum of squares error info for histograms
-  TH1D::SetDefaultSumw2();
-
-  // create analysis
-  //CalculateLimitsDemo analyser(argc, argv);
-  //analyser.run();
-
   std::cout << "\n" << std::endl;
 
+  CalculateLimitsDemo limits(argc, argv);
+  limits.run();
+
+  /**
   //CLsCountingExperiment (double fBackground, double fBackgroundSigma, double fScale, double fScaleSigma)
-  double expBackground    = 39.;    // bkgd estimate from python script
-  double expBackground_e  = 7.8;
-  double scaleUncert      = 0.14;
-  int nObserved = 10;
+  double expBackground    = 0.96961;    // bkgd estimate from python script
+  double expBackground_e  = 0.5591;
+  double scaleUncert      = 0.116;
+  int nObserved = 2;
   CLsCountingExperiment ce (expBackground, expBackground_e, 1, scaleUncert);
 
   double limit68cl = ce.cl95limit(nObserved,true);
 
-  std::cout << "nlimit68cl" << std::endl;
-  std::cout << limit68cl << std::endl;
+  std::cout << "68% limit value: " << limit68cl << std::endl;
+  */
   return 0;
 
 }

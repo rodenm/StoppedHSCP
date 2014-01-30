@@ -34,12 +34,7 @@ namespace {
       CLb += ROOT::Math::poisson_cdf (nObserved, bkg); // poisson_cdf(x, lambda) - (15,14.2)
       CLsb += ROOT::Math::poisson_cdf (nObserved, bkg + signal * scale); // poisson_cdf(x, lambda) = (15,14.2+37.5+1)
     }
-  //cout << "upperLimitCountingCLS-> " << signal<<'/'<<bkgMean<<'/'
-  //     <<CLb/nToys<<'/'<<CLsb/nToys<<'/'<<1-CLsb/CLb<<endl;
-
     return 1-CLsb/CLb;
-
-    //return 1-CLsb/nToys;
   }
   
 }
@@ -57,8 +52,7 @@ double CLsCountingExperiment::cl95limit (int nObserved, bool fPlot) {
   double sMin = 0;
   double sMax = nObserved > 0 ? 2.5*nObserved : 2.5;
   while (1) {
-    double cls = upperLimitCountingCLS (sMax, nObserved, background(), backgroundSigma(), scaleSigma()/scale());
-    
+    double cls = upperLimitCountingCLS (sMax, nObserved, background(), backgroundSigma(), scaleSigma()/scale());   
     if (cls > targetCL) break;
     sMax *=2;
   }
