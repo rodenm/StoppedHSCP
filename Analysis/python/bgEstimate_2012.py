@@ -8,16 +8,16 @@ from math import sqrt
 #
 # inputs [ livetime, haloR, cosmicR, final, haloErr, cosmicErr]
 ##################################################
-input2012BCD = [ 1011440, 8.71+0.01, 3.21, 10,
-                 1.41,  #haloErr=0.29(stat) + 1.12(sys) 
-                 1.31] 
+input2012BCD = [ 1011440, 8.61+0.43, 5.21, 10,
+                 1.02,  #haloErr=0.228(stat) + 0.793(sys) 
+                 1.50] 
 
 # 2010A for noise rate
 input2010A  = [ 911594., 0.0023, 1209, 2, 0.0024]
 
-# 2010 cosmic estimate: 0.961 +/- 0.559
-# 2010 cosmic 68% limit: 2.772
-noiseRate   = [(2.-0.961)/input2010A[0],(2.772-0.961)/input2010A[0]] # N_OBS - N_cosmic
+# 2010 cosmic estimate: 4.83356 +/-3.58263
+# 2010 cosmic 68% limit: 2.32
+noiseRate   = [(1e-32)/input2010A[0],(2.32)/input2010A[0]] # N_OBS - N_cosmic
 
 ##################################################
 #      OTHER YEARS
@@ -182,7 +182,7 @@ print "signalEff                0.033652"
 print "signalEff_e              0.0"
 print "bgRate                  ", res2012BCD[3][0]/input2012BCD[0]
 print "bgRate_e                ", res2012BCD[3][1]/input2012BCD[0]
-print "scaleUncert              0.134" # lumi + JES + Sig Eff uncertainty added in quadrature
+print "scaleUncert              0.116" # lumi + JES + Sig Eff uncertainty added in quadrature
 print "optimizeTimeCut          1"
 print "histFile                 /home/rodenm/stop_gluino/CMSSW_5_3_10/src/AllRun2012_5310_V29_Sept_week4_final/Search.root"
 print "lumiFile                 /home/rodenm/stop_gluino/CMSSW_5_3_10/src/StoppedHSCP/Analysis/data/lumi_all.csv"
