@@ -303,7 +303,7 @@ void gluinostopMassLifetime(double lumi=4560., double maxInstLumi=5000.) {
   // label2<<"L^{max}_{inst} = "<<peakInstLumi<<" x 10^{"<<exponent<<"} cm^{-2}s^{-1}";
 //  blurb->AddText(label2.str().c_str());
   blurb->AddText("#sqrt{s} = 8 TeV");
-  blurb->AddText("E_{gluon} > 100 GeV, E_{top} > 125 GeV");
+  blurb->AddText("E_{gluon} > 120 GeV, E_{top} > 150 GeV");
   blurb->SetTextFont(42);
   blurb->SetBorderSize(0);
   blurb->SetFillColor(0);

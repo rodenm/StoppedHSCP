@@ -137,7 +137,7 @@ void allInOneLifetime(double lumi=4560., double maxInstLumi=5000.) {
   blurb->AddText("#int L dt = 18.6 fb^{-1}");//,  #int L_{eff} dt = 935 pb^{-1}");
   //blurb->AddText("L^{max}_{inst} = 3.5 #times 10^{33} cm^{-2}s^{-1}");
   blurb->AddText("#sqrt{s} = 8 TeV");
-  blurb->AddText("E_{gluon} > 100 GeV, E_{top} > 125 GeV");
+  blurb->AddText("E_{gluon} > 120 GeV, E_{top} > 150 GeV");
   //blurb->AddText("m_{#tilde{g}} = 300 GeV/c^{2}");
   //blurb->AddText("m_{#tilde{#chi}^{0}} = 200 GeV/c^{2}");
   blurb->SetTextFont(42);

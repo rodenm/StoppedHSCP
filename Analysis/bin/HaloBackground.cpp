@@ -303,28 +303,28 @@ void HaloBackground::loop() {
   hMinusOneHaloRPhi2_    = new TH2D("hMinusOneHaloRPhi2","",200,0,800,63, -3.15, 3.15);
 
   // 2D inefficiency with CSCSegmentXY (avg) - beam1
-  hAverageXY1_         = new TH2D("hAverageXY1",";x[cm];y[cm]",200,-800,800,200,-800,800);
-  hAverageErrXY1_      = new TH2D("hAverageErrXY1",";x[cm];y[cm]",200,-800,200,200,-800,800);
-  hIncomingXY1_        = new TH2D("hIncomingXY1",";x[cm];y[cm]",200,-800,800,200,-800,800);
-  hOutgoingXY1_        = new TH2D("hOutgoingXY1",";x[cm];y[cm]",200,-800,800,200,-800,800);
-  hBothXY1_            = new TH2D("hBothXY1",";x[cm];y[cm]",200,-800,800,200,-800,800);
-  hIneffNumXY1_        = new TH2D("hIneffNumXY1",";x[cm];y[cm]",200,-800,800,200,-800,800);
-  hIneffDenXY1_        = new TH2D("hIneffDenXY1",";x[cm];y[cm]",200,-800,800,200,-800,800);
-  hIneffFractionXY1_   = new TH2D("hIneffFractionXY1",";x[cm];y[cm]",200,-800,800,200,-800,800);
-  hIneffCountXY1_      = new TH2D("hIneffCountXY1",";x[cm];y[cm]",200,-800,800,200,-800,800);
-  hMinusOneHaloXY1_    = new TH2D("hMinusOneHaloXY1",";x[cm];y[cm]",200,-800,800,200,-800,800);
+  hAverageXY1_         = new TH2D("hAverageXY1",";x[cm];y[cm]",50,-400,400,50,-400,400);
+  hAverageErrXY1_      = new TH2D("hAverageErrXY1",";x[cm];y[cm]",50,-400,400,50,-400,400);
+  hIncomingXY1_        = new TH2D("hIncomingXY1",";x[cm];y[cm]",50,-400,400,50,-400,400);
+  hOutgoingXY1_        = new TH2D("hOutgoingXY1",";x[cm];y[cm]",50,-400,400,50,-400,400);
+  hBothXY1_            = new TH2D("hBothXY1",";x[cm];y[cm]",50,-400,400,50,-400,400);
+  hIneffNumXY1_        = new TH2D("hIneffNumXY1",";x[cm];y[cm]",50,-400,400,50,-400,400);
+  hIneffDenXY1_        = new TH2D("hIneffDenXY1",";x[cm];y[cm]",50,-400,400,50,-400,400);
+  hIneffFractionXY1_   = new TH2D("hIneffFractionXY1",";x[cm];y[cm]",50,-400,400,50,-400,400);
+  hIneffCountXY1_      = new TH2D("hIneffCountXY1",";x[cm];y[cm]",50,-400,400,50,-400,400);
+  hMinusOneHaloXY1_    = new TH2D("hMinusOneHaloXY1",";x[cm];y[cm]",50,-400,400,50,-400,400);
 
   // 2D inefficiency with CSCSegmentXY (avg) - beam2
-  hAverageXY2_         = new TH2D("hAverageXY2",";x[cm];y[cm]",200,-800,800,200,-800,800);
-  hAverageErrXY2_      = new TH2D("hAverageErrXY2",";x[cm];y[cm]",200,-800,200,200,-800,800);
-  hIncomingXY2_        = new TH2D("hIncomingXY2",";x[cm];y[cm]",200,-800,800,200,-800,800);
-  hOutgoingXY2_        = new TH2D("hOutgoingXY2",";x[cm];y[cm]",200,-800,800,200,-800,800);
-  hBothXY2_            = new TH2D("hBothXY2",";x[cm];y[cm]",200,-800,800,200,-800,800);
-  hIneffNumXY2_        = new TH2D("hIneffNumXY2",";x[cm];y[cm]",200,-800,800,200,-800,800);
-  hIneffDenXY2_        = new TH2D("hIneffDenXY2",";x[cm];y[cm]",200,-800,800,200,-800,800);
-  hIneffFractionXY2_   = new TH2D("hIneffFractionXY2",";x[cm];y[cm]",200,-800,800,200,-800,800);
-  hIneffCountXY2_      = new TH2D("hIneffCountXY2",";x[cm];y[cm]",200,-800,800,200,-800,800);
-  hMinusOneHaloXY2_    = new TH2D("hMinusOneHaloXY2",";x[cm];y[cm]",200,-800,800,200,-800,800);
+  hAverageXY2_         = new TH2D("hAverageXY2",";x[cm];y[cm]",20,-400,400,20,-400,400);
+  hAverageErrXY2_      = new TH2D("hAverageErrXY2",";x[cm];y[cm]",20,-400,400,20,-400,400);
+  hIncomingXY2_        = new TH2D("hIncomingXY2",";x[cm];y[cm]",20,-400,400,20,-400,400);
+  hOutgoingXY2_        = new TH2D("hOutgoingXY2",";x[cm];y[cm]",20,-400,400,20,-400,400);
+  hBothXY2_            = new TH2D("hBothXY2",";x[cm];y[cm]",20,-400,400,20,-400,400);
+  hIneffNumXY2_        = new TH2D("hIneffNumXY2",";x[cm];y[cm]",20,-400,400,20,-400,400);
+  hIneffDenXY2_        = new TH2D("hIneffDenXY2",";x[cm];y[cm]",20,-400,400,20,-400,400);
+  hIneffFractionXY2_   = new TH2D("hIneffFractionXY2",";x[cm];y[cm]",20,-400,400,20,-400,400);
+  hIneffCountXY2_      = new TH2D("hIneffCountXY2",";x[cm];y[cm]",20,-400,400,20,-400,400);
+  hMinusOneHaloXY2_    = new TH2D("hMinusOneHaloXY2",";x[cm];y[cm]",20,-400,400,20,-400,400);
 
   // Calculate inefficiency binned by jetEta[0] - beam 1
   hIncomingJetEta1_      = new TH1D("hIncomingJetEta1", "", 40, -2.0, 2.0);

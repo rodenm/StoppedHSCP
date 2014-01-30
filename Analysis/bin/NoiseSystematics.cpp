@@ -21,6 +21,7 @@
 #include "TRandom2.h"
 #include "TCanvas.h"
 #include "TLegend.h"
+#include "TLine.h"
 
 #include <boost/program_options.hpp>
 
@@ -72,12 +73,6 @@ public:
     std::exit(-1);
   }
 
-    // get my custom option
-    //if (vm.count("special")) {
-    //  std::string special = vm["special"].as<std::string>();
-    //  std::cout << "Command line argument : " << special << std::endl;
-    //}
-
   }
   
   ~NoiseSystematics() { };
@@ -101,7 +96,7 @@ private:
 
 // this is the event loop
 void NoiseSystematics::run() {
-
+  /**
   // DO ANY SETUP HERE
   myHistogram_ = new TH1D("test", "", 10, 0., 10.);
 
@@ -113,7 +108,7 @@ void NoiseSystematics::run() {
 
   // SAVE HISTOGRAMS HERE
   myHistogram_->Write("",TObject::kOverwrite);
-
+  */
 }
 
 
@@ -141,15 +136,22 @@ int main(int argc, char* argv[]) {
 
   TRandom2 rndm;
 
-  for (int i = 0; i < 100000; i++) {
-    // cosmic N-1: 2096
-    // cosmic ineff: 0.0026 +/- 0.0003
-    double ncos = rndm.Poisson(rndm.Gaus (3.122, 0.360));
-    double nobs = rndm.PoissonD(1.); 
+  for (int i = 0; i < 10000; i++) {
+    // DT by RPC background: 0.96061 +/- 0.559146
+    double ncos = rndm.Poisson(rndm.Gaus (0.96, 0.56));
+    double nobs = rndm.PoissonD(2.); 
     hcosmic.Fill(ncos);
     hobs.Fill(nobs);
     hnoise.Fill(nobs-ncos);
+    //std::cout << ncos << "\t" << nobs << "\t" << nobs-ncos << std::endl;
   }
+
+  double nq = 1;
+  Double_t xq[1] = {0.68};  // position where to compute the quantiles in [0,1]
+  Double_t yq[1] = {0.};  // array to contain the quantiles
+  hnoise.GetQuantiles(nq,yq,xq);
+
+  std::cout << xq[0] << "\t" << yq[0] << std::endl;
 
   ofile->cd();
   ofile->Write("",TObject::kOverwrite);
@@ -165,18 +167,23 @@ int main(int argc, char* argv[]) {
   hobs.SetLineColor(kBlue);
 
   hnoise.SetLineColor(kBlack);
-  //hnoise.SetMaximum(4500);
-  //hnoise.Scale(1.4);
 
-  hobs.Draw("hist");
-  hcosmic.Draw("hist same");
+  hcosmic.SetMaximum(hcosmic.GetMaximum()*1.1);
+  hcosmic.Draw("hist");
+  hobs.Draw("hist same");
   hnoise.Draw("hist same");
   c.Update();
+
+  TLine line(yq[0],0,yq[0],hcosmic.GetMaximum());
+  line.SetLineColor(kBlack);
+  line.SetLineStyle(5);
+  line.SetLineWidth(2);
+  line.Draw();
 
   TLegend leg(0.6, 0.70, 0.88, 0.85);
   leg.SetFillColor(kWhite);
   leg.AddEntry("hcosmic", "N_{cosmic}", "l");
-  leg.AddEntry("hobs", "N_{obs} [#lambda = 1]","l");
+  leg.AddEntry("hobs", "N_{obs} [#lambda = 2]","l");
   leg.AddEntry("hnoise", "n_{noise} = N_{obs} - N_{cosmic}","l");
   leg.SetBorderSize(0);
   leg.Draw();

@@ -7,6 +7,7 @@
 #include "TChain.h"
 #include "TH1D.h"
 #include "TH2D.h"
+#include "TRandom2.h"
 
 #include <boost/program_options.hpp>
 
@@ -53,10 +54,10 @@ private:
   TFile* inFile_;
 
   TH2D* hNMinusOne_DTRPC_;
-  TH1D* hNMinusOne_frac_;
+  TH2D* hNMinusOne_smeared_;
 
   TH2D* hBackground_DTRPC_;
-  TH1D* hBackground_frac_;
+  TH2D* hBackground_smeared_;
 
 };
 
@@ -68,16 +69,16 @@ void CosmicBackground::loop() {
 
   // DO ANY SETUP HERE
   hNMinusOne_DTRPC_ = new TH2D("NMinusOne_DTRPC", ";nDT;nRPC", 15, 0., 30., 15., 0, 30.);
-  hNMinusOne_frac_ = new TH1D("NMinusOne_frac",";frac;",20, 0, 10);
+  hNMinusOne_smeared_ = new TH2D("NMinusOne_smeared",";nDT;nRPC", 15, 0., 30., 15., 0, 30.);
 
   hBackground_DTRPC_ = new TH2D("Background_DTRPC", ";nDT;nRPC", 15, 0., 30., 15., 0, 30.);
-  hBackground_frac_ = new TH1D("Background_frac",";frac;",20, 0, 10);
+  hBackground_smeared_ = new TH2D("Background_smeared",";nDT;nRPC", 15, 0., 30., 15., 0, 30.);
 
 
   TH2D* hIneff_DTRPC = (TH2D*)inFile_->Get("ineffciencyDTbyRPC"); 
-  TH1D* hIneff_frac = (TH1D*)inFile_->Get("ineffciencyFrac"); 
+  TH2D* hIneff_smeared = (TH2D*)inFile_->Get("ineffciencyDTbyRPC"); 
   hIneff_DTRPC->GetEntries();
-  hIneff_frac->GetEntries();
+  hIneff_smeared->GetEntries();
 
   reset();
   nextEvent();
@@ -88,8 +89,10 @@ void CosmicBackground::loop() {
     if (i%100000==0) {
       std::cout << "Processing " << i << "th event of " <<maxEvents_<< std::endl;
     }
+    //if (i==300000) break;
 
-    // Calculte the fraction of inner and outer DT hits
+
+    // Calculte the smearedtion of inner and outer DT hits
     float outerDT = 0.0000001;
     float innerDT = 0;
     for (unsigned idt = 0; idt<event_->DTSegment_N; idt++) {
@@ -98,45 +101,76 @@ void CosmicBackground::loop() {
     }
     double frac = innerDT/outerDT;
 
-    // YOUR CODE HERE
     if (cuts_.cutNMinusOne(5) && !cuts_.cutN(5) && frac < 2. && event_->DTSegment_N > 0) {
       if (event_->DTSegment_N < 2 && event_->rpcHit_N < 3){
-	std::cout << "what?: " << event_->DTSegment_N << " " << event_->rpcHit_N
-		  <<std::endl;
+	//std::cout << "what?: " << event_->DTSegment_N << " " << event_->rpcHit_N
+	//	  <<std::endl;
       }
-      hNMinusOne_DTRPC_->Fill(event_->DTSegment_N,event_->rpcHit_N);
-      hNMinusOne_frac_->Fill(frac);
+      double dtN = event_->DTSegment_N;
+      double rpcN = event_->rpcHit_N;
+      hNMinusOne_DTRPC_->Fill(dtN, rpcN);
+      hNMinusOne_smeared_->Fill(dtN, rpcN);
     }
-
   }
 
+  // Produce a version of the N-1 histogram with empty bins being interpolated from the 4 surrounding bins
+  // Hot spots:
+  // y = ny, x = nx
+  // y = 0,  x = nx ----------> Don't start at y=0
+  // y = ny, x = 0
+  // x = 0,  y = ny
+  
+  int nx = hNMinusOne_smeared_->GetNbinsX();
+  int ny = hNMinusOne_smeared_->GetNbinsY();
+  //for (int y = 0; y < ny+1; y++) {
+  //for (int x = 0; x < nx+1; x++) {
+  for (int x = nx; x >= 0; x--) {
+    for (int y = 0; y <= ny; y++) {
+      if (hNMinusOne_smeared_->GetBinContent(x,y) == 0.) {
+	//double value = hNMinusOne_smeared_->Interpolate(x,y); // Interpolate works super weird
+	double z = 0.;
+	if (x == 0){
+	  z = hNMinusOne_smeared_->GetBinContent(x+1,y)/2.;
+	} else if (x == nx) {
+	  z = hNMinusOne_smeared_->GetBinContent(x-1,y)/2.;
+	} else {
+	  z = (hNMinusOne_smeared_->GetBinContent(x-1,y) + hNMinusOne_smeared_->GetBinContent(x+1,y))/2.;
+	}
+	hNMinusOne_smeared_->SetBinContent(x,y,z);
+      }
+    }
+  }
+  
+
+  // Smooth() works in a much more reasonable manner than Interpolate()
+  // hNMinusOne_smeared_->Smooth(1,"k3a");
 
   hBackground_DTRPC_->Multiply(hIneff_DTRPC, hNMinusOne_DTRPC_);
-  hBackground_frac_->Multiply(hIneff_frac, hNMinusOne_frac_);
+  hBackground_smeared_->Multiply(hIneff_smeared, hNMinusOne_smeared_);
 
-  std::cout << hBackground_DTRPC_->GetNbinsX() << "  "<< hBackground_DTRPC_->GetNbinsY() <<std::endl;
-  std::cout << hBackground_frac_->GetNbinsX() << std::endl;
   double errorDT = 0;
   double ineffDT = hBackground_DTRPC_->IntegralAndError(1,hBackground_DTRPC_->GetNbinsX(),
 							1,hBackground_DTRPC_->GetNbinsY(),
 							errorDT);
-  double errorFrac = 0;
-  double ineffFrac = hBackground_frac_->IntegralAndError(1,hBackground_frac_->GetNbinsX(),errorFrac);
+  double errorSmeared = 0;
+  double ineffSmeared = hBackground_smeared_->IntegralAndError(1,hBackground_smeared_->GetNbinsX(),
+							       1,hBackground_smeared_->GetNbinsY(),
+							       errorSmeared);
 
   std::cout << "N-1 entries: " << hNMinusOne_DTRPC_->GetEntries() << std::endl; 
   std::cout << "DT by RPC background: " 
 	    << ineffDT << " +/- " << errorDT
 	    << std::endl;
-  std::cout << "Frac background: " 
-	    << ineffFrac << " +/-" << errorFrac
+  std::cout << "Smeared background: " 
+	    << ineffSmeared << " +/-" << errorSmeared
 	    << std::endl;
 
   // SAVE HISTOGRAMS HERE
   hNMinusOne_DTRPC_->Write("",TObject::kOverwrite);
   hBackground_DTRPC_->Write("",TObject::kOverwrite);
   
-  hBackground_frac_->Write("",TObject::kOverwrite);
-  hNMinusOne_frac_->Write("",TObject::kOverwrite);
+  hBackground_smeared_->Write("",TObject::kOverwrite);
+  hNMinusOne_smeared_->Write("",TObject::kOverwrite);
 
 }
 

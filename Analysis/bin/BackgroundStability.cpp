@@ -265,7 +265,8 @@ void BackgroundStability::loop() {
       // by fill
       nTriggerByFill_.at(fill) += 1;
       
-      if (isNoise && !isCosmic && !isBeamHalo && !isBeamGas && !isVtx) {
+      //if (isNoise && !isCosmic && !isBeamHalo && !isBeamGas && !isVtx) {
+      if (trig && e>70. && !isCosmic3 && !isBeamHalo && !isVtx) {
 	nNoiseFlagByFill_.at(fill) += 1;
 	jetENoiseByFill_.fill(fill, e);
 	jetN60NoiseByFill_.fill(fill, n60);
@@ -360,7 +361,7 @@ void BackgroundStability::loop() {
   // fill histograms
   TH1D* hLivetimeByFill = new TH1D("hLivetimeByFill", "", nFills, 0, 0);
   TH1D* hEventRateByFill = new TH1D("hEventRateByFill", "", nFills, 0, 0);
-  TH1D* hNoiseRateByFill = new TH1D("hNoiseRateByFill", "Noise flag", nFills, 0, 0);
+  TH1D* hNoiseRateByFill = new TH1D("hNoiseRateByFill", "Noise rate", nFills, 0, 0);
   TH1D* hCosmicRateByFill = new TH1D("hCosmicRateByFill", "N_{#mu} > 0", nFills, 0, 0);
   TH1D* hCosmic2RateByFill = new TH1D("hCosmic2RateByFill", "N_{#mu} > 0  (v2)", nFills, 0, 0);
   TH1D* hCosmic3RateByFill = new TH1D("hCosmic3RateByFill", "N_{#mu} > 0  (v2)", nFills, 0, 0);

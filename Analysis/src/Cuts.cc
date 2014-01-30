@@ -5,6 +5,7 @@
 #include "StoppedHSCP/Analysis/interface/BadRuns.h"
 
 #include "TMath.h"
+#include "TLorentzVector.h"
 
 #include <iostream>
 #include <fstream>
@@ -131,6 +132,43 @@ bool Cuts::triggerCut() const {      // require event passed main trigger
   //4) Starting in 2012, higher threshold trigger
   else if (event_->fill>2351)
     trigger = event_->hltJetE50NoBptx3BXNoHalo;
+
+  // For MC events, require that the R-hadron stopped in EB/HB to pass the trigger cut.
+  bool ebhb = false;
+  if (isMC_ && trigger) {
+    unsigned iMatch;
+    //Match the stopped point to the R-hadron that decayed
+    if (event_->jet_N == 0 || event_->mcStoppedParticle_N == 1) {
+      iMatch = 0;
+    } else {
+      double stoppedEta0 = eta(event_->mcStoppedParticleX[0],
+			       event_->mcStoppedParticleY[0],
+			       event_->mcStoppedParticleZ[0],
+			       event_->mcStoppedParticleTime[0]);
+      double stoppedEta1 = eta(event_->mcStoppedParticleX[1],
+			       event_->mcStoppedParticleY[1],
+			       event_->mcStoppedParticleZ[1],
+			       event_->mcStoppedParticleTime[1]);
+      double deltaR0 = sqrt(pow(event_->jetEta[0] - stoppedEta0, 2)
+			    + pow(event_->jetPhi[0] - event_->mcStoppedParticlePhi[0], 2));
+      
+      double deltaR1 = sqrt(pow(event_->jetEta[0] - stoppedEta1, 2)
+			    + pow(event_->jetPhi[0] - event_->mcStoppedParticlePhi[1], 2));
+      
+      iMatch = deltaR0 < deltaR1 ? 0 : 1;
+    }
+
+    double r = event_->mcStoppedParticleR[iMatch]/10.0;
+    double z = event_->mcStoppedParticleZ[iMatch]/10.0;
+    double particle_eta = eta(event_->mcStoppedParticleX[iMatch],event_->mcStoppedParticleY[iMatch],
+			      event_->mcStoppedParticleZ[iMatch],event_->mcStoppedParticleTime[iMatch]);
+    if (r>=131.0 && r<184.0 && fabs(z)<376.0 && fabs(particle_eta)<1.479) { // EB
+      ebhb = true;
+    } else if (r>=184.0 && r<295.0 && fabs(particle_eta)<1.3 && fabs(z)<500.0) { // HB
+      ebhb = true;
+    }
+    trigger = ebhb;
+  }
 
   return trigger;
 
@@ -499,3 +537,9 @@ void Cuts::print(std::ostream& os) const {
   }
 
 }
+
+double Cuts::eta(double x, double y, double z, double time) const {
+  TLorentzVector v = TLorentzVector(x, y, z, time);
+  return v.PseudoRapidity();
+}
+

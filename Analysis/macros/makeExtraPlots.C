@@ -32,7 +32,7 @@ void makeExtraPlots(double lumi=4560., double maxInstLumi=5000.)
   gluinostopMassLifetime(lumi,maxInstLumi);
 
   gROOT->ProcessLine(".L excludedRegion.C+");
-  excludedRegion(lumi,maxInstLumi);
+  excludedRegion();
 
 }
 

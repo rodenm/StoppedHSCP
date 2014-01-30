@@ -92,6 +92,10 @@ class Cuts {
   // pretty print
   void print(std::ostream& os) const;
 
+  // calculate pseudorapidity
+  double eta(double x, double y, double z, double time) const;
+
+
  private:
 
   // setup method

@@ -399,7 +399,7 @@ void Search::loop() {
   // write out cutflow
   std::cout << "[TABLE border=1]" << std::endl;
   unsigned ntot = hncutcum_->GetBinContent(1);
-  if (isMC_) std::cout << "|Cut\t|N\t|cum %\t|N-1 % |-" << std::endl;
+  if (isMC_) std::cout << "|Cut\t|N\t|N-1|-" << std::endl;
   else std::cout << "|Cut\t|N\t|Rate (Hz) |N-1 % |N-1 (Hz)|-" << std::endl;
   for (unsigned i=0; i<cuts_.nCuts(); ++i) {
     unsigned ncum = hncutcum_->GetBinContent(i+1);
@@ -409,7 +409,7 @@ void Search::loop() {
     if (isMC_) {
       if (ntot>0) 
 	std::cout << "| " << i << " " << label.c_str() << " | " 
-		  << ncum << " | " << 100.*ncum/ntot << " | " << 100.*nnmo/ntot << " |\n";
+		  << ncum << " | " << nnmo<< " |\n";
       else 
 	std::cout << "| " << i << " " << label.c_str() << " | " 
 		  << ncum << " | N/A | N/A |\n";
