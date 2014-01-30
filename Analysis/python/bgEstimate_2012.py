@@ -182,7 +182,7 @@ print "signalEff                0.033652"
 print "signalEff_e              0.0"
 print "bgRate                  ", res2012BCD[3][0]/input2012BCD[0]
 print "bgRate_e                ", res2012BCD[3][1]/input2012BCD[0]
-print "scaleUncert              0.155" # lumi + JES + Sig Eff uncertainty added in quadrature
+print "scaleUncert              0.134" # lumi + JES + Sig Eff uncertainty added in quadrature
 print "optimizeTimeCut          1"
 print "histFile                 /home/rodenm/stop_gluino/CMSSW_5_3_10/src/AllRun2012_5310_V29_Sept_week4_final/Search.root"
 print "lumiFile                 /home/rodenm/stop_gluino/CMSSW_5_3_10/src/StoppedHSCP/Analysis/data/lumi_all.csv"
