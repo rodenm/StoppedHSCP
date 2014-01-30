@@ -1,9 +1,16 @@
 
 Stopped HSCP code repository
 
-How to check out the packages :
-cvs co -d StoppedHSCP/Simulation  UserCode/StoppedHSCP/Simulation
-cvs co -d StoppedHSCP/Analysis  UserCode/StoppedHSCP/Analysis
+git clone git@github.com:rodenm/StoppedHSCP src/StoppedHSCP
 
 
-Jim, 4 Feb 2009
+Making changes:
+cd StoppedHSCP
+[edit]
+git commit -m "updates" Analysis/bin/HaloBackground.cpp
+git push
+
+
+View changed files:
+cd StoppedHSCP
+git diff --name-only ./
