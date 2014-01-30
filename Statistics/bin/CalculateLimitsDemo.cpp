@@ -27,11 +27,6 @@
 #include "Math/QuantFuncMathCore.h"
 #include "Math/SpecFuncMathCore.h"
 
-//#include "StoppedHSCP/ToyMC/interface/Simulator.h"
-//#include "StoppedHSCP/ToyMC/interface/Experiment.h"
-//#include "StoppedHSCP/Statistics/interface/CLsCountingExperiment.h"
-//#include "StoppedHSCP/Statistics/interface/CL95CMSCountingExperiment.h"
-
 using namespace std;
 
 namespace {
@@ -172,9 +167,9 @@ void CalculateLimitsDemo::run() {
 
   // SET PARAMETERS
   double targetCL = 0.68;  
-  double expBackground   = 0.96961;    // bkgd estimate from python script
-  double expBackground_e = 0.5591;
-  double scaleUncert     = 0.116;
+  double expBackground   = 4.83;    // cosmic background estimate from CosmicBackground.txt: 4.83356 +/-3.58263
+  double expBackground_e = 3.58;
+  double scaleUncert     = 0.155;
   int nObserved = 2;
 
   // CALCULATE CENTRAL VALUE
@@ -238,19 +233,7 @@ int main(int argc, char* argv[]) {
 
   CalculateLimitsDemo limits(argc, argv);
   limits.run();
-
-  /**
-  //CLsCountingExperiment (double fBackground, double fBackgroundSigma, double fScale, double fScaleSigma)
-  double expBackground    = 0.96961;    // bkgd estimate from python script
-  double expBackground_e  = 0.5591;
-  double scaleUncert      = 0.116;
-  int nObserved = 2;
-  CLsCountingExperiment ce (expBackground, expBackground_e, 1, scaleUncert);
-
-  double limit68cl = ce.cl95limit(nObserved,true);
-
-  std::cout << "68% limit value: " << limit68cl << std::endl;
-  */
+  
   return 0;
 
 }
