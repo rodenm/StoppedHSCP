@@ -255,24 +255,35 @@ void BackgroundStability::loop() {
     bool isVtx      = nvtx > 0;
     bool isUnid     = (!isNoise && !isCosmic && !isBeamHalo && !isBeamGas && !isVtx);
 
+    bool isRBXNoise = false;
+    if (event_->hpd_N > 0) {
+      for (unsigned i = 0; i<event_->hpd_N; i++) {
+	if (event_->hpdId[i]==52 || event_->hpdId[i]==53 || event_->hpdId[i]==54 || event_->hpdId[i]==55) 
+	  isRBXNoise = true;
+      }
+    }
+
     try {
       // counts triggers for x-check with WBM
       if (trig) nTriggerByRun_.at(run) += 1;
       
+      // MIN REQUIREMENTS
       // only consider events passing main trigger with jet in barrel
-      if ( !(trig && abs(bxWrtBunch)>2 && e>50. && fabs(eta)<1.3) ) continue;
+      if ( !(trig && abs(bxWrtBunch)>1 && e>50. && fabs(eta)<1.3) ) continue;
       
       // by fill
       nTriggerByFill_.at(fill) += 1;
       
-      //if (isNoise && !isCosmic && !isBeamHalo && !isBeamGas && !isVtx) {
-      if (trig && e>70. && !isCosmic3 && !isBeamHalo && !isVtx) {
+      // NOISE PLOTS
+      if (trig && e>70. && !isCosmic3 && !isBeamHalo && !isVtx && !isRBXNoise) {
 	nNoiseFlagByFill_.at(fill) += 1;
 	jetENoiseByFill_.fill(fill, e);
 	jetN60NoiseByFill_.fill(fill, n60);
 	jetN90NoiseByFill_.fill(fill, n90);
 	jetNTowNoiseByFill_.fill(fill, ntow);
       }
+
+      // COSMIC PLOTS
       if (isCosmic2 ){//&& !isBeamHalo && !isBeamGas && !isVtx) {
 	nCosmicByFill_.at(fill) += 1;
 	jetECosmicByFill_.fill(fill, e);
@@ -286,6 +297,8 @@ void BackgroundStability::loop() {
       if (isCosmic3 && !isBeamHalo && !isBeamGas && !isVtx) {
 	nCosmic3ByFill_.at(fill) += 1;
       }
+
+      // BEAMHALO PLOTS
       if (isBeamHalo && !isBeamGas && !isVtx) {
 	nBeamHaloByFill_.at(fill) += 1;
 	jetEBeamHaloByFill_.fill(fill, e);
@@ -300,6 +313,8 @@ void BackgroundStability::loop() {
 	jetN90BeamGasByFill_.fill(fill, n90);
 	jetNTowBeamGasByFill_.fill(fill, ntow);
       }
+
+      // VTX PLOTS
       if (isVtx) {
 	nVertexByFill_.at(fill) += 1;
 	jetEVertexByFill_.fill(fill, e);
@@ -307,6 +322,8 @@ void BackgroundStability::loop() {
 	jetN90VertexByFill_.fill(fill, n90);
 	jetNTowVertexByFill_.fill(fill, ntow);
       }
+
+      // UNIDENTIFIED PLOTS
       if (!isNoise && !isCosmic && !isBeamHalo && !isBeamGas && !isVtx) {
 	nUnidentifiedByFill_.at(fill) += 1;
 	jetEUnidentifiedByFill_.fill(fill, e);
@@ -315,7 +332,7 @@ void BackgroundStability::loop() {
 	jetNTowUnidentifiedByFill_.fill(fill, ntow);
       }
       
-      //      if (ncsc>0) nCSCSegByFill_.at(fill) += 1;      
+      // if (ncsc>0) nCSCSegByFill_.at(fill) += 1;      
       
       // n-1
       if (cuts_.cutNMinusOne(5)) nm1CosmicByFill_.at(fill) += 1;
@@ -425,7 +442,7 @@ void BackgroundStability::loop() {
     hLivetimeByFill->Fill(fillstr.c_str(), livetime);
 
     hEventRateByFill->Fill(fillstr.c_str(), 0.);
-    hNoiseRateByFill->Fill(fillstr.c_str(), 0.);
+    //hNoiseRateByFill->Fill(fillstr.c_str(), 0.);
     hCosmicRateByFill->Fill(fillstr.c_str(), 0.);
     hCosmic2RateByFill->Fill(fillstr.c_str(), 0.);
     hCosmic3RateByFill->Fill(fillstr.c_str(), 0.);
@@ -434,7 +451,11 @@ void BackgroundStability::loop() {
     hBeamGasRateByFill->Fill(fillstr.c_str(), 0.);
     hVertexRateByFill->Fill(fillstr.c_str(), 0.);
 
-    if (livetime>0.) {
+    //    if (livetime>0.) {
+    if (livetime>2000) { //fills 2649, 2651
+
+      // Hopefully this means only long fills will be added to the x-axis
+      hNoiseRateByFill->Fill(fillstr.c_str(), 0.);
 
       for (unsigned long i=0; i<nTriggerByFill_.at(fill); ++i) 
 	hEventRateByFill->Fill(fillstr.c_str(), 1./livetime);

@@ -58,6 +58,7 @@ private:
 
   TH2D* hBackground_DTRPC_;
   TH2D* hBackground_smeared_;
+  TH2D* hBackground_uncert_;
 
 };
 
@@ -73,13 +74,16 @@ void CosmicBackground::loop() {
 
   hBackground_DTRPC_ = new TH2D("Background_DTRPC", ";nDT;nRPC", 15, 0., 30., 15., 0, 30.);
   hBackground_smeared_ = new TH2D("Background_smeared",";nDT;nRPC", 15, 0., 30., 15., 0, 30.);
+  hBackground_uncert_ = new TH2D("Background_uncert",";nDT;nRPC", 15, 0., 30., 15., 0, 30.);
 
 
   TH2D* hIneff_DTRPC = (TH2D*)inFile_->Get("ineffciencyDTbyRPC"); 
   TH2D* hIneff_smeared = (TH2D*)inFile_->Get("ineffciencyDTbyRPC"); 
+  TH2D* hIneff_uncert = (TH2D*)inFile_->Get("ineffciencyDTbyRPC_uncert"); 
   hIneff_DTRPC->GetEntries();
   hIneff_smeared->GetEntries();
-
+  double q = hIneff_uncert->GetEntries();
+  std::cout << q << std::endl;
   reset();
   nextEvent();
 
@@ -147,6 +151,7 @@ void CosmicBackground::loop() {
 
   hBackground_DTRPC_->Multiply(hIneff_DTRPC, hNMinusOne_DTRPC_);
   hBackground_smeared_->Multiply(hIneff_smeared, hNMinusOne_smeared_);
+  hBackground_uncert_->Multiply(hIneff_uncert, hNMinusOne_smeared_);
 
   double errorDT = 0;
   double ineffDT = hBackground_DTRPC_->IntegralAndError(1,hBackground_DTRPC_->GetNbinsX(),
@@ -156,6 +161,10 @@ void CosmicBackground::loop() {
   double ineffSmeared = hBackground_smeared_->IntegralAndError(1,hBackground_smeared_->GetNbinsX(),
 							       1,hBackground_smeared_->GetNbinsY(),
 							       errorSmeared);
+  double errorUncert = 0;
+  double ineffUncert = hBackground_uncert_->IntegralAndError(1,hBackground_uncert_->GetNbinsX(),
+							     1,hBackground_uncert_->GetNbinsY(),
+							     errorUncert);
 
   std::cout << "N-1 entries: " << hNMinusOne_DTRPC_->GetEntries() << std::endl; 
   std::cout << "DT by RPC background: " 
@@ -164,6 +173,9 @@ void CosmicBackground::loop() {
   std::cout << "Smeared background: " 
 	    << ineffSmeared << " +/-" << errorSmeared
 	    << std::endl;
+  std::cout << "Uncertainty background: " 
+	    << ineffUncert << " +/-" << errorUncert
+	    << std::endl;
 
   // SAVE HISTOGRAMS HERE
   hNMinusOne_DTRPC_->Write("",TObject::kOverwrite);
@@ -171,6 +183,8 @@ void CosmicBackground::loop() {
   
   hBackground_smeared_->Write("",TObject::kOverwrite);
   hNMinusOne_smeared_->Write("",TObject::kOverwrite);
+
+  hBackground_uncert_->Write("",TObject::kOverwrite);
 
 }
 

@@ -128,6 +128,7 @@ private:
   TH2D* hIncomingRPhi1_;
   TH2D* hOutgoingRPhi1_;
   TH2D* hBothRPhi1_;
+  TH2D* hnRPhi1_;
   TH2D* hIneffNumRPhi1_;
   TH2D* hIneffDenRPhi1_;
   TH2D* hIneffFractionRPhi1_;
@@ -140,6 +141,7 @@ private:
   TH2D* hIncomingRPhi2_;
   TH2D* hOutgoingRPhi2_;
   TH2D* hBothRPhi2_;
+  TH2D* hnRPhi2_;
   TH2D* hIneffNumRPhi2_;
   TH2D* hIneffDenRPhi2_;
   TH2D* hIneffFractionRPhi2_;
@@ -152,6 +154,7 @@ private:
   TH2D* hIncomingXY1_;
   TH2D* hOutgoingXY1_;
   TH2D* hBothXY1_;
+  TH2D* hnXY1_;
   TH2D* hIneffNumXY1_;
   TH2D* hIneffDenXY1_;
   TH2D* hIneffFractionXY1_;
@@ -164,6 +167,7 @@ private:
   TH2D* hIncomingXY2_;
   TH2D* hOutgoingXY2_;
   TH2D* hBothXY2_;
+  TH2D* hnXY2_;
   TH2D* hIneffNumXY2_;
   TH2D* hIneffDenXY2_;
   TH2D* hIneffFractionXY2_;
@@ -284,6 +288,7 @@ void HaloBackground::loop() {
   hIncomingRPhi1_        = new TH2D("hIncomingRPhi1","", 200,0,800,63, -3.15, 3.15);
   hOutgoingRPhi1_        = new TH2D("hOutgoingRPhi1","",200,0,800,63, -3.15, 3.15);
   hBothRPhi1_            = new TH2D("hBothRPhi1","",200,0,800,63, -3.15, 3.15);
+  hnRPhi1_            = new TH2D("hnRPhi1","",200,0,800,63, -3.15, 3.15);
   hIneffNumRPhi1_        = new TH2D("hIneffNumRPhi1","",200,0,800,63, -3.15, 3.15);
   hIneffDenRPhi1_        = new TH2D("hIneffDenRPhi1","",200,0,800,63, -3.15, 3.15);
   hIneffFractionRPhi1_   = new TH2D("hIneffFractionRPhi1","",200,0,800,63, -3.15, 3.15);
@@ -296,6 +301,7 @@ void HaloBackground::loop() {
   hIncomingRPhi2_        = new TH2D("hIncomingRPhi2","",200,0,800,63, -3.15, 3.15);
   hOutgoingRPhi2_        = new TH2D("hOutgoingRPhi2","",200,0,800,63, -3.15, 3.15);
   hBothRPhi2_            = new TH2D("hBothRPhi2","",200,0,800,63, -3.15, 3.15);
+  hnRPhi2_            = new TH2D("hnRPhi2","",200,0,800,63, -3.15, 3.15);
   hIneffNumRPhi2_        = new TH2D("hIneffNumRPhi2","",200,0,800,63, -3.15, 3.15);
   hIneffDenRPhi2_        = new TH2D("hIneffDenRPhi2","",200,0,800,63, -3.15, 3.15);
   hIneffFractionRPhi2_   = new TH2D("hIneffFractionRPhi2","",200,0,800,63, -3.15, 3.15);
@@ -308,6 +314,7 @@ void HaloBackground::loop() {
   hIncomingXY1_        = new TH2D("hIncomingXY1",";x[cm];y[cm]",50,-400,400,50,-400,400);
   hOutgoingXY1_        = new TH2D("hOutgoingXY1",";x[cm];y[cm]",50,-400,400,50,-400,400);
   hBothXY1_            = new TH2D("hBothXY1",";x[cm];y[cm]",50,-400,400,50,-400,400);
+  hnXY1_               = new TH2D("hnXY1",";x[cm];y[cm]",50,-400,400,50,-400,400);
   hIneffNumXY1_        = new TH2D("hIneffNumXY1",";x[cm];y[cm]",50,-400,400,50,-400,400);
   hIneffDenXY1_        = new TH2D("hIneffDenXY1",";x[cm];y[cm]",50,-400,400,50,-400,400);
   hIneffFractionXY1_   = new TH2D("hIneffFractionXY1",";x[cm];y[cm]",50,-400,400,50,-400,400);
@@ -320,6 +327,7 @@ void HaloBackground::loop() {
   hIncomingXY2_        = new TH2D("hIncomingXY2",";x[cm];y[cm]",20,-400,400,20,-400,400);
   hOutgoingXY2_        = new TH2D("hOutgoingXY2",";x[cm];y[cm]",20,-400,400,20,-400,400);
   hBothXY2_            = new TH2D("hBothXY2",";x[cm];y[cm]",20,-400,400,20,-400,400);
+  hnXY2_               = new TH2D("hnXY2",";x[cm];y[cm]",20,-400,400,20,-400,400);
   hIneffNumXY2_        = new TH2D("hIneffNumXY2",";x[cm];y[cm]",20,-400,400,20,-400,400);
   hIneffDenXY2_        = new TH2D("hIneffDenXY2",";x[cm];y[cm]",20,-400,400,20,-400,400);
   hIneffFractionXY2_   = new TH2D("hIneffFractionXY2",";x[cm];y[cm]",20,-400,400,20,-400,400);
@@ -660,6 +668,16 @@ void HaloBackground::loop() {
 	  hBothXY1_->Fill(eventX,eventY);
 	}
       } 
+      if (nIncoming > 0 || nOutgoing > 0) {  // N
+	if (haloDirection < 0) {  // Beam 2
+	  hnRPhi2_->Fill(eventR,eventPhi);
+	  hnXY2_->Fill(eventX,eventY);
+	}
+	if (haloDirection >= 0) { // Beam 1
+	  hnRPhi1_->Fill(eventR,eventPhi);
+	  hnXY1_->Fill(eventX,eventY);
+	}
+      }
     }
 
     // Need eta distribution of halo events that pass all other cuts for final background count
@@ -718,6 +736,7 @@ void HaloBackground::loop() {
   hIneffEta_->Sumw2();
   hIneffEta2_->Multiply(hIneffEta_, hMinusOneHaloEta_, 1., 1.);
 
+  /**
   double n_inc = hIncomingEta_->GetEntries();
   double n_out = hOutgoingEta_->GetEntries();
   double n_both = hBothEta_->GetEntries();
@@ -841,8 +860,14 @@ void HaloBackground::loop() {
 							  1,hIneffCountRPhi_->GetNbinsY(),
 							  errorRPhi);
   dumpFile_<<  " background = " << integRPhi << " +/- " << errorRPhi << std::endl;
+  */
+
+
 
   /******************* Now with beams 1+2 separated *****************/
+  
+
+  /**
   dumpFile_<< std::endl 
 	   << "****************************************************************"
 	   << std::endl;
@@ -920,15 +945,16 @@ void HaloBackground::loop() {
   dumpFile_<< std::endl 
 	   << "----------------------------------------------------------------"
 	   << std::endl;
-
+  */
   // Finish halo estimate using average radius & phi of CSCSegments - beam 1
   dumpFile_ << std::endl << "Halo estimate - using average CSCSegment radius & phi - beam 1" 
 	    << std::endl;
   hIncomingRPhi1_->Sumw2();
   hOutgoingRPhi1_->Sumw2();
   hBothRPhi1_->Sumw2();
+  hnRPhi1_->Sumw2();
   hIneffNumRPhi1_->Multiply(hIncomingRPhi1_, hOutgoingRPhi1_, 1., 1.);
-  hIneffDenRPhi1_->Multiply(hBothRPhi1_, hBothRPhi1_, 1., 1.);
+  hIneffDenRPhi1_->Multiply(hBothRPhi1_, hnRPhi1_, 1., 1.);
   hIneffNumRPhi1_->Sumw2();
   hIneffDenRPhi1_->Sumw2();
   hIneffFractionRPhi1_->Divide(hIneffNumRPhi1_, hIneffDenRPhi1_, 1., 1.);
@@ -938,13 +964,14 @@ void HaloBackground::loop() {
   double n_incRPhi1   = hIncomingRPhi1_->GetEntries();
   double n_outRPhi1   = hOutgoingRPhi1_->GetEntries();
   double n_bothRPhi1  = hBothRPhi1_->GetEntries();
-  double epsRPhi1     = n_incRPhi1*n_outRPhi1/(n_bothRPhi1*n_bothRPhi1);
+  double n_RPhi1  = hnRPhi1_->GetEntries();
+  double epsRPhi1     = n_incRPhi1*n_outRPhi1/(n_bothRPhi1*n_RPhi1);
   double eps_errRPhi1 = epsRPhi1*sqrt(1./n_incRPhi1 + 1./n_outRPhi1 + 4./n_bothRPhi1);
   dumpFile_<<  "";
   dumpFile_<<  "" << std::endl;
   dumpFile_<<  "       N_incoming * N_outgoing      " << n_incRPhi1 << " * " << n_outRPhi1 << std::endl;
   dumpFile_<<  " eps = -----------------------  =  ---------------- " << std::endl;
-  dumpFile_<<  "               N_both^2               (" << n_bothRPhi1 << ")^2" << std::endl;
+  dumpFile_<<  "               N_both*N            (" << n_bothRPhi1 << "*" << n_RPhi1 << ")" << std::endl;
   dumpFile_<<  "" << std::endl;
   dumpFile_<<  " eps = " << epsRPhi1 << " +/- " << eps_errRPhi1 << std::endl;
   dumpFile_<<  " N_haloEvents = " << hMinusOneHaloRPhi1_->Integral() << std::endl;
@@ -964,6 +991,7 @@ void HaloBackground::loop() {
   hIncomingRPhi2_->Sumw2();
   hOutgoingRPhi2_->Sumw2();
   hBothRPhi2_->Sumw2();
+  hnRPhi2_->Sumw2();
   hIneffNumRPhi2_->Multiply(hIncomingRPhi2_, hOutgoingRPhi2_, 1., 1.);
   hIneffDenRPhi2_->Multiply(hBothRPhi2_, hBothRPhi2_, 1., 1.);
   hIneffNumRPhi2_->Sumw2();
@@ -975,13 +1003,14 @@ void HaloBackground::loop() {
   double n_incRPhi2   = hIncomingRPhi2_->GetEntries();
   double n_outRPhi2   = hOutgoingRPhi2_->GetEntries();
   double n_bothRPhi2  = hBothRPhi2_->GetEntries();
-  double epsRPhi2     = n_incRPhi2*n_outRPhi2/(n_bothRPhi2*n_bothRPhi2);
+  double n_RPhi2  = hnRPhi2_->GetEntries();
+  double epsRPhi2     = n_incRPhi2*n_outRPhi2/(n_bothRPhi2*n_RPhi2);
   double eps_errRPhi2 = epsRPhi2*sqrt(1./n_incRPhi2 + 1./n_outRPhi2 + 4./n_bothRPhi2);
   dumpFile_<<  "";
   dumpFile_<<  "" << std::endl;
   dumpFile_<<  "       N_incoming * N_outgoing      " << n_incRPhi2 << " * " << n_outRPhi2 << std::endl;
   dumpFile_<<  " eps = -----------------------  =  ---------------- " << std::endl;
-  dumpFile_<<  "               N_both^2               (" << n_bothRPhi2 << ")^2" << std::endl;
+  dumpFile_<<  "               N_both*N            (" << n_bothRPhi2 << "*" << n_RPhi2 <<")" << std::endl;
   dumpFile_<<  "" << std::endl;
   dumpFile_<<  " eps = " << epsRPhi2 << " +/- " << eps_errRPhi2 << std::endl;
   dumpFile_<<  " N_haloEvents = " << hMinusOneHaloRPhi2_->Integral() << std::endl;
@@ -1002,8 +1031,9 @@ void HaloBackground::loop() {
   hIncomingXY1_->Sumw2();
   hOutgoingXY1_->Sumw2();
   hBothXY1_->Sumw2();
+  hnXY1_->Sumw2();
   hIneffNumXY1_->Multiply(hIncomingXY1_, hOutgoingXY1_, 1., 1.);
-  hIneffDenXY1_->Multiply(hBothXY1_, hBothXY1_, 1., 1.);
+  hIneffDenXY1_->Multiply(hBothXY1_, hnXY1_, 1., 1.);
   hIneffNumXY1_->Sumw2();
   hIneffDenXY1_->Sumw2();
   hIneffFractionXY1_->Divide(hIneffNumXY1_, hIneffDenXY1_, 1., 1.);
@@ -1013,13 +1043,14 @@ void HaloBackground::loop() {
   double n_incXY1   = hIncomingXY1_->GetEntries();
   double n_outXY1   = hOutgoingXY1_->GetEntries();
   double n_bothXY1  = hBothXY1_->GetEntries();
-  double epsXY1     = n_incXY1*n_outXY1/(n_bothXY1*n_bothXY1);
+  double n_XY1 = hnXY1_->GetEntries();
+  double epsXY1     = n_incXY1*n_outXY1/(n_bothXY1*n_XY1);
   double eps_errXY1 = epsXY1*sqrt(1./n_incXY1 + 1./n_outXY1 + 4./n_bothXY1);
   dumpFile_<<  "";
   dumpFile_<<  "" << std::endl;
   dumpFile_<<  "       N_incoming * N_outgoing      " << n_incXY1 << " * " << n_outXY1 << std::endl;
   dumpFile_<<  " eps = -----------------------  =  ---------------- " << std::endl;
-  dumpFile_<<  "               N_both^2               (" << n_bothXY1 << ")^2" << std::endl;
+  dumpFile_<<  "               N_both*N               (" << n_bothXY1 <<  " * " << n_XY1 << ")" << std::endl;
   dumpFile_<<  "" << std::endl;
   dumpFile_<<  " eps = " << epsXY1 << " +/- " << eps_errXY1 << std::endl;
   dumpFile_<<  " N_haloEvents = " << hMinusOneHaloXY1_->Integral() << std::endl;
@@ -1039,8 +1070,9 @@ void HaloBackground::loop() {
   hIncomingXY2_->Sumw2();
   hOutgoingXY2_->Sumw2();
   hBothXY2_->Sumw2();
+  hnXY2_->Sumw2();
   hIneffNumXY2_->Multiply(hIncomingXY2_, hOutgoingXY2_, 1., 1.);
-  hIneffDenXY2_->Multiply(hBothXY2_, hBothXY2_, 1., 1.);
+  hIneffDenXY2_->Multiply(hBothXY2_, hnXY2_, 1., 1.);
   hIneffNumXY2_->Sumw2();
   hIneffDenXY2_->Sumw2();
   hIneffFractionXY2_->Divide(hIneffNumXY2_, hIneffDenXY2_, 1., 1.);
@@ -1050,13 +1082,14 @@ void HaloBackground::loop() {
   double n_incXY2   = hIncomingXY2_->GetEntries();
   double n_outXY2   = hOutgoingXY2_->GetEntries();
   double n_bothXY2  = hBothXY2_->GetEntries();
-  double epsXY2     = n_incXY2*n_outXY2/(n_bothXY2*n_bothXY2);
+  double n_XY2 = hnXY2_->GetEntries();
+  double epsXY2     = n_incXY2*n_outXY2/(n_bothXY2*n_XY2);
   double eps_errXY2 = epsXY2*sqrt(1./n_incXY2 + 1./n_outXY2 + 4./n_bothXY2);
   dumpFile_<<  "";
   dumpFile_<<  "" << std::endl;
   dumpFile_<<  "       N_incoming * N_outgoing      " << n_incXY2 << " * " << n_outXY2 << std::endl;
   dumpFile_<<  " eps = -----------------------  =  ---------------- " << std::endl;
-  dumpFile_<<  "               N_both^2               (" << n_bothXY2 << ")^2" << std::endl;
+  dumpFile_<<  "               N_both*N               (" << n_bothXY2 << " * " << n_XY2 << ")" << std::endl;
   dumpFile_<<  "" << std::endl;
   dumpFile_<<  " eps = " << epsXY2 << " +/- " << eps_errXY2 << std::endl;
   dumpFile_<<  " N_haloEvents = " << hMinusOneHaloXY2_->Integral() << std::endl;
@@ -1069,6 +1102,16 @@ void HaloBackground::loop() {
   dumpFile_<< std::endl 
 	   << "----------------------------------------------------------------"
 	   << std::endl;
+  
+  dumpFile_<<  " Final = " << integXY2+integXY1 << " +/- " << sqrt(errorXY2*errorXY2+errorXY1*errorXY1)
+	   << " +/- " << fabs(integXY2+integXY1-integRPhi2-integRPhi1)
+	   << std::endl;
+
+  dumpFile_<< std::endl 
+	   << "----------------------------------------------------------------"
+	   << std::endl;
+  
+
   
 
   // SAVE HISTOGRAMS HERE

@@ -17,9 +17,9 @@
 void excludedRegion() {
 
   double data[32]  = { 70.,     890,     857,     46.2,    32.0,    92.4,   64.0,
-		       100.,	1085.,   981.,    89.2,    50.2,   178.4,  100.4,
-		       150.,	997,     927.,    62.7,    39.6,   125.4,   79.2,
-		       200.,	993.,    944.,    48.5,    37.4,    97.0,   74.8};
+		       100.,	990.,   981.,    89.2,    50.2,   178.4,  100.4,
+		       150.,	1010,     927.,    62.7,    39.6,   125.4,   79.2,
+		       200.,	1020.,    944.,    48.5,    37.4,    97.0,   74.8};
 	
   double e[4]           = { data[0], data[7], data[14], data[21] };
   double obs[4]         = { data[1], data[8], data[15], data[22]  };
@@ -29,7 +29,7 @@ void excludedRegion() {
   double exp_2sig_hi[4] = { data[5], data[12], data[19], data[26]  };
   double exp_2sig_lo[4] = { data[6], data[13], data[20], data[27]  };
   
-  double e_g[4]       = {100., 150., 220., 300. };
+  double e_g[4]       = {120., 150., 220., 320. };
   
   cout << "Energy thresholds : " << e[0] << ", " << e[1] << ", " << e[2] << ", " << e[3] << std::endl;
   cout << "Obs limit         : " << obs[0] << ", " << obs[1] << ", " << obs[2] << ", " << obs[3] << std::endl;
@@ -183,10 +183,12 @@ void excludedRegion() {
   double obsExcl100[100];
   double obsExcl150[100];
   double obsExcl200[100];
+  double obsExclFull[100];
   int npoints70=0;
   int npoints100=0;
   int npoints150=0;
   int npoints200=0;	
+  int npointsFull=0;
 
   for (int i=0; i<100; ++i) {
     obsExcl70[i] = e_g[0] + sqrt(e_g[0]*e_g[0] + m_chi0[i]*m_chi0[i]);
@@ -200,16 +202,26 @@ void excludedRegion() {
     npoints100++;
   }	
 	
+  int mchi_ind = 0;
   for (int i=0; i<100; ++i) {
     obsExcl150[i] = e_g[2] + sqrt(e_g[2]*e_g[2] + m_chi0[i]*m_chi0[i]);
     if (obsExcl150[i]>obs[3]) break;	
     npoints150++;
+    mchi_ind = i;
   }
 	
   for (int i=0; i<100; ++i) {
     obsExcl200[i] = e_g[3] + sqrt(e_g[3]*e_g[3] + m_chi0[i]*m_chi0[i]);		
     if (obsExcl200[i]>obs[3]) break;	
     npoints200++;	
+  }	
+
+  // Full exclusion plot
+  for (int i=0; i<100; ++i) {
+    obsExclFull[i] = e_g[0] + sqrt(e_g[0]*e_g[0] + m_chi0[i]*m_chi0[i]);		
+    if (obsExclFull[i]>obs[3]) break;	
+    //if (i > mchi_ind) break;	
+    npointsFull++;	
   }	
 	
   TGraph g_obsExcl70(npoints70+1, &m_chi0[0], &obsExcl70[0]);
@@ -220,7 +232,11 @@ void excludedRegion() {
   g_obsExcl150.SetPoint(npoints150, 0., obs[2]);
   TGraph g_obsExcl200(npoints200+1, &m_chi0[0], &obsExcl200[0]);
   g_obsExcl200.SetPoint(npoints200, 0., obs[3]);
-  
+  TGraph g_obsExclFull(npointsFull+1, &m_chi0[0], &obsExclFull[0]);
+  g_obsExclFull.SetPoint(npointsFull, 0., obs[3]);
+  //g_obsExclFull.SetPoint(npointsFull, m_chi0[mchi_ind], obs[3]);
+
+  /**
   // expected exclusion
   double expExcl70[100];
   double expExcl100[100];
@@ -254,7 +270,7 @@ void excludedRegion() {
     if (expExcl200[i]>exp[3]) break;	
     npoints200++;	
   }	
-	
+  
   TGraph g_expExcl70(npoints70+1, &m_chi0[0], &expExcl70[0]);
   g_expExcl70.SetPoint(npoints70, 0., exp[0]);
   TGraph g_expExcl100(npoints100+1, &m_chi0[0], &expExcl100[0]);
@@ -263,7 +279,7 @@ void excludedRegion() {
   g_expExcl150.SetPoint(npoints150, 0., exp[2]);
   TGraph g_expExcl200(npoints200+1, &m_chi0[0], &expExcl200[0]);
   g_expExcl200.SetPoint(npoints200, 0., exp[3]);
-	
+  */	
   TCanvas canvas3("gluinoLimitVsMChi", "");
 
   TH1F h3("h3", "", 1,  0., 1000.);
@@ -318,44 +334,54 @@ void excludedRegion() {
   leg3.AddEntry(&g_obsExcl200, "E_{thresh} > 200 GeV", "lf");
   leg3.Draw();
 
+  g_obsExclFull.SetLineWidth(302);
+  //g_obsExclFull.SetFillStyle(3004);
+  g_obsExclFull.SetFillColor(kYellow);
+  g_obsExclFull.SetLineColor(6);
+  g_obsExclFull.Draw("f");
+
   g_obsExcl70.SetLineWidth(302);
   g_obsExcl70.SetFillStyle(3004);
   g_obsExcl70.SetFillColor(kGreen+2);
   g_obsExcl70.SetLineColor(kGreen+2);
+  g_obsExcl70.SetLineStyle(9);
   g_obsExcl70.Draw();
 
-  g_expExcl70.SetLineStyle(3);
-  g_expExcl70.SetLineColor(kGreen+2);	
+  //g_expExcl70.SetLineStyle(3);
+  //g_expExcl70.SetLineColor(kGreen+2);	
   //g_expExcl70.Draw();
 	
   g_obsExcl100.SetLineWidth(302);
   g_obsExcl100.SetFillStyle(3004);
   g_obsExcl100.SetFillColor(kBlue);
   g_obsExcl100.SetLineColor(kBlue);
+  g_obsExcl100.SetLineStyle(9);
   g_obsExcl100.Draw();
 
-  g_expExcl100.SetLineStyle(3);
-  g_expExcl100.SetLineColor(kBlue);
+  //g_expExcl100.SetLineStyle(3);
+  //g_expExcl100.SetLineColor(kBlue);
   //g_expExcl100.Draw();
 	
   g_obsExcl150.SetLineWidth(302);
   g_obsExcl150.SetFillStyle(3004);
   g_obsExcl150.SetFillColor(kBlack);
   g_obsExcl150.SetLineColor(kBlack);
+  g_obsExcl150.SetLineStyle(9);
   g_obsExcl150.Draw();
 
-  g_expExcl150.SetLineStyle(3);
-  g_expExcl150.SetLineColor(kBlack);
+  //g_expExcl150.SetLineStyle(3);
+  //g_expExcl150.SetLineColor(kBlack);
   //g_expExcl150.Draw();
 	
   g_obsExcl200.SetLineWidth(302);
   g_obsExcl200.SetFillStyle(3005);
   g_obsExcl200.SetFillColor(kRed);
   g_obsExcl200.SetLineColor(kRed);
+  g_obsExcl200.SetLineStyle(9);
   g_obsExcl200.Draw();
 	
-  g_expExcl200.SetLineStyle(3);
-  g_expExcl200.SetLineColor(kRed);
+  //g_expExcl200.SetLineStyle(3);
+  //g_expExcl200.SetLineColor(kRed);
   //g_expExcl200.Draw();
 	
   TLatex t1(0.50, 0.44, "E_{thresh} > 70 GeV");

@@ -41,6 +41,7 @@ cp $CMSSW_BASE/src/StoppedHSCP/Analysis/data/mcStau.txt $dataset/.
 cp $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/allInOneLifetime.C $dataset/.
 cp $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/gluinostopMassLifetime.C $dataset/.
 cp $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/excludedRegion.C $dataset/.
+cp $CMSSW_BASE/src/StoppedHSCP/Analysis/macros/excludedRegionStop.C $dataset/.
 
 cp $dataset/toymc/summary.txt $dataset/toymc.txt
 
@@ -56,6 +57,7 @@ sed s/=MAXINSTLUMI/=$maxInstLumi/ <stopMass.C > stopMassTEMP.C
 sed s/=MAXINSTLUMI/=$maxInstLumi/ <allInOneLifetime.C > allInOneLifetimeTEMP.C
 sed s/=MAXINSTLUMI/=$maxInstLumi/ <gluinostopMassLifetime.C > gluinostopMassLifetimeTEMP.C
 sed s/=MAXINSTLUMI/=$maxInstLumi/ <excludedRegion.C > excludedRegionTEMP.C
+sed s/=MAXINSTLUMI/=$maxInstLumi/ <excludedRegionStop.C > excludedRegionStopTEMP.C
 
 mv stopLimitTEMP.C stopLimit.C
 mv gluinoLimitTEMP.C gluinoLimit.C
@@ -66,6 +68,7 @@ mv stopMassTEMP.C stopMass.C
 mv allInOneLifetimeTEMP.C allInOneLifetime.C
 mv gluinostopMassLifetimeTEMP.C gluinostopMassLifetime.C
 mv excludedRegionTEMP.C excludedRegion.C
+mv excludedRegionStopTEMP.C excludedRegionStop.C
 
 
 # Replace LUMI in various files
@@ -78,6 +81,7 @@ sed s/=LUMI/=$lumi/ <stopMass.C > stopMassTEMP.C
 sed s/=LUMI/=$lumi/ <allInOneLifetime.C > allInOneLifetimeTEMP.C
 sed s/=LUMI/=$lumi/ <gluinostopMassLifetime.C > gluinostopMassLifetimeTEMP.C
 sed s/=LUMI/=$lumi/ <excludedRegion.C > excludedRegionTEMP.C
+sed s/=LUMI/=$lumi/ <excludedRegionStop.C > excludedRegionStopTEMP.C
 
 mv stopLimitTEMP.C stopLimit.C
 mv gluinoLimitTEMP.C gluinoLimit.C
@@ -88,6 +92,7 @@ mv stopMassTEMP.C stopMass.C
 mv allInOneLifetimeTEMP.C allInOneLifetime.C
 mv gluinostopMassLifetimeTEMP.C gluinostopMassLifetime.C
 mv excludedRegionTEMP.C excludedRegion.C
+mv excludedRegionStopTEMP.C excludedRegionStop.C
 
 echo "lumi = "$lumi
 echo "maxInstLumi = "$maxInstLumi

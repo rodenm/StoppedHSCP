@@ -228,8 +228,8 @@ public:
 
     selected_systhi_ = 0;
     selected_systlo_ = 0;
-    jes_hi_ = 1.05;
-    jes_lo_ = 0.95;
+    jes_hi_ = 1.10;
+    jes_lo_ = 0.90;
     jetCut_ = 70.;
 
   

@@ -34,5 +34,8 @@ void makeExtraPlots(double lumi=4560., double maxInstLumi=5000.)
   gROOT->ProcessLine(".L excludedRegion.C+");
   excludedRegion();
 
+  gROOT->ProcessLine(".L excludedRegionStop.C+");
+  excludedRegionStop();
+
 }
 

@@ -8,9 +8,9 @@ from math import sqrt
 #
 # inputs [ livetime, haloR, cosmicR, final, haloErr, cosmicErr]
 ##################################################
-input2012BCD = [ 1011440, 8.61+0.43, 5.21, 10,
-                 1.02,  #haloErr=0.228(stat) + 0.793(sys) 
-                 1.50] 
+input2012BCD = [ 1011440, 8.026, 5.21, 10,
+                 0.434,  #haloErr=0.192(stat) + 0.242(sys)
+                 2.50] 
 
 # 2010A for noise rate
 input2010A  = [ 911594., 0.0023, 1209, 2, 0.0024]

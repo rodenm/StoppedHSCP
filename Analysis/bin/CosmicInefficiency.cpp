@@ -69,12 +69,14 @@ private:
 
   TH2D* taggedDTbyRPC_;
   TH2D* untaggedDTbyRPC_;
+  TH2D* untaggedDTbyRPC_uncert_;
   TH2D* totalDTbyRPC_;
   TH1D* taggedFrac_;
   TH1D* untaggedFrac_;
   TH1D* totalFrac_;
 
   TH2D* inefficiencyDTbyRPC_;
+  TH2D* inefficiencyDTbyRPC_uncert_;
   TH1D* inefficiencyFrac_;
 };
 
@@ -114,6 +116,7 @@ void CosmicInefficiency::loop() {
 
   taggedDTbyRPC_ = new TH2D("taggedDTbyRPC","tagged cosmic;nDT;nRPC", 15, 0, 30, 15, 0, 30);
   untaggedDTbyRPC_ = new TH2D("untaggedDTbyRPC","untagged cosmic;nDT;nRPC", 15, 0, 30, 15, 0, 30);
+  untaggedDTbyRPC_uncert_ = new TH2D("untaggedDTbyRPC_uncert","untagged cosmic;nDT;nRPC", 15, 0, 30, 15, 0, 30);
   totalDTbyRPC_ = new TH2D("totalDTbyRPC","total cosmic;nDT;nRPC", 15, 0, 30, 15, 0, 30);
 
   taggedFrac_ = new TH1D("taggedFrac","tagged cosmic;inner/outer DT hits;", 20, 0, 10);
@@ -121,6 +124,7 @@ void CosmicInefficiency::loop() {
   totalFrac_ = new TH1D("totalFrac","total cosmic;inner/outer DT hits;", 20, 0, 10);
 
   inefficiencyDTbyRPC_ = new TH2D("ineffciencyDTbyRPC", "inefficiency", 15, 0, 30, 15, 0, 30);
+  inefficiencyDTbyRPC_uncert_ = new TH2D("ineffciencyDTbyRPC_uncert", "inefficiency", 15, 0, 30, 15, 0, 30);
   inefficiencyFrac_ = new TH1D("ineffciencyFrac", "inefficiency", 20, 0, 10);
   
   reset();
@@ -234,6 +238,7 @@ void CosmicInefficiency::loop() {
     if (event_->jet_N > 0) {
       if (cuts_.cutN(5)) {
 	untaggedDTbyRPC_->Fill(event_->DTSegment_N, event_->rpcHit_N);
+	untaggedDTbyRPC_uncert_->Fill(event_->DTSegment_N, event_->rpcHit_N);
 	untaggedFrac_->Fill(frac);
 	eventsFile_ << event_->run << ":" << event_->lb << ":" << event_->id << std::endl;
 	
@@ -289,13 +294,20 @@ void CosmicInefficiency::loop() {
   dumpFile_ << "Inefficiency calculation using integrated binned values" << std::endl;
   dumpFile_ << "----------------------------------------------" << std::endl;
   dumpFile_ << "ineff (DT/RPC) = " << untaggedDTbyRPC_->Integral() << "/" << totalDTbyRPC_->Integral() << std::endl;
-   dumpFile_ << "               = " << untaggedDTbyRPC_->Integral()/totalDTbyRPC_->Integral() << std::endl;
+  dumpFile_ << "               = " << untaggedDTbyRPC_->Integral()/totalDTbyRPC_->Integral() << std::endl;
   dumpFile_ << "----------------------------" << std::endl;
   dumpFile_ << "ineff (frac)   = " << untaggedFrac_->Integral() << "/" << totalFrac_->Integral() << std::endl;
   dumpFile_ << "               = " << untaggedFrac_->Integral()/totalFrac_->Integral() << std::endl;
   dumpFile_ << std::endl;
   dumpFile_ << std::endl;
   
+  for (int i = 0; i<15; i++) {
+    for (int j = 0; j<15; j++) {
+      if (untaggedDTbyRPC_uncert_->GetBinContent(i,j) == 0)
+	untaggedDTbyRPC_uncert_->SetBinContent(i,j,0.01);
+    }
+  }
+
 
   // Now calculate using binned values
   // Binned version of the b/a+b calculation                                                                                                             
@@ -307,19 +319,25 @@ void CosmicInefficiency::loop() {
   totalFrac_->Sumw2();
 
   inefficiencyDTbyRPC_->Divide(untaggedDTbyRPC_, totalDTbyRPC_);
+  inefficiencyDTbyRPC_uncert_->Divide(untaggedDTbyRPC_uncert_, totalDTbyRPC_);
   inefficiencyFrac_->Divide(untaggedFrac_, totalFrac_);
 
   double errorDR = 0;
   double integralDR = inefficiencyDTbyRPC_->IntegralAndError(1,inefficiencyDTbyRPC_->GetNbinsX(),
 							     1,inefficiencyDTbyRPC_->GetNbinsY(),
 							     errorDR);
+  double errorUncert = 0;
+  double integralUncert = inefficiencyDTbyRPC_uncert_->IntegralAndError(1,inefficiencyDTbyRPC_uncert_->GetNbinsX(),
+									1,inefficiencyDTbyRPC_uncert_->GetNbinsY(),
+							     errorUncert);
   double errorFrac = 0;
   double integralFrac = inefficiencyFrac_->IntegralAndError(1,inefficiencyFrac_->GetNbinsX(),errorFrac);
   
   dumpFile_ << "Inefficiency calculation binned in nDT and nRPC" << std::endl;
   dumpFile_ << "-----------------------------------------------" << std::endl;
   dumpFile_ << "ineff (binned by DT & RPC) : " << integralDR << " +/- " << errorDR << std::endl;
-  dumpFile_ << "ineff (binned by Frac) : " << integralFrac << " +/- " << errorFrac << std::endl;
+  dumpFile_ << "ineff (DT & RPC uncert)    : " << integralUncert << " +/- " << errorUncert << std::endl;
+  dumpFile_ << "ineff (binned by Frac)     : " << integralFrac << " +/- " << errorFrac << std::endl;
   dumpFile_ << std::endl;
   
 
@@ -341,8 +359,10 @@ void CosmicInefficiency::loop() {
   
   taggedDTbyRPC_->Write("",TObject::kOverwrite);
   untaggedDTbyRPC_->Write("",TObject::kOverwrite);
+  untaggedDTbyRPC_uncert_->Write("",TObject::kOverwrite);
   totalDTbyRPC_->Write("",TObject::kOverwrite);
   inefficiencyDTbyRPC_->Write("",TObject::kOverwrite);
+  inefficiencyDTbyRPC_uncert_->Write("",TObject::kOverwrite);
 
   taggedFrac_->Write("",TObject::kOverwrite);
   untaggedFrac_->Write("",TObject::kOverwrite);
