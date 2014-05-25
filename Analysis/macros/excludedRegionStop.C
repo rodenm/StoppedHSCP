@@ -206,8 +206,15 @@ void excludedRegionStop() {
   g_obsExclFull.SetLineWidth(302);
   g_obsExclFull.SetFillColor(kYellow);
   g_obsExclFull.SetLineColor(kYellow);
-  g_obsExclFull.Draw("f");
+  //g_obsExclFull.Draw("f");
 
+  TGraph* g_obs70y = (TGraph*)g_obsExcl70.Clone("70y");
+  g_obs70y->SetFillColor(kYellow);
+  g_obs70y->Draw("f");
+  TGraph* g_obs100y = (TGraph*)g_obsExcl100.Clone("100y");
+  g_obs100y->SetFillColor(kYellow);
+  g_obs100y->Draw("f");
+  
   g_obsExcl70.SetLineWidth(302);
   g_obsExcl70.SetFillStyle(3004);
   g_obsExcl70.SetFillColor(kGreen+2);

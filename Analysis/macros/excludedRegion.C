@@ -338,13 +338,26 @@ void excludedRegion() {
   //g_obsExclFull.SetFillStyle(3004);
   g_obsExclFull.SetFillColor(kYellow);
   g_obsExclFull.SetLineColor(6);
-  g_obsExclFull.Draw("f");
+  //g_obsExclFull.Draw("f");
 
+  TGraph* g_obs70y = (TGraph*)g_obsExcl70.Clone("70y");
+  g_obs70y->SetFillColor(kYellow);
+  g_obs70y->Draw("f");
+  TGraph* g_obs100y = (TGraph*)g_obsExcl100.Clone("100y");
+  g_obs100y->SetFillColor(kYellow);
+  g_obs100y->Draw("f");
+  TGraph* g_obs150y = (TGraph*)g_obsExcl150.Clone("150y");
+  g_obs150y->SetFillColor(kYellow);
+  g_obs150y->Draw("f");
+  TGraph* g_obs200y = (TGraph*)g_obsExcl200.Clone("200y");
+  g_obs200y->SetFillColor(kYellow);
+  g_obs200y->Draw("f");
+  
   g_obsExcl70.SetLineWidth(302);
   g_obsExcl70.SetFillStyle(3004);
   g_obsExcl70.SetFillColor(kGreen+2);
   g_obsExcl70.SetLineColor(kGreen+2);
-  g_obsExcl70.SetLineStyle(9);
+  //g_obsExcl70.SetLineStyle(9);
   g_obsExcl70.Draw();
 
   //g_expExcl70.SetLineStyle(3);
@@ -355,7 +368,7 @@ void excludedRegion() {
   g_obsExcl100.SetFillStyle(3004);
   g_obsExcl100.SetFillColor(kBlue);
   g_obsExcl100.SetLineColor(kBlue);
-  g_obsExcl100.SetLineStyle(9);
+  //g_obsExcl100.SetLineStyle(9);
   g_obsExcl100.Draw();
 
   //g_expExcl100.SetLineStyle(3);
@@ -366,7 +379,7 @@ void excludedRegion() {
   g_obsExcl150.SetFillStyle(3004);
   g_obsExcl150.SetFillColor(kBlack);
   g_obsExcl150.SetLineColor(kBlack);
-  g_obsExcl150.SetLineStyle(9);
+  //g_obsExcl150.SetLineStyle(9);
   g_obsExcl150.Draw();
 
   //g_expExcl150.SetLineStyle(3);
@@ -377,7 +390,7 @@ void excludedRegion() {
   g_obsExcl200.SetFillStyle(3005);
   g_obsExcl200.SetFillColor(kRed);
   g_obsExcl200.SetLineColor(kRed);
-  g_obsExcl200.SetLineStyle(9);
+  //g_obsExcl200.SetLineStyle(9);
   g_obsExcl200.Draw();
 	
   //g_expExcl200.SetLineStyle(3);
